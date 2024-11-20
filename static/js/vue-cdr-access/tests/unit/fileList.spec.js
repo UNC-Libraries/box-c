@@ -82,10 +82,6 @@ describe('fileList.vue', () => {
         });
     });
 
-    it("displays a header with file count", () => {
-        expect(wrapper.find('h3').text()).toEqual("List of Items in This Work (3)");
-    });
-
     it("contains a table of files", () => {
         expect(wrapper.findComponent({ name: 'dataTable' }).exists()).toBe(true);
     });

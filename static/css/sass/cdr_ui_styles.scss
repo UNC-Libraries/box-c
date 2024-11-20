@@ -435,14 +435,18 @@ img.data-thumb {
   max-width: 60px;
 }
 
-.child-records {
-  font-size: 16px;
-  margin: 30px 50px 25px 50px;
+.file-list-header {
+  margin: 30px 0 5px;
 
   h3 {
     font-size: 16px;
-    margin-bottom: 30px;
+    margin: 0;
+    padding: 0;
   }
+}
+
+.child-records {
+  font-size: 16px;
 
   .fa.default-img-icon {
     font-size: 32px;
@@ -1156,7 +1160,7 @@ iframe {
 
 .clover-viewer {
   margin: auto;
-  width: 90%;
+  width: 95%;
 }
 
 #information-toggle {

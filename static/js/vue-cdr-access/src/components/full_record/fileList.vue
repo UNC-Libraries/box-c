@@ -7,14 +7,6 @@ force it to reload
 -->
 <template>
     <div class="child-records table-container" id="data-display">
-        <div class="columns">
-            <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
-            <bulk-download :view-original-access="viewOriginalAccess"
-                           :total-download-size="totalDownloadSize"
-                           :work-id="workId">
-            </bulk-download>
-        </div>
-
         <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
@@ -51,10 +43,9 @@ export default {
 
     mixins: [fileDownloadUtils, fileUtils, fullRecordUtils],
 
-    components: {bulkDownload, DataTable},
+    components: {DataTable},
 
     props: {
-        childCount: Number,
         downloadAccess: {
             default: false,
             type: Boolean
@@ -66,14 +57,6 @@ export default {
         resourceType: {
             default: 'Work',
             type: String
-        },
-        totalDownloadSize: {
-            default: null,
-            type: String
-        },
-        viewOriginalAccess: {
-            default: false,
-            type: Boolean
         },
         workId: String
     },
@@ -91,10 +74,6 @@ export default {
     },
 
     computed: {
-        showTotalFilesize() {
-            return this.viewOriginalAccess && this.totalDownloadSize !== null
-        },
-
         // Datatables expects dataSrc to return an array
         // File objects don't have any child metadata, so wrap the file object in an array
         ajaxOptions() {
@@ -367,7 +346,6 @@ export default {
 
     @media screen and (max-width: 576px) {
         #data-display {
-            h3,
             .actionlink.column {
                 margin-bottom: 0;
             }

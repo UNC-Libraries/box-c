@@ -62,16 +62,22 @@
                 </div>
             </div>
         </div>
-        <div class="full_record_bottom">
+        <div class="full_record_bottom container is-fluid">
             <player :record-data="recordData"></player>
-            <file-list v-if="childCount > 0" id="file-display"
-                       :child-count="childCount"
-                       :work-id="recordData.briefObject.id"
-                       :total-download-size="recordData.totalDownloadSize"
-                       :download-access="hasDownloadAccess(recordData)"
-                       :view-original-access="hasPermission(recordData, 'viewOriginal')"
-                       :edit-access="hasPermission(recordData,'editDescription')">
-            </file-list>
+            <template v-if="childCount > 0">
+                <div class="file-list-header columns is-vcentered"">
+                    <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
+                    <bulk-download :view-original-access="hasPermission(recordData, 'viewOriginal')"
+                                   :total-download-size="recordData.totalDownloadSize"
+                                   :work-id="recordData.briefObject.id">
+                    </bulk-download>
+                </div>
+                <file-list id="file-display"
+                           :work-id="recordData.briefObject.id"
+                           :download-access="hasDownloadAccess(recordData)"
+                           :edit-access="hasPermission(recordData,'editDescription')">
+                </file-list>
+            </template>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
             </metadata-display>
@@ -91,11 +97,12 @@ import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import player from '@/components/full_record/player.vue';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
+import bulkDownload from "@/components/full_record/bulkDownload.vue";
 
 export default {
     name: 'aggregateRecord',
 
-    components: {abstract, fileList, neighborList, metadataDisplay, player, restrictedContent},
+    components: {bulkDownload, abstract, fileList, neighborList, metadataDisplay, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
 
