@@ -67,7 +67,7 @@
             <template v-if="childCount > 0">
                 <div class="file-list-header columns is-vcentered">
                     <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
-                    <bulk-download :view-original-access="hasPermission(recordData, 'viewOriginal')"
+                    <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
                                    :total-download-size="recordData.totalDownloadSize"
                                    :work-id="recordData.briefObject.id">
                     </bulk-download>

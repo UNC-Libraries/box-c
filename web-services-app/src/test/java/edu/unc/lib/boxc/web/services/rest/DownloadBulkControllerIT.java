@@ -51,7 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DownloadBulkControllerIT {
     private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String FILE_ID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
-    private static final PID FILE_PID = PIDs.get(FILE_ID);
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
     @Mock
@@ -62,6 +61,8 @@ public class DownloadBulkControllerIT {
     private WorkObject workObject;
     @Mock
     private FileObject fileObject;
+    private PID filePid;
+    private PID workPid;
     @TempDir
     public Path tmpFolder;
     @InjectMocks
@@ -84,6 +85,8 @@ public class DownloadBulkControllerIT {
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
         TestHelper.setContentBase("http://localhost:48085/rest");
+        workPid = PIDs.get(WORK_ID);
+        filePid = PIDs.get(FILE_ID);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
     }
@@ -95,8 +98,18 @@ public class DownloadBulkControllerIT {
 
     @Test
     public void noAccessTest() throws Exception {
-        doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
-                anyString(), any(), any(AccessGroupSetImpl.class), eq(viewOriginal));
+        when(aclService.hasAccess(eq(workPid), any(), eq(viewOriginal))).thenReturn(false);
+
+        mvc.perform(get("/bulkDownload/" + WORK_ID))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void userNotLoggedInTest() throws Exception {
+        GroupsThreadStore.clearStore();
+        when(aclService.hasAccess(eq(workPid), any(), eq(viewOriginal))).thenReturn(true);
+
 
         mvc.perform(get("/bulkDownload/" + WORK_ID))
                 .andExpect(status().isForbidden())
@@ -107,12 +120,14 @@ public class DownloadBulkControllerIT {
     public void successTest() throws Exception {
         when(repositoryObjectLoader.getWorkObject(any())).thenReturn(workObject);
         when(workObject.getMembers()).thenReturn(List.of(fileObject));
-        when(fileObject.getPid()).thenReturn(FILE_PID);
+        when(fileObject.getPid()).thenReturn(filePid);
         var binObj = mock(BinaryObject.class);
         when(fileObject.getOriginalFile()).thenReturn(binObj);
         when(binObj.getBinaryStream()).thenReturn(fileInputStream);
         when(binObj.getFilename()).thenReturn("bunny.jpg");
-        when(aclService.hasAccess(eq(FILE_PID), any(),
+
+        when(aclService.hasAccess(eq(workPid), any(), eq(viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(filePid), any(),
                 eq(Permission.viewOriginal))).thenReturn(true);
 
         var result = mvc.perform(get("/bulkDownload/" + WORK_ID))

@@ -27,7 +27,6 @@ force it to reload
 </template>
 
 <script>
-import bulkDownload from '@/components/full_record/bulkDownload.vue';
 import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import fileUtils from '../../mixins/fileUtils';

@@ -31,7 +31,7 @@ export default {
             default: null,
             type: Number
         },
-        viewOriginalAccess: {
+        hasBulkDownloadAccess: {
             default: false,
             type: Boolean
         },
@@ -40,11 +40,11 @@ export default {
 
     computed: {
         hasDownloadableContent() {
-            return this.viewOriginalAccess && this.totalDownloadSize !== null;
+            return this.hasBulkDownloadAccess && this.totalDownloadSize !== null;
         },
 
         showTotalFilesize() {
-            return this.hasDownloadableContent && this.totalDownloadSize <= ONE_GIGABYTE;
+            return this.hasBulkDownloadAccess && this.totalDownloadSize <= ONE_GIGABYTE;
         }
     }
 }

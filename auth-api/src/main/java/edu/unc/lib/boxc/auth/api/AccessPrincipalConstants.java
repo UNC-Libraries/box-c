@@ -23,6 +23,7 @@ public class AccessPrincipalConstants {
     public final static String PATRON_NAMESPACE = "unc:patron:";
     public final static String IP_PRINC_NAMESPACE = PATRON_NAMESPACE + "ipp:";
     public final static String ADMIN_ACCESS_PRINC = "admin_access";
+    public final static String ON_CAMPUS_PRINC = "unc:patron:ipp:on_campus";
 
     public final static Pattern PATRON_PRINC_PATTERN =
             Pattern.compile("(" + PUBLIC_PRINC
