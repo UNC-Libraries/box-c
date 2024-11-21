@@ -125,7 +125,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 *
 **/
 .search-query-text {
-  margin: 40px 20px 40px 25px;
+  margin: 40px 20px 20px 25px;
   font-size: 24px;
 
   h2 {
@@ -457,14 +457,6 @@ img.data-thumb {
     .fa.default-img-icon {
       color: #8CB4C6;
     }
-  }
-
-  .is-icon {
-    background-color: $container-blue;
-    border: 1px solid $container-blue;
-    border-radius: 5px;
-    color: white;
-    padding: 7px;
   }
 
   .no-download {
@@ -917,11 +909,6 @@ a.navbar-item.is-active,
 a.navbar-item:hover {
   background-color: #fafafa;
   color: #3273dc;
-}
-
-.action.button.is-primary {
-  background-color: #1A698C;
-  color: #FFFFFF;
 }
 
 /*** End of Bulma overrides ***/

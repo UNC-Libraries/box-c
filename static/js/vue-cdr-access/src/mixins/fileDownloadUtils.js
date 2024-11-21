@@ -63,14 +63,14 @@ export default {
 
         downloadButtonHtml(brief_object) {
             if (this.showNonImageDownload(brief_object)) {
-                return `<div class="actionlink download">
-                            <a class="download button action" href="/content/${brief_object.id}?dl=true"><i class="fa fa-download"></i> ${this.$t('full_record.download')}</a>
+                return `<div class="download">
+                            <a class="download button action is-primary" href="/content/${brief_object.id}?dl=true"><span class="icon"><i class="fa fa-download"></i></span><span>${this.$t('full_record.download')}</span></a>
                         </div>`;
             } else if (this.showImageDownload(brief_object)) {
-                let html = `<div class="dropdown actionlink download image-download-options">
+                let html = `<div class="dropdown download image-download-options">
                 <div class="dropdown-trigger">
-                    <button id="dcr-download-${brief_object.id}" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
-                    ${this.$t('full_record.download')} <i class="fas fa-angle-down" aria-hidden="true"></i>
+                    <button id="dcr-download-${brief_object.id}" class="button download-images is-primary" aria-haspopup="true" aria-controls="dropdown-menu">
+                    <span>${this.$t('full_record.download')}</span><span class="icon"><i class="fas fa-angle-down" aria-hidden="true"></i></span>
                     </button>
                 </div>
                 <div class="dropdown-menu table-downloads" id="dropdown-menu" role="menu" aria-hidden="true">

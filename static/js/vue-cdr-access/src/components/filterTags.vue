@@ -2,18 +2,18 @@
 Displays tags for currently active filters in a search result, with the option to remove them
 -->
 <template>
-    <div>
-        <ul @click="updateQueryUrl">
-            <li data-type="anywhere" class="search-text" v-if="$route.query.anywhere">{{ $route.query.anywhere }}
-                <i class="fas fa-times" data-type="anywhere"></i></li>
+    <div @click="updateQueryUrl">
+            <a data-type="anywhere" class="button search-text" v-if="$route.query.anywhere">{{ $route.query.anywhere }}
+                &nbsp;<button class="delete is-small"></button></a>
             <template v-for="searchText in searchQueryDisplay">
-                <li :data-type="searchText.type" :data-value="searchText.original_value" class="search-text" :title="searchText.value_text">
-                    {{ searchText.type_text }} <i class="fas fa-greater-than"></i>
-                    {{ truncateText(searchText.value_text) }}
-                    <i class="fas fa-times" :data-type="searchText.type" :data-value="searchText.original_value"></i>
-                </li>
+                <a :data-type="searchText.type" :data-value="searchText.original_value" class="search-text button" :title="searchText.value_text">
+                    <span>
+                        {{ searchText.type_text }} <i class="fas fa-greater-than"></i>
+                        {{ truncateText(searchText.value_text) }}
+                    </span>
+                    <button class="delete is-small"></button>
+                </a>
             </template>
-        </ul>
     </div>
 </template>
 
@@ -147,38 +147,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-    ul {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 10px;
-
-        &:hover {
-            cursor: pointer;
-        }
-
-        .search-text {
-            border: 1px solid lightgray;
-            border-radius: 5px;
-            font-size: .85rem;
-            margin-left: 5px;
-            padding-left: 7px;
-            text-indent: 0;
-            text-transform: capitalize;
-        }
-    }
-
-    i.fa-times {
-        background-color: #1A698C;
-        border: 1px solid #1A698C;
-        border-bottom-right-radius: 5px;
-        border-top-right-radius: 5px;
-        color: white;
-        margin-left: 5px;
-        padding: 7px;
-    }
-
     i.fa-greater-than {
         color: #B0B0B0;
         font-size: .6rem;
+    }
+
+    .delete.is-small {
+        margin-left: 6px;
+        margin-right: -5px;
     }
 </style>

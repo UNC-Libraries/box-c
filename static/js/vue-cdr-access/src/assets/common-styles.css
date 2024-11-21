@@ -35,17 +35,13 @@ a.button.is-link span {
     background-color: white;
 }
 
-.image-download-options button {
+.button.is-primary {
     background-color: #1A698C;
     color: white;
-    font-family: 'Open Sans', sans-serif;
-    height: 48px;
 }
 
-.image-download-options button:hover,
-.image-download-options button:focus {
+.button.is-primary:hover {
     background-color: #084b6b;
-    color: white;
 }
 
 .image-download-options a {

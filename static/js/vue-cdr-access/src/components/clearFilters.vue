@@ -1,8 +1,8 @@
 <template>
-    <div class="clear-options">
-        <a id="clear-results" class="button is-link is-small" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
+    <div class="clear-options field is-grouped">
+        <a id="clear-results" class="button is-primary" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
            href="#" @click.prevent="clearSearch">
-                {{ $t('search.clear_search')}} <i class="fas fa-times"></i></a>
+            <span>{{ $t('search.clear_search')}}</span><span class="icon"><i class="fas fa-times"></i></span></a>
         <clear-facets-button></clear-facets-button>
         <filter-tags :filter-parameters="filterParameters"></filter-tags>
     </div>
@@ -56,14 +56,10 @@ export default {
 </script>
 
 <style scoped  lang="scss">
-    i {
-        padding-left: 10px;
-    }
     .clear-options {
         display: inline-flex;
         flex-wrap: wrap;
-        margin-bottom: 10px;
-        margin-left: 35px;
-        margin-top: -20px
+        margin-bottom: 30px;
+        margin-left: 25px;
     }
 </style>

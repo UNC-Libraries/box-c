@@ -220,8 +220,8 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            return `<a href="/admin/describe/${row.id}" aria-label="${this.ariaLabelText(row)}">` +
-                                '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
+                            return `<a href="/admin/describe/${row.id}" class="button action is-primary" aria-label="${this.ariaLabelText(row)}">` +
+                                '<span class="icon"><i class="fa fa-edit" title="Edit"></span></i></a>'
                         },
                         targets: column_number
                     }
