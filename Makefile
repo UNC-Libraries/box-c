@@ -33,7 +33,6 @@ build-admin-concat:
 		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr_vue_modal_styles.css \
-		static/js/admin/vue-cdr-admin/dist/assets/index.css \
 		> static/css/cdr_admin.css
 
 ifneq ($(VERSION), "")
@@ -74,7 +73,6 @@ build-access-concat:
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
 		static/css/cdr_vue_modal_styles.css \
-		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/css/cdr_access.css
 
 SUSPEND = "n"
