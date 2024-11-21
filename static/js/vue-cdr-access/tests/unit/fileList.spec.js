@@ -169,7 +169,7 @@ describe('fileList.vue', () => {
 
         const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Download button
-        expect(download).toEqual(expect.stringContaining('<a class="download button action"'));
+        expect(download).toEqual(expect.stringContaining('<a class="download button action is-primary"'));
     });
 
     it("does not show a button for non-image files without viewOriginal permission", () => {
