@@ -35,7 +35,8 @@ public class ResultEntryController extends AbstractSearchController {
             SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.STREAMING_TYPE.name(),
             SearchFieldKey.STREAMING_URL.name(), SearchFieldKey.VERSION.name(), SearchFieldKey.ROLE_GROUP.name(),
-            SearchFieldKey.VIEW_BEHAVIOR.name(), SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.ROLLUP_ID.name());
+            SearchFieldKey.VIEW_BEHAVIOR.name(), SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.ROLLUP_ID.name(),
+            SearchFieldKey.ALT_TEXT.name());
 
     @RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
     public @ResponseBody
