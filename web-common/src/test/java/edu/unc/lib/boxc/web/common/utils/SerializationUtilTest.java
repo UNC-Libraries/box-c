@@ -8,11 +8,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -189,6 +194,60 @@ public class SerializationUtilTest extends Assertions {
         .thenReturn(new HashSet<>(Arrays.asList(UserRole.canAccess)));
 
         assertHasRolePermissions(md, mixedPrincipals, UserRole.canManage);
+    }
+
+    @Test
+    public void testMetadataToMapWithAltText() throws Exception {
+        md.setAltText("This is the alt text");
+        md.setContentStatus(List.of(FacetConstants.HAS_ALT_TEXT));
+
+        String groupJson = SerializationUtil.metadataToJSON(md, new AccessGroupSetImpl("group1"));
+        Map<String, Object> groupMap = getResultMap(groupJson);
+        assertEquals("This is the alt text", groupMap.get("altText"));
+        assertEquals(List.of(FacetConstants.HAS_ALT_TEXT), groupMap.get("contentStatus"));
+    }
+
+    @Test
+    public void testMetadataToMapWithStreaming() throws Exception {
+        md.setStreamingUrl("http://example.com/streaming");
+        md.setStreamingType("video");
+        md.setContentStatus(List.of(FacetConstants.HAS_STREAMING));
+
+        String groupJson = SerializationUtil.metadataToJSON(md, new AccessGroupSetImpl("group1"));
+        Map<String, Object> groupMap = getResultMap(groupJson);
+        assertEquals("http://example.com/streaming", groupMap.get("streamingUrl"));
+        assertEquals(List.of(FacetConstants.HAS_STREAMING), groupMap.get("contentStatus"));
+        assertEquals("video", groupMap.get("streamingType"));
+    }
+
+    @Test
+    public void testMetadataToMapFileObject() throws Exception {
+        md.setFileFormatCategory(List.of("image"));
+        md.setFileFormatType(List.of("jpeg"));
+        md.setFileFormatDescription(List.of("JPEG"));
+        md.setFilesizeSort(582753L);
+        md.setResourceType(ResourceType.File.name());
+        md.setDateAdded("2019-01-01T00:00:00Z");
+        md.setDateUpdated("2019-01-01T00:01:00Z");
+        md.setDateCreated(DateTimeUtil.parseUTCToDate("2019-01-01T00:02:00Z"));
+        Date timestamp = new Date();
+        md.setTimestamp(timestamp);
+        md.setRollup("parentid");
+        md.set_version_(1L);
+
+        String groupJson = SerializationUtil.metadataToJSON(md, new AccessGroupSetImpl("group1"));
+        Map<String, Object> groupMap = getResultMap(groupJson);
+        assertEquals(List.of("image"), groupMap.get(SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam()));
+        assertEquals(List.of("jpeg"), groupMap.get(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam()));
+        assertEquals(List.of("JPEG"), groupMap.get(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getUrlParam()));
+        assertEquals(582753, groupMap.get("filesizeTotal")); // using the incorrect name in the class
+        assertEquals(ResourceType.File.name(), groupMap.get(SearchFieldKey.RESOURCE_TYPE.getUrlParam()));
+        assertEquals("2019-01-01T00:00:00.000Z", groupMap.get(SearchFieldKey.DATE_ADDED.getUrlParam()));
+        assertEquals("2019-01-01T00:01:00.000Z", groupMap.get(SearchFieldKey.DATE_UPDATED.getUrlParam()));
+        assertEquals("2019-01-01T00:02:00.000Z", groupMap.get(SearchFieldKey.DATE_CREATED.getUrlParam()));
+        assertEquals(timestamp.getTime(), groupMap.get(SearchFieldKey.TIMESTAMP.getUrlParam()));
+        assertEquals("parentid", groupMap.get("rollup"));
+        assertEquals(1, groupMap.get("_version_"));
     }
 
     @SuppressWarnings("unchecked")
