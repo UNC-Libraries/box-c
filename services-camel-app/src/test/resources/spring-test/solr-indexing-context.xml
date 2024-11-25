@@ -24,6 +24,7 @@
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setAltTextFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
@@ -218,6 +219,9 @@
     <bean id="setDescriptiveMetadataFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+    </bean>
+
+    <bean id="setAltTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAltTextFilter">
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

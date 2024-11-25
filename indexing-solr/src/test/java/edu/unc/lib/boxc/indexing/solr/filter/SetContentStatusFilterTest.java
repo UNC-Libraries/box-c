@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,9 +15,12 @@ import java.nio.file.Path;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +59,8 @@ public class SetContentStatusFilterTest {
     private Resource resc, fileResc;
     @Mock
     private DerivativeService derivativeService;
+    @Mock
+    private Statement statement;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
     @TempDir
@@ -72,6 +78,7 @@ public class SetContentStatusFilterTest {
         when(resc.hasProperty(any(Property.class))).thenReturn(false);
 
         when(fileObj.getParent()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
         accessSurrogatePath = derivativeFolder.resolve("f277bb38-272c-471c-a28a-9887a1328a1f");
         filter = new SetContentStatusFilter();
         filter.setDerivativeService(derivativeService);
@@ -87,7 +94,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testDescribedWork() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.hasMods)).thenReturn(true);
 
         filter.filter(dip);
@@ -100,7 +106,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testNotDescribedWork() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
 
         filter.filter(dip);
 
@@ -112,7 +117,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkNoPrimaryObject() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
 
         filter.filter(dip);
 
@@ -134,7 +138,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkWithPrimaryObject() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.primaryObject)).thenReturn(true);
 
         filter.filter(dip);
@@ -146,7 +149,6 @@ public class SetContentStatusFilterTest {
 
     @Test
     public void testIsPrimaryObject() throws Exception {
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
 
         when(dip.getContentObject()).thenReturn(fileObj);
@@ -160,8 +162,6 @@ public class SetContentStatusFilterTest {
 
     @Test
     public void testUnpublishedFileObject() throws Exception {
-        when(workObj.getResource()).thenReturn(resc);
-
         when(dip.getContentObject()).thenReturn(fileObj);
         when(fileObj.getResource()).thenReturn(fileResc);
         when(fileResc.hasProperty(Cdr.unpublished)).thenReturn(true);
@@ -174,7 +174,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkWithMemberOrder() {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.memberOrder)).thenReturn(true);
 
         filter.filter(dip);
@@ -187,7 +186,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkWithoutMemberOrder() {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
 
         filter.filter(dip);
 
@@ -199,7 +197,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkWithAssignedThumbnail() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.useAsThumbnail)).thenReturn(true);
 
         filter.filter(dip);
@@ -212,7 +209,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkNoAssignedThumbnail() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
 
         filter.filter(dip);
 
@@ -222,7 +218,6 @@ public class SetContentStatusFilterTest {
 
     @Test
     public void testIsAssignedThumbnail() throws Exception {
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.useAsThumbnail, fileResc)).thenReturn(true);
 
         when(dip.getContentObject()).thenReturn(fileObj);
@@ -237,7 +232,6 @@ public class SetContentStatusFilterTest {
     @Test
     public void testFileObjectHasAccessSurrogate() throws IOException {
         Files.write(accessSurrogatePath, List.of("fake image"));
-        when(workObj.getResource()).thenReturn(resc);
         when(dip.getContentObject()).thenReturn(fileObj);
         when(fileObj.getResource()).thenReturn(fileResc);
 
@@ -249,7 +243,6 @@ public class SetContentStatusFilterTest {
 
     @Test
     public void testFileObjectNoAccessSurrogate() {
-        when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
         when(dip.getContentObject()).thenReturn(fileObj);
         when(fileObj.getResource()).thenReturn(fileResc);
@@ -263,14 +256,108 @@ public class SetContentStatusFilterTest {
     @Test
     public void testWorkAccessSurrogate() throws IOException {
         Files.write(accessSurrogatePath, List.of("fake image"));
-        when(workObj.getResource()).thenReturn(resc);
         when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
 
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_ACCESS_SURROGATE));
         assertFalse(listCaptor.getValue().contains(FacetConstants.NO_ACCESS_SURROGATE));
+    }
+
+    @Test
+    public void testFileObjectHasAltText() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        when(fileResc.hasProperty(Cdr.hasAltText)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_ALT_TEXT));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_ALT_TEXT));
+    }
+
+    @Test
+    public void testFileObjectNoAltText() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_ALT_TEXT));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_ALT_TEXT));
+    }
+
+    @Test
+    public void testFileObjectHasStreaming() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        when(fileResc.hasProperty(Cdr.streamingUrl)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_STREAMING));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_STREAMING));
+    }
+
+    @Test
+    public void testWorkHasViewBehaviorPaged() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(resc.hasProperty(CdrView.viewBehavior)).thenReturn(true);
+        when(resc.getProperty(CdrView.viewBehavior)).thenReturn(statement);
+        when(statement.getString()).thenReturn(ViewSettingRequest.ViewBehavior.PAGED.getString());
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_PAGED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS));
+    }
+
+    @Test
+    public void testWorkHasViewBehaviorContinuous() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(resc.hasProperty(CdrView.viewBehavior)).thenReturn(true);
+        when(resc.getProperty(CdrView.viewBehavior)).thenReturn(statement);
+        when(statement.getString()).thenReturn(ViewSettingRequest.ViewBehavior.CONTINUOUS.getString());
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_PAGED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS));
+    }
+
+    @Test
+    public void testWorkHasViewBehaviorIndividuals() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(resc.hasProperty(CdrView.viewBehavior)).thenReturn(true);
+        when(resc.getProperty(CdrView.viewBehavior)).thenReturn(statement);
+        when(statement.getString()).thenReturn(ViewSettingRequest.ViewBehavior.INDIVIDUALS.getString());
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_PAGED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS));
+    }
+
+    @Test
+    public void testWorkNoViewBehavior() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(resc.hasProperty(CdrView.viewBehavior)).thenReturn(false);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_PAGED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS));
     }
 }

@@ -117,6 +117,7 @@
     <field name="abstract" type="string" indexed="false" stored="true"/>
     <!-- Groups which have administrative viewing rights to this object -->
     <field name="adminGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
+    <field name="altText" type="string" indexed="false" stored="true"/>
     <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
     <field name="ancestorIds" type="string" indexed="true" stored="true" docValues="true"/>
     <!--
@@ -291,6 +292,7 @@
   <copyField source="rightsOaiPmh" dest="keywordIndex"/>
   <copyField source="rightsUri" dest="keywordIndex"/>
   <copyField source="genre" dest="keywordIndex"/>
+  <copyField source="altText" dest="keywordIndex"/>
 
   <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
   <copyField source="title" dest="text"/>
@@ -310,4 +312,5 @@
   <copyField source="rightsUri" dest="text"/>
   <copyField source="fullText" dest="text"/>
   <copyField source="genre" dest="text"/>
+  <copyField source="altText" dest="text"/>
 </schema>

@@ -575,4 +575,12 @@ public class IndexDocumentBean {
     public Map<String, Object> getFields() {
         return fields;
     }
+
+    public String getAltText() {
+        return (String) fields.get(SearchFieldKey.ALT_TEXT.getSolrField());
+    }
+
+    public void setAltText(String altText) {
+        fields.put(SearchFieldKey.ALT_TEXT.getSolrField(), altText);
+    }
 }

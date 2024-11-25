@@ -73,6 +73,11 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             } else {
                 status.add(FacetConstants.NO_STREAMING);
             }
+            if (resc.hasProperty(Cdr.hasAltText)) {
+                status.add(FacetConstants.HAS_ALT_TEXT);
+            } else {
+                status.add(FacetConstants.NO_ALT_TEXT);
+            }
         }
 
         return status;
