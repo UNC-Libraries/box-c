@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
@@ -48,6 +49,8 @@ public class SetAltTextFilterTest {
     private FileObject fileObject;
     @Mock
     private BinaryObject binaryObject;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     private PID pid;
     private IndexDocumentBean document;
@@ -62,9 +65,11 @@ public class SetAltTextFilterTest {
         pid = TestHelper.makePid();
         factory = new DocumentIndexingPackageFactory();
         filter = new SetAltTextFilter();
+        filter.setRepositoryObjectLoader(repositoryObjectLoader);
         dip = factory.createDip(pid);
         document = dip.getDocument();
-        when(fileObject.getBinaryObject(DatastreamType.ALT_TEXT.getId())).thenReturn(binaryObject);
+        when(fileObject.getPid()).thenReturn(pid);
+        when(repositoryObjectLoader.getBinaryObject(any(PID.class))).thenReturn(binaryObject);
     }
 
     @AfterEach
@@ -88,7 +93,7 @@ public class SetAltTextFilterTest {
     @Test
     public void testFilterHandlesMissingAltText() throws Exception {
         dip.setContentObject(fileObject);
-        when(fileObject.getBinaryObject(DatastreamType.ALT_TEXT.getId())).thenThrow(new NotFoundException("Not found"));
+        when(repositoryObjectLoader.getBinaryObject(any(PID.class))).thenThrow(new NotFoundException("Not found"));
 
         filter.filter(dip);
 

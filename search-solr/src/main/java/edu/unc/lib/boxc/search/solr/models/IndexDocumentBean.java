@@ -580,6 +580,7 @@ public class IndexDocumentBean {
         return (String) fields.get(SearchFieldKey.ALT_TEXT.getSolrField());
     }
 
+    @Field
     public void setAltText(String altText) {
         fields.put(SearchFieldKey.ALT_TEXT.getSolrField(), altText);
     }

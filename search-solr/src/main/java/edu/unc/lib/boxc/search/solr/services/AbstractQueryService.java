@@ -32,6 +32,7 @@ public abstract class AbstractQueryService {
     private final static List<String> DEFAULT_RESULT_FIELDS = Arrays.asList(
             SearchFieldKey.ABSTRACT.name(),
             SearchFieldKey.ADMIN_GROUP.name(),
+            SearchFieldKey.ALT_TEXT.name(),
             SearchFieldKey.ANCESTOR_IDS.name(),
             SearchFieldKey.ANCESTOR_PATH.name(),
             SearchFieldKey.CITATION.name(),
