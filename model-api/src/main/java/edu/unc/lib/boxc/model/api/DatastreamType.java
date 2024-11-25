@@ -13,6 +13,8 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CO
  */
 public enum DatastreamType {
     ACCESS_SURROGATE("access_surrogate", "application/octet-stream", null, null, EXTERNAL),
+    ALT_TEXT("alt_text", "text/plain", "txt", METADATA_CONTAINER, INTERNAL),
+    ALT_TEXT_HISTORY("alt_text_history", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
     AUDIO_ACCESS_COPY("audio", "audio/aac", "m4a", null, EXTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
@@ -29,7 +31,7 @@ public enum DatastreamType {
     private final String container;
     private final StoragePolicy storagePolicy;
 
-    private DatastreamType(String identifier, String mimetype, String extension, String container,
+    DatastreamType(String identifier, String mimetype, String extension, String container,
             StoragePolicy storagePolicy) {
         this.id = identifier;
         this.mimetype = mimetype;
