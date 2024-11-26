@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.admin.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,13 +13,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -109,5 +115,21 @@ public class ChompbControllerIT {
         assertEquals("attachment; filename=chomp.jpg", result.getResponse().getHeader("Content-Disposition"));
         var resp = result.getResponse().getContentAsString();
         assertEquals(resultContent, resp);
+    }
+
+    @Test
+    public void testStartCropping() throws Exception {
+        when(chompbPreIngestService.startCropping(any(), any())).thenReturn("test");
+        MvcResult result = mvc.perform(post("/chompb/project/test_proj/action/velocicroptor"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("Start cropping for project test_proj", respMap.get("action"));
+    }
+
+    private static Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
+        MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(result.getResponse().getContentAsString(), type);
     }
 }

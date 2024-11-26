@@ -24,7 +24,7 @@ public class ChompbPreIngestService {
     private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
 
     /**
-     * List all of the chompb projects in the base projects path
+     * List all the chompb projects in the base projects path
      *
      * @param agent
      * @return output of the list projects command, which is a json string
@@ -33,6 +33,16 @@ public class ChompbPreIngestService {
         assertHasPermission(agent);
 
         return executeChompbCommand("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
+    }
+
+    public String startCropping(AgentPrincipals agent, String email) {
+        assertHasPermission(agent);
+
+        return executeChompbCommand("chompb", "process source_files",
+                    "--action", "velocicroptor",
+                    "-w", baseProjectsPath.toAbsolutePath().toString(),
+                    "--user", agent.getUsername(),
+                    "--email", email);
     }
 
     protected String executeChompbCommand(String... command) {
