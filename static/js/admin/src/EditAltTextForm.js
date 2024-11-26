@@ -20,10 +20,8 @@ define('EditAltTextForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCha
         };
 
         EditAltTextForm.prototype.preprocessForm = function(resultObject) {
-            var newText = $("textarea[name='altText']", this.$form).val();
             var pid = resultObject.metadata.id;
-
-            this.action_url = "/services/api/edit/altText/" + pid + "?altText=" + encodeURIComponent(newText);
+            this.action_url = "/services/api/edit/altText/" + pid;
         };
 
         EditAltTextForm.prototype.validationErrors = function() {
