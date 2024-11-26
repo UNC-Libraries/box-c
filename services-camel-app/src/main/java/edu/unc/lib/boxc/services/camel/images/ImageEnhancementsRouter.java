@@ -59,8 +59,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .setBody(exchange -> uuidGenerator.generateUuid())
                 .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
                 .doTry()
-                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                            + "${headers[CdrImagePath]} ${headers[CdrMimeType]} ${headers[CdrTempPath]}"))
+                    .recipientList(simple("bean:imageDerivProcessor?method=runJp24u"))
                     .bean(addAccessCopyProcessor)
                     // Process cache invalidation asynchronously with a limited number of threads
                     .threads(CACHE_INVALIDATE_THREADS)

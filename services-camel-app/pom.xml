@@ -171,6 +171,10 @@
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>operations</artifactId>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib</groupId>
+        <artifactId>jp24u</artifactId>
+    </dependency>
 
     <!-- Jaxb 2.x dependencies, until camel-core no longer requires them -->
     <dependency>

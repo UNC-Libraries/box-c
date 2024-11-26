@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.images;
 
+import JP2ImageConverter.CLIMain;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -45,6 +46,21 @@ public class ImageDerivativeProcessor implements Processor {
 
         log.debug("Object {} with type {} is permitted for image derivatives", binPath, mimetype);
         return true;
+    }
+
+    /**
+     * Run jp24u kdu_compress command and generate image derivatives
+     * @param exchange
+     */
+    public void runJp24u(Exchange exchange) {
+        Message in = exchange.getIn();
+        String imagePath = (String) in.getHeader(CdrFcrepoHeaders.CdrImagePath);
+        String tempPath = (String) in.getHeader(CdrFcrepoHeaders.CdrTempPath);
+        String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
+
+        String[] command = new String[]{"jp24u", "kdu_compress", "-f", "\"" + imagePath + "\"",
+                "-o", "\"" + tempPath + "\"", "-sf", "\"" + mimetype + "\""};
+        CLIMain.main(command);
     }
 
     @Override
