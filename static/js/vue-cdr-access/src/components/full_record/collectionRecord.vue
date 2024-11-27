@@ -1,8 +1,10 @@
 <template>
     <div class="content-wrap full_record">
         <div class="columns browse-top">
-            <div class="column" :class="{restrictedContent: 'is-8'}">
+            <div class="column is-narrow" :class="{restrictedContent: 'is-8'}">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
+            </div>
+            <div class="column">
                 <h2 :class="isDeleted">
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>

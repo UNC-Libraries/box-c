@@ -1,6 +1,6 @@
 <template>
-    <div v-if="hasDownloadableContent" class="actionlink column pr-0 is-justify-content-flex-end">
-        <a v-if="showTotalFilesize" class="bulk-download bulk-download-link button action" :href="downloadBulkUrl(workId)">
+    <div v-if="hasDownloadableContent" class="column pr-0 has-text-right">
+        <a v-if="showTotalFilesize" class="bulk-download bulk-download-link button action is-primary" :href="downloadBulkUrl(workId)">
                     <span class="icon">
                         <i class="fa fa-archive"></i>
                     </span>
@@ -31,7 +31,7 @@ export default {
             default: null,
             type: Number
         },
-        viewOriginalAccess: {
+        hasBulkDownloadAccess: {
             default: false,
             type: Boolean
         },
@@ -40,11 +40,11 @@ export default {
 
     computed: {
         hasDownloadableContent() {
-            return this.viewOriginalAccess && this.totalDownloadSize !== null;
+            return this.hasBulkDownloadAccess && this.totalDownloadSize !== null;
         },
 
         showTotalFilesize() {
-            return this.hasDownloadableContent && this.totalDownloadSize <= ONE_GIGABYTE;
+            return this.hasBulkDownloadAccess && this.totalDownloadSize <= ONE_GIGABYTE;
         }
     }
 }

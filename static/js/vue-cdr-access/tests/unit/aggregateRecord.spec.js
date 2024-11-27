@@ -585,6 +585,10 @@ describe('aggregateRecord.vue', () => {
         expect(wrapper.find('.download-jump a').exists()).toBe(true);
     });
 
+    it("displays a header with file count", () => {
+        expect(wrapper.find('h3').text()).toEqual("List of Items in This Work (1)");
+    });
+
     it("does not display a finding aid link, if absent", () => {
         expect(wrapper.find('.finding-aid').exists()).toBe(false);
     });

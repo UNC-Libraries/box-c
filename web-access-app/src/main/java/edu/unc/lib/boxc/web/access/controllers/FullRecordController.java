@@ -21,6 +21,7 @@ import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
+import edu.unc.lib.boxc.web.common.auth.PatronActionPermissionsUtil;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
@@ -30,6 +31,7 @@ import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
@@ -55,6 +57,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.ON_CAMPUS_PRINC;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
@@ -166,7 +169,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         PID pid = PIDs.get(pidString);
         LOG.debug("Getting full record for {}", pid);
 
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        var agent = getAgentPrincipals();
+        AccessGroupSet principals = agent.getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
                 pid, principals, Permission.viewMetadata);
 
@@ -229,10 +233,13 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         Long totalDownloadSize = null;
+        boolean canBulkDownload = false;
         if (ResourceType.Work.nameEquals(resourceType)) {
+            canBulkDownload = PatronActionPermissionsUtil.hasBulkDownloadPermission(aclService, pid, agent);
             totalDownloadSize = workFilesizeService.getTotalFilesize(briefObject, principals);
         }
         recordProperties.put("totalDownloadSize", totalDownloadSize);
+        recordProperties.put("canBulkDownload", canBulkDownload);
 
         accessCopiesService.populateThumbnailId(briefObject, principals, true);
 

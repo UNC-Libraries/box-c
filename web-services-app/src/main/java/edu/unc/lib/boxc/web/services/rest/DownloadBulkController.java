@@ -1,12 +1,13 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.download.DownloadBulkRequest;
 import edu.unc.lib.boxc.operations.impl.download.DownloadBulkService;
+import edu.unc.lib.boxc.web.common.auth.PatronActionPermissionsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
@@ -34,10 +35,9 @@ public class DownloadBulkController {
     public ResponseEntity<FileSystemResource> getZip(@PathVariable("id") String pidString) {
         PID pid = PIDs.get(pidString);
 
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to bulk download for " + pidString,
-                pid, principals, Permission.viewOriginal);
-        var request = new DownloadBulkRequest(pidString, principals);
+        var agentPrincipal = getAgentPrincipals();
+        assertHasPermission(pid, agentPrincipal);
+        var request = new DownloadBulkRequest(pidString, agentPrincipal.getPrincipals());
         var path = downloadBulkService.downloadBulk(request);
         var filename = DownloadBulkService.getZipFilename(pidString);
 
@@ -45,6 +45,12 @@ public class DownloadBulkController {
                 .header(CONTENT_DISPOSITION,"attachment;filename=\"" + filename + "\"")
                 .contentType(MediaType.valueOf("application/zip"))
                 .body(new FileSystemResource(path));
+    }
+
+    public void assertHasPermission(PID pid, AgentPrincipals agent) {
+        if (!PatronActionPermissionsUtil.hasBulkDownloadPermission(aclService, pid, agent)) {
+            throw new AccessRestrictionException("User has insufficient permissions to download bulk export");
+        }
     }
 
     public void setDownloadBulkService(DownloadBulkService downloadBulkService) {

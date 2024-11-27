@@ -82,10 +82,6 @@ describe('fileList.vue', () => {
         });
     });
 
-    it("displays a header with file count", () => {
-        expect(wrapper.find('h3').text()).toEqual("List of Items in This Work (3)");
-    });
-
     it("contains a table of files", () => {
         expect(wrapper.findComponent({ name: 'dataTable' }).exists()).toBe(true);
     });
@@ -173,7 +169,7 @@ describe('fileList.vue', () => {
 
         const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Download button
-        expect(download).toEqual(expect.stringContaining('<a class="download button action"'));
+        expect(download).toEqual(expect.stringContaining('<a class="download button action is-primary"'));
     });
 
     it("does not show a button for non-image files without viewOriginal permission", () => {
