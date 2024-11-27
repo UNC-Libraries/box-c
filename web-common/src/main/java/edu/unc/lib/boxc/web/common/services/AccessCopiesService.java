@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -164,6 +165,48 @@ public class AccessCopiesService {
     }
 
     private static final String IMAGE_CONTENT_TYPE = ContentCategory.image.getDisplayName();
+
+    public ContentObjectRecord getThumbnailRecord(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
+                                                 boolean checkChildren) {
+        // Find thumbnail datastream recorded directly on the object, if present
+        var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
+        if (thumbId != null) {
+            log.debug("Found thumbnail object directly assigned to object {}", thumbId);
+            if (thumbId.equals(contentObjectRecord.getId())) {
+                return contentObjectRecord;
+            } else {
+                return solrSearchService.getObjectById(new SimpleIdRequest(PIDs.get(thumbId), principals));
+            }
+        }
+
+        // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
+        if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
+                || contentObjectRecord.getFileFormatCategory() == null
+                || !contentObjectRecord.getFileFormatCategory().contains(IMAGE_CONTENT_TYPE)) {
+            log.debug("Record {} is not applicable for a thumbnail", contentObjectRecord.getId());
+            return null;
+        }
+        if (!checkChildren) {
+            log.debug("Not checking children for work {}, so using self as thumbnail id", contentObjectRecord.getId());
+            return contentObjectRecord;
+        }
+
+        var request = buildFirstChildQuery(contentObjectRecord, principals);
+        // Limit query to just children which have a thumbnail datastream
+        var searchState = request.getSearchState();
+        searchState.addFilter(
+                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
+
+        var resp = solrSearchService.getSearchResults(request);
+        if (resp.getResultCount() > 0) {
+            var result = resp.getResultList().get(0);
+            log.debug("Found thumbnail object {} for work {}", result.getId(), contentObjectRecord.getId());
+            return result;
+        } else {
+            log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
+            return null;
+        }
+    }
 
     /**
      * @param contentObjectRecord
