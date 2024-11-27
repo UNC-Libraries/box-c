@@ -147,13 +147,6 @@ form.search {
   }
 }
 
-.browse-search {
-  .button.is-focused,
-  .button:focus {
-    color: #363636;
-  }
-}
-
 a.search-result-num {
   background-color: $container-blue;
   color: white !important;
@@ -816,11 +809,6 @@ table.dataTable {
 
 .pipe_list {
   margin-bottom: 10px;
-}
-
-.button.is-focused,
-.button:focus {
-  color: white;
 }
 
 /* MODs display for work and file pages, plus modalMetadata.vue component */

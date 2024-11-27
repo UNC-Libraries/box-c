@@ -2,18 +2,18 @@
 Displays tags for currently active filters in a search result, with the option to remove them
 -->
 <template>
-    <div @click="updateQueryUrl">
-            <a data-type="anywhere" class="button search-text" v-if="$route.query.anywhere">{{ $route.query.anywhere }}
-                &nbsp;<button class="delete is-small"></button></a>
-            <template v-for="searchText in searchQueryDisplay">
-                <a :data-type="searchText.type" :data-value="searchText.original_value" class="search-text button" :title="searchText.value_text">
-                    <span>
-                        {{ searchText.type_text }} <i class="fas fa-greater-than"></i>
-                        {{ truncateText(searchText.value_text) }}
-                    </span>
-                    <button class="delete is-small"></button>
-                </a>
-            </template>
+    <div @click="updateQueryUrl" class="field is-grouped">
+        <button data-type="anywhere" class="button search-text" v-if="$route.query.anywhere"><span>{{ $route.query.anywhere }}</span>
+            <span class="icon"><i class="fas fa-times"></i></span></button>
+        <template v-for="searchText in searchQueryDisplay">
+            <button :data-type="searchText.type" :data-value="searchText.original_value" class="search-text button" :title="searchText.value_text">
+                <span>
+                    {{ searchText.type_text }} <i class="fas fa-greater-than"></i>
+                    {{ truncateText(searchText.value_text) }}
+                </span>
+                <span class="icon"><i class="fas fa-times"></i></span>
+            </button>
+        </template>
     </div>
 </template>
 
@@ -66,7 +66,13 @@ export default {
         },
 
         _updateParams(event) {
-            const query_param = event.target.getAttribute('data-type');
+            // Find the button that was clicked, to deal with the button containing child elements
+            const button = event.target.closest('button');
+            if (!button) {
+                return;
+            }
+
+            const query_param = button.getAttribute('data-type');
             const params = Object.assign({}, this.$route.query);
             const tag = decodeURIComponent(params[query_param]).split('||');
 
@@ -148,7 +154,6 @@ export default {
 
 <style scoped lang="scss">
     i.fa-greater-than {
-        color: #B0B0B0;
         font-size: .6rem;
     }
 

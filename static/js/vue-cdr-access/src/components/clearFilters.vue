@@ -1,8 +1,10 @@
 <template>
     <div class="clear-options field is-grouped">
-        <a id="clear-results" class="button is-primary" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
-           href="#" @click.prevent="clearSearch">
-            <span>{{ $t('search.clear_search')}}</span><span class="icon"><i class="fas fa-times"></i></span></a>
+        <button id="clear-results" class="button is-primary"
+                v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
+                @click.prevent="clearSearch">
+            <span>{{ $t('search.clear_search')}}</span><span class="icon"><i class="fas fa-times"></i></span>
+        </button>
         <clear-facets-button></clear-facets-button>
         <filter-tags :filter-parameters="filterParameters"></filter-tags>
     </div>
