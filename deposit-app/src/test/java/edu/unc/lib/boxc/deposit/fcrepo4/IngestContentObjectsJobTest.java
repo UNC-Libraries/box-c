@@ -8,6 +8,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
+import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
@@ -159,8 +162,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private BinaryTransferSession mockTransferSession;
     @Mock
     private UpdateDescriptionService updateDescService;
+    @Mock
+    private AltTextUpdateService altTextUpdateService;
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
+    @Captor
+    private ArgumentCaptor<AltTextUpdateRequest> altTextRequestCaptor;
 
     private Path storageLocPath;
 
@@ -192,6 +199,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "locationManager", storageLocationManager);
         setField(job, "updateDescService", updateDescService);
         setField(job, "depositModelManager", depositModelManager);
+        setField(job, "altTextUpdateService", altTextUpdateService);
 
         job.init();
 
@@ -379,7 +387,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
         fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
         fileResc.addProperty(Cdr.streamingType, STREAMING_TYPE);
-        workBag.add(fileResc);
 
         job.closeModel();
 
@@ -394,7 +401,45 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
         verify(destinationObj).addMember(eq(work));
 
-        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test
+    public void ingestWorkWithFileWithAltText() throws Exception {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+
+        String loc = "image.jpg";
+        String mime = "image/jpeg";
+        PID filePid = addFileObject(workBag, loc, mime);
+
+        var fileResc = model.getResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(CdrDeposit.mimetype, mime);
+
+        Path altTextPath = job.getAltTextPath(filePid, true);
+        FileUtils.writeStringToFile(altTextPath.toFile(), "Alternative text", UTF_8);
+
+        job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
+                .thenReturn(mockFileObj);
+        when(mockFileObj.getPid()).thenReturn(filePid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
+        verify(destinationObj).addMember(eq(work));
+
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(altTextUpdateService).updateAltText(altTextRequestCaptor.capture());
+        AltTextUpdateRequest request = altTextRequestCaptor.getValue();
+        assertEquals("Alternative text", request.getAltText());
+        assertEquals(filePid.getId(), request.getPidString());
     }
 
     /**

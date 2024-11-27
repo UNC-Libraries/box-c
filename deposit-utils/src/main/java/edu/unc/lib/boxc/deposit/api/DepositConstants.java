@@ -7,6 +7,7 @@ package edu.unc.lib.boxc.deposit.api;
  */
 public class DepositConstants {
     public static final String DESCRIPTION_DIR = "description";
+    public static final String ALT_TEXT_DIR = "altText";
     public static final String HISTORY_DIR = "history";
     public static final String JENA_TDB_DIR = "jena-tdb-model";
     public static final String EVENTS_FILE = "events.xml";

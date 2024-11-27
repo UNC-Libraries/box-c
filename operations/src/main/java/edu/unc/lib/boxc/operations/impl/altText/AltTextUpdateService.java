@@ -33,8 +33,9 @@ public class AltTextUpdateService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
-    private VersionedDatastreamService versioningService;
+    private VersionedDatastreamService versionedDatastreamService;
     private OperationsMessageSender operationsMessageSender;
+    private boolean sendsMessages;
 
     public BinaryObject updateAltText(AltTextUpdateRequest request) {
         var pid = PIDs.get(request.getPidString());
@@ -49,18 +50,21 @@ public class AltTextUpdateService {
         newVersion.setContentStream(new ByteArrayInputStream(request.getAltText().getBytes(StandardCharsets.UTF_8)));
         newVersion.setContentType(ALT_TEXT.getMimetype());
         newVersion.setFilename(ALT_TEXT.getDefaultFilename());
+        newVersion.setTransferSession(request.getTransferSession());
 
         if (repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())) {
-            altTextBinary = versioningService.addVersion(newVersion);
+            altTextBinary = versionedDatastreamService.addVersion(newVersion);
             log.debug("Successfully updated alt text for {}", fileObj.getPid());
         } else {
-            altTextBinary = versioningService.addVersion(newVersion);
+            altTextBinary = versionedDatastreamService.addVersion(newVersion);
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasAltText, createResource(altTextPid.getRepositoryPath()));
             log.debug("Successfully add new alt text for {}", fileObj.getPid());
         }
 
-        operationsMessageSender.sendUpdateDescriptionOperation(
-                request.getAgent().getUsername(), Collections.singletonList(fileObj.getPid()), IndexingPriority.normal);
+        if (sendsMessages) {
+            operationsMessageSender.sendUpdateDescriptionOperation(
+                    request.getAgent().getUsername(), Collections.singletonList(fileObj.getPid()), IndexingPriority.normal);
+        }
 
         return altTextBinary;
     }
@@ -77,11 +81,15 @@ public class AltTextUpdateService {
         this.repositoryObjectFactory = repositoryObjectFactory;
     }
 
-    public void setVersioningService(VersionedDatastreamService versioningService) {
-        this.versioningService = versioningService;
+    public void setVersionedDatastreamService(VersionedDatastreamService versionedDatastreamService) {
+        this.versionedDatastreamService = versionedDatastreamService;
     }
 
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
+    }
+
+    public void setSendsMessages(boolean sendsMessages) {
+        this.sendsMessages = sendsMessages;
     }
 }

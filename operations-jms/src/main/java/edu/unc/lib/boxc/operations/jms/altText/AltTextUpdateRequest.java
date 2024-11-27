@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.operations.jms.altText;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 
 /**
  * Request to update the alt text of a file object
@@ -14,6 +15,7 @@ public class AltTextUpdateRequest {
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
     private String altText;
+    private BinaryTransferSession transferSession;
 
     public String getPidString() {
         return pidString;
@@ -37,5 +39,13 @@ public class AltTextUpdateRequest {
 
     public void setAltText(String altText) {
         this.altText = altText;
+    }
+
+    public BinaryTransferSession getTransferSession() {
+        return transferSession;
+    }
+
+    public void setTransferSession(BinaryTransferSession transferSession) {
+        this.transferSession = transferSession;
     }
 }

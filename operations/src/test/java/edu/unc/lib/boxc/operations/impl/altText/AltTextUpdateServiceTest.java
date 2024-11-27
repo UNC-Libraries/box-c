@@ -76,8 +76,9 @@ public class AltTextUpdateServiceTest {
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repositoryObjectLoader);
         service.setRepositoryObjectFactory(repositoryObjectFactory);
-        service.setVersioningService(versioningService);
+        service.setVersionedDatastreamService(versioningService);
         service.setOperationsMessageSender(operationsMessageSender);
+        service.setSendsMessages(true);
         pid = TestHelper.makePid();
         pidString = pid.getId();
         altTextPid = DatastreamPids.getAltTextPid(pid);
@@ -167,5 +168,31 @@ public class AltTextUpdateServiceTest {
         assertThrows(AccessRestrictionException.class, () -> service.updateAltText(request));
 
         verifyNoInteractions(repositoryObjectFactory, versioningService, operationsMessageSender);
+    }
+
+    @Test
+    void testUpdateAltTextDoesNotSendMessageWhenTurnedOff() throws Exception {
+        service.setSendsMessages(false);
+
+        var altTextContent = "Sample Alt Text";
+        var request = new AltTextUpdateRequest();
+        request.setAltText(altTextContent);
+        request.setPidString(pidString);
+        request.setAgent(agent);
+
+        when(repositoryObjectLoader.getFileObject(eq(pid))).thenReturn(fileObject);
+        when(repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())).thenReturn(false);
+        when(versioningService.addVersion(any())).thenReturn(binaryObject);
+
+        var result = service.updateAltText(request);
+
+        // Verify alt text creation
+        ArgumentCaptor<VersionedDatastreamService.DatastreamVersion> captor = ArgumentCaptor.forClass(VersionedDatastreamService.DatastreamVersion.class);
+        verify(versioningService).addVersion(captor.capture());
+        var capturedVersion = captor.getValue();
+        assertEquals(altTextContent, IOUtils.toString(capturedVersion.getContentStream(), StandardCharsets.UTF_8));
+
+        // Verify operation message
+        verify(operationsMessageSender, never()).sendUpdateDescriptionOperation(any(), anyList(), any());
     }
 }

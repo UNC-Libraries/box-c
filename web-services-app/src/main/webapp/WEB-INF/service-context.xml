@@ -222,7 +222,8 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="versioningService" ref="versionedDatastreamService" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="sendsMessages" value="true" />
     </bean>
     
     <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
