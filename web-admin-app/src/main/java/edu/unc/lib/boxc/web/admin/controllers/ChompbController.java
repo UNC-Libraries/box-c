@@ -86,7 +86,7 @@ public class ChompbController {
         result.put("action", "Start cropping for project " + projectName);
         try {
             var agentPrincipals = AgentPrincipalsImpl.createFromThread();
-            chompbPreIngestService.startCropping(agentPrincipals, userEmail);
+            chompbPreIngestService.startCropping(agentPrincipals, projectName, userEmail);
         } catch (Exception e){
             log.error("Failed to start cropping for project {}", projectName, e);
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);

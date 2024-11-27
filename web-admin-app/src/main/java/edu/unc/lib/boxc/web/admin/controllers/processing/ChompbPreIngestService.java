@@ -35,12 +35,12 @@ public class ChompbPreIngestService {
         return executeChompbCommand("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
     }
 
-    public String startCropping(AgentPrincipals agent, String email) {
+    public String startCropping(AgentPrincipals agent, String projectName, String email) {
         assertHasPermission(agent);
 
         return executeChompbCommand("chompb", "process source_files",
                     "--action", "velocicroptor",
-                    "-w", baseProjectsPath.toAbsolutePath().toString(),
+                    "-w", projectName,
                     "--user", agent.getUsername(),
                     "--email", email);
     }

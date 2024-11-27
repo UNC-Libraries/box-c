@@ -119,7 +119,7 @@ public class ChompbControllerIT {
 
     @Test
     public void testStartCropping() throws Exception {
-        when(chompbPreIngestService.startCropping(any(), any())).thenReturn("test");
+        when(chompbPreIngestService.startCropping(any(), any(), any())).thenReturn("test");
         MvcResult result = mvc.perform(post("/chompb/project/test_proj/action/velocicroptor"))
                 .andExpect(status().isOk())
                 .andReturn();
