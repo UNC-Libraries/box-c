@@ -98,7 +98,7 @@ describe('bulkDownload.vue', () => {
         // Trigger the click (simulating user action)
         await download_link.trigger('click');
         expect(window.confirm).toHaveBeenCalledWith(
-            "Number of files exceeds the download limit, only the first 100 will be exported, do you want continue?"
+            "Number of files exceeds the download limit, only the first 100 will be exported. Do you want to continue?"
         );
 
         // Verify that "No" prevents navigation
