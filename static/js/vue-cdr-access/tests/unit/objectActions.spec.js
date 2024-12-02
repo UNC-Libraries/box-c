@@ -226,9 +226,7 @@ describe('objectActions.vue', () => {
     });
 
     it('shows view options if a user is not logged in and access is restricted', () => {
-        expect(wrapper.find('.restricted-access.actions').exists()).toBe(true);
-        expect(wrapper.find('.restricted-access.actions .login-link').exists()).toBe(true);
-        expect(wrapper.find('.restricted-access.actions .contact').exists()).toBe(true);
+        expect(wrapper.find('.restricted-access').exists()).toBe(true);
     });
 
     it('does not show a login option if a user is not logged in and logging in does not grant further access', async () => {

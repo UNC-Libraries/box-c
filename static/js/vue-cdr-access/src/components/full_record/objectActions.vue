@@ -1,34 +1,24 @@
 <template>
     <div class="column is-narrow action-btn item-actions">
-        <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
-            <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
-        </div>
-        <template v-if="recordData.resourceType === 'File'">
-            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
-                <div class="restricted-access actions">
-                    <h2 class="has-text-centered">{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+        <template v-if="recordData.resourceType !== 'Work'">
+            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions has-text-centered">
+                <div class="restricted-access">
+                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
                     <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
                 </div>
             </div>
-            <template v-else>
+            <div v-else class="field is-grouped is-justify-content-right">
                 <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
-                <div class="actionlink" v-if="hasPermission(recordData, 'viewOriginal')">
-                    <a class="button view action" :href="recordData.dataFileUrl">
-                        <i class="fa fa-search" aria-hidden="true"></i> View</a>
-                </div>
-            </template>
-            <template v-if="hasPermission(recordData, 'viewHidden')">
-                <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
-            </template>
-        </template>
-        <template v-if="recordData.resourceType === 'Folder' || recordData.resourceType === 'Collection'">
-            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
-                <div class="restricted-access actions">
-                    <h2 class="has-text-centered">{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
-                    <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
-                </div>
+                <a class="button view action" :href="recordData.dataFileUrl" v-if="hasPermission(recordData, 'viewOriginal')">
+                    <i class="fa fa-search" aria-hidden="true"></i> View</a>
             </div>
         </template>
+        <div v-if="hasPermission(recordData, 'editDescription')" class="field is-grouped is-justify-content-right">
+            <a class="edit button action is-primary" :href="editDescriptionUrl(recordData.briefObject.id)"><span class="icon"><i class="fa fa-edit"></i></span><span>{{ $t('full_record.edit') }}</span></a>
+        </div>
+        <div v-if="recordData.resourceType === 'File' && hasPermission(recordData, 'viewHidden')" class="is-justify-content-right">
+            <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
+        </div>
     </div>
 </template>
 
@@ -62,13 +52,6 @@ export default {
  }
 
  @media (max-width: 768px) {
-     .actionlink {
-         text-align: left;
-         margin: auto;
-         justify-content: left;
-         width: 99%;
-     }
-
      .action-btn {
          padding-right: 0;
      }
