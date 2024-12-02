@@ -69,7 +69,8 @@
                     <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
                     <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
                                    :total-download-size="recordData.totalDownloadSize"
-                                   :work-id="recordData.briefObject.id">
+                                   :work-id="recordData.briefObject.id"
+                                   :child-count="childCount">
                     </bulk-download>
                 </div>
                 <file-list id="file-display"
