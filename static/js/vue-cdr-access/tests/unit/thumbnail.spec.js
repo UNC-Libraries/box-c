@@ -143,7 +143,7 @@ describe('thumbnail.vue', () => {
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
         let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
-        expect(altText).toBe('Custom alt text');
+        expect(altText).toBe('Thumbnail for Custom alt text');
     });
 
     it('does not display a thumbnail if user does not have viewAccessCopies permissions', async () => {

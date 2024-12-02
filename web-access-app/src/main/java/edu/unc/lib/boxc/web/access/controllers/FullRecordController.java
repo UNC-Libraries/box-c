@@ -4,7 +4,6 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
-import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -207,7 +206,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 ResourceType.Work.nameEquals(resourceType)) {
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
-            accessCopiesService.populateThumbnailIds(neighbors, principals, true);
+            accessCopiesService.populateThumbnailInfos(neighbors, principals, true);
             var neighborList = neighbors.stream()
                     .map(d -> SerializationUtil.metadataToMap(d, principals)).collect(Collectors.toList());
             recordProperties.put("neighborList", neighborList);
@@ -225,7 +224,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put("dataFileUrl", dataFileUrl);
         }
 
-        accessCopiesService.populateThumbnailId(briefObject, principals, true);
+        accessCopiesService.populateThumbnailInfo(briefObject, principals, true);
 
         List<String> objectStatus = briefObject.getStatus();
         boolean isMarkedForDeletion = false;

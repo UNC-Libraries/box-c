@@ -51,9 +51,9 @@ export default {
         altText() {
             let text = this.objectData.altText;
             if (!text) {
-                text = `Thumbnail for ${this.objectData.title}`;
+                text = this.objectData.title;
             }
-            return text;
+            return `Thumbnail for ${text}`;
         },
 
         objectData() {

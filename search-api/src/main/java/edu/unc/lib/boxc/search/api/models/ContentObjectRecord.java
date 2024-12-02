@@ -151,4 +151,6 @@ public interface ContentObjectRecord {
      * @return The alt text for this object, if one is present.
      */
     String getAltText();
+
+    void setAltText(String altText);
 }

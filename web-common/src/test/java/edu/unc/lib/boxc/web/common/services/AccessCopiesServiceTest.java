@@ -25,6 +25,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -268,8 +270,8 @@ public class AccessCopiesServiceTest  {
     public void primaryObjThumbnail() {
         hasPermissions(mdObjectImg, true);
 
-        assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(mdObjectImg, principals, false));
-        assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(mdObjectImg, principals, true));
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailRecord(mdObjectImg, principals, false));
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailRecord(mdObjectImg, principals, true));
     }
 
     @Test
@@ -282,9 +284,9 @@ public class AccessCopiesServiceTest  {
         populateResultList(mdObjectImg);
         when(searchResultResponse.getResultCount()).thenReturn(2L);
 
-        assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
+        assertEquals(noOriginalFileObj, accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
-        assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, true));
         assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
         assertSortType("default");
     }
@@ -298,8 +300,8 @@ public class AccessCopiesServiceTest  {
 
         populateResultList();
 
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        assertNull(accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, false));
+        assertNull(accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, true));
     }
 
     @Test
@@ -321,12 +323,61 @@ public class AccessCopiesServiceTest  {
         populateResultList(mdObjectImg2);
         when(searchResultResponse.getResultCount()).thenReturn(2L);
 
-        assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
+        var thumbnailRecord = accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, false);
+        assertEquals(noOriginalFileObj.getId(), thumbnailRecord.getId());
 
         // Gets the ID of the specific child with a thumbnail
-        assertEquals(mdObjectImg2.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        var thumbnailRecordChildren = accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, true);
+        assertEquals(mdObjectImg2.getId(), thumbnailRecordChildren.getId());
         assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
         assertSortType("default");
+    }
+
+    @Test
+    public void getThumbnailRecordAssignedThumbnailMultipleImages() {
+        var mdObjectImg2 = new ContentObjectSolrRecord();
+        mdObjectImg2.setResourceType(ResourceType.File.name());
+        mdObjectImg2.setId(UUID.randomUUID().toString());
+        var imgDatastreams = List.of(
+                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|");
+        mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
+        mdObjectImg2.setDatastream(imgDatastreams);
+
+        var workRecord = new ContentObjectSolrRecord();
+        workRecord.setResourceType(ResourceType.Work.name());
+        var id = UUID.randomUUID().toString();
+        workRecord.setId(id);
+        List<String> workDatastreams = List.of(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|" + mdObjectImg2.getId() + "|1200x1200",
+                JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + mdObjectImg2.getId() + "|1200x1200");
+        workRecord.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        workRecord.setFileFormatType(Collections.singletonList("image/png"));
+        workRecord.setDatastream(workDatastreams);
+
+        hasPermissions(workRecord, true);
+        hasPermissions(mdObjectImg2, true);
+        hasPermissions(mdObjectImg, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(mdObjectImg2);
+
+        var thumbnailRecord = accessCopiesService.getThumbnailRecord(workRecord, principals, false);
+        assertEquals(mdObjectImg2.getId(), thumbnailRecord.getId());
+
+        var thumbnailRecordChildren = accessCopiesService.getThumbnailRecord(workRecord, principals, true);
+        assertEquals(mdObjectImg2.getId(), thumbnailRecordChildren.getId());
+    }
+
+    @Test
+    public void workWithImageWithNoThumbnail() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectXml, true);
+        hasPermissions(mdObjectImg, true);
+        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
+        when(searchResultResponse.getResultCount()).thenReturn(0L);
+
+        assertEquals(noOriginalFileObj, accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, false));
+        assertNull(accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, true));
     }
 
     private void assertRequestedDatastreamFilter(DatastreamType expectedType) {
@@ -360,15 +411,15 @@ public class AccessCopiesServiceTest  {
         hasPermissions(noOriginalFileObj, true);
         populateResultList();
 
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        assertNull(accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, false));
+        assertNull(accessCopiesService.getThumbnailRecord(noOriginalFileObj, principals, true));
     }
 
     @Test
-    public void populateThumbnailIdWithThumb() {
+    public void populateThumbnailInfoWithThumb() {
         hasPermissions(mdObjectImg, true);
         assertNull(mdObjectImg.getThumbnailId());
-        accessCopiesService.populateThumbnailId(mdObjectImg, principals, false);
+        accessCopiesService.populateThumbnailInfo(mdObjectImg, principals, false);
         assertEquals(mdObjectImg.getId(), mdObjectImg.getThumbnailId());
     }
 
@@ -376,15 +427,15 @@ public class AccessCopiesServiceTest  {
     public void populateThumbnailIdWithoutThumb() {
         hasPermissions(noOriginalFileObj, true);
         assertNull(noOriginalFileObj.getThumbnailId());
-        accessCopiesService.populateThumbnailId(noOriginalFileObj, principals, false);
+        accessCopiesService.populateThumbnailInfo(noOriginalFileObj, principals, false);
         assertNull(noOriginalFileObj.getThumbnailId());
     }
 
     @Test
-    public void populateThumbnailIds() {
+    public void populateThumbnailInfos() {
         hasPermissions(mdObjectImg, true);
         hasPermissions(noOriginalFileObj, true);
-        accessCopiesService.populateThumbnailIds(Arrays.asList(mdObjectImg, noOriginalFileObj), principals, false);
+        accessCopiesService.populateThumbnailInfos(Arrays.asList(mdObjectImg, noOriginalFileObj), principals, false);
         assertNull(noOriginalFileObj.getThumbnailId());
         assertEquals(mdObjectImg.getId(), mdObjectImg.getThumbnailId());
     }
@@ -499,11 +550,58 @@ public class AccessCopiesServiceTest  {
         assertNull(obj);
     }
 
+    @Test
+    public void listViewableFilesForWorkTest() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectXml, true);
+        hasPermissions(mdObjectImg, true);
+        populateResultList(mdObjectImg);
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+
+        when(solrSearchService.getObjectById(any())).thenReturn(noOriginalFileObj);
+
+        var results = accessCopiesService.listViewableFiles(noOriginalFileObj.getPid(), principals);
+        assertEquals(2, results.size());
+        assertTrue(results.contains(noOriginalFileObj));
+        assertTrue(results.contains(mdObjectImg));
+    }
+
+    @Test
+    public void listViewableFilesForViewableFileTest() {
+        mdObjectImg.setResourceType(ResourceType.File.name());
+        hasPermissions(mdObjectImg, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(mdObjectImg);
+
+        var results = accessCopiesService.listViewableFiles(mdObjectImg.getPid(), principals);
+        assertEquals(1, results.size());
+        assertTrue(results.contains(mdObjectImg));
+    }
+
+    @Test
+    public void listViewableFilesForNonViewableFileTest() {
+        mdObjectXml.setResourceType(ResourceType.File.name());
+        hasPermissions(mdObjectXml, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(mdObjectXml);
+
+        var results = accessCopiesService.listViewableFiles(mdObjectXml.getPid(), principals);
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void listViewableFilesForFolderTest() {
+        var folderObj = createXmlObject(ResourceType.Folder);
+        hasPermissions(folderObj, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(folderObj);
+
+        var results = accessCopiesService.listViewableFiles(folderObj.getPid(), principals);
+        assertTrue(results.isEmpty());
+    }
+
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
         when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
     }
 
     private void populateResultList(ContentObjectRecord... objects) {
-        when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(objects));
+        when(searchResultResponse.getResultList()).thenReturn(new ArrayList<>(List.of(objects)));
     }
 }
