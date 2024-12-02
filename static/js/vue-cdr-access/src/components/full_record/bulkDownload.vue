@@ -64,7 +64,7 @@ export default {
         handleDownload(event) {
             if (this.hasTooManyChildren) {
                 // Prevent navigation if user cancels
-                if (!confirm("Number of files exceeds the download limit, only the first 100 will be exported, do you want continue?")) {
+                if (!confirm("Number of files exceeds the download limit, only the first 100 will be exported. Do you want to continue?")) {
                     return;
                 }
             }
