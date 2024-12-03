@@ -1,16 +1,14 @@
 <template>
-    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
-        <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">{{ t('full_record.login') }}</a>
+    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="download">
+        <a @click.prevent="modal_open = true" class="download login-modal-link button action is-primary" href="#">{{ t('full_record.login') }}</a>
     </div>
     <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
-        <div class="actionlink">
-            <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
-        </div>
+        <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
     </div>
-    <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
+    <div v-else-if="showNonImageDownload(recordData)" class="download">
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
-    <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown actionlink download image-download-options">
+    <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown download image-download-options">
         <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
                 <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -32,9 +30,7 @@
         </div>
     </div>
     <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
-        <div class="actionlink">
-            <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
-        </div>
+        <a class="button is-primary contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
     </div>
 
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
@@ -45,13 +41,9 @@
                 <button @click="modal_open = false" class="delete close" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
-                <div class="restricted-access downloads">
-                    <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink">
-                        <a class="button login-link action" :href="loginUrl"><i class="fa fa-id-card"></i> {{ t('access.login') }}</a>
-                    </div>
-                    <div class="actionlink">
-                        <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
-                    </div>
+                <div class="restricted-access downloads field is-grouped">
+                    <a v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="button login-link action is-primary" :href="loginUrl"><i class="fa fa-id-card"></i> {{ t('access.login') }}</a>
+                    <a class="button contact action is-primary" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
                 </div>
             </section>
         </div>
@@ -90,19 +82,11 @@ export default {
 
     methods: {
         restrictedFiles(recordData) {
-            if (!this.hasGroups(recordData) ||
-                recordData.groupRoleMap.everyone === undefined) {
-                return false;
+            // For files, need to check if there are download options
+            if (!this.restrictedContent && recordData.type === 'File') {
+                return !this.hasDownloadOptions(recordData);
             }
-            if (recordData.groupRoleMap.everyone.includes('canViewOriginals')) {
-                return false;
-            }
-            // For File objects, content is not restricted if the user can at least download low res files
-            // Record is assumed to be a file
-            if (recordData.type === 'File' && this.hasDownloadAccess(recordData) && this.hasDownloadOptions(recordData)) {
-                return false;
-            }
-            return true;
+            return this.restrictedContent;
         },
 
         toggleDownloadOptions() {
@@ -164,6 +148,9 @@ export default {
         },
 
         getImageDimensions(image_metadata) {
+            if (!image_metadata) {
+                return '0x0';
+            }
             const image_dimensions = image_metadata.split('|');
             return image_dimensions[image_dimensions.length - 1];
         },
@@ -180,8 +167,8 @@ export default {
 
         showImageDownload(brief_object) {
             return this.hasPermission(brief_object, 'viewReducedResImages') &&
-                brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined &&
-                this.hasJp2File(brief_object);
+                brief_object.format !== undefined && brief_object.format.includes('Image') &&
+                this.getOriginalFile(brief_object) !== undefined && this.hasJp2File(brief_object);
         },
 
         hasJp2File(brief_object) {
@@ -246,8 +233,8 @@ export default {
         }
     }
 
-    .actionlink .contact i,
-    .restricted-access .actionlink i {
+    .contact i,
+    .restricted-access i {
         padding-right: 8px;
     }
 
@@ -255,7 +242,7 @@ export default {
         display: flex;
         justify-content: center;
 
-        .actionlink {
+        a {
             display: flex;
             flex-wrap: wrap;
             margin: auto;
@@ -273,11 +260,7 @@ export default {
                 flex-direction: column;
                 align-items: center;
 
-                .actionlink + .actionlink {
-                    margin-left: 0;
-                    margin-right: 0;
-                    margin-top: 8px;
-                }
+
             }
         }
 

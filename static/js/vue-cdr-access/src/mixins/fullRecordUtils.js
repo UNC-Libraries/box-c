@@ -46,15 +46,15 @@ export default {
         },
 
         restrictedContent() {
-            if (!this.hasGroups(this.recordData) ||
-                this.recordData.briefObject.groupRoleMap.everyone === undefined) {
+            let record = this.recordData.briefObject === undefined ? this.recordData : this.recordData.briefObject;
+            if (!this.hasGroups(record) || record.groupRoleMap.everyone === undefined) {
                 return false;
             }
-            if (this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals')) {
+            if (record.groupRoleMap.everyone.includes('canViewOriginals')) {
                 return false;
             }
             // For File objects, content is not restricted if the user can at least download low res files
-            if (this.recordData.resourceType === 'File' && this.hasDownloadAccess(this.recordData)) {
+            if (record.resourceType === 'File' && this.hasDownloadAccess(record)) {
                 return false;
             }
             return true;

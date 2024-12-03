@@ -181,8 +181,17 @@ describe('objectActions.vue', () => {
     });
 
     it('shows a view option if user can view originals and resource is a file', async () => {
-        await setRecordPermissions(record, ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
-            'viewOriginal']);
+        const updated_data = cloneDeep(record);
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.permissions = ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
+            'viewOriginal'];
+        updated_data.briefObject.groupRoleMap = {
+            authenticated: 'canViewOriginals',
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_data
+        });
 
         expect(wrapper.find('a.view').exists()).toBe(true);
     });
