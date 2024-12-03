@@ -89,6 +89,7 @@ public class ChompbController {
             chompbPreIngestService.startCropping(agentPrincipals, projectName, userEmail);
         } catch (Exception e){
             log.error("Failed to start cropping for project {}", projectName, e);
+            result.put("status", "Chompb command failed");
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         result.put("timestamp", System.currentTimeMillis());

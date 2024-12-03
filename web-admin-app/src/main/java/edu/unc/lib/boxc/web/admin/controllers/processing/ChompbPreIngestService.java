@@ -40,7 +40,7 @@ public class ChompbPreIngestService {
 
         return executeChompbCommand("chompb", "process source_files",
                     "--action", "velocicroptor",
-                    "-w", projectName,
+                    "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
                     "--user", agent.getUsername(),
                     "--email", email);
     }

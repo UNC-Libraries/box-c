@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -165,13 +166,21 @@ public class ChompbPreIngestServiceTest {
         InputStream mockInputStream = new ByteArrayInputStream(expectedOutput.getBytes());
         when(mockProcess.getInputStream()).thenReturn(mockInputStream);
         when(mockProcess.waitFor()).thenReturn(0);
-        try (MockedConstruction<ProcessBuilder> ignored = Mockito.mockConstruction(ProcessBuilder.class,
+        try (MockedConstruction<ProcessBuilder> mocked = Mockito.mockConstruction(ProcessBuilder.class,
                 (mock, context) -> {
                     when(mock.start()).thenReturn(mockProcess);
                 })
         ){
             service.startCropping(agentPrincipals, PROJ_NAME, "user@email.com");
-            assertEquals(1,ignored.constructed().size());
+            // Verify a single ProcessBuilder instance was created
+            assertEquals(1,mocked.constructed().size());
+            var constructed = mocked.constructed();
+            // Retrieve the constructed ProcessBuilder instance
+            ProcessBuilder processBuilder = mocked.constructed().get(0);
+            // Verify the ProcessBuilder was created with the correct parameters
+            List<String> expectedArgs = List.of("chompb", "process source_files", "--action", "velocicroptor");
+            assertEquals(expectedArgs, processBuilder.command());
+
         }
     }
 
