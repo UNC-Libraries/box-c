@@ -35,10 +35,6 @@
                                                 <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>
                                                 {{ recordData.briefObject.creator.join('; ') }}
                                             </li>
-                                            <li v-if="fieldExists(recordData.briefObject.filesizeTotal)">
-                                                <span class="has-text-weight-bold">{{ $t('full_record.filesize') }}: </span>
-                                                {{ formatFilesize(recordData.briefObject.filesizeTotal) }}
-                                            </li>
                                             <li v-if="fieldExists(recordData.briefObject.created)">
                                                 <span class="has-text-weight-bold">{{ $t('full_record.date_created') }}: </span>
                                                 {{ formatDate(recordData.briefObject.created) }}
@@ -56,7 +52,7 @@
                                 </div>
                             </div>
                         </div>
-                        <object-actions :record-data="recordData"></object-actions>
+                        <restricted-content :record-data="recordData"></restricted-content>
                     </div>
                 </div>
             </div>
@@ -77,12 +73,12 @@ import abstract from '@/components/full_record/abstract.vue';
 import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
-import objectActions from '@/components/full_record/objectActions.vue';
+import restrictedContent from '@/components/full_record/restrictedContent.vue';
 
 export default {
     name: 'fileRecord',
 
-    components: {abstract, metadataDisplay, neighborList, objectActions, player },
+    components: {abstract, metadataDisplay, neighborList, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
 

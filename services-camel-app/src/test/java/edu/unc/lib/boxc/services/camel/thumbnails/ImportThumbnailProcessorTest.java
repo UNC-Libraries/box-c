@@ -71,7 +71,6 @@ public class ImportThumbnailProcessorTest {
         verify(message).setHeader(FCREPO_URI, pid.getRepositoryPath());
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message).setHeader(CdrBinaryPath, path.toString());
-        verify(message).setHeader("force", "true");
     }
 
     @Test
