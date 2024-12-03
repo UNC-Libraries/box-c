@@ -3,16 +3,16 @@
         <a @click.prevent="modal_open = true" class="download login-modal-link button action is-primary" href="#">{{ t('full_record.login') }}</a>
     </div>
     <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
-        <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+        <a class="button contact action is-primary" href="https://library.unc.edu/contact-us/?destination=wilson"><span class="icon"><i class="fa fa-envelope"></i></span><span>{{ t('access.contact') }}</span></a>
     </div>
     <div v-else-if="showNonImageDownload(recordData)" class="download">
-        <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
+        <a class="download button action is-primary" :href="nonImageDownloadLink(recordData.id)"><span class="icon"><i class="fa fa-download"></i></span><span>{{ t('full_record.download') }}</span></a>
     </div>
     <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown download image-download-options">
         <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
-                <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
-                    {{ t('full_record.download') }} <i class="fas fa-angle-down" aria-hidden="true"></i>
+                <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images is-primary" aria-haspopup="true" aria-controls="dropdown-menu">
+                    <span>{{ t('full_record.download') }}</span><span class="icon"><i class="fas fa-angle-down" aria-hidden="true"></i></span>
                 </button>
             </div>
             <div class="dropdown-menu table-downloads" :class="{ 'show-list': download_options_open }" id="dropdown-menu" role="menu" :aria-hidden="!download_options_open">
@@ -30,7 +30,7 @@
         </div>
     </div>
     <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
-        <a class="button is-primary contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+        <a class="button is-primary contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><span class="icon"><i class="fa fa-envelope"></i></span><span>{{ t('access.contact') }}</span></a>
     </div>
 
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
@@ -41,9 +41,9 @@
                 <button @click="modal_open = false" class="delete close" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
-                <div class="restricted-access downloads field is-grouped">
-                    <a v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="button login-link action is-primary" :href="loginUrl"><i class="fa fa-id-card"></i> {{ t('access.login') }}</a>
-                    <a class="button contact action is-primary" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+                <div class="restricted-access downloads field is-grouped is-grouped-centered is-grouped-multiline py-4">
+                    <a v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="button login-link action is-primary" :href="loginUrl"><span class="icon"><i class="fa fa-id-card"></i></span><span>{{ t('access.login') }}</span></a>
+                    <a class="button contact action is-primary" href="https://library.unc.edu/contact-us/?destination=wilson"><span class="icon"><i class="fa fa-envelope"></i></span><span>{{ t('access.contact') }}</span></a>
                 </div>
             </section>
         </div>
@@ -218,58 +218,9 @@ export default {
         text-align: center;
     }
 
-    .modal-card {
-        border-radius: 5px;
-
-        .modal-card-head {
-            align-items: flex-start;
-        }
-
-        .button {
-            display: flex;
-            font-size: 1rem !important;
-            padding: 0 10px !important;
-            height: 2rem;
-        }
-    }
-
-    .contact i,
-    .restricted-access i {
-        padding-right: 8px;
-    }
-
-    .restricted-access {
-        display: flex;
-        justify-content: center;
-
-        a {
-            display: flex;
-            flex-wrap: wrap;
-            margin: auto;
-            width: fit-content;
-
-            &:last-of-type {
-                margin-left: 15px;
-            }
-        }
-    }
-
-    @media screen and (max-width: 576px) {
-        .modal-card-body {
-            .restricted-access {
-                flex-direction: column;
-                align-items: center;
-
-
-            }
-        }
-
-        .item-actions {
-            .image-download-options {
-                .image-download-options .dropdown-menu {
-                    left: 0;
-                }
-            }
+    @media screen and (min-width: 769px) {
+        .modal-card {
+            width: 680px;
         }
     }
 </style>
