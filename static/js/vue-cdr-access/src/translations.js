@@ -67,7 +67,6 @@ export default {
             item_list: "List of Items in This Work",
             items: "items",
             large: "Large",
-            login: "Contact Wilson/Log in to access",
             medium: "Medium",
             mods: "Edit MODS",
             neighbor_list: "Related Items (neighbors in this collection/folder)",
