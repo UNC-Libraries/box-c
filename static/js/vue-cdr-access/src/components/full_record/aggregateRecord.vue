@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     </div>
-                    <restricted-content :record-data="recordData"></restricted-content>
+                    <object-actions :record-data="recordData"></object-actions>
                 </div>
             </div>
         </div>
@@ -96,14 +96,14 @@ import abstract from '@/components/full_record/abstract.vue';
 import fileList from '@/components/full_record/fileList.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
+import objectActions from '@/components/full_record/objectActions.vue';
 import player from '@/components/full_record/player.vue';
-import restrictedContent from '@/components/full_record/restrictedContent.vue';
 import bulkDownload from "@/components/full_record/bulkDownload.vue";
 
 export default {
     name: 'aggregateRecord',
 
-    components: {bulkDownload, abstract, fileList, neighborList, metadataDisplay, player, restrictedContent},
+    components: {bulkDownload, abstract, fileList, neighborList, metadataDisplay, objectActions, player},
 
     mixins: [fileUtils, fullRecordUtils],
 
