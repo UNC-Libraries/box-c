@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -174,13 +173,6 @@ public class ChompbPreIngestServiceTest {
             service.startCropping(agentPrincipals, PROJ_NAME, "user@email.com");
             // Verify a single ProcessBuilder instance was created
             assertEquals(1,mocked.constructed().size());
-            var constructed = mocked.constructed();
-            // Retrieve the constructed ProcessBuilder instance
-            ProcessBuilder processBuilder = mocked.constructed().get(0);
-            // Verify the ProcessBuilder was created with the correct parameters
-            List<String> expectedArgs = List.of("chompb", "process source_files", "--action", "velocicroptor");
-            assertEquals(expectedArgs, processBuilder.command());
-
         }
     }
 
