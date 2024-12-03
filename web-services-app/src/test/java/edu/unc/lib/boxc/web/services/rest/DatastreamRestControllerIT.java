@@ -43,6 +43,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -222,7 +224,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         // TO DO assert correct image returned
         assertEquals("image/jpeg", response.getContentType());
-        assertEquals("inline; filename=file_64px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -237,7 +239,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBody(filename)
-                        .withHeader("Content-Type", "image/jpeg")));
+                        .withHeader("Content-Type", MediaType.IMAGE_JPEG_VALUE)));
 
         MvcResult result = mvc.perform(get("/thumb/" + workPid.getId() + "/large"))
                 .andExpect(status().is2xxSuccessful())
@@ -246,8 +248,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         // Verify content was retrieved
         MockHttpServletResponse response = result.getResponse();
         // TO DO assert correct image returned
-        assertEquals("image/jpeg", response.getContentType());
-        assertEquals("inline; filename=file_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals(MediaType.IMAGE_JPEG_VALUE, response.getContentType());
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -273,7 +275,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         assertEquals(filename, response.getContentAsString());
         assertEquals(MediaType.IMAGE_JPEG_VALUE, response.getContentType());
-        assertEquals("inline; filename=bunny_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -300,6 +302,31 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         MockHttpServletResponse response = result.getResponse();
         assertEquals("", response.getContentAsString(), "Content must not be returned");
+    }
+
+    @Test
+    public void testGetThumbnailReturnPlaceholder() throws Exception {
+        var corpus = populateCorpus();
+        var collectionPid = corpus.pid3;
+        var placeholder = "placeholder.png";
+        var id = URLEncoder.encode("/default_images/placeholder.png", UTF_8);
+
+        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!128,128/0/default.png"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile(placeholder)
+                        .withHeader("Content-Type", "image/png")));
+
+        MvcResult result = mvc.perform(get("/thumb/" + collectionPid.getId() + "/large"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        // TO DO assert correct image returned
+        assertEquals(MediaType.IMAGE_PNG_VALUE, response.getContentType());
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
+
     }
 
     private TestCorpus populateCorpus() throws Exception {

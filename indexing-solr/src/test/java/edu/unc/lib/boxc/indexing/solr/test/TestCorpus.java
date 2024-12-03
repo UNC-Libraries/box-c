@@ -135,9 +135,10 @@ public class TestCorpus {
         newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2));
         newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid2));
         newDoc.addField("resourceType", ResourceType.Work.name());
-        imgDatastreams.set(0, imgDatastreams.get(0) + pid6File.getId());
-        imgDatastreams.set(1, imgDatastreams.get(1) + pid6File.getId());
-        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
+        List<String> workDatastreams = Arrays.asList(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|" + pid6File.getId() + "|1200x1200",
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid6File.getId() + "|1200x1200");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), workDatastreams);
         newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
         newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
         docs.add(newDoc);
@@ -152,6 +153,9 @@ public class TestCorpus {
         newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid3));
         newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
+        List<String> collection2Datastream = List.of(
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid2.getId() + "|120x120");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), collection2Datastream);
         docs.add(newDoc);
 
         return docs;
