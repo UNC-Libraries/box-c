@@ -38,7 +38,7 @@ public class ChompbPreIngestService {
     public String startCropping(AgentPrincipals agent, String projectName, String email) {
         assertHasPermission(agent);
 
-        return executeChompbCommand("chompb", "process source_files",
+        return executeChompbCommand("chompb", "process_source_files",
                     "--action", "velocicroptor",
                     "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
                     "--user", agent.getUsername(),
