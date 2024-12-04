@@ -4,7 +4,6 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -29,11 +28,12 @@ public class DownloadBulkService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private Path basePath;
+    private int fileLimit;
 
     public Path downloadBulk(DownloadBulkRequest request) {
         var pidString = request.getWorkPidString();
         var workPid = PIDs.get(pidString);
-        var agentPrincipals = request.getAgent().getPrincipals();
+        var agentPrincipals = request.getPrincipals();
         aclService.assertHasAccess(
                 "User does not have permissions to view the Work for download",
                 workPid, agentPrincipals, Permission.viewOriginal);
@@ -61,7 +61,14 @@ public class DownloadBulkService {
             }
 
             Map<String, Integer> duplicates = new HashMap<>();
+            int count = 0;
             for (ContentObject memberObject : memberObjects ) {
+                if (count == fileLimit) {
+                    break;
+                }
+                if (!(memberObject instanceof FileObject)) {
+                    continue;
+                }
                 var fileObject = (FileObject) memberObject;
                 if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
                     var binObj = fileObject.getOriginalFile();
@@ -82,6 +89,7 @@ public class DownloadBulkService {
 
                         IOUtils.copy(binaryStream, zipOut);
                     }
+                    count++;
                 }
             }
         }
@@ -110,5 +118,9 @@ public class DownloadBulkService {
 
     public void setBasePath(Path basePath) {
         this.basePath = basePath;
+    }
+
+    public void setFileLimit(int fileLimit) {
+        this.fileLimit = fileLimit;
     }
 }

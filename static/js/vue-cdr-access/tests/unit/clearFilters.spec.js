@@ -56,7 +56,7 @@ describe('clearFilters.vue', () => {
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual("test");
         expect(wrapper.vm.$router.currentRoute.value.query.subject).toEqual("topic");
 
-        let clearLink = wrapper.find('a#clear-results');
+        let clearLink = wrapper.find('#clear-results');
         expect(clearLink.classes()).not.toContain('disabled');
 
         await clearLink.trigger('click');
@@ -70,7 +70,7 @@ describe('clearFilters.vue', () => {
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual('TestCollection');
 
-        let clearLink = wrapper.find('a#clear-results');
+        let clearLink = wrapper.find('#clear-results');
         await clearLink.trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();

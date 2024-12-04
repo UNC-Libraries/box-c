@@ -1,17 +1,17 @@
 package edu.unc.lib.boxc.operations.impl.download;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 public class DownloadBulkRequest {
     private String workPidString;
-    @JsonDeserialize(as = AgentPrincipalsImpl.class)
-    private AgentPrincipals agent;
+    private AccessGroupSet principals;
 
-    public DownloadBulkRequest(String workPidString, AgentPrincipals agent) {
+    public DownloadBulkRequest(String workPidString, AccessGroupSet principals) {
         this.workPidString = workPidString;
-        this.agent = agent;
+        this.principals = principals;
     }
 
     public String getWorkPidString() {
@@ -22,11 +22,11 @@ public class DownloadBulkRequest {
         this.workPidString = workPidString;
     }
 
-    public AgentPrincipals getAgent() {
-        return agent;
+    public AccessGroupSet getPrincipals() {
+        return principals;
     }
 
-    public void setAgent(AgentPrincipals agent) {
-        this.agent = agent;
+    public void setPrincipals(AccessGroupSet principals) {
+        this.principals = principals;
     }
 }

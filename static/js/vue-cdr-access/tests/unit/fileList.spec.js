@@ -76,14 +76,10 @@ describe('fileList.vue', () => {
             props: {
                 childCount: 3,
                 editAccess: true,
-                viewOriginal: false,
+                viewOriginalAccess: false,
                 workId: 'e2f0d544-4f36-482c-b0ca-ba11f1251c01',
             }
         });
-    });
-
-    it("displays a header with file count", () => {
-        expect(wrapper.find('h3').text()).toEqual("List of Items in This Work (3)");
     });
 
     it("contains a table of files", () => {

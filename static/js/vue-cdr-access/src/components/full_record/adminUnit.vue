@@ -1,8 +1,10 @@
 <template>
     <div>
         <div class="columns browse-top">
-            <div class="column">
+            <div class="column is-narrow">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
+            </div>
+            <div class="column">
                 <h2 :class="isDeleted">
                     {{ recordData.briefObject.title }}
                 </h2>

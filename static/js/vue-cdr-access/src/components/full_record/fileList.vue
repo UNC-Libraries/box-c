@@ -7,7 +7,6 @@ force it to reload
 -->
 <template>
     <div class="child-records table-container" id="data-display">
-        <h3>{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
         <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
@@ -40,6 +39,7 @@ import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
 
+
 DataTable.use(DataTablesLib);
 
 export default {
@@ -50,7 +50,6 @@ export default {
     components: {DownloadOptions, DataTable},
 
     props: {
-        childCount: Number,
         downloadAccess: {
             default: false,
             type: Boolean
@@ -215,8 +214,8 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            return `<a href="/admin/describe/${row.id}" aria-label="${this.ariaLabelText(row)}">` +
-                                '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
+                            return `<a href="/admin/describe/${row.id}" class="button action is-primary" aria-label="${this.ariaLabelText(row)}">` +
+                                '<span class="icon"><i class="fa fa-edit" title="Edit"></span></i></a>'
                         },
                         targets: column_number
                     }
@@ -254,7 +253,6 @@ export default {
         }
 
         input[type=search] {
-            margin-bottom: 15px;
             min-width: 225px;
         }
 
@@ -285,6 +283,10 @@ export default {
             }
         }
 
+        a {
+            word-break: break-word;
+        }
+
         tr.deleted {
             a.dropdown-item {
                 color: black
@@ -294,6 +296,7 @@ export default {
         .actionlink {
             a.action {
                 display: flex;
+                height: 34px;
             }
 
             a.dropdown-item {
@@ -331,5 +334,21 @@ export default {
 
     .show-list {
         display: block;
+    }
+
+    @media screen and (max-width: 576px) {
+        #data-display {
+            .actionlink.column {
+                margin-bottom: 0;
+            }
+
+            .dataTables_filter {
+                margin-top: -25px
+            }
+
+            .child-files_wrapper {
+                margin-left: 0;
+            }
+        }
     }
 </style>

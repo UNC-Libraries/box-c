@@ -41,6 +41,24 @@ const record = {
         ]
 }
 
+const collectionRecord = {
+    filesizeTotal: 694904,
+    added: "2023-03-27T13:01:58.067Z",
+    title: "Collection Title",
+    type: "Collection",
+    datastream: [
+        "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
+    ],
+    permissions: [
+        "viewMetadata", 'viewAccessCopies', 'viewReducedResImages', 'viewOriginal'
+    ],
+    groupRoleMap: {
+        authenticated: 'canViewOriginals',
+        everyone: 'canViewOriginals'
+    },
+    id: "4db695c0-5fd5-4abf-9248-2e115d43f57d"
+}
+
 const uuid = '4db695c0-5fd5-4abf-9248-2e115d43f57d';
 
 const div = document.createElement('div')
@@ -368,6 +386,32 @@ describe('downloadOption.vue', () => {
         await wrapper.find('.download-images').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
         expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+    });
+
+    it('does not display a download button for collection', async () => {
+        await wrapper.setProps({
+            recordData: collectionRecord
+        });
+        expect(wrapper.find('.download').exists()).toBe(false);
+    });
+
+    it('shows contact buttons for collection with restrictions when not logged in', async () => {
+        let updatedBriefObj = cloneDeep(collectionRecord)
+        updatedBriefObj.permissions = [
+            "viewMetadata"
+        ];
+        updatedBriefObj.groupRoleMap = {
+            authenticated: 'canViewMetadata',
+            everyone: 'canViewMetadata'
+        };
+        await wrapper.setProps({
+            recordData: updatedBriefObj
+        });
+        await store.$patch({ username: '' })
+        await store.$patch({ isLoggedIn: false })
+
+        expect(wrapper.find('.image-download-options').exists()).toBe(false);
+        expect(wrapper.find('.contact').exists()).toBe(true);
     });
 
     async function setRecordPermissions(rec, permissions) {

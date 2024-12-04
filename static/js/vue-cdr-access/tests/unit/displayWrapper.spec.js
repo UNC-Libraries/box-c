@@ -225,7 +225,7 @@ describe('displayWrapper.vue', () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
             {
-                'briefObject': briefObjectData,
+                'briefObject': briefObjectData.briefObject,
                 'resourceType': 'Collection',
                 'markedForDeletion': false
             });

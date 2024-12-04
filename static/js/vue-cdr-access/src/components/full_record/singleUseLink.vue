@@ -1,10 +1,10 @@
 <template>
     <div class="header-button-single-download">
-        <div class="actionlink single-download">
+        <div class="single-download">
             <div class="single-use-msg-text" :class="{'display-msg': this.message !== ''}">
                 {{ this.message }}
             </div>
-            <a class="button action" id="single-use-link" href="#" @click.prevent="createLink()">{{ $t('full_record.download_single_use') }}</a>
+            <a class="button action is-primary" id="single-use-link" href="#" @click.prevent="createLink()">{{ $t('full_record.download_single_use') }}</a>
             <ul>
                 <li v-for="single_use_link in single_use_links">
                     <div class="download-link-wrapper">
