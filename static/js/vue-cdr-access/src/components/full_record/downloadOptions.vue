@@ -218,6 +218,10 @@ export default {
         text-align: center;
     }
 
+    .dropdown-trigger span, .dropdown-trigger i {
+        pointer-events: none;
+    }
+
     @media screen and (min-width: 769px) {
         .modal-card {
             width: 680px;
