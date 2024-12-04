@@ -5,11 +5,13 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author lfarrell
@@ -28,7 +30,12 @@ public class QueryFilterFactoryTest {
         datastreamTypes.add(DatastreamType.FULLTEXT_EXTRACTION);
         var filter = QueryFilterFactory.createDirectlyOwnedFilter(SearchFieldKey.DATASTREAM, datastreamTypes);
         assertInstanceOf(MultipleDirectlyOwnedDatastreamsFilter.class, filter);
-        assertEquals("(datastream:jp2|*|| OR datastream:fulltext|*||)", filter.toFilterString());
+
+        var filterString = filter.toFilterString();
+        filterString = filterString.substring(1, filterString.length() - 1); // Trim off parens
+        var parts = Arrays.asList(filterString.split(" OR ")); // Match regardless of order
+        assertTrue(parts.contains("datastream:jp2|*||"));
+        assertTrue(parts.contains("datastream:fulltext|*||"));
     }
 
     @Test
@@ -38,7 +45,11 @@ public class QueryFilterFactoryTest {
         datastreamTypes.add(DatastreamType.FULLTEXT_EXTRACTION);
         var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, datastreamTypes);
         assertInstanceOf(MultipleDirectlyOwnedDatastreamsFilter.class, filter);
-        assertEquals("(datastream:jp2|* OR datastream:fulltext|*)", filter.toFilterString());
+        var filterString = filter.toFilterString();
+        filterString = filterString.substring(1, filterString.length() - 1); // Trim off parens
+        var parts = Arrays.asList(filterString.split(" OR ")); // Match regardless of order
+        assertTrue(parts.contains("datastream:jp2|*"));
+        assertTrue(parts.contains("datastream:fulltext|*"));
     }
 
     @Test
