@@ -165,6 +165,12 @@ describe('objectActions.vue', () => {
         expect(wrapper.find('a.edit').exists()).toBe(false);
     });
 
+    it('does not show a bulk download option if user does not have viewOriginal permissions', async () => {
+        await setRecordPermissions(record, []);
+
+        expect(wrapper.find('a.bulk-download').exists()).toBe(false);
+    });
+
     it('does not show embargo info if there is no dataFileUrl', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = "";
@@ -175,8 +181,17 @@ describe('objectActions.vue', () => {
     });
 
     it('shows a view option if user can view originals and resource is a file', async () => {
-        await setRecordPermissions(record, ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
-            'viewOriginal']);
+        const updated_data = cloneDeep(record);
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.permissions = ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
+            'viewOriginal'];
+        updated_data.briefObject.groupRoleMap = {
+            authenticated: 'canViewOriginals',
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_data
+        });
 
         expect(wrapper.find('a.view').exists()).toBe(true);
     });
@@ -220,9 +235,7 @@ describe('objectActions.vue', () => {
     });
 
     it('shows view options if a user is not logged in and access is restricted', () => {
-        expect(wrapper.find('.restricted-access.actions').exists()).toBe(true);
-        expect(wrapper.find('.restricted-access.actions .login-link').exists()).toBe(true);
-        expect(wrapper.find('.restricted-access.actions .contact').exists()).toBe(true);
+        expect(wrapper.find('.restricted-access').exists()).toBe(true);
     });
 
     it('does not show a login option if a user is not logged in and logging in does not grant further access', async () => {

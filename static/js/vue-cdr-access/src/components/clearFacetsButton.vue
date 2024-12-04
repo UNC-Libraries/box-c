@@ -2,9 +2,9 @@
 Button for clearing all currently active facets limiting the search.
 -->
 <template>
-    <a v-if="showButton" class="clear-all-facets button is-link is-small" @click.prevent="clearAllFacets()">{{ $t('facets.clear')}}
-        <i class="fas fa-times"></i>
-    </a>
+    <button v-if="showButton" class="clear-all-facets button is-primary" @click.prevent="clearAllFacets()"><span>{{ $t('facets.clear')}}</span>
+        <span class="icon"><i class="fas fa-times"></i></span>
+    </button>
 </template>
 <script>
 import routeUtils from '../mixins/routeUtils';
@@ -28,12 +28,3 @@ export default {
     }
 };
 </script>
-
-<style scoped  lang="scss">
-    a {
-        margin-left: 5px;
-    }
-    i {
-        padding-left: 10px;
-    }
-</style>

@@ -9,6 +9,11 @@
                             <div class="columns is-tablet">
                                 <div class="column is-narrow" :class="isDeleted">
                                     <thumbnail :thumbnail-data="recordData"></thumbnail>
+                                    <div class="actionlink download-jump">
+                                        <a class="button action" :href="filesLink">
+                                            <i class="fa fa-download" aria-hidden="true"></i> Skip to Download
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="column">
                                     <ul class="record-metadata">
@@ -53,18 +58,27 @@
                             </div>
                         </div>
                     </div>
-                    <restricted-content :record-data="recordData"></restricted-content>
+                    <object-actions :record-data="recordData"></object-actions>
                 </div>
             </div>
         </div>
-        <div class="full_record_bottom">
+        <div class="full_record_bottom container is-fluid">
             <player :record-data="recordData"></player>
-            <file-list v-if="childCount > 0"
-                       :child-count="childCount"
-                       :work-id="recordData.briefObject.id"
-                       :download-access="hasDownloadAccess(recordData)"
-                       :edit-access="hasPermission(recordData,'editDescription')">
-            </file-list>
+            <template v-if="childCount > 0">
+                <div class="file-list-header columns is-vcentered">
+                    <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
+                    <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
+                                   :total-download-size="recordData.totalDownloadSize"
+                                   :work-id="recordData.briefObject.id"
+                                   :child-count="childCount">
+                    </bulk-download>
+                </div>
+                <file-list id="file-display"
+                           :work-id="recordData.briefObject.id"
+                           :download-access="hasDownloadAccess(recordData)"
+                           :edit-access="hasPermission(recordData,'editDescription')">
+                </file-list>
+            </template>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
             </metadata-display>
@@ -84,12 +98,31 @@ import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import objectActions from '@/components/full_record/objectActions.vue';
 import player from '@/components/full_record/player.vue';
+import bulkDownload from "@/components/full_record/bulkDownload.vue";
 
 export default {
     name: 'aggregateRecord',
 
-    components: {abstract, fileList, neighborList, metadataDisplay, objectActions, player},
+    components: {bulkDownload, abstract, fileList, neighborList, metadataDisplay, objectActions, player},
 
     mixins: [fileUtils, fullRecordUtils],
+
+    computed: {
+        filesLink() {
+            const current_page = location.href;
+            return /file-display$/.test(current_page) ? current_page : `${current_page}#file-display`;
+        }
+    }
 }
 </script>
+
+<style scoped lang="scss">
+    .actionlink.download-jump {
+        margin: 0 5px 0 0;
+    }
+
+    .actionlink a.action {
+        font-size: 1rem;
+        padding: 10px;
+    }
+</style>

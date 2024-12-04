@@ -5,12 +5,12 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.IOUtils;
@@ -64,6 +64,8 @@ public class DownloadBulkServiceTest {
     private WorkObject parentWork;
     @Mock
     private FileObject fileObject1, fileObject2;
+    @Mock
+    private Tombstone tombstone;
     @TempDir
     public Path zipStorageBasePath;
 
@@ -75,10 +77,11 @@ public class DownloadBulkServiceTest {
         service.setAclService(aclService);
         service.setRepoObjLoader(repoObjLoader);
         service.setBasePath(zipStorageBasePath);
+        service.setFileLimit(5);
         parentPid = PIDs.get(PARENT_UUID);
         fileObject1Pid = PIDs.get(CHILD1_UUID);
         fileObject2Pid = PIDs.get(CHILD2_UUID);
-        request = new DownloadBulkRequest(PARENT_UUID, mockAgent);
+        request = new DownloadBulkRequest(PARENT_UUID, mockAccessSet);
 
         when(mockAgent.getUsername()).thenReturn("user");
         when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
@@ -152,6 +155,31 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
         // the zip file should be empty
         assertZipFiles(List.of(), List.of());
+    }
+
+    @Test
+    public void tombstoneTest() throws IOException {
+        when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(tombstone));
+        service.downloadBulk(request);
+        // the zip file should be empty
+        assertZipFiles(List.of(), List.of());
+    }
+
+    @Test
+    public void fileLimitTest() throws IOException {
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
+        makeBinaryObject(fileObject1, FILENAME1);
+        makeBinaryObject(fileObject2, FILENAME2);
+        when(aclService.hasAccess(eq(fileObject1Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(fileObject2Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        service.setFileLimit(1);
+        service.downloadBulk(request);
+        // the zip file should have one entry
+        assertZipFiles(List.of(FILENAME1), List.of("flower"));
     }
 
     @Test
