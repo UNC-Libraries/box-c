@@ -54,8 +54,6 @@ public class ChompbPreIngestServiceTest {
         closeable = openMocks(this);
         service = new ChompbPreIngestService();
         service.setBaseProjectsPath(tmpFolder);
-        service.setServiceKeyPath("/path/to/key");
-        service.setServiceUser("user");
         service.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         when(agentPrincipals.getPrincipals()).thenReturn(new AccessGroupSetImpl("group"));
         when(globalPermissionEvaluator.hasGlobalPermission(any(AccessGroupSet.class), eq(Permission.ingest))).thenReturn(true);
