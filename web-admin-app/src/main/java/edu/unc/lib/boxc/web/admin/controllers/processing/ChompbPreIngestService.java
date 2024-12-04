@@ -21,10 +21,12 @@ import java.util.Set;
 public class ChompbPreIngestService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private Path baseProjectsPath;
+    private String serviceKeyPath;
+    private String serviceUser;
     private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
 
     /**
-     * List all of the chompb projects in the base projects path
+     * List all the chompb projects in the base projects path
      *
      * @param agent
      * @return output of the list projects command, which is a json string
@@ -33,6 +35,17 @@ public class ChompbPreIngestService {
         assertHasPermission(agent);
 
         return executeChompbCommand("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
+    }
+
+    public String startCropping(AgentPrincipals agent, String projectName, String email) {
+        assertHasPermission(agent);
+
+        return executeChompbCommand("chompb", "process_source_files",
+                    "--action", "velocicroptor",
+                    "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
+                    "-k", serviceKeyPath,
+                    "--user", serviceUser,
+                    "--email", email);
     }
 
     protected String executeChompbCommand(String... command) {
@@ -113,5 +126,13 @@ public class ChompbPreIngestService {
 
     public void setBaseProjectsPath(Path baseProjectsPath) {
         this.baseProjectsPath = baseProjectsPath;
+    }
+
+    public void setServiceKeyPath(String serviceKeyPath) {
+        this.serviceKeyPath = serviceKeyPath;
+    }
+
+    public void setServiceUser(String serviceUser) {
+        this.serviceUser = serviceUser;
     }
 }

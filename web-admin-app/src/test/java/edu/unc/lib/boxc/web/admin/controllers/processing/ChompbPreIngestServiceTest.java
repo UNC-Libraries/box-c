@@ -159,6 +159,31 @@ public class ChompbPreIngestServiceTest {
                 () -> service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, "rando.json"));
     }
 
+    @Test
+    public void startCroppingSuccessTest() throws InterruptedException {
+        String expectedOutput = "[ \"success\"]";
+        InputStream mockInputStream = new ByteArrayInputStream(expectedOutput.getBytes());
+        when(mockProcess.getInputStream()).thenReturn(mockInputStream);
+        when(mockProcess.waitFor()).thenReturn(0);
+        try (MockedConstruction<ProcessBuilder> mocked = Mockito.mockConstruction(ProcessBuilder.class,
+                (mock, context) -> {
+                    when(mock.start()).thenReturn(mockProcess);
+                })
+        ){
+            service.startCropping(agentPrincipals, PROJ_NAME, "user@email.com");
+            // Verify a single ProcessBuilder instance was created
+            assertEquals(1,mocked.constructed().size());
+        }
+    }
+
+    @Test
+    public void startCroppingNoPermissionTest() {
+        when(globalPermissionEvaluator.hasGlobalPermission(any(AccessGroupSet.class), eq(Permission.ingest))).thenReturn(false);
+
+        assertThrows(AccessRestrictionException.class,
+                () -> service.startCropping(agentPrincipals, PROJ_NAME, "user@email.com"));
+    }
+
     private void createDataJson() throws IOException {
         createResultFile(JSON_FILENAME, DATA_JSON);
     }
