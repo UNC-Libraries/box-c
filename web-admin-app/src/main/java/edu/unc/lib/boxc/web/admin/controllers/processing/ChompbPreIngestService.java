@@ -22,6 +22,7 @@ public class ChompbPreIngestService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private Path baseProjectsPath;
     private String serviceKeyPath;
+    private String serviceUser;
     private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
 
     /**
@@ -43,7 +44,7 @@ public class ChompbPreIngestService {
                     "--action", "velocicroptor",
                     "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
                     "-k", serviceKeyPath,
-                    "--user", agent.getUsername(),
+                    "--user", serviceUser,
                     "--email", email);
     }
 
@@ -129,5 +130,9 @@ public class ChompbPreIngestService {
 
     public void setServiceKeyPath(String serviceKeyPath) {
         this.serviceKeyPath = serviceKeyPath;
+    }
+
+    public void setServiceUser(String serviceUser) {
+        this.serviceUser = serviceUser;
     }
 }
