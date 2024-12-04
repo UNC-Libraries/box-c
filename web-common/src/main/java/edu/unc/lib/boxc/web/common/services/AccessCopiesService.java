@@ -214,17 +214,17 @@ public class AccessCopiesService {
         }
     }
 
-    public void populateThumbnailInfo(ContentObjectRecord record, AccessGroupSet principals,
+    public void populateThumbnailInfo(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
                                       boolean checkChildren) {
-        if (record == null) {
+        if (contentObjectRecord == null) {
             return;
         }
-        var thumbnailRecord = getThumbnailRecord(record, principals, checkChildren);
+        var thumbnailRecord = getThumbnailRecord(contentObjectRecord, principals, checkChildren);
         if (thumbnailRecord == null) {
             return;
         }
-        record.setThumbnailId(thumbnailRecord.getId());
-        record.setAltText(thumbnailRecord.getAltText());
+        contentObjectRecord.setThumbnailId(thumbnailRecord.getId());
+        contentObjectRecord.setAltText(thumbnailRecord.getAltText());
     }
 
     public void populateThumbnailInfos(List<ContentObjectRecord> records, AccessGroupSet principals,

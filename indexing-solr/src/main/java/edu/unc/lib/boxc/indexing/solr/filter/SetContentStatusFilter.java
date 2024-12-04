@@ -56,31 +56,35 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         }
 
         if (obj instanceof FileObject) {
-            Resource parentResc = obj.getParent().getResource();
-            if (parentResc.hasProperty(Cdr.primaryObject, resc)) {
-                status.add(FacetConstants.IS_PRIMARY_OBJECT);
-            }
-            if (parentResc.hasProperty(Cdr.useAsThumbnail, resc)) {
-                status.add(FacetConstants.ASSIGNED_AS_THUMBNAIL);
-            }
-            if (hasAccessSurrogate(obj.getPid())) {
-                status.add(FacetConstants.HAS_ACCESS_SURROGATE);
-            } else {
-                status.add(FacetConstants.NO_ACCESS_SURROGATE);
-            }
-            if (resc.hasProperty(Cdr.streamingUrl)) {
-                status.add(FacetConstants.HAS_STREAMING);
-            } else {
-                status.add(FacetConstants.NO_STREAMING);
-            }
-            if (resc.hasProperty(Cdr.hasAltText)) {
-                status.add(FacetConstants.HAS_ALT_TEXT);
-            } else {
-                status.add(FacetConstants.NO_ALT_TEXT);
-            }
+            addFileObjectStatuses(obj, resc, status);
         }
 
         return status;
+    }
+
+    private void addFileObjectStatuses(ContentObject obj, Resource resc, List<String> status) {
+        Resource parentResc = obj.getParent().getResource();
+        if (parentResc.hasProperty(Cdr.primaryObject, resc)) {
+            status.add(FacetConstants.IS_PRIMARY_OBJECT);
+        }
+        if (parentResc.hasProperty(Cdr.useAsThumbnail, resc)) {
+            status.add(FacetConstants.ASSIGNED_AS_THUMBNAIL);
+        }
+        if (hasAccessSurrogate(obj.getPid())) {
+            status.add(FacetConstants.HAS_ACCESS_SURROGATE);
+        } else {
+            status.add(FacetConstants.NO_ACCESS_SURROGATE);
+        }
+        if (resc.hasProperty(Cdr.streamingUrl)) {
+            status.add(FacetConstants.HAS_STREAMING);
+        } else {
+            status.add(FacetConstants.NO_STREAMING);
+        }
+        if (resc.hasProperty(Cdr.hasAltText)) {
+            status.add(FacetConstants.HAS_ALT_TEXT);
+        } else {
+            status.add(FacetConstants.NO_ALT_TEXT);
+        }
     }
 
     private void addWorkObjectStatuses(List<String> status, Resource resource) {

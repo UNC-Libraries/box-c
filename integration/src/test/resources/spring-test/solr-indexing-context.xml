@@ -193,6 +193,7 @@
     </bean>
 
     <bean id="setAltTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAltTextFilter">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

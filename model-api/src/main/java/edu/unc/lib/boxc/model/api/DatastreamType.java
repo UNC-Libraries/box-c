@@ -14,16 +14,16 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CO
 public enum DatastreamType {
     ACCESS_SURROGATE("access_surrogate", "application/octet-stream", null, null, EXTERNAL),
     ALT_TEXT("alt_text", "text/plain", "txt", METADATA_CONTAINER, INTERNAL),
-    ALT_TEXT_HISTORY("alt_text_history", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
+    ALT_TEXT_HISTORY("alt_text_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     AUDIO_ACCESS_COPY("audio", "audio/aac", "m4a", null, EXTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
-    MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
-    MD_DESCRIPTIVE_HISTORY("md_descriptive_history", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
+    MD_DESCRIPTIVE("md_descriptive", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
+    MD_DESCRIPTIVE_HISTORY("md_descriptive_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL),
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
-    TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL),
-    TECHNICAL_METADATA_HISTORY("techmd_fits_history", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL);
+    TECHNICAL_METADATA("techmd_fits", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
+    TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL);
 
     private final String id;
     private final String mimetype;
@@ -95,5 +95,9 @@ public enum DatastreamType {
             }
         }
         return null;
+    }
+
+    private static class Constants {
+        public static final String TEXT_XML = "text/xml";
     }
 }
