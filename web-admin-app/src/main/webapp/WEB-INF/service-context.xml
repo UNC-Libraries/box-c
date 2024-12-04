@@ -75,6 +75,8 @@
     <bean id="chompbPreIngestService" class="edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="baseProjectsPath" value="${chompb.projects.basePath}" />
+        <property name="serviceKeyPath" value="${boxctron.service.key}" />
+        <property name="serviceUser" value="${boxctron.service.user}" />
     </bean>
 
     <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">

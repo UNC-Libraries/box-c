@@ -1,10 +1,14 @@
 package edu.unc.lib.boxc.web.admin.controllers;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -24,6 +30,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Controller
 public class ChompbController {
+    private static final Logger log = LoggerFactory.getLogger(ChompbController.class);
     @Autowired
     ChompbPreIngestService chompbPreIngestService;
 
@@ -70,6 +77,23 @@ public class ChompbController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nameSegment)
                 .contentType(getMediaType(filename))
                 .body(resource);
+    }
+
+    @RequestMapping(value = "chompb/project/{projectName}/action/velocicroptor", method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<Object> startCropping(@PathVariable("projectName") String projectName) {
+        String userEmail = GroupsThreadStore.getEmail();
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "Start cropping for project " + projectName);
+        try {
+            var agentPrincipals = AgentPrincipalsImpl.createFromThread();
+            chompbPreIngestService.startCropping(agentPrincipals, projectName, userEmail);
+        } catch (Exception e){
+            log.error("Failed to start cropping for project {}", projectName, e);
+            result.put("status", "Chompb command failed");
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     private MediaType getMediaType(String filename) {
