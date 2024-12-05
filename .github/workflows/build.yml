@@ -71,9 +71,6 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-    - name: Build jp24u with Maven
-      run: mvn -B -U clean install -DskipTests
-      working-directory: jp24u
     - name: Build with Maven
       run: mvn -B -U -pl '!integration' clean install -DskipTests
     - name: Set up nodejs
