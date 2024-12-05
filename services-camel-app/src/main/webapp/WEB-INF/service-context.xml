@@ -208,6 +208,9 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
         <property name="memberOrderService" ref="memberOrderService" />
     </bean>
+
+    <bean id="jp2Processor" class="edu.unc.lib.boxc.services.camel.images.Jp2Processor">
+    </bean>
     
     <bean id="addAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />

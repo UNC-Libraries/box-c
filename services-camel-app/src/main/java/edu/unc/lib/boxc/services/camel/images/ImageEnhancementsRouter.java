@@ -30,6 +30,9 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
+    @BeanInject(value = "jp2Processor")
+    private Jp2Processor jp2Processor;
+
     private UuidGenerator uuidGenerator;
 
     /**
@@ -59,7 +62,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .setBody(exchange -> uuidGenerator.generateUuid())
                 .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
                 .doTry()
-                    .recipientList(simple("bean:imageDerivProcessor?method=runJp24u"))
+                    .recipientList(simple("bean:jp2Processor"))
                     .bean(addAccessCopyProcessor)
                     // Process cache invalidation asynchronously with a limited number of threads
                     .threads(CACHE_INVALIDATE_THREADS)
