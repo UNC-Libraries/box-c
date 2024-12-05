@@ -52,11 +52,10 @@ public class AltTextUpdateService {
         newVersion.setFilename(ALT_TEXT.getDefaultFilename());
         newVersion.setTransferSession(request.getTransferSession());
 
+        altTextBinary = versionedDatastreamService.addVersion(newVersion);
         if (repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())) {
-            altTextBinary = versionedDatastreamService.addVersion(newVersion);
             log.debug("Successfully updated alt text for {}", fileObj.getPid());
         } else {
-            altTextBinary = versionedDatastreamService.addVersion(newVersion);
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasAltText, createResource(altTextPid.getRepositoryPath()));
             log.debug("Successfully add new alt text for {}", fileObj.getPid());
         }

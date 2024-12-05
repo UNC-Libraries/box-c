@@ -37,6 +37,7 @@ public class AltTextController {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "updateAltText");
         result.put("pid", altTextBinary.getPid().getComponentId());
+        result.put("timestamp", System.currentTimeMillis());
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

@@ -30,7 +30,6 @@ import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
-import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
@@ -56,7 +55,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.ON_CAMPUS_PRINC;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
@@ -213,7 +211,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 ResourceType.Work.nameEquals(resourceType)) {
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
-            accessCopiesService.populateThumbnailInfos(neighbors, principals, true);
+            accessCopiesService.populateThumbnailInfoForList(neighbors, principals, true);
             var neighborList = neighbors.stream()
                     .map(d -> SerializationUtil.metadataToMap(d, principals)).collect(Collectors.toList());
             recordProperties.put("neighborList", neighborList);

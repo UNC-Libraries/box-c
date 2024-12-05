@@ -147,7 +147,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
-        accessCopiesService.populateThumbnailInfos(resultResponse.getResultList(), principals, false);
+        accessCopiesService.populateThumbnailInfoForList(resultResponse.getResultList(), principals, false);
         for (ContentObjectRecord metadata: resultResponse.getResultList()) {
             results.add(SerializationUtil.metadataToMap(metadata, principals));
         }

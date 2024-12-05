@@ -227,10 +227,10 @@ public class AccessCopiesService {
         contentObjectRecord.setAltText(thumbnailRecord.getAltText());
     }
 
-    public void populateThumbnailInfos(List<ContentObjectRecord> records, AccessGroupSet principals,
-                                       boolean checkChildren) {
-        for (var record : records) {
-            populateThumbnailInfo(record, principals, checkChildren);
+    public void populateThumbnailInfoForList(List<ContentObjectRecord> records, AccessGroupSet principals,
+                                             boolean checkChildren) {
+        for (var contentObjectRecord : records) {
+            populateThumbnailInfo(contentObjectRecord, principals, checkChildren);
         }
     }
 

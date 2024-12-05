@@ -432,10 +432,10 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
-    public void populateThumbnailInfos() {
+    public void populateThumbnailInfoForList() {
         hasPermissions(mdObjectImg, true);
         hasPermissions(noOriginalFileObj, true);
-        accessCopiesService.populateThumbnailInfos(Arrays.asList(mdObjectImg, noOriginalFileObj), principals, false);
+        accessCopiesService.populateThumbnailInfoForList(Arrays.asList(mdObjectImg, noOriginalFileObj), principals, false);
         assertNull(noOriginalFileObj.getThumbnailId());
         assertEquals(mdObjectImg.getId(), mdObjectImg.getThumbnailId());
     }

@@ -197,7 +197,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     }
 
     private void populateThumbnailUrls(SearchRequest searchRequest, SearchResultResponse result) {
-        accessCopiesService.populateThumbnailInfos(result.getResultList(),
+        accessCopiesService.populateThumbnailInfoForList(result.getResultList(),
                 searchRequest.getAccessGroups(), true);
         accessCopiesService.populateThumbnailInfo(result.getSelectedContainer(),
                 searchRequest.getAccessGroups(), true);
