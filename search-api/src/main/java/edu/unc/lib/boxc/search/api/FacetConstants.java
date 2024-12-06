@@ -33,4 +33,6 @@ public abstract class FacetConstants {
     public static final String NO_ACCESS_SURROGATE = "No Access Surrogate";
     public static final String HAS_STREAMING = "Has Streaming";
     public static final String NO_STREAMING = "No Streaming";
+    public static final String HAS_ALT_TEXT = "Has Alt Text";
+    public static final String NO_ALT_TEXT = "No Alt Text";
 }

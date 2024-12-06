@@ -1,0 +1,16 @@
+<form id="edit_filename_form" class="edit_form edit_alt_text_form">
+	<div class="form_field">
+		<p><label for="altTextInput">Alt Text</label></p>
+		<textarea id="altTextInput" name="altText" style="width: 40rem; height:4rem"><%= _.escape(metadata.altText) %></textarea>
+	</div>
+	
+	<div class="update_field">
+		<input type="submit" id="edit_alt_text_submit_button" class="update_button" value="Save Changes" />
+	</div>
+	
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_stack">
+		</div>
+	</div>
+</form>

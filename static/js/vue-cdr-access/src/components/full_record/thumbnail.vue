@@ -1,7 +1,7 @@
 <template>
-    <router-link :to="linkToPath" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
+    <router-link :to="linkToPath" :title="tooltip" :aria-label="linkAltText" class="thumbnail" :class="imgClasses">
         <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
-             :aria-label="altText(objectData.title)"
+             :aria-label="imageAltText"
              role="img"
              class="thumbnail-viewer"
              :class="{restricted: markedForDeletion(objectData) || isRestricted(objectData)}"></div>
@@ -42,22 +42,31 @@ export default {
     },
 
     methods: {
-        altText(title) {
-            return `Thumbnail for ${title}`;
-        },
-
         canView() {
             return (this.objectData.type === 'AdminUnit' || this.hasPermission(this.objectData, 'viewAccessCopies'));
         }
     },
 
     computed: {
-        objectData() {
-            return this.permissionData(this.thumbnailData);
+        altText() {
+            let text = this.objectData.altText;
+            if (!text) {
+                text = this.objectData.title;
+            }
+            return text;
+
         },
 
-        ariaText() {
-            return `Visit ${this.objectData.title}`
+        imageAltText() {
+            return `Thumbnail for ${this.altText}`;
+        },
+
+        linkAltText() {
+            return `Visit ${this.altText}`;
+        },
+
+        objectData() {
+            return this.permissionData(this.thumbnailData);
         },
 
         badgeIcon() {

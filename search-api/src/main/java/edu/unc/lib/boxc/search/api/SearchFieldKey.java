@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public enum SearchFieldKey {
     ABSTRACT("abstract", "abstract", "Abstract"),
     ADMIN_GROUP("adminGroup", "adminGroup", "Admin Group"),
+    ALT_TEXT("altText", "altText", "Alt Text"),
     ANCESTOR_IDS("ancestorIds", "ancestorIds", "Ancestor Ids"),
     ANCESTOR_PATH("ancestorPath", "path", "Folders"),
     CITATION("citation", "citation", "Citation"),

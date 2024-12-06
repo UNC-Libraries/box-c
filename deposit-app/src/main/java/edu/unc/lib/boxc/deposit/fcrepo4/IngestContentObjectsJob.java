@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
+import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
 import org.apache.http.HttpStatus;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
@@ -136,6 +139,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private UpdateDescriptionService updateDescService;
+
+    @Autowired
+    private AltTextUpdateService altTextUpdateService;
 
     private AccessGroupSet groupSet;
     private AgentPrincipals agent;
@@ -342,6 +348,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             addPremisEvents(obj);
             // add MODS
             addDescription(obj, childResc);
+            // Add alt text if present
+            addAltText(obj);
 
             overrideModifiedTimestamp(obj, childResc);
             log.debug("Finished all updates for file {} in work {}", pid, work.getPid());
@@ -822,6 +830,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
             aResc.addProperty(pred, stmt.getObject());
         }
+    }
+
+    private void addAltText(ContentObject obj) throws IOException {
+        Path altTextPath = getAltTextPath(obj.getPid(), false);
+        if (!Files.exists(altTextPath)) {
+            return;
+        }
+
+        var altText = Files.readString(altTextPath, StandardCharsets.UTF_8);
+        var request = new AltTextUpdateRequest();
+        request.setAgent(agent);
+        request.setPidString(obj.getPid().getId());
+        request.setAltText(altText);
+        request.setTransferSession(logTransferSession);
+        altTextUpdateService.updateAltText(request);
     }
 
     private void addDescription(ContentObject obj, Resource dResc) throws IOException {

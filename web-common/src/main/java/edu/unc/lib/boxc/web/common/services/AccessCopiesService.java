@@ -6,11 +6,11 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
@@ -170,15 +170,19 @@ public class AccessCopiesService {
      * @param principals
      * @param checkChildren if true, then in cases where it is ambiguous if the provided record has a thumbnail,
      *             then additional queries will be performed to check.
-     * @return ID of the object the thumbnail for the provided object belongs to, or null if there is no thumbnail
+     * @return record of the thumbnail-owning object, or null if there is no thumbnail
      */
-    public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
-                                 boolean checkChildren) {
+    public ContentObjectRecord getThumbnailRecord(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
+                                                 boolean checkChildren) {
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
         if (thumbId != null) {
             log.debug("Found thumbnail object directly assigned to object {}", thumbId);
-            return thumbId;
+            if (thumbId.equals(contentObjectRecord.getId())) {
+                return contentObjectRecord;
+            } else {
+                return solrSearchService.getObjectById(new SimpleIdRequest(PIDs.get(thumbId), principals));
+            }
         }
 
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
@@ -190,7 +194,7 @@ public class AccessCopiesService {
         }
         if (!checkChildren) {
             log.debug("Not checking children for work {}, so using self as thumbnail id", contentObjectRecord.getId());
-            return contentObjectRecord.getId();
+            return contentObjectRecord;
         }
 
         var request = buildFirstChildQuery(contentObjectRecord, principals);
@@ -201,27 +205,32 @@ public class AccessCopiesService {
 
         var resp = solrSearchService.getSearchResults(request);
         if (resp.getResultCount() > 0) {
-            var id = resp.getResultList().get(0).getId();
-            log.debug("Found thumbnail object {} for work {}", id, contentObjectRecord.getId());
-            return id;
+            var result = resp.getResultList().get(0);
+            log.debug("Found thumbnail object {} for work {}", result.getId(), contentObjectRecord.getId());
+            return result;
         } else {
             log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
             return null;
         }
     }
 
-    public void populateThumbnailId(ContentObjectRecord record, AccessGroupSet principals,
-                                    boolean checkChildren) {
-        if (record == null) {
+    public void populateThumbnailInfo(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
+                                      boolean checkChildren) {
+        if (contentObjectRecord == null) {
             return;
         }
-        record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+        var thumbnailRecord = getThumbnailRecord(contentObjectRecord, principals, checkChildren);
+        if (thumbnailRecord == null) {
+            return;
+        }
+        contentObjectRecord.setThumbnailId(thumbnailRecord.getId());
+        contentObjectRecord.setAltText(thumbnailRecord.getAltText());
     }
 
-    public void populateThumbnailIds(List<ContentObjectRecord> records, AccessGroupSet principals,
-                                     boolean checkChildren) {
-        for (var record : records) {
-            record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+    public void populateThumbnailInfoForList(List<ContentObjectRecord> records, AccessGroupSet principals,
+                                             boolean checkChildren) {
+        for (var contentObjectRecord : records) {
+            populateThumbnailInfo(contentObjectRecord, principals, checkChildren);
         }
     }
 

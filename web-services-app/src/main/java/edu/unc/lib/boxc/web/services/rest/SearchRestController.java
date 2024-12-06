@@ -54,7 +54,7 @@ public class SearchRestController extends AbstractSolrSearchController {
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.PARENT_COLLECTION.name(),
             SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_CREATED.name(),
             SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.IDENTIFIER.name(), SearchFieldKey.LANGUAGE.name(),
-            SearchFieldKey.SUBJECT.name(), SearchFieldKey.FILESIZE.name());
+            SearchFieldKey.SUBJECT.name(), SearchFieldKey.FILESIZE.name(), SearchFieldKey.ALT_TEXT.name());
     public static final Map<String, List<String>> RESULT_FIELD_SETS = Map.of("id", RESULT_FIELDS_ID,
             "identifier", RESULT_FIELDS_IDENTIFIER,
             "brief", RESULT_FIELDS_BRIEF,
@@ -147,7 +147,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
-        accessCopiesService.populateThumbnailIds(resultResponse.getResultList(), principals, false);
+        accessCopiesService.populateThumbnailInfoForList(resultResponse.getResultList(), principals, false);
         for (ContentObjectRecord metadata: resultResponse.getResultList()) {
             results.add(SerializationUtil.metadataToMap(metadata, principals));
         }

@@ -155,13 +155,13 @@ public class DatastreamController {
         }
 
         if (ResourceType.Work.name().equals(objRecord.getResourceType())) {
-            var thumbId = accessCopiesService.getThumbnailId(objRecord, principals, true);
-            if (thumbId != null) {
-                pid = PIDs.get(thumbId);
+            var thumbRec = accessCopiesService.getThumbnailRecord(objRecord, principals, true);
+            if (thumbRec != null) {
+                pid = thumbRec.getPid();
                 // check permissions for thumbnail file
                 accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
                         pid, principals, Permission.viewAccessCopies);
-                log.debug("Got thumbnail id {} for work {}", thumbId, pidString);
+                log.debug("Got thumbnail id {} for work {}", pid.getId(), pidString);
             }
         }
 

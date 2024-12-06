@@ -1,7 +1,8 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm) {
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm',
+		'EditAltTextForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -138,6 +139,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				if (/techmd_fits_history/ig.test(datastreams)) {
 					items['metadata']['items']["viewFitsHistory"] = {name: "View FITS History"}
 				}
+
+				if (/alt_text/ig.test(datastreams)) {
+					items['metadata']['items']["viewAltText"] = {name: "View Alt Text"};
+				}
+
+				if (/alt_text_history/ig.test(datastreams)) {
+					items['metadata']['items']["viewAltTextHistory"] = {name: "View Alt Text History"};
+				}
 			}
 
 			items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
@@ -178,13 +187,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 			items["editTitle"] = {name : 'Edit Title'};
 		}
-		
-		/* Evaluating if retaining feature
-		if ($.inArray('changePatronAccess', metadata.permissions) != -1
-				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
-			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
-		}
-		*/
 
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
@@ -192,6 +194,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		if ((metadata.type === 'Collection' || isAdminUnit) && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editThumbnail"] = {name : 'Edit Display Thumbnail'};
+		}
+
+		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
+			items["editAltText"] = {name : 'Edit Alt Text'};
 		}
 
 		// Add files to work objects
@@ -319,6 +325,22 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							application: "services"
 						});
 						break;
+					case "viewAltText":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/alt_text",
+							newWindow: true,
+							application: "services"
+						});
+						break;
+					case "viewAltTextHistory":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/alt_text_history",
+							newWindow: true,
+							application: "services"
+						});
+						break;
 					case "viewEventLog" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
@@ -355,6 +377,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "editTitle" :
 						self.editTitle(resultObject);
+						break;
+					case "editAltText" :
+						self.editAltText(resultObject);
 						break;
 					case "editType" :
 						self.actionHandler.addEvent({
@@ -580,7 +605,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			actionHandler : this.actionHandler
 		});
 		editTitleForm.open(resultObject);
+	};
 
+	ResultObjectActionMenu.prototype.editAltText = function(resultObject) {
+		var editAltTextForm = new EditAltTextForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editAltTextForm.open(resultObject);
 	};
 
 	ResultObjectActionMenu.prototype.editThumbnail = function(resultObject) {

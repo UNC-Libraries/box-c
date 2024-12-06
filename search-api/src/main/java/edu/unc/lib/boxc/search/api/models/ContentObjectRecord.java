@@ -146,4 +146,11 @@ public interface ContentObjectRecord {
     void setThumbnailId(String id);
 
     String getViewBehavior();
+
+    /**
+     * @return The alt text for this object, if one is present.
+     */
+    String getAltText();
+
+    void setAltText(String altText);
 }

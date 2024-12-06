@@ -132,7 +132,22 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
         expect(wrapper.find('i.placeholder').exists()).toBe(false);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large has_tooltip')
+            .toEqual('thumbnail thumbnail-size-large has_tooltip');
+        let linkText = wrapper.find('a').attributes('aria-label');
+        expect(linkText).toBe('Visit testCollection');
+        let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
+        expect(altText).toBe('Thumbnail for testCollection');
+    });
+
+    it('uses custom alt text if it is available', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.altText = 'Custom alt text';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
+        let linkText = wrapper.find('a').attributes('aria-label');
+        expect(linkText).toBe('Visit Custom alt text');
+        let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
+        expect(altText).toBe('Thumbnail for Custom alt text');
     });
 
     it('does not display a thumbnail if user does not have viewAccessCopies permissions', async () => {

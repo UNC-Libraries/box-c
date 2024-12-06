@@ -65,6 +65,9 @@ public class Cdr {
    /** Relationship indicating the resource containing the event log for this object */
    public static final Property hasEvents = createProperty("http://cdr.unc.edu/definitions/model#hasEvents");
 
+   /** Relationship indicating the binary containing the alt text for this object */
+   public static final Property hasAltText = createProperty("http://cdr.unc.edu/definitions/model#hasAltText");
+
    /** The size (e.g., in bytes) of this binary object */
    public static final Property hasSize = createProperty(
            "http://cdr.unc.edu/definitions/model#hasSize" );

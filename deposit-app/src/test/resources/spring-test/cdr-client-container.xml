@@ -149,6 +149,14 @@
         <property name="checksAccess" value="false" />
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
     </bean>
+
+    <bean id="altTextUpdateService" class="edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="sendsMessages" value="false" />
+    </bean>
     
     <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />

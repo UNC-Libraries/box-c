@@ -52,6 +52,7 @@
                 <ref bean="setAccessStatusFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setAltTextFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>

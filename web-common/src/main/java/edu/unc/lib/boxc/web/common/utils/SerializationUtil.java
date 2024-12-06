@@ -124,11 +124,11 @@ public class SerializationUtil {
             result.put("_version_", metadata.get_version_());
         }
 
-        if (metadata.getStatus() != null && metadata.getStatus().size() > 0) {
+        if (metadata.getStatus() != null && !metadata.getStatus().isEmpty()) {
             result.put("status", metadata.getStatus());
         }
 
-        if (metadata.getContentStatus() != null && metadata.getContentStatus().size() > 0) {
+        if (metadata.getContentStatus() != null && !metadata.getContentStatus().isEmpty()) {
             result.put("contentStatus", metadata.getContentStatus());
         }
 
@@ -160,10 +160,6 @@ public class SerializationUtil {
             result.put(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam(), metadata.getFileFormatType());
         }
 
-        if (metadata.getFileFormatDescription() != null) {
-            result.put(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getUrlParam(), metadata.getFileFormatDescription());
-        }
-
         if (metadata.getFilesizeSort() != null) {
             result.put("filesizeTotal", metadata.getFilesizeSort());
         }
@@ -193,7 +189,7 @@ public class SerializationUtil {
             result.put("parentCollectionId", metadata.getParentCollectionId());
         }
 
-        if (metadata.getCountMap() != null && metadata.getCountMap().size() > 0) {
+        if (metadata.getCountMap() != null && !metadata.getCountMap().isEmpty()) {
             result.put("counts", metadata.getCountMap());
         }
 
@@ -203,6 +199,10 @@ public class SerializationUtil {
 
         if (metadata.getStreamingType() != null) {
             result.put("streamingType", metadata.getStreamingType());
+        }
+
+        if (metadata.getAltText() != null) {
+            result.put(SearchFieldKey.ALT_TEXT.getUrlParam(), metadata.getAltText());
         }
 
         if (metadata.getDateAdded() != null) {

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.deposit.work;
 
+import static edu.unc.lib.boxc.deposit.api.DepositConstants.ALT_TEXT_DIR;
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.HISTORY_DIR;
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.TECHMD_DIR;
@@ -239,6 +240,10 @@ public abstract class AbstractDepositJob implements Runnable {
         return getDepositStatus().get(field.name());
     }
 
+    public File getAltTextDir() {
+        return new File(getDepositDirectory(), ALT_TEXT_DIR);
+    }
+
     public File getDescriptionDir() {
         return new File(getDepositDirectory(), DESCRIPTION_DIR);
     }
@@ -266,6 +271,16 @@ public abstract class AbstractDepositJob implements Runnable {
      */
     public Path getModsPath(PID pid, boolean createDirs) {
         return getMetadataPath(getDescriptionDir(), pid, ".xml", createDirs);
+    }
+
+    /**
+     * Get the path where alt text should be stored for the given pid
+     * @param pid pid of the object
+     * @param createDirs if true, then parent directories for path will be created
+     * @return Path for the alt text
+     */
+    public Path getAltTextPath(PID pid, boolean createDirs) {
+        return getMetadataPath(getAltTextDir(), pid, ".txt", createDirs);
     }
 
     /**

@@ -216,6 +216,15 @@
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
+
+    <bean id="editAltTextService" class="edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="sendsMessages" value="true" />
+    </bean>
     
     <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
         <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
