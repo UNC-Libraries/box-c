@@ -132,7 +132,9 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
         expect(wrapper.find('i.placeholder').exists()).toBe(false);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large has_tooltip')
+            .toEqual('thumbnail thumbnail-size-large has_tooltip');
+        let linkText = wrapper.find('a').attributes('aria-label');
+        expect(linkText).toBe('Visit testCollection');
         let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
         expect(altText).toBe('Thumbnail for testCollection');
     });
@@ -142,6 +144,8 @@ describe('thumbnail.vue', () => {
         updatedRecordData.briefObject.altText = 'Custom alt text';
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
+        let linkText = wrapper.find('a').attributes('aria-label');
+        expect(linkText).toBe('Visit Custom alt text');
         let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
         expect(altText).toBe('Thumbnail for Custom alt text');
     });
