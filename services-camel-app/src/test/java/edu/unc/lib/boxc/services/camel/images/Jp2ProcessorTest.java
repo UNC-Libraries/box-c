@@ -70,8 +70,8 @@ public class Jp2ProcessorTest {
             processor.process(exchange);
 
             mockedStatic.verify(() -> CLIMain.main(new String[]{"jp24u", "kdu_compress",
-                    "-f", "\"de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc\"", "-o", "\"" + derivTmpPath + "\"",
-                    "-sf", "\"image/tiff\""}));
+                    "-f", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc", "-o",  derivTmpPath,
+                    "-sf", "image/tiff"}));
         }
     }
 
@@ -81,8 +81,8 @@ public class Jp2ProcessorTest {
             mockedStatic.when(() -> CLIMain.main(new String[]{anyString()})).thenThrow(IllegalArgumentException.class);
             processor.process(exchange);
 
-            mockedStatic.verify(() -> CLIMain.main(new String[]{"jp24u", "kdu_compress", "-f", "\"null\"",
-                    "-o", "\"" + derivTmpPath + "\"", "-sf", "\"image/tiff\""}));
+            mockedStatic.verify(() -> CLIMain.main(new String[]{"jp24u", "kdu_compress", "-f", null,
+                    "-o", derivTmpPath, "-sf", "image/tiff"}));
         }
     }
 }

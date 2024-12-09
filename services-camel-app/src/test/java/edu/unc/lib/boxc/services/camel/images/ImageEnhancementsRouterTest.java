@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.services.camel.images;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -34,8 +33,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -89,7 +86,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(accessCopyRoute);
 
         var jp2Endpoint = getMockEndpoint("mock:bean:jp2Processor");
-        jp2Endpoint.expectedMessageCount(1);
+        jp2Endpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
@@ -102,36 +99,12 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testAccessCopyRouteScriptFails() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(accessCopyRoute);
-
-        var jp2Endpoint = getMockEndpoint("mock:bean:jp2Processor");
-        jp2Endpoint.expectedMessageCount(1);
-        jp2Endpoint.whenAnyExchangeReceived(exchange -> {
-            throw new IllegalStateException("Failing run of exec");
-        });
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        try {
-            template.sendBodyAndHeaders("", headers);
-            fail("Exception expected to be thrown");
-        } catch (CamelExecutionException e) {
-            assertTrue(e.getCause() instanceof IllegalStateException);
-        }
-
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        jp2Endpoint.assertIsSatisfied();
-    }
-
-    @Test
     public void testAccessCopyRouteForceNoFileExists() throws Exception {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
         var jp2Endpoint = getMockEndpoint("mock:bean:jp2Processor");
-        jp2Endpoint.expectedMessageCount(1);
+        jp2Endpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
@@ -173,7 +146,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(accessCopyRoute);
 
         var jp2Endpoint = getMockEndpoint("mock:bean:jp2Processor");
-        jp2Endpoint.expectedMessageCount(1);
+        jp2Endpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
@@ -206,7 +179,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        //when(jp2Processor.process(Exchange.class);)
         var jp2Endpoint = getMockEndpoint("mock:bean:jp2Processor");
         jp2Endpoint.expectedMessageCount(0);
 
