@@ -66,10 +66,11 @@ public class Jp2ProcessorTest {
     public void testJp2Processor() throws Exception {
         when(message.getHeader(CdrFcrepoHeaders.CdrImagePath)).thenReturn(fileName);
         try (MockedStatic<CLIMain> mockedStatic = mockStatic(CLIMain.class)) {
-            mockedStatic.when(() -> CLIMain.main(new String[]{anyString()})).thenAnswer((Answer<Void>) invocation -> null);
+            mockedStatic.when(() -> CLIMain.runCommand(new String[]{anyString()}))
+                    .thenAnswer((Answer<Void>) invocation -> null);
             processor.process(exchange);
 
-            mockedStatic.verify(() -> CLIMain.main(new String[]{"jp24u", "kdu_compress",
+            mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"jp24u", "kdu_compress",
                     "-f", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc", "-o",  derivTmpPath,
                     "-sf", "image/tiff"}));
         }
@@ -78,10 +79,11 @@ public class Jp2ProcessorTest {
     @Test
     public void testNoFileInput() throws Exception {
         try (MockedStatic<CLIMain> mockedStatic = mockStatic(CLIMain.class)) {
-            mockedStatic.when(() -> CLIMain.main(new String[]{anyString()})).thenThrow(IllegalArgumentException.class);
+            mockedStatic.when(() -> CLIMain.runCommand(new String[]{anyString()}))
+                    .thenThrow(IllegalArgumentException.class);
             processor.process(exchange);
 
-            mockedStatic.verify(() -> CLIMain.main(new String[]{"jp24u", "kdu_compress", "-f", null,
+            mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"jp24u", "kdu_compress", "-f", null,
                     "-o", derivTmpPath, "-sf", "image/tiff"}));
         }
     }
