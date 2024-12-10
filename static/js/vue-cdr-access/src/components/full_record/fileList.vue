@@ -120,16 +120,19 @@ export default {
                         row.classList.add('deleted');
                     }
                 },
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        text: 'Clear Sort',
-                        action: function (e, dt, node, config) {
-                            dt.data().order().length = 0;
-                            dt.ajax.reload();
-                        }
+                layout: {
+                    topStart: {
+                        buttons: [
+                            {
+                                text: 'Clear Sort',
+                                action: function (e, dt, node, config) {
+                                    dt.data().order().length = 0;
+                                    dt.ajax.reload();
+                                }
+                            }
+                        ]
                     }
-                ]
+                }
             }
         },
 
