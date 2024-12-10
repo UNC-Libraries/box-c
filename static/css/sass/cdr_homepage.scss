@@ -117,13 +117,6 @@ body {
 .menu-row-small.navbar {
   box-shadow: none;
 
-  button {
-    border-radius: 0 5px 5px 0;
-    height: 35px;
-    margin-left: -1px;
-    border: 1px solid #dbdbdb;
-  }
-
   .is-active {
     .navbar-item {
       color: black;
@@ -175,60 +168,8 @@ body {
 }
 
 header {
-  .search {
-    @include mobile-margin;
-    display: flex;
-    align-items: center;
-    padding: 6px 0;
-
-    label {
-      position: absolute;
-      width: 0;
-      height: 0;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      overflow: hidden;
-    }
-    input {
-      border: 1px solid lightgray;
-      border-bottom-left-radius: 5px;
-      border-top-left-radius: 5px;
-      font-size: 1rem;
-      height: 35px;
-      padding: 7px;
-      width: 100%;
-    }
-
-    a {
-      flex-shrink: 0;
-      color: white;
-      font-size: 16px;
-    }
-  }
-
   .search-row-large {
     background-color: $unc-navy;
-  }
-
-  .search-large {
-    input, button {
-      height: 40px;
-    }
-
-    input {
-      font-size: 1.2rem;
-    }
-
-    button {
-      border-radius: 0 5px 5px 0;
-      margin-left: -1px;
-      border: 1px solid #dbdbdb;
-    }
-
-    a:hover, a:active {
-      color: whitesmoke;
-    }
   }
 }
 
@@ -346,10 +287,6 @@ header {
     }
   }
 
-  .search-row {
-    width: 100%;
-  }
-
   header {
     .search {
       margin: auto;
@@ -371,10 +308,6 @@ header {
       z-index: 25;
     }
   }
-
-  .search-row {
-    width: 100%;
-  }
 }
 
 @media only screen and (max-width: 767px) {
@@ -392,23 +325,6 @@ header {
 
       form {
         display: inline-flex;
-      }
-    }
-  }
-
-  .menu-row-small {
-    .search {
-      button {
-        margin-right: 0;
-      }
-
-      a {
-        margin-bottom: 5px;
-        margin-right: -5px;
-      }
-
-      a, button {
-        float: right;
       }
     }
   }
