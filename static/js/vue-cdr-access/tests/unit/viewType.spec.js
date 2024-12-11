@@ -37,7 +37,7 @@ describe('viewType.vue', () => {
         });
 
         store = useAccessStore();
-        btns = wrapper.findAll('#browse-btns i');
+        btns = wrapper.findAll('#browse-display-type button');
     });
 
     afterEach(() => {

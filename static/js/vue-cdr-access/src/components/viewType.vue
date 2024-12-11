@@ -2,10 +2,16 @@
 Buttons for switching display modes in a search result between gallery and list format.
 -->
 <template>
-    <div id="browse-display-type" class="display-wrapper">
-        <div id="browse-btns" @click="setMode">
-            <i id="list-display" :title="$t('view.list')" class="fas fa-th-list" :class="{'is-selected': !isGallery}"></i>
-            <i id="gallery-display" :title="$t('view.gallery')" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
+    <div id="browse-display-type" class="field has-addons" @click="setMode">
+        <div class="control">
+            <button id="list-display" :title="$t('view.list')" class="button is-medium" :class="listButtonClasses">
+                <span class="icon is-medium"><i class="fas fa-th-list fa-2x"></i></span>
+            </button>
+        </div>
+        <div class="control">
+            <button id="gallery-display" :title="$t('view.gallery')" class="button is-medium" :class="galleryButtonClasses">
+                <span class="icon is-medium"><i class="fas fa-th fa-2x"></i></span>
+            </button>
         </div>
     </div>
 </template>
@@ -33,15 +39,22 @@ Buttons for switching display modes in a search result between gallery and list 
         },
 
         computed: {
-            isGallery() {
-                return this.browse_type === 'gallery-display';
+            listButtonClasses() {
+                return this.browse_type === "list-display"
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
+            },
+            galleryButtonClasses() {
+                return this.browse_type === "gallery-display"
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
             }
         },
 
         methods: {
             setMode(e) {
                 e.preventDefault();
-                this.browse_type = e.target.id;
+                this.browse_type = e.target.closest('button').id;
                 let update_params = { browse_type: encodeURIComponent(this.browse_type) };
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) }).catch((e) => {
                     if (e.name !== 'NavigationDuplicated') {
@@ -68,47 +81,11 @@ Buttons for switching display modes in a search result between gallery and list 
 <style scoped lang="scss">
     #browse-display-type {
         justify-content: flex-end;
-
-        #browse-btns {
-            margin-top: 10px;
-
-            i {
-                border: 1px solid lightgray;
-                border-radius: 5px;
-                color: lightgray;
-                font-size: 38px;
-                height: 50px;
-                padding: 5px;
-            }
-
-            #list-display {
-                border-bottom-right-radius: 0;
-                border-top-right-radius: 0;
-            }
-
-            #gallery-display {
-                border-bottom-left-radius: 0;
-                border-top-left-radius: 0;
-            }
-
-            .is-selected {
-                background-color: slategray;
-                border-color: slategray;
-                color: white;
-            }
-        }
-
-        .browse-tip {
-            line-height: 20px;
-            width: 250px;
-        }
     }
 
     @media screen and (max-width: 768px) {
         #browse-display-type {
             justify-content: flex-start;
-            margin-left: 15px;
-            margin-top: 5px;
         }
     }
 </style>

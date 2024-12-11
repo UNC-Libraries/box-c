@@ -4,10 +4,10 @@ Top level component wrapper for search pages
 <template>
     <header-small/>
     <div v-if="!show_404 && !show_503">
-        <div class="search-query-text">
-            Search results for "{{ $route.query.anywhere }}"
+        <div class="mx-5">
+            <h2 class="subtitle is-4">Search results for "{{ $route.query.anywhere }}"</h2>
+            <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         </div>
-        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
             <div class="columns">

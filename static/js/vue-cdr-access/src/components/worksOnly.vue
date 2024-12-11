@@ -3,15 +3,14 @@ Checkbox to switch search result modes between including only works with a flatt
 and including all types with hierarchy retained.
 -->
 <template>
-    <div id="browse-display-type" class="display-wrapper">
-        <div class="field">
-            <input @click="showWorks" type="checkbox" id="works-only" class="is-checkradio is-large" v-model="works_only">
-            <label for="works-only"><p>{{ $t('works_only.show')}}</p></label>
-        </div>
-        <div class="note">
-            <div class="display-note-btn has-tooltip-arrow has-tooltip-bottom"
-                 :data-tooltip="$t('works_only.show_tip')">?
-            </div>
+    <div id="browse-display-type" class="field is-narrow">
+        <div class="control">
+            <input @click="showWorks" type="checkbox" id="works-only" class="checkbox" v-model="works_only">
+            <label for="works-only" class="checkbox is-medium">
+                {{ $t('works_only.show') }}
+                <span class="has-tooltip-arrow has-tooltip-bottom icon is-medium is-text-unc-blue"
+                    :data-tooltip="$t('works_only.show_tip')"><i class="fas fa-question-circle fa-lg"></i></span>
+            </label>
         </div>
     </div>
 </template>
@@ -62,77 +61,44 @@ and including all types with hierarchy retained.
 </script>
 
 <style scoped lang="scss">
-    #browse-display-type {
-        font-size: 1rem;
-        margin: inherit;
-
-        label {
-            display: inherit;
-            font-size: 1rem;
-            margin-right: 0;
-            padding-right: 0;
-            width: auto;
-        }
-
-        .note {
-            padding-left: 0;
-            padding-top: 10px;
-        }
-
-        .display-note-btn {
-            margin-left: 5px;
-            margin-right: 8px;
-            margin-top: 5px;
-        }
-
-        p {
-            font-size: 18px;
-            margin-left: 0;
-            padding-top: 10px;
-        }
-
-        [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
-        [data-tooltip]:not(.is-loading).has-tooltip-bottom.has-tooltip-arrow::after,
-        [data-tooltip]:not([disabled]).has-tooltip-bottom.has-tooltip-arrow::after {
-            bottom: -5px;
-        }
-
-        [data-tooltip]:not(.is-disabled).has-tooltip-bottom::before,
-        [data-tooltip]:not(.is-loading).has-tooltip-bottom::before,
-        [data-tooltip]:not([disabled]).has-tooltip-bottom::before {
-            margin-bottom: -10px;
-        }
+    input.checkbox {
+        display: none;
     }
 
-    @media screen and (max-width: 1408px) {
-        #browse-display-type {
-            p {
-                max-width: 90px;
-            }
-        }
+    label.checkbox {
+        white-space: nowrap;
+        font-size: 18px;
     }
 
-    @media screen and (max-width: 768px) {
-        #browse-display-type {
-            justify-content: flex-start;
-            margin: 15px auto;
+    label.checkbox::before {
+        border-radius: 6px;
+        content: '';
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+        vertical-align: middle;
+    }
 
-            input[type="checkbox"] {
-                margin-left: 5px;
-            }
+    input.checkbox:checked + label.checkbox::before {
+        content: "\2713";
+        font-size: 30px;
+        color: #999999;
+        text-align: center;
+        line-height: 55px;
+        background-color: #ffffff;
+    }
 
-            label {
-                margin-right: 5px;
-                min-width: 180px;
-            }
+    [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
+    [data-tooltip]:not(.is-loading).has-tooltip-bottom.has-tooltip-arrow::after,
+    [data-tooltip]:not([disabled]).has-tooltip-bottom.has-tooltip-arrow::after {
+        bottom: -5px;
+    }
 
-            p {
-                max-width: inherit;
-            }
-        }
-
-        .note-wrapper {
-            display: inherit;
-        }
+    [data-tooltip]:not(.is-disabled).has-tooltip-bottom::before,
+    [data-tooltip]:not(.is-loading).has-tooltip-bottom::before,
+    [data-tooltip]:not([disabled]).has-tooltip-bottom::before {
+        margin-bottom: -10px;
     }
 </style>

@@ -67,13 +67,12 @@ build-access-concat:
 		static/js/public/src/*.js \
 		>> static/js/cdr-access.js
 
-	cat static/css/reset.css \
-		static/css/cdr_common.css \
-		static/css/cdrui_styles.css \
+	cat static/css/cdrui_styles.css \
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
 		static/css/cdr_vue_modal_styles.css \
+		static/css/fontawesome.min.css \
 		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/css/cdr_access.css
 

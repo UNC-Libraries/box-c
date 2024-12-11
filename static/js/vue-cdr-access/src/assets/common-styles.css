@@ -35,15 +35,6 @@ a.button.is-link span {
     background-color: white;
 }
 
-.button.is-primary {
-    background-color: #1A698C;
-    color: white;
-}
-
-.button.is-primary:hover {
-    background-color: #084b6b;
-}
-
 .image-download-options a {
     border: inherit;
     color: black;

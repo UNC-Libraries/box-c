@@ -7,11 +7,9 @@ Top level component for full record pages with searching/browsing, including Adm
         <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
     </div>
     <div v-if="displayRecord" class="browse-header">
-        <div class="columns">
-            <div class="column crumbs">
-                <bread-crumbs :object-path="container_info.briefObject.objectPath">
-                </bread-crumbs>
-            </div>
+        <div class="crumbs">
+            <bread-crumbs :object-path="container_info.briefObject.objectPath">
+            </bread-crumbs>
         </div>
         <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
         <collection-record v-if="container_info.resourceType === 'Collection'" :record-data="container_info"></collection-record>
@@ -19,22 +17,18 @@ Top level component for full record pages with searching/browsing, including Adm
         <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
         <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
-        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="background-white">
-            <div class="columns is-tablet">
-                <div class="column is-6">
+        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="background-white pt-5 px-6">
+            <div class="field is-horizontal is-tablet">
+                <div class="field-body">
                     <browse-search :object-type="container_metadata.type"></browse-search>
-                </div>
-                <div class="column is-2" v-if="showWidget">
-                    <browse-sort browse-type="display"></browse-sort>
-                </div>
-                <div class="column is-2 container-note" v-if="showWidget">
-                    <works-only></works-only>
-                </div>
-                <div class="column is-narrow-tablet" v-if="showWidget">
-                    <view-type></view-type>
+                    <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
+                    <works-only v-if="showWidget"></works-only>
+                    <view-type v-if="showWidget"></view-type>
                 </div>
             </div>
-            <clear-filters :filter-parameters="filter_parameters"></clear-filters>
+            <div class="">
+                <clear-filters :filter-parameters="filter_parameters"></clear-filters>
+            </div>
 
             <div v-if="showWidget" class="columns">
                 <div class="facet-list column is-one-quarter facets-border">
@@ -288,11 +282,6 @@ Top level component for full record pages with searching/browsing, including Adm
         text-align: center;
     }
 
-    .crumbs {
-        padding-right: 0;
-        padding-bottom: 0;
-    }
-
     .collection-info-bottom,
     .collinfo_metadata {
         margin-top: 0;
@@ -325,10 +314,6 @@ Top level component for full record pages with searching/browsing, including Adm
     .tags {
         margin-bottom: 0;
         margin-left: 30px;
-    }
-
-    .is-6 {
-        padding-left: 50px;
     }
 
     #facetList {
