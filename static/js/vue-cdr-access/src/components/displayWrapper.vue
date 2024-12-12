@@ -7,9 +7,11 @@ Top level component for full record pages with searching/browsing, including Adm
         <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
     </div>
     <div v-if="displayRecord" class="browse-header">
-        <div class="crumbs">
-            <bread-crumbs :object-path="container_info.briefObject.objectPath">
-            </bread-crumbs>
+        <div class="crumbs columns container">
+            <div class="column">
+                <bread-crumbs :object-path="container_info.briefObject.objectPath">
+                </bread-crumbs>
+            </div>
         </div>
         <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
         <collection-record v-if="container_info.resourceType === 'Collection'" :record-data="container_info"></collection-record>
@@ -17,8 +19,9 @@ Top level component for full record pages with searching/browsing, including Adm
         <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
         <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
-        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="background-white pt-5 px-6">
-            <div class="field is-horizontal is-tablet">
+        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="has-background-white pt-5">
+            <div class="container">
+                <div class="field is-horizontal is-tablet">
                 <div class="field-body">
                     <browse-search :object-type="container_metadata.type"></browse-search>
                     <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
@@ -41,6 +44,7 @@ Top level component for full record pages with searching/browsing, including Adm
             </div>
             <p v-else class="spacing">{{ $t('search.no_results') }}</p>
             <pagination browse-type="display" :number-of-records="record_count"></pagination>
+            </div>
         </div>
     </div>
     <not-found v-if="show_404" :display-header="false" />

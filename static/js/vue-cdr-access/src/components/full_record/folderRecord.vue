@@ -1,32 +1,33 @@
 <template>
-    <div class="content-wrap full_record">
-        <div class="columns browse-top">
-            <div class="column is-narrow">
+    <div class="full_record">
+        <div class="columns is-6 browse-top container">
+            <div class="column is-narrow" :class="{restrictedContent: 'is-8'}">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
             </div>
-            <div class="column">
-                <h2 :class="isDeleted">
+            <div class="column content">
+                <h2 :class="isDeleted" class="title is-2 is-text-unc-blue">
                     {{ recordData.briefObject.title }}
-                    <span class="item_container_count">{{ displayChildCount }}</span>
+                    <span class="tag is-large is-primary">{{ displayChildCount }}</span>
                 </h2>
-                <p v-if="fieldExists(recordData.briefObject.added)">
-                    <strong>{{ $t('full_record.date_added') }}: </strong>
-                    {{ formatDate(recordData.briefObject.added) }}
-                </p>
-                <p class="parent_collection">
-                    <strong>{{ $t('full_record.collection') }}: </strong> <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
-                </p>
-                <p v-if="fieldExists(recordData.findingAidUrl)">
-                    <strong>{{ $t('full_record.finding_aid') }}: </strong>
-                    <a :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
-                </p>
-                <p class="exhibits" v-if="fieldExists(recordData.exhibits)">
-                    <strong>{{ $t('full_record.related_digital_exhibits') }}: </strong>
-                    <template v-for="(exhibit_link, title, index) in recordData.exhibits">
-                        <a :href="exhibit_link">{{ title }}</a>
-                        <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                <dl class="property-grid">
+                    <template v-if="fieldExists(recordData.briefObject.added)">
+                        <dt>{{ $t('full_record.date_added') }}</dt>
+                        <dd>{{ formatDate(recordData.briefObject.added) }}</dd>
                     </template>
-                </p>
+                    <dt>{{ $t('display.collection') }}</dt>
+                    <dd><router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link></dd>
+                    <template v-if="fieldExists(recordData.findingAidUrl)">
+                        <dt>{{ $t('full_record.finding_aid') }}</dt>
+                        <dd><a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a></dd>
+                    </template>
+                    <template v-if="fieldExists(recordData.exhibits)">
+                        <dt>{{ $t('full_record.related_digital_exhibits') }}</dt>
+                        <dd v-for="(exhibit_link, title, index) in recordData.exhibits">
+                            <a :href="exhibit_link">{{ title }}</a>
+                            <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                        </dd>
+                    </template>
+                </dl>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
@@ -52,16 +53,3 @@ export default {
     components: { abstract, objectActions }
 }
 </script>
-
-<style scoped lang="scss">
-.actionlink {
-    margin: 5px auto;
-    max-width: 300px;
-}
-
-.browse-header {
-    h2 {
-        font-size: 1.5rem;
-    }
-}
-</style>

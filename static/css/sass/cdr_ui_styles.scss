@@ -24,14 +24,10 @@ h2 {
 }
 
 .is-text-unc-blue {
-  color: $unc-text-blue;
+  color: $unc-text-blue !important;
 }
 
-header {
-  margin-bottom: 16px
-}
-
-.button.is-primary {
+.button.is-primary, .tag.is-primary {
   background-color: $container-blue;
   color: white;
 }
@@ -46,6 +42,29 @@ header {
 
 button.has-background-primary:hover {
   background-color: $container-dark-blue !important;
+}
+
+dl.property-grid {
+  display: grid;
+  grid-template-columns: max-content auto;
+
+  dt {
+    font-weight: bold;
+    grid-column-start: 1;
+
+    &::after {
+      content: ':';
+    }
+  }
+
+  dd {
+    grid-column-start: 2;
+  }
+}
+
+/* Prevent the first column in a bulma container from being indented */
+.container.columns > .column:first-child {
+  padding-left: 0;
 }
 
 /* Items marked for deletion */
@@ -125,12 +144,6 @@ button.has-background-primary:hover {
 
   &:hover, a {
     color: #8CB4C6;
-  }
-
-  #mods_data_display {
-    color: black;
-    display: block;
-    width: 100%;
   }
 
   img {
@@ -259,18 +272,6 @@ p.spacing {
   padding: 25px;
 }
 
-.item_container_count {
-  background-color: $container-blue;
-  border: 1px solid $container-blue;
-  border-radius: 5px;
-  color: white;
-  line-height: 18px;
-  margin-bottom: 4px;
-  padding: 3px 8px;
-  white-space: nowrap;
-  width: 100%;
-}
-
 .iteminfo {
   float: none;
   margin-top: 5px;
@@ -318,39 +319,6 @@ p.no-search-results {
   color: #3D4D5B;
   margin: 0;
   padding-top: 5px;
-
-  .browse-top {
-    margin: 0;
-    padding: 0 .75rem;
-  }
-
-  h2 {
-    font-size: 36px;
-    font-weight: bold;
-    margin: 15px;
-
-    span {
-      font-size: 20px;
-      font-weight: normal;
-      margin-left: 10px;
-    }
-
-    span.item_container_count {
-      color: white;
-      vertical-align: middle;
-    }
-  }
-
-  p {
-    color: black;
-    font-size: 18px;
-    line-height: 22px;
-    margin-left: 25px;
-  }
-
-  .read-more {
-    margin-left: 155px;
-  }
 }
 
 .browse-header.browse-header-bottom {
@@ -442,16 +410,6 @@ p.no-search-results {
 
 img.data-thumb {
   max-width: 60px;
-}
-
-.file-list-header {
-  margin: 30px 0 5px;
-
-  h3 {
-    font-size: 16px;
-    margin: 0;
-    padding: 0;
-  }
 }
 
 .child-records {
@@ -554,19 +512,6 @@ img.data-thumb {
 
   }
 
-  h2.link-list {
-    font-size: 20px;
-    padding-left: 15px;
-    padding-top: 10px;
-  }
-
-  h2.full-metadata {
-    font-size: 1.8rem;
-    margin-bottom: 0;
-    margin-top: 25px;
-    padding-left: 25px;
-  }
-
   .browse-header {
     .columns {
       margin: auto;
@@ -643,38 +588,22 @@ img.data-thumb {
     margin: 0;
   }
 
-  .contentarea-aggregate {
-    .collinfo_metadata {
-      margin: 25px;
-      width: 100%;
-    }
-  }
-
   div:has(#streaming-player) {
     padding: 5px 0 15px 0;
+  }
+
+  .clover-viewer-header > span {
+    padding-left: 0;
+  }
+
+  #pdfViewer #outerContainer {
+    width: unset;
   }
 }
 
 .full_record_bottom {
   padding-top: 30px;
   background-color: white;
-}
-
-/*@TODO remove breadcrumb css one full record page is converted to Vue */
-#full_record_trail {
-  border: 1px solid #E0E0E0;
-  background-color: #E0E0E0;
-  border-radius: 5px;
-  font-size: 18px;
-  line-height: 1.2;
-  margin: 0 auto 25px auto;
-  padding: 20px;
-  text-indent: 0;
-  width: 100%;
-
-  a {
-    color: $container-blue;
-  }
 }
 
 #expand-breadcrumb {
@@ -829,14 +758,9 @@ table.dataTable {
 
 /* MODs display for work and file pages, plus modalMetadata.vue component */
 #mods_data_display {
-  margin: auto;
-  padding: 0 25px;
-  width: auto;
-
   table {
     border: 1px solid #F0F0F0;
     font-size: 16px;
-    margin: 25px auto 25px 25px;
     width: 97%;
 
     p {
@@ -1153,11 +1077,6 @@ iframe {
 #pdfViewer {
   background-color: white;
   margin: 25px auto;
-}
-
-.clover-viewer {
-  margin: auto;
-  width: 95%;
 }
 
 #information-toggle {

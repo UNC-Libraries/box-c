@@ -2,7 +2,7 @@
 Facet list component, used to display all the values of facets and provide links for applying those values as filters on the current search.
 -->
 <template>
-    <div id="facetList" class="contentarea">
+    <div id="facetList">
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" :id="'facet-display-' + facetType(facet.name, false)" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>

@@ -60,7 +60,7 @@
                     </div>
                 </div>
             </div>
-        <div class="background-white">
+        <div class="has-background-white">
             <player :record-data="recordData"></player>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
