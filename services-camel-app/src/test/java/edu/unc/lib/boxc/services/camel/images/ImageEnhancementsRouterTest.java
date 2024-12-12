@@ -1,10 +1,8 @@
 package edu.unc.lib.boxc.services.camel.images;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
@@ -28,16 +26,14 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrTempPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +49,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
     private final String eventTypes = EVENT_NS + "ResourceCreation";
     private final String accessCopyRoute = "AccessCopy";
+    private static final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private static final String derivTmpPath = "tmp/" + fileName;
 
     @PropertyInject(value = "fcrepo.baseUrl")
     private static String baseUri;
@@ -62,6 +60,9 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
+
+    @BeanInject(value = "jp2Processor")
+    private Jp2Processor jp2Processor;
 
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
@@ -84,41 +85,14 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
         verify(imageCacheInvalidationProcessor).process(any());
-        shEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testAccessCopyRouteScriptFails() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(accessCopyRoute);
-
-        MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-        shEndpoint.whenAnyExchangeReceived(exchange -> {
-            throw new IllegalStateException("Failing run of exec");
-        });
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        try {
-            template.sendBodyAndHeaders("", headers);
-            fail("Exception expected to be thrown");
-        } catch (CamelExecutionException e) {
-            assertTrue(e.getCause() instanceof IllegalStateException);
-        }
-
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -126,16 +100,13 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(imageCacheInvalidationProcessor).process(any());
-        shEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -146,17 +117,14 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(accessCopyRoute);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(0);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
         verify(imageCacheInvalidationProcessor, never()).process(any());
-        shEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -168,16 +136,13 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(accessCopyRoute);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(imageCacheInvalidationProcessor).process(any());
-        shEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -193,8 +158,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        imageEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -202,16 +167,14 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "image/vnd.fpx");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -219,17 +182,15 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "image/x-icon");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor).needsRun(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {
@@ -251,6 +212,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Binary.getURI());
+        headers.put(CdrTempPath, derivTmpPath);
+        headers.put(CdrImagePath, fileName);
         headers.put(CdrBinaryMimeType, "image/png");
         headers.put("force", force);
 
