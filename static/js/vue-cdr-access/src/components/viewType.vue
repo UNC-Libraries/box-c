@@ -40,7 +40,7 @@ Buttons for switching display modes in a search result between gallery and list 
 
         computed: {
             listButtonClasses() {
-                return this.browse_type === "list-display"
+                return this.browse_type === "list-display" || !this.browse_type
                     ? "is-selected has-text-white has-background-primary"
                     : "has-text-grey-lighter";
             },
