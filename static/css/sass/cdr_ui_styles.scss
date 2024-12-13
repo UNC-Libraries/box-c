@@ -51,10 +51,6 @@ dl.property-grid {
   dt {
     font-weight: bold;
     grid-column-start: 1;
-
-    &::after {
-      content: ':';
-    }
   }
 
   dd {
@@ -595,10 +591,10 @@ img.data-thumb {
   .clover-viewer-header > span {
     padding-left: 0;
   }
+}
 
-  #pdfViewer #outerContainer {
-    width: unset;
-  }
+#pdfViewer #outerContainer {
+  width: unset;
 }
 
 .full_record_bottom {
