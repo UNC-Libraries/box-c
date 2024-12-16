@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="column content is-7-mobile">
-                <h2 :class="isDeleted" class="title is-2 is-text-unc-blue">
+                <h2 :class="isDeleted" class="title is-3 is-text-unc-blue">
                     {{ recordData.briefObject.title }}
                 </h2>
                 <dl class="property-grid">

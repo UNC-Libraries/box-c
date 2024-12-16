@@ -1,10 +1,10 @@
 <template>
     <header-small/>
-    <div class="container">
+    <div class="container py-5">
         <h2 class="title is-3 has-text-centered">{{ $t('adv_search.advanced') }}</h2>
         <form id="advanced-search-form">
             <div class="lightest columns container">
-                <div class="column has-background-white-bis shadowtop">
+                <div class="column has-background-white-bis p-4">
                     <h3 class="subtitle is-5">{{ $t('adv_search.search_for') }}</h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <div class="column has-background-white-ter">
+                <div class="column has-background-white-ter p-4">
                     <h3 class="subtitle is-5">{{ $t('adv_search.limit_by') }}</h3>
                     <div class="field">
                         <div class="field">
@@ -103,33 +103,35 @@
                         </div>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="deposited-start-date" name="addedStart" placeholder="YYYY" min="0" type="number" class="input" />
+                                <input aria-label="deposited-start-date" id="addedStart" name="addedStart" placeholder="YYYY" min="0" type="number" class="input" />
                             </div>
                         </div>
-                        <div class="field-label is-normal">{{ $t('adv_search.date_to') }}</div>
+                        <div class="field-label is-normal mx-4">
+                            <label class="label" for="addedEnd">{{ $t('adv_search.date_to') }}</label>
+                        </div>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="deposited-end-date" name="addedEnd" placeholder="YYYY" min="1" type="number" class="input" />
+                                <input aria-label="deposited-end-date" id="addedEnd" name="addedEnd" placeholder="YYYY" min="1" type="number" class="input" />
                             </div>
                         </div>
                         <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
                     </div>
-                    <h3 class="title is-6 my-2">{{ $t('adv_search.date_created') }}</h3>
+                    <h3 class="title is-6 mb-2 mt-4">{{ $t('adv_search.date_created') }}</h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label" for="createdYearStart">{{ $t('adv_search.date_from') }}</label>
                         </div>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="created-start-date" placeholder="YYYY" min="0" name="createdYearStart" type="number" class="input" />
+                                <input aria-label="created-start-date" placeholder="YYYY" min="0" id="createdYearStart" name="createdYearStart" type="number" class="input" />
                             </div>
                         </div>
-                        <div class="field-label is-normal">
+                        <div class="field-label is-normal mx-4">
                             <label class="label" for="createdYearEnd">{{ $t('adv_search.date_to') }}</label>
                         </div>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="created-end-date" placeholder="YYYY" min="1" name="createdYearEnd" type="number" class="input" />
+                                <input aria-label="created-end-date" placeholder="YYYY" min="1" id="createdYearEnd" name="createdYearEnd" type="number" class="input" />
                             </div>
                         </div>
                         <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
