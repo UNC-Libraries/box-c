@@ -286,7 +286,6 @@ Top level component for full record pages with searching/browsing, including Adm
         text-align: center;
     }
 
-    .collection-info-bottom,
     .collinfo_metadata {
         margin-top: 0;
     }
@@ -324,10 +323,6 @@ Top level component for full record pages with searching/browsing, including Adm
         .facet-header {
             padding: 0 0 20px 0;
         }
-    }
-
-    #facetList.contentarea {
-        margin: 0 20px 20px 38px;
     }
 
     @media screen and (max-width: 768px) {
