@@ -3,9 +3,9 @@ Facet list component, used to display all the values of facets and provide links
 -->
 <template>
     <div id="facetList">
-        <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
+        <h2 class="subtitle">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" :id="'facet-display-' + facetType(facet.name, false)" v-for="facet in this.sortedFacetsList">
-            <h3>{{ facetName(facet.name) }}</h3>
+            <h3 class="title is-5 mb-2">{{ facetName(facet.name) }}</h3>
             <slider v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
@@ -19,16 +19,21 @@ Facet list component, used to display all the values of facets and provide links
                 <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
             </form>
 
-            <ul>
-                <li v-for="value in facet.values">
+            <div v-for="value in facet.values" class="columns is-mobile">
+                <div class="column is-four-fifths">
                     <a class="is-selected" v-if="isSelected(value)" @click.prevent="updateAll(value, true)">
-                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
-                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
-                </li>
-            </ul>
+                            {{ value.displayValue }} <i class="fas fa-times"></i></a>
+                        <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }}</a>
+                </div>
+                <div class="column has-text-right">
+                    {{ value.count }}
+                </div>
+            </div>
 
-            <facet-modal v-if="showMoreResults(facet)" :facet-id="facetType(facet.name, false)"
-                         :facet-name="facetName(facet.name)" @facetValueAdded="modalFacetValueAdded" ></facet-modal>
+            <div class="mt-2">
+                <facet-modal v-if="showMoreResults(facet)" :facet-id="facetType(facet.name, false)"
+                    :facet-name="facetName(facet.name)" @facetValueAdded="modalFacetValueAdded" ></facet-modal>
+            </div>
         </div>
     </div>
 </template>
@@ -429,30 +434,20 @@ Facet list component, used to display all the values of facets and provide links
 <style scoped lang="scss">
     $cdr-blue: #1A698C;
     #facetList {
-        h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        li {
-            margin-left: 15px;
-            padding-top: 5px;
-        }
-
-        .facet-header {
-            color: black;
-            font-size: 20px;
-            padding: 18px 0 20px 0;
+        .columns {
             margin: 0;
+            padding: 0 .75rem 0 .1rem;
+            line-height: 1.25rem;
+        }
+
+        .column {
+            padding: .25rem 0;
+            text-indent: 1rem hanging;
         }
 
         .facet-display {
-            margin-bottom: 25px;
+            margin-bottom: 1rem;
             text-transform: capitalize;
-
-            a, i {
-                padding-left: 15px;
-            }
 
             i {
                 color: $cdr-blue;

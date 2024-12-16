@@ -47,6 +47,8 @@ button.has-background-primary:hover {
 dl.property-grid {
   display: grid;
   grid-template-columns: max-content auto;
+  grid-gap: 0 1rem;
+  margin-bottom: 0;
 
   dt {
     font-weight: bold;
@@ -226,28 +228,10 @@ a.search-result-num {
   padding: 30px 0 20px 0;
 }
 
-.search-results-border {
-  border-bottom: $border-style;
-  border-left: $border-style;
-  padding-left: 15px;
-  padding-right: 0;
-}
-
 p.spacing {
   font-size: 1.2rem;
   margin-bottom: 50px;
   text-align: center;
-}
-
-.bottomline {
-  display: inline-flex;
-
-  p {
-    font-size: 20px;
-    height: 40px;
-    line-height: 40px;
-    width: 70%;
-  }
 }
 
 .browseitem {
@@ -289,12 +273,6 @@ h2.iteminfo {
   margin-bottom: 20px
 }
 
-.border-box-left-top {
-  -webkit-box-shadow: $box-shadow;
-  -moz-box-shadow: $box-shadow;
-  box-shadow: $box-shadow;
-}
-
 .shadowtop + .facet-padding {
   margin-top: 125px;
 }
@@ -319,6 +297,11 @@ p.no-search-results {
 
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
+}
+
+.browse-header p.abstract {
+  margin-bottom: .25rem;
+  margin-top: .25rem;
 }
 
 .search-query-text.collection-list {
@@ -573,10 +556,6 @@ img.data-thumb {
   .action-btn {
     padding-right: 50px;
   }
-
-  .bottomline {
-    padding: .75rem;
-  }
 }
 
 .full_record {
@@ -812,10 +791,6 @@ table.dataTable {
 }
 
 /* Bulma overrides */
-.select {
-  margin-bottom: 15px;
-}
-
 .actionlink {
   display: inline-flex;
 }
@@ -856,14 +831,6 @@ a.navbar-item:hover {
 }
 
 @media screen and (max-width: 1024px) {
-  .bottomline {
-    display: block;
-
-    p {
-      width: 100%;
-    }
-  }
-
   .actionlink {
     margin-bottom: 1px;
   }
@@ -893,14 +860,6 @@ a.navbar-item:hover {
   a.search-result-num {
     display: inline-block;
     margin-top: 15px;
-  }
-
-  .bottomline {
-    p {
-      font-size: 16px;
-      margin-left: 10px;
-      width: 100%;
-    }
   }
 
   .light {

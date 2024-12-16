@@ -28,7 +28,9 @@
                         </dd>
                     </template>
                 </dl>
-                <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
+                <div class="my-1">
+                    <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
+                </div>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
             <object-actions :record-data="recordData"></object-actions>

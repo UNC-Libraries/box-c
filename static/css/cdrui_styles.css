@@ -52,7 +52,7 @@
 .thumbnail {
 	display: block;
 	position:relative;
-	margin: 0 0 20px 0;
+	margin: 0;
 	text-align: center;
 	object-fit: contain;
 	word-break: break-word;
@@ -432,17 +432,6 @@ ul.fpfeed_list li {
 
 .pipe_list li:last-child {
 	border-right: 0 none;
-}
-
-.bottomline {
-	padding-bottom: 5px;
-	border-bottom: 1px solid #ececec;
-	float: left;
-	width: 100%;
-}
-
-.paddedline {
-	margin-bottom: 20px;
 }
 
 .actionlink {

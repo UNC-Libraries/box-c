@@ -34,7 +34,7 @@ Top level component for full record pages with searching/browsing, including Adm
             </div>
 
             <div v-if="showWidget" class="columns">
-                <div class="facet-list column is-one-quarter facets-border">
+                <div class="facet-list column is-one-quarter">
                     <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
                 </div>
                 <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">

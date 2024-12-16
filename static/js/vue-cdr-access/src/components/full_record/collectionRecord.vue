@@ -5,7 +5,7 @@
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
             </div>
             <div class="column content">
-                <h2 :class="isDeleted" class="title is-2 is-text-unc-blue">
+                <h2 :class="isDeleted" class="title is-3 is-text-unc-blue">
                     {{ recordData.briefObject.title }}
                     <span class="tag is-large is-primary">{{ displayChildCount }}</span>
                 </h2>

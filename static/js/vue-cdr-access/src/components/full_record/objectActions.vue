@@ -7,9 +7,9 @@
                     <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
                 </div>
             </div>
-            <div v-else class="field is-grouped is-justify-content-right">
+            <div v-else-if="recordData.resourceType === 'File'" class="field is-grouped is-justify-content-right">
                 <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
-                <a class="button view action" :href="recordData.dataFileUrl" v-if="recordData.resourceType === 'File' && hasPermission(recordData, 'viewOriginal')">
+                <a class="button view action" :href="recordData.dataFileUrl" v-if="hasPermission(recordData, 'viewOriginal')">
                     <i class="fa fa-search" aria-hidden="true"></i> View</a>
             </div>
         </template>

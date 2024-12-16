@@ -3,7 +3,7 @@
         <div class="columns is-6 browse-top container">
             <div class="column is-narrow" :class="isDeleted">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
-                <div class="download-jump">
+                <div class="download-jump mt-5">
                     <a class="button action is-primary" :href="filesLink">
                         <span class="icon"><i class="fa fa-download" aria-hidden="true"></i></span><span>Skip to Download</span>
                     </a>

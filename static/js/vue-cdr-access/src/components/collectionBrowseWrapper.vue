@@ -4,14 +4,12 @@ Top level component used for the collection browse page
 <template>
     <header-small/>
     <div v-if="!is_loading && !show_404 && !show_503">
-        <div class="collection-list has-text-centered">
+        <div class="collection-list container has-text-centered py-5">
             <h2 class="title is-3">{{ $t('collecting_units') }}</h2>
         </div>
 
-        <div class="columns">
-            <div class="column collection-browse">
-                <list-display :record-list="records" :exclude-browse-type-from-record-urls="true"></list-display>
-            </div>
+        <div class="container collection-browse">
+            <list-display :record-list="records" :exclude-browse-type-from-record-urls="true"></list-display>
         </div>
     </div>
     <not-found v-if="show_404" :display-header="false"></not-found>
