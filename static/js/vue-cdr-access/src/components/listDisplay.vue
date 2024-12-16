@@ -5,7 +5,7 @@ Renders search results in a list view display format
     <div id="list-records-display">
         <div class="columns">
             <div class="column">
-                <div v-for="(record, index) in recordList" class="columns browseitem py-5" :class="{'has-background-white-ter': index % 2 === 0}">
+                <div v-for="(record, index) in recordList" class="columns is-mobile browseitem py-5" :class="{'has-background-white-ter': index % 2 === 0}">
                     <div class="column is-narrow pt-4">
                         <thumbnail :thumbnail-data="record" size="medium" :link-to-url="recordUrl(record, linkBrowseType)"></thumbnail>
                     </div>

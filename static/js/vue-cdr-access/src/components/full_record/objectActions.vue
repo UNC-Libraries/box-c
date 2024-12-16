@@ -1,5 +1,5 @@
 <template>
-    <div class="column is-narrow action-btn item-actions">
+    <div class="column is-narrow-desktop action-btn item-actions is-full-mobile">
         <template v-if="recordData.resourceType !== 'Work'">
             <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions has-text-centered">
                 <div class="restricted-access p-4">

@@ -1,6 +1,6 @@
 <template>
 <div class="full_record">
-        <div class="columns is-6 browse-top container">
+        <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
             <div class="column is-narrow" :class="isDeleted">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
             </div>

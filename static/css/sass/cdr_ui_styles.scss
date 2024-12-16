@@ -45,11 +45,6 @@ button.has-background-primary:hover {
 }
 
 dl.property-grid {
-  display: grid;
-  grid-template-columns: max-content auto;
-  grid-gap: 0 1rem;
-  margin-bottom: 0;
-
   dt {
     font-weight: bold;
     grid-column-start: 1;
@@ -58,12 +53,30 @@ dl.property-grid {
   dd {
     grid-column-start: 2;
   }
+
+  @media screen and (max-width: 768px) {
+    dd {
+      margin-inline-start: 0;
+    }
+  }
+
+  @media screen and (min-width: 769px) {
+    display: grid;
+    grid-template-columns: max-content auto;
+    grid-gap: 0 1rem;
+    margin-bottom: 0;
+  }
 }
 
 /* Prevent the first column in a bulma container from being indented */
 .container.columns > .column:first-child {
   padding-left: 0;
 }
+
+.columns.is-mobile {
+  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+}
+
 
 /* Items marked for deletion */
 .thumbnail.deleted.placeholder  {

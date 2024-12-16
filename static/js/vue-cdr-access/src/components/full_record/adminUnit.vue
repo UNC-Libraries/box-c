@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <div class="columns is-6 browse-top container">
+    <div class="pb-4">
+        <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
             <div class="column is-narrow">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
             </div>

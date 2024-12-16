@@ -1,15 +1,15 @@
 <template>
     <div class="full_record">
-        <div class="columns is-6 browse-top container">
-            <div class="column is-narrow" :class="isDeleted">
+        <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
+            <div class="column is-narrow-desktop is-5-mobile" :class="isDeleted">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
-                <div class="download-jump mt-5">
-                    <a class="button action is-primary" :href="filesLink">
+                <div class="download-jump mt-5 has-text-centered">
+                    <a class="button action is-primary is-responsive" :href="filesLink">
                         <span class="icon"><i class="fa fa-download" aria-hidden="true"></i></span><span>Skip to Download</span>
                     </a>
                 </div>
             </div>
-            <div class="column content">
+            <div class="column content is-7-mobile">
                 <h2 :class="isDeleted" class="title is-2 is-text-unc-blue">
                     {{ recordData.briefObject.title }}
                 </h2>
