@@ -38,9 +38,9 @@
                         <dt>{{ $t('full_record.date_created') }}</dt>
                         <dd>{{ formatDate(recordData.briefObject.created) }}</dd>
                     </template>
-                    <template class="embargo" v-if="fieldExists(recordData.embargoDate)">
+                    <template v-if="fieldExists(recordData.embargoDate)">
                         <dt>{{ $t('full_record.embargo_date') }}</dt>
-                        <dd>{{ recordData.embargoDate }}</dd>
+                        <dd class="embargo">{{ recordData.embargoDate }}</dd>
                     </template>
                 </dl>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>

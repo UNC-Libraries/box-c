@@ -99,7 +99,7 @@ const recordData = {
 
 let wrapper, router, store;
 
-describe('collectionFolder.vue', () => {
+describe('collectionRecord.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -145,7 +145,8 @@ describe('collectionFolder.vue', () => {
 
     // First field is date added
     it('displays fields, if present', () => {
-        expect(wrapper.find('p').text()).toBe('Date Added:  2023-01-17');
+        expect(wrapper.find('dt').text()).toBe('Date Added');
+        expect(wrapper.find('dd').text()).toBe('2023-01-17');
     });
 
     it('displays restricted access info if items are restricted', () => {

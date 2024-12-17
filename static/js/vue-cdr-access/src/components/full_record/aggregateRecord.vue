@@ -26,9 +26,11 @@
                     </template>
                     <template v-if="fieldExists(recordData.exhibits)">
                         <dt>{{ $t('full_record.related_digital_exhibits') }}</dt>
-                        <dd v-for="(exhibit_link, title, index) in recordData.exhibits">
-                            <a :href="exhibit_link">{{ title }}</a>
-                            <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                        <dd class="exhibits">
+                            <span v-for="(exhibit_link, title, index) in recordData.exhibits">
+                                <a :href="exhibit_link">{{ title }}</a>
+                                <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                            </span>
                         </dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.creator)">
@@ -43,7 +45,7 @@
                     </template>
                     <template class="embargo" v-if="fieldExists(recordData.embargoDate)">
                         <dt>{{ $t('full_record.embargo_date') }}</dt>
-                        <dd>{{ recordData.embargoDate }}</dd>
+                        <dd class="embargo">{{ recordData.embargoDate }}</dd>
                     </template>
                 </dl>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
@@ -56,7 +58,7 @@
             </div>
             <template v-if="childCount > 0">
                 <div class="file-list-header columns is-vcentered container">
-                    <h2 class="column subtitle">{{ $t('full_record.item_list') }} ({{ childCount }})</h2>
+                    <h3 class="column subtitle">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
                     <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
                                    :total-download-size="recordData.totalDownloadSize"
                                    :work-id="recordData.briefObject.id"

@@ -19,13 +19,13 @@ Facet list component, used to display all the values of facets and provide links
                 <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
             </form>
 
-            <div v-for="value in facet.values" class="columns is-mobile">
+            <div v-for="value in facet.values" class="columns is-mobile facet-entry">
                 <div class="column is-four-fifths">
                     <a class="is-selected" v-if="isSelected(value)" @click.prevent="updateAll(value, true)">
                             {{ value.displayValue }} <i class="fas fa-times"></i></a>
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }}</a>
                 </div>
-                <div class="column has-text-right">
+                <div class="column has-text-right facet-count">
                     {{ value.count }}
                 </div>
             </div>

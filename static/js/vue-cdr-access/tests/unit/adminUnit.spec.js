@@ -115,10 +115,10 @@ describe('adminUnit.vue', () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.subject = ['test', 'test2'];
         await wrapper.setProps({ recordData: updatedRecordData });
-        expect(wrapper.find('p').text()).toEqual(expect.stringContaining('test, test2'));
+        expect(wrapper.find('dd').text()).toEqual(expect.stringContaining('test, test2'));
     });
 
     it('displays a message if there are no subjects', () => {
-        expect(wrapper.find('p').text()).toEqual(expect.stringContaining('There are no subjects listed for this record'));
+        expect(wrapper.find('dd').text()).toEqual(expect.stringContaining('There are no subjects listed for this record'));
     });
 });

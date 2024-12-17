@@ -23,7 +23,7 @@ Renders search results in a list view display format
                             </template>
                             <template v-if="record.objectPath.length >= 3 && showCollection(record)">
                                 <dt>{{ $t('display.collection_id') }}</dt>
-                                <dd>{{ record.objectPath[2].collectionId }}</dd>
+                                <dd class="collection_id">{{ record.objectPath[2].collectionId }}</dd>
                             </template>
                             <template v-if="record.type === 'Work' || record.type === 'File'">
                                 <dt>{{ $t('display.file_type') }}</dt>

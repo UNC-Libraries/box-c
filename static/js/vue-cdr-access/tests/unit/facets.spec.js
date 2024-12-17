@@ -166,18 +166,23 @@ describe('facets.vue', () => {
 
     it("displays returned facets with counts", () => {
         let facet_headers = wrapper.findAll('.facet-display h3');
-        let facets = wrapper.findAll('.facet-display li');
+        let facets = wrapper.findAll('.facet-display .facet-entry');
 
         expect(facet_headers[0].text()).toBe('Collection');
-        expect(facets[0].find('a').text()).toBe('testCollection (19)');
-        expect(facets[1].find('a').text()).toBe('test2Collection (1)');
+        expect(facets[0].find('a').text()).toBe('testCollection');
+        expect(facets[0].find('.facet-count').text()).toBe('19');
+        expect(facets[1].find('a').text()).toBe('test2Collection');
+        expect(facets[1].find('.facet-count').text()).toBe('1');
 
         expect(facet_headers[1].text()).toBe('Format');
-        expect(facets[2].find('a').text()).toBe('Image (8)');
-        expect(facets[3].find('a').text()).toBe('Text (2)');
+        expect(facets[2].find('a').text()).toBe('Image');
+        expect(facets[2].find('.facet-count').text()).toBe('8');
+        expect(facets[3].find('a').text()).toBe('Text');
+        expect(facets[3].find('.facet-count').text()).toBe('2');
 
         expect(facet_headers[3].text()).toBe('Date Created');
-        expect(facets[10].find('a').text()).toBe('unknown (4)');
+        expect(facets[10].find('a').text()).toBe('unknown');
+        expect(facets[10].find('.facet-count').text()).toBe('4');
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
@@ -188,8 +193,9 @@ describe('facets.vue', () => {
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
 
-        let facets = wrapper.findAll('.facet-display li');
-        expect(facets[10].find('a').text()).toBe('unknown (4)');
+        let facets = wrapper.findAll('.facet-display .facet-entry');
+        expect(facets[10].find('a').text()).toBe('unknown');
+        expect(facets[10].find('.facet-count').text()).toBe('4');
     });
 
     it("does not display slider/form for 'Date Created' facet if unknown is set", async () => {
@@ -219,7 +225,7 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toEqual(["createdYear=2019,2022"]);
 
         // Now select unknown value
-        let facets = wrapper.findAll('.facet-display li');
+        let facets = wrapper.findAll('.facet-display .facet-entry');
         await facets[10].find('a').trigger('click');
 
         // date created form should be gone
@@ -293,13 +299,15 @@ describe('facets.vue', () => {
         store = useAccessStore();
 
         let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
-        let facet_list = emptyFacetWrapper.findAll('.facet-display li');
+        let facet_list = emptyFacetWrapper.findAll('.facet-display .facet-entry');
 
         expect(facet_headers[0].text()).toBe('Format');
-        expect(facet_list[0].find('a').text()).toBe('Image (8)');
+        expect(facet_list[0].find('a').text()).toBe('Image');
+        expect(facet_list[0].find('.facet-count').text()).toBe('8');
 
         expect(facet_headers[1].text()).toBe('Location');
-        expect(facet_list[1].find('a').text()).toBe('North Carolina (1)');
+        expect(facet_list[1].find('a').text()).toBe('North Carolina');
+        expect(facet_list[1].find('.facet-count').text()).toBe('1');
 
         expect(facet_headers.length).toBe(2);
         expect(facet_list.length).toBe(2);
@@ -343,10 +351,11 @@ describe('facets.vue', () => {
         store = useAccessStore();
 
         let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
-        let facet_list = emptyFacetWrapper.findAll('.facet-display li');
+        let facet_list = emptyFacetWrapper.findAll('.facet-display .facet-entry');
 
         expect(facet_headers[0].text()).toBe('Format');
-        expect(facet_list[0].find('a').text()).toBe('Image (8)');
+        expect(facet_list[0].find('a').text()).toBe('Image');
+        expect(facet_list[0].find('.facet-count').text()).toBe('8');
 
         expect(facet_headers.length).toBe(1);
         expect(facet_list.length).toBe(1);
@@ -366,14 +375,14 @@ describe('facets.vue', () => {
     it("displays a 'More' link if facet values equal FACET_RESULT_COUNT for a facet", async () => {
         const facet_list = wrapper.findAll('.facet-display');
         expect(facet_list[2].find('h3').text()).toEqual('Location');
-        expect(facet_list[2].findAll('li').length).toEqual(6);
+        expect(facet_list[2].findAll('.facet-entry').length).toEqual(6);
         expect(facet_list[2].find('.meta-modal a').exists()).toBe(true);
     });
 
     it("does not display a 'More' link if facet values are less than FACET_RESULT_COUNT for a facet", async () => {
         const facet_list = wrapper.findAll('.facet-display');
         expect(facet_list[0].find('h3').text()).toEqual('Collection');
-        expect(facet_list[0].findAll('li').length).toEqual(2);
+        expect(facet_list[0].findAll('.facet-entry').length).toEqual(2);
         expect(facet_list[0].find('.meta-modal a').exists()).toBe(false);
     });
 
@@ -565,7 +574,7 @@ describe('facets.vue', () => {
      * @param facet_name name of the facet to get values for, in facet type format (ex, collection, subject)
      */
     function listFacetEntries(facet_name) {
-        return wrapper.findAll(`#facet-display-${facet_name} li`);
+        return wrapper.findAll(`#facet-display-${facet_name} .facet-entry`);
     }
 
     /**
@@ -578,7 +587,7 @@ describe('facets.vue', () => {
         for (const entry of facet_entries) {
             const link = entry.find('a');
             const text = link.text();
-            if (text.startsWith(target_value + " (")) {
+            if (text === target_value) {
                 expect(link.classes()).toContain('is-selected');
                 return;
             }
@@ -596,7 +605,7 @@ describe('facets.vue', () => {
         for (const entry of facet_entries) {
             const link = entry.find('a');
             const text = link.text();
-            if (text.startsWith(target_value + " (")) {
+            if (text === target_value) {
                 expect(link.classes()).not.toContain('is-selected');
                 return;
             }

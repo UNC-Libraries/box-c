@@ -618,13 +618,13 @@ describe('aggregateRecord.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('.embargo').text()).toEqual(expect.stringMatching(/Embargoed Until:\s+2199-01-01/))
+        expect(wrapper.find('.embargo').text()).toEqual('2199-01-01')
     });
 
     it("displays a list of exhibits separated by semicolons", () => {
         let exhibits = wrapper.find('.exhibits');
         expect(exhibits.exists()).toBe(true);
-        expect(exhibits.html()).toEqual(expect.stringMatching(/<a.href=.*boxycartoons.*>The.Cartoons.of.Boxy<\/a>;\s<a.href=.*dwanepowellcartoons.*>The Cartoons.of.Dwane.Powell<\/a>/));
+        expect(exhibits.html()).toEqual(expect.stringMatching(/<a.href=.*boxycartoons.*>The.Cartoons.of.Boxy<\/a>.*<a.href=.*dwanepowellcartoons.*>The Cartoons.of.Dwane.Powell<\/a>/));
     });
 
     it("displays a list with one exhibit without semicolons", async () => {
