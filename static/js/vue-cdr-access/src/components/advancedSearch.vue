@@ -96,7 +96,12 @@
                             </div>
                         </div>
                     </div>
-                    <h3 class="title is-6 mb-2 mt-5">{{ $t('adv_search.date_deposited') }}</h3>
+                    <h3 class="title is-6 mb-2 mt-5">
+                        {{ $t('adv_search.date_deposited') }}
+                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile icon" :data-tooltip="$t('adv_search.dates_end_note')">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </span>
+                    </h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label" for="addedStart">{{ $t('adv_search.date_from') }}</label>
@@ -114,9 +119,13 @@
                                 <input aria-label="deposited-end-date" id="addedEnd" name="addedEnd" placeholder="YYYY" min="1" type="number" class="input" />
                             </div>
                         </div>
-                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
                     </div>
-                    <h3 class="title is-6 mb-2 mt-4">{{ $t('adv_search.date_created') }}</h3>
+                    <h3 class="title is-6 mb-2 mt-4">
+                        {{ $t('adv_search.date_created') }}
+                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile icon" :data-tooltip="$t('adv_search.dates_end_note')">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </span>
+                    </h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label" for="createdYearStart">{{ $t('adv_search.date_from') }}</label>
@@ -134,7 +143,6 @@
                                 <input aria-label="created-end-date" placeholder="YYYY" min="1" id="createdYearEnd" name="createdYearEnd" type="number" class="input" />
                             </div>
                         </div>
-                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
                     </div>
                 </div>
             </div>

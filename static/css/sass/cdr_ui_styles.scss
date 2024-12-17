@@ -398,7 +398,7 @@ table.dataTable {
   }
 }
 
-.content-wrap.full_record {
+.full_record {
   .restricted-access {
     border: 1px solid;
     border-radius: 5px;
@@ -409,10 +409,6 @@ table.dataTable {
 
     h2 {
       font-size: 1rem;
-    }
-
-    .actionlink {
-      margin-bottom: 8px;
     }
   }
 }

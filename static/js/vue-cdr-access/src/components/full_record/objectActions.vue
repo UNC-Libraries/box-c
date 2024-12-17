@@ -3,7 +3,7 @@
         <template v-if="recordData.resourceType !== 'Work'">
             <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions has-text-centered">
                 <div class="restricted-access p-4">
-                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                    <h2 class="title is-6 mb-3">{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
                     <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
                 </div>
             </div>

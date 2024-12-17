@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="full_record">
         <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
             <div class="column is-narrow-desktop is-5-mobile" :class="{restrictedContent: 'is-8'}">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
