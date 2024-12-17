@@ -22,6 +22,7 @@
 	margin: 0;
 	object-fit: contain;
 	word-break: break-word;
+	text-align: center;
 }
 
 .thumbnail .thumbnail-viewer {
