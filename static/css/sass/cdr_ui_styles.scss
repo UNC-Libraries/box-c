@@ -517,10 +517,6 @@ table.dataTable {
 }
 
 /* Bulma overrides */
-.actionlink {
-  display: inline-flex;
-}
-
 .button.is-link.is-hovered,
 .button.is-link:hover {
   background-color: #276cda;
@@ -528,12 +524,23 @@ table.dataTable {
   color: #fff;
 }
 
-.navbar-link.is-active,
-.navbar-link:hover,
-a.navbar-item.is-active,
-a.navbar-item:hover {
-  background-color: #fafafa;
-  color: #3273dc;
+.navbar {
+  box-shadow: 2px 2px 2px 0 #071730;
+  a, .button.is-text {
+    color: white;
+  }
+
+  .is-active,
+  .navbar-link:hover,
+  a.navbar-item:hover,
+  a.navbar-item:active,
+  a.navbar-item:focus,
+  .button.has-text-white:hover,
+  .button.has-text-white:active,
+  .button.has-text-white:focus {
+    background-color: #fafafa;
+    color: #3273dc;
+  }
 }
 
 /*** End of Bulma overrides ***/
