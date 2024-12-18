@@ -3,14 +3,28 @@ Checkbox to switch search result modes between including only works with a flatt
 and including all types with hierarchy retained.
 -->
 <template>
-    <div id="browse-display-type" class="field is-narrow">
-        <div class="control">
-            <input @click="showWorks" type="checkbox" id="works-only" class="checkbox" v-model="works_only">
-            <label for="works-only" class="checkbox is-medium">
-                {{ $t('works_only.show') }}
-                <span class="has-tooltip-arrow has-tooltip-bottom icon is-medium is-text-unc-blue"
-                    :data-tooltip="$t('works_only.show_tip')"><i class="fas fa-question-circle fa-lg"></i></span>
-            </label>
+    <div class="field is-grouped is-narrow">
+        <div id="browse-display-type" class="field has-addons">
+            <div class="control">
+                <input @click="showWorks" type="checkbox" id="works-only" class="is-sr-only" v-model="works_only">
+                <button @click="showWorks" id="works-only-off" class="button is-medium" :class="offButtonClasses">
+                    Off
+                </button>
+            </div>
+            <div class="control">
+                <button @click="showWorks" id="works-only-on" class="button is-medium" :class="onButtonClasses">
+                    On
+                </button>
+            </div>
+        </div>
+        <div class="field is-narrow">
+            <div class="control">
+                <label for="works-only" class="button is-medium">
+                    <span>{{ $t('works_only.show') }}</span>
+                    <span class="has-tooltip-arrow has-tooltip-bottom icon is-medium is-text-unc-blue"
+                        :data-tooltip="$t('works_only.show_tip')"><i class="fas fa-question-circle fa-lg"></i></span>
+                </label>
+            </div>
         </div>
     </div>
 </template>
@@ -38,6 +52,19 @@ and including all types with hierarchy retained.
             }
         },
 
+        computed: {
+            offButtonClasses() {
+                return !this.works_only
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
+            },
+            onButtonClasses() {
+                return this.works_only
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
+            }
+        },
+
         methods: {
             showWorks() {
                 this.works_only = !this.works_only;
@@ -61,33 +88,14 @@ and including all types with hierarchy retained.
 </script>
 
 <style scoped lang="scss">
-    input.checkbox {
-        display: none;
-    }
+    label.button {
+        border: none;
+        box-shadow: none;
+        padding-left: 0;
 
-    label.checkbox {
-        white-space: nowrap;
-        font-size: 18px;
-    }
-
-    label.checkbox::before {
-        border-radius: 6px;
-        content: '';
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
-        border: 1px solid #ddd;
-        vertical-align: middle;
-    }
-
-    input.checkbox:checked + label.checkbox::before {
-        content: "\2713";
-        font-size: 30px;
-        color: #999999;
-        text-align: center;
-        line-height: 55px;
-        background-color: #ffffff;
+        &:hover {
+            background-color: transparent;
+        }
     }
 
     [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
