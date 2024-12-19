@@ -117,7 +117,7 @@ describe('downloadOption.vue', () => {
     it('displays a download button for non-image with the proper permissions', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         updated_data.format = ['Text'];
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
@@ -128,7 +128,7 @@ describe('downloadOption.vue', () => {
     it('displays a download button with all download options for image with viewOriginal', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = `content/${uuid}`;
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
         expect(wrapper.find('.dropdown-menu').exists()).toBe(true);
@@ -145,7 +145,7 @@ describe('downloadOption.vue', () => {
     it('displays a download button with reduced download options for image with only viewReducedResImages', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = `content/${uuid}`;
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
 
         expect(wrapper.find('.dropdown-menu').exists()).toBe(true);
@@ -161,7 +161,7 @@ describe('downloadOption.vue', () => {
     it('shows a download button with no reduced download options when viewOriginal set and image is smaller than min size', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = `content/${uuid}`;
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         updated_data.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||640x480";
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
@@ -176,7 +176,7 @@ describe('downloadOption.vue', () => {
     it('hides a download button with viewReducedResImages when image is smaller than min size and user can\'t view original', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         updated_data.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||640x480";
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
 
@@ -186,7 +186,7 @@ describe('downloadOption.vue', () => {
     it('Shows a login button when user is not logged in, but authenticated users canViewOriginals and viewReducedResImages but image is smaller than min size', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         updated_data.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||140x180";
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
         await store.$patch({ username: '' })
@@ -198,7 +198,7 @@ describe('downloadOption.vue', () => {
     it('shows a download button with partial reduced download options with viewReducedResImages when image is smaller than largest size', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = `content/${uuid}`;
-        updated_data.resourceType = 'File';
+        updated_data.type = 'File';
         updated_data.datastream[1] = "original_file|image/jpeg|midz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||1700x1200";
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
 

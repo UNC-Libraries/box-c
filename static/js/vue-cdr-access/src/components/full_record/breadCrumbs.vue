@@ -1,5 +1,5 @@
 <template>
-    <div id="full_record_trail">
+    <div id="full_record_trail" class="p-5">
         <span class="hierarchicalTrail">
             <template v-for="(path, index) in objectPath">
                 <template v-if="index === (breadcrumbSize - 1)">
@@ -66,20 +66,12 @@ export default {
 
 <style scoped lang="scss">
     #full_record_trail {
-        border: 1px solid #E0E0E0;
         background-color: #E0E0E0;
         border-radius: 5px;
         font-size: 18px;
         line-height: 1.2;
-        margin: 25px auto;
-        padding: 20px;
         text-indent: 0;
-        width: 96%;
         word-wrap: anywhere;
-
-        a {
-            color: #1A698C;
-        }
 
         .quote {
             margin: 3px;

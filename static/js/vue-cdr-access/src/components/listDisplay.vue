@@ -5,27 +5,33 @@ Renders search results in a list view display format
     <div id="list-records-display">
         <div class="columns">
             <div class="column">
-                <ul :class="{'margin-offset': isRecordBrowse}">
-                    <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
-                        <div class="column is-narrow">
-                            <thumbnail :thumbnail-data="record" size="medium" :link-to-url="recordUrl(record, linkBrowseType)"></thumbnail>
-                        </div>
-                        <div class="column metadata-fields">
-                            <div class="result-title">
-                                <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, linkBrowseType)">{{ record.title }}</router-link>
-                                <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
-                            </div>
-                            <div><span class="has-text-weight-bold">{{ $t('display.date_deposited') }}:</span> {{ formatDate(record.added) }}</div>
-                            <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
-                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link>
-                            </div>
-                            <div v-if="record.objectPath.length >= 3 && showCollection(record)" class="collection_id">
-                                <span class="has-text-weight-bold">{{ $t('display.collection_id') }}:</span> {{ record.objectPath[2].collectionId }}
-                            </div>
-                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">{{ $t('display.file_type') }}:</span> {{ getFileType(record) }}</div>
-                        </div>
-                    </li>
-                </ul>
+                <div v-for="(record, index) in recordList" class="columns is-mobile browseitem py-5" :class="{'has-background-white-ter': index % 2 === 0}">
+                    <div class="column is-narrow pt-4">
+                        <thumbnail :thumbnail-data="record" size="medium" :link-to-url="recordUrl(record, linkBrowseType)"></thumbnail>
+                    </div>
+                    <div class="column metadata-fields">
+                        <h3 class="subtitle is-4 mb-4">
+                            <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, linkBrowseType)">{{ record.title }}</router-link>
+                            <span v-if="record.type !== 'File'" class="tag is-primary ml-4">{{ countDisplay(record.counts.child) }}</span>
+                        </h3>
+                        <dl class="property-grid">
+                            <dt>{{ $t('display.date_deposited') }}</dt>
+                            <dd>{{ formatDate(record.added) }}</dd>
+                            <template v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
+                                <dt>{{ $t('display.collection') }}</dt>
+                                <dd><router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link></dd>
+                            </template>
+                            <template v-if="record.objectPath.length >= 3 && showCollection(record)">
+                                <dt>{{ $t('display.collection_id') }}</dt>
+                                <dd class="collection_id">{{ record.objectPath[2].collectionId }}</dd>
+                            </template>
+                            <template v-if="record.type === 'Work' || record.type === 'File'">
+                                <dt>{{ $t('display.file_type') }}</dt>
+                                <dd>{{ getFileType(record) }}</dd>
+                            </template>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -100,88 +106,3 @@ Renders search results in a list view display format
         }
     }
 </script>
-
-<style scoped lang="scss">
-    #list-records-display {
-        ul.margin-offset {
-            width: inherit;
-            margin-left: 15px;
-            margin-right: -15px;
-        }
-
-        li {
-            align-items: center;
-            display: inline-flex;
-            padding-bottom: 20px;
-            padding-top: 20px;
-        }
-
-        a {
-            font-size: 1.5rem;
-        }
-
-        a.metadata-link {
-            font-size: 1rem;
-            margin-left: 5px;
-        }
-
-        div {
-            margin-bottom: 5px;
-        }
-
-        .result-title {
-            -ms-hyphens: auto;
-            -webkit-hyphens: auto;
-            hyphens: auto;
-            line-height: 1.2;
-            margin-bottom: 15px;
-            overflow-wrap: break-word;
-            padding-right: 25px;
-        }
-
-        span {
-            margin-left: 10px;
-        }
-
-        .has-text-weight-bold {
-            margin-left: 0;
-        }
-
-        .stripe {
-            background-color: #f7f7f7;
-        }
-
-        .has-image-icon {
-            top: 100px;
-        }
-
-        @media screen and (max-width: 1023px){
-            .metadata-fields {
-                margin-left: 10px;
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            margin-top: 25px;
-
-            li {
-                display: inherit;
-            }
-
-            .browseitem {
-                float: none;
-            }
-
-            // images to their left are positioned absolutely with a width of 128px
-            .metadata-fields {
-                margin-left: 150px;
-            }
-        }
-
-        @media screen and (max-width: 576px) {
-            .metadata-fields {
-                margin-left: 0;
-            }
-        }
-    }
-</style>

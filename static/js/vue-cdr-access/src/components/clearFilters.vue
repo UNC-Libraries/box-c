@@ -59,9 +59,7 @@ export default {
 
 <style scoped  lang="scss">
     .clear-options {
-        display: inline-flex;
         flex-wrap: wrap;
         margin-bottom: 30px;
-        margin-left: 25px;
     }
 </style>

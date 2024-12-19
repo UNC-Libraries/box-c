@@ -1,6 +1,6 @@
 <template>
     <div v-if="canViewMetadata && hasLoaded && metadata !== ''">
-        <h2 class="full-metadata">{{ $t('full_record.detailed_metadata') }}</h2>
+        <h2 class="full-metadata subtitle">{{ $t('full_record.detailed_metadata') }}</h2>
         <div id="mods_data_display" v-html="metadata"></div>
     </div>
 </template>

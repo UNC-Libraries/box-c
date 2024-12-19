@@ -87,7 +87,7 @@ const recordData = {
 
 let wrapper, router, store;
 
-describe('collectionFolder.vue', () => {
+describe('folderRecord.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -130,7 +130,8 @@ describe('collectionFolder.vue', () => {
 
     // First field is date added
     it('displays fields, if present', () => {
-        expect(wrapper.find('p').text()).toBe('Date Added:  2022-06-15');
+        expect(wrapper.find('dt').text()).toBe('Date Added');
+        expect(wrapper.find('dd').text()).toBe('2022-06-15');
     });
 
     it('displays restricted access info if items are restricted', () => {
@@ -160,7 +161,7 @@ describe('collectionFolder.vue', () => {
         updatedRecordData.briefObject.parentCollectionId = '7b7ff786-6772-4888-b020-e71261b926a6';
         updatedRecordData.briefObject.parentCollectionName = 'testCollection';
         await wrapper.setProps({ recordData: updatedRecordData });
-        let collection_name_link = wrapper.find('.parent_collection a')
+        let collection_name_link = wrapper.find('.parent-collection')
         expect(collection_name_link.text()).toEqual('testCollection')
         expect(collection_name_link.attributes('href')).toEqual('/record/7b7ff786-6772-4888-b020-e71261b926a6')
     });

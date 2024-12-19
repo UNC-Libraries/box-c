@@ -1,19 +1,21 @@
 <template>
-    <div class="onecol gray shadowtop">
-        <div class="contentarea relateditems">
-            <h2 class="link-list">{{ $t('full_record.neighbor_list') }}</h2>
-            <template v-for="neighbor in neighbors">
-                <div class="relateditem" :class="{current_item: currentRecordId === neighbor.id}">
-                    <div class="relatedthumb" :class="neighborIsDeleted(neighbor.status)">
-                        <thumbnail :thumbnail-data="neighbor"
-                                   :allows-full-access="allowsPublicAccess(neighbor)"
-                                   size="small"></thumbnail>
+    <section class="has-background-white-ter section">
+        <div class="container relateditems">
+            <h2 class="subtitle">{{ $t('full_record.neighbor_list') }}</h2>
+            <div class="grid">
+                <template v-for="neighbor in neighbors">
+                    <div class="relateditem cell p-3" :class="{current_item: currentRecordId === neighbor.id}">
+                        <div class="relatedthumb" :class="neighborIsDeleted(neighbor.status)">
+                            <thumbnail :thumbnail-data="neighbor"
+                                    :allows-full-access="allowsPublicAccess(neighbor)"
+                                    size="small"></thumbnail>
+                        </div>
+                        <p class="pt-3"><router-link :to="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</router-link></p>
                     </div>
-                    <p><router-link :to="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</router-link></p>
-                </div>
-            </template>
+                </template>
+            </div>
         </div>
-    </div>
+    </section>
 </template>
 
 <script>
@@ -59,24 +61,11 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-    .relateditems {
-        display: inline-flex;
-        flex-wrap: wrap;
-        width: 100%;
-
-        h2 {
-            text-align: center;
-            width: 100%;
-        }
-    }
-
     .relateditem {
-        margin: 0 0 10px 0;
-        padding: 10px 0;
         text-align: center;
         overflow: hidden;
         border: 1px solid transparent;
-        max-width: 160px;
+        width: 160px;
     }
 
     .relateditem.current_item,.relateditem:hover {
@@ -92,15 +81,6 @@ export default {
     }
 
     .relateditem p {
-        font-size: 11px;
         line-height: 15px;
-        clear: both;
-        margin: 0 5px;
-    }
-
-    @media screen and (max-width: 600px) {
-        .relateditem {
-            max-width: 100%;
-        }
     }
 </style>

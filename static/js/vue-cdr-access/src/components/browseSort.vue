@@ -2,16 +2,20 @@
 Sort drop down menu used in search results
 -->
 <template>
-    <div class="browse-sort select is-medium">
-        <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">
-            <option value="default,normal">{{ $t('sort.relevance') }}</option>
-            <option value="title,normal">{{ $t('sort.title_a-z') }}</option>
-            <option value="title,reverse">{{ $t('sort.title_z-a') }}</option>
-            <option value="dateCreated,normal">{{ $t('sort.date_created_newest') }}</option>
-            <option value="dateCreated,reverse">{{ $t('sort.date_created_oldest') }}</option>
-            <option value="dateAdded,normal">{{ $t('sort.date_added_newest') }}</option>
-            <option value="dateAdded,reverse">{{ $t('sort.date_added_oldest') }}</option>
-        </select>
+    <div class="browse-sort field is-narrow">
+        <div class="control">
+            <div class="select is-medium">
+                <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">
+                    <option value="default,normal">{{ $t('sort.relevance') }}</option>
+                    <option value="title,normal">{{ $t('sort.title_a-z') }}</option>
+                    <option value="title,reverse">{{ $t('sort.title_z-a') }}</option>
+                    <option value="dateCreated,normal">{{ $t('sort.date_created_newest') }}</option>
+                    <option value="dateCreated,reverse">{{ $t('sort.date_created_oldest') }}</option>
+                    <option value="dateAdded,normal">{{ $t('sort.date_added_newest') }}</option>
+                    <option value="dateAdded,reverse">{{ $t('sort.date_added_oldest') }}</option>
+                </select>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -70,35 +74,3 @@ Sort drop down menu used in search results
         }
     };
 </script>
-
-<style scoped lang="scss">
-    .select:not(.is-multiple):not(.is-loading)::after {
-        top: 60% !important;
-    }
-
-    .select {
-        select {
-            font-size: initial;
-        }
-    }
-
-    .browse-sort {
-        float: right;
-        margin-top: 15px;
-        margin-right: 25px;
-
-        select {
-            height: 50px;
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .browse-sort {
-            float: none;
-            padding-left: 15px;
-            margin-bottom: 10px;
-            margin-top: 0;
-        }
-
-    }
-</style>

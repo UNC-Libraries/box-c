@@ -1,11 +1,11 @@
 <template>
     <header-small/>
-    <div>
-        <h2>{{ $t('adv_search.advanced') }}</h2>
+    <div class="container py-5">
+        <h2 class="title is-3 has-text-centered">{{ $t('adv_search.advanced') }}</h2>
         <form id="advanced-search-form">
-            <div class="lightest columns">
-                <div class="column lightest shadowtop">
-                    <h3>{{ $t('adv_search.search_for') }}</h3>
+            <div class="lightest columns container">
+                <div class="column has-background-white-bis p-4">
+                    <h3 class="subtitle is-5">{{ $t('adv_search.search_for') }}</h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label" for="anywhere">{{ $t('adv_search.anywhere') }}</label>
@@ -13,7 +13,7 @@
                         <div class="field-body">
                             <div class="field">
                                 <p class="control">
-                                    <input id="anywhere" name="anywhere" class="input is-small" type="text" />
+                                    <input id="anywhere" name="anywhere" class="input" type="text" />
                                 </p>
                             </div>
                         </div>
@@ -25,7 +25,7 @@
                         <div class="field-body">
                             <div class="field">
                                 <p class="control">
-                                    <input id="title" name="titleIndex" class="input is-small" type="text" />
+                                    <input id="title" name="titleIndex" class="input" type="text" />
                                 </p>
                             </div>
                         </div>
@@ -37,7 +37,7 @@
                         <div class="field-body">
                             <div class="field">
                                 <p class="control">
-                                    <input id="contributor" name="contributorIndex" class="input is-small" type="text" />
+                                    <input id="contributor" name="contributorIndex" class="input" type="text" />
                                 </p>
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                         <div class="field-body">
                             <div class="field">
                                 <p class="control">
-                                    <input id="subject" name="subjectIndex" class="input is-small" type="text" />
+                                    <input id="subject" name="subjectIndex" class="input" type="text" />
                                 </p>
                             </div>
                         </div>
@@ -61,21 +61,19 @@
                         <div class="field-body">
                             <div class="field">
                                 <p class="control">
-                                    <input id="collection_id" name="collectionId" class="input is-small" type="text" />
+                                    <input id="collection_id" name="collectionId" class="input" type="text" />
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="column light shadowtop">
+                <div class="column has-background-white-ter p-4">
+                    <h3 class="subtitle is-5">{{ $t('adv_search.limit_by') }}</h3>
                     <div class="field">
-                        <div class="field-label is-normal">
-                            <label class="label">{{ $t('adv_search.limit_by') }}</label>
-                        </div>
                         <div class="field">
                             <div class="control">
-                                <div class="select is-fullwidth is-small">
+                                <div class="select is-fullwidth">
                                     <select name="collection" aria-label="Collection">
                                         <option value="">Collection</option>
                                         <template v-for="collection in collections">
@@ -87,7 +85,7 @@
                         </div>
                         <div class="field">
                             <div class="control">
-                                <div class="select is-fullwidth is-small">
+                                <div class="select is-fullwidth">
                                     <select name="format" aria-label="Format">
                                         <option value="">Format</option>
                                         <template v-for="format in formats">
@@ -98,47 +96,59 @@
                             </div>
                         </div>
                     </div>
-                    <div class="field is-horizontal dates">
-                        <div class="field-label is-normal">
-                            <label class="label">{{ $t('adv_search.date_deposited') }}</label>
-                        </div>
-                        <span>{{ $t('adv_search.date_from') }}</span>
-                        <div class="field">
-                            <div class="control">
-                                <input aria-label="deposited-start-date" name="addedStart" placeholder="YYYY" min="0" type="number" class="input is-small" />
-                            </div>
-                        </div>
-                        <span>{{ $t('adv_search.date_to') }}</span>
-                        <div class="field">
-                            <div class="control">
-                                <input aria-label="deposited-end-date" name="addedEnd" placeholder="YYYY" min="1" type="number" class="input is-small" />
-                            </div>
-                        </div>
-                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
-                    </div>
+                    <h3 class="title is-6 mb-2 mt-5">
+                        {{ $t('adv_search.date_deposited') }}
+                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile icon" :data-tooltip="$t('adv_search.dates_end_note')">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </span>
+                    </h3>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
-                            <label class="label">{{ $t('adv_search.date_created') }}</label>
+                            <label class="label" for="addedStart">{{ $t('adv_search.date_from') }}</label>
                         </div>
-                        <span>{{ $t('adv_search.date_from') }}</span>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="created-start-date" placeholder="YYYY" min="0" name="createdYearStart" type="number" class="input is-small" />
+                                <input aria-label="deposited-start-date" id="addedStart" name="addedStart" placeholder="YYYY" min="0" type="number" class="input" />
                             </div>
                         </div>
-                        <span>{{ $t('adv_search.date_to') }}</span>
+                        <div class="field-label is-normal mx-4">
+                            <label class="label" for="addedEnd">{{ $t('adv_search.date_to') }}</label>
+                        </div>
                         <div class="field">
                             <div class="control">
-                                <input aria-label="created-end-date" placeholder="YYYY" min="1" name="createdYearEnd" type="number" class="input is-small" />
+                                <input aria-label="deposited-end-date" id="addedEnd" name="addedEnd" placeholder="YYYY" min="1" type="number" class="input" />
                             </div>
                         </div>
-                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile" :data-tooltip="$t('adv_search.dates_end_note')">?</span>
+                    </div>
+                    <h3 class="title is-6 mb-2 mt-4">
+                        {{ $t('adv_search.date_created') }}
+                        <span class="has-tooltip-arrow has-tooltip-multiline has-tooltip-right-mobile icon" :data-tooltip="$t('adv_search.dates_end_note')">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </span>
+                    </h3>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label" for="createdYearStart">{{ $t('adv_search.date_from') }}</label>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <input aria-label="created-start-date" placeholder="YYYY" min="0" id="createdYearStart" name="createdYearStart" type="number" class="input" />
+                            </div>
+                        </div>
+                        <div class="field-label is-normal mx-4">
+                            <label class="label" for="createdYearEnd">{{ $t('adv_search.date_to') }}</label>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <input aria-label="created-end-date" placeholder="YYYY" min="1" id="createdYearEnd" name="createdYearEnd" type="number" class="input" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="columns">
-                <div class="column align-right">
-                    <input type="submit"  id="advsearch_submit" :value="$t('adv_search.search')" />
+                <div class="column has-text-right">
+                    <input type="submit" class="button is-primary" id="advsearch_submit" :value="$t('adv_search.search')" />
                 </div>
             </div>
         </form>
@@ -195,66 +205,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-    .dates {
-        margin-top: 50px;
-    }
-    form, h2 {
-        margin: 25px auto;
-        float: none;
-        width: 80%;
-    }
-
-    .break {
-        word-break: break-word;
-    }
-
-    .lightest {
-        float: none;
-    }
-
-    label {
-        text-align: left;
-    }
-
-    .field-label {
-        margin-right: 10px;
-        min-width: 125px;
-    }
-
-    span {
-        padding: 5px;
-    }
-
-    .align-right {
-        text-align: right;
-    }
-
-    #advsearch_submit {
-        color: #fff;
-        padding: 5px 10px;
-        width: 100px;
-        font-size: 15px;
-        text-align: center;
-        margin-bottom: 20px;
-        cursor: pointer;
-        background-color: #c34d13;
-        border: 1px solid #862e03;
-
-        &:hover {
-            background-color: #862e03;
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .break {
-            word-break: normal;
-        }
-
-        .field-label {
-            margin-right: 0;
-            min-width: auto;
-        }
-    }
-</style>

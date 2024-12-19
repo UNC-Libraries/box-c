@@ -3,14 +3,27 @@ Checkbox to switch search result modes between including only works with a flatt
 and including all types with hierarchy retained.
 -->
 <template>
-    <div id="browse-display-type" class="display-wrapper">
-        <div class="field">
-            <input @click="showWorks" type="checkbox" id="works-only" class="is-checkradio is-large" v-model="works_only">
-            <label for="works-only"><p>{{ $t('works_only.show')}}</p></label>
+    <div class="field is-grouped is-narrow">
+        <div id="browse-display-type" class="field has-addons">
+            <div class="control">
+                <input @click="showWorks" type="checkbox" id="works-only" class="is-sr-only" v-model="works_only">
+                <button @click="showWorks" id="works-only-off" class="button is-medium" :class="offButtonClasses">
+                    Off
+                </button>
+            </div>
+            <div class="control">
+                <button @click="showWorks" id="works-only-on" class="button is-medium" :class="onButtonClasses">
+                    On
+                </button>
+            </div>
         </div>
-        <div class="note">
-            <div class="display-note-btn has-tooltip-arrow has-tooltip-bottom"
-                 :data-tooltip="$t('works_only.show_tip')">?
+        <div class="field is-narrow">
+            <div class="control">
+                <label for="works-only" class="button is-medium">
+                    <span>{{ $t('works_only.show') }}</span>
+                    <span class="has-tooltip-arrow has-tooltip-bottom icon is-medium is-text-unc-blue"
+                        :data-tooltip="$t('works_only.show_tip')"><i class="fas fa-question-circle fa-lg"></i></span>
+                </label>
             </div>
         </div>
     </div>
@@ -39,6 +52,19 @@ and including all types with hierarchy retained.
             }
         },
 
+        computed: {
+            offButtonClasses() {
+                return !this.works_only
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
+            },
+            onButtonClasses() {
+                return this.works_only
+                    ? "is-selected has-text-white has-background-primary"
+                    : "has-text-grey-lighter";
+            }
+        },
+
         methods: {
             showWorks() {
                 this.works_only = !this.works_only;
@@ -62,77 +88,25 @@ and including all types with hierarchy retained.
 </script>
 
 <style scoped lang="scss">
-    #browse-display-type {
-        font-size: 1rem;
-        margin: inherit;
+    label.button {
+        border: none;
+        box-shadow: none;
+        padding-left: 0;
 
-        label {
-            display: inherit;
-            font-size: 1rem;
-            margin-right: 0;
-            padding-right: 0;
-            width: auto;
-        }
-
-        .note {
-            padding-left: 0;
-            padding-top: 10px;
-        }
-
-        .display-note-btn {
-            margin-left: 5px;
-            margin-right: 8px;
-            margin-top: 5px;
-        }
-
-        p {
-            font-size: 18px;
-            margin-left: 0;
-            padding-top: 10px;
-        }
-
-        [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
-        [data-tooltip]:not(.is-loading).has-tooltip-bottom.has-tooltip-arrow::after,
-        [data-tooltip]:not([disabled]).has-tooltip-bottom.has-tooltip-arrow::after {
-            bottom: -5px;
-        }
-
-        [data-tooltip]:not(.is-disabled).has-tooltip-bottom::before,
-        [data-tooltip]:not(.is-loading).has-tooltip-bottom::before,
-        [data-tooltip]:not([disabled]).has-tooltip-bottom::before {
-            margin-bottom: -10px;
+        &:hover {
+            background-color: transparent;
         }
     }
 
-    @media screen and (max-width: 1408px) {
-        #browse-display-type {
-            p {
-                max-width: 90px;
-            }
-        }
+    [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
+    [data-tooltip]:not(.is-loading).has-tooltip-bottom.has-tooltip-arrow::after,
+    [data-tooltip]:not([disabled]).has-tooltip-bottom.has-tooltip-arrow::after {
+        bottom: -5px;
     }
 
-    @media screen and (max-width: 768px) {
-        #browse-display-type {
-            justify-content: flex-start;
-            margin: 15px auto;
-
-            input[type="checkbox"] {
-                margin-left: 5px;
-            }
-
-            label {
-                margin-right: 5px;
-                min-width: 180px;
-            }
-
-            p {
-                max-width: inherit;
-            }
-        }
-
-        .note-wrapper {
-            display: inherit;
-        }
+    [data-tooltip]:not(.is-disabled).has-tooltip-bottom::before,
+    [data-tooltip]:not(.is-loading).has-tooltip-bottom::before,
+    [data-tooltip]:not([disabled]).has-tooltip-bottom::before {
+        margin-bottom: -10px;
     }
 </style>

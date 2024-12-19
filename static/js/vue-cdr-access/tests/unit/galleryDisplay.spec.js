@@ -39,65 +39,28 @@ describe('galleryDisplay.vue', () => {
             },
             props: {
                 recordList: records
-            },
-            data() {
-                return {
-                    column_size: 'is-3'
-                }
             }
         });
     });
 
-    it("chunks records into groups", () => {
-        let four_per_row = [...record_list, ...record_list];
-        expect(wrapper.vm.chunkedRecords).toEqual([four_per_row, four_per_row]);
+    it("displays records in a grid", () => {
+        let grid = wrapper.find('.grid');
+        expect(grid.exists()).toBe(true);
+        let cells = grid.findAll('.cell');
+        expect(cells.length).toEqual(8);
 
-        wrapper.setData({
-            column_size: 'is-4'
-        });
-        let three_per_row = [
-            wrapper.vm.recordList.slice(0, 3),
-            wrapper.vm.recordList.slice(3, 6),
-            wrapper.vm.recordList.slice(6)];
-        expect(wrapper.vm.chunkedRecords).toEqual(three_per_row);
+        let first_cell = cells[0];
+        expect(first_cell.find('.record-title').text()).toEqual('Test Collection');
+        let first_thumbnail = first_cell.find('thumbnail-stub');
+        expect(first_thumbnail.exists()).toBe(true);
+        expect(first_thumbnail.attributes('linktourl')).toEqual('/record/dd8890d6-5756-4924-890c-48bc54e3edda/?browse_type=gallery-display');
+        expect(first_thumbnail.attributes('size')).toEqual('large');
 
-        wrapper.setData({
-            column_size: 'is-6'
-        });
-        let two_per_row = [record_list, record_list, record_list, record_list];
-        expect(wrapper.vm.chunkedRecords).toEqual(two_per_row);
-    });
-
-    it('changes number of columns to 6 for tiny window', async () => {
-        Object.defineProperty(window, 'innerWidth', {
-            writable: true,
-            configurable: true,
-            value: 150,
-        });
-
-        wrapper.vm.numberOfColumns();
-        expect(wrapper.vm.column_size).toEqual("is-6");
-    });
-
-    it('changes number of columns to 4 for medium window', async () => {
-        Object.defineProperty(window, 'innerWidth', {
-            writable: true,
-            configurable: true,
-            value: 800,
-        });
-
-        wrapper.vm.numberOfColumns();
-        expect(wrapper.vm.column_size).toEqual("is-4");
-    });
-
-    it('changes number of columns to 3 for larger window', async () => {
-        Object.defineProperty(window, 'innerWidth', {
-            writable: true,
-            configurable: true,
-            value: 1200,
-        });
-
-        wrapper.vm.numberOfColumns();
-        expect(wrapper.vm.column_size).toEqual("is-3");
+        let last_cell = cells[7];
+        expect(last_cell.find('.record-title').text()).toEqual('Test Collection 2');
+        let last_thumbnail = last_cell.find('thumbnail-stub');
+        expect(last_thumbnail.exists()).toBe(true);
+        expect(last_thumbnail.attributes('linktourl')).toEqual('/record/87f54f12-5c50-4a14-bf8c-66cf64b00533/?browse_type=gallery-display');
+        expect(last_thumbnail.attributes('size')).toEqual('large');
     });
 });

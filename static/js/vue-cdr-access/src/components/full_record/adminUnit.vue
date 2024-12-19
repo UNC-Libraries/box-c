@@ -1,22 +1,22 @@
 <template>
-    <div>
-        <div class="columns browse-top">
+    <div class="full_record pb-4">
+        <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
             <div class="column is-narrow">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
             </div>
-            <div class="column">
-                <h2 :class="isDeleted">
+            <div class="column content is-medium">
+                <h2 :class="isDeleted" class="title is-2 is-text-unc-blue">
                     {{ recordData.briefObject.title }}
                 </h2>
-                <p>
-                    <strong>{{ $t('full_record.subjects') }}:</strong>
-                    <template v-if="hasSubjects">
+                <dl class="property-grid">
+                    <dt>{{ $t('full_record.subjects') }}</dt>
+                    <dd v-if="hasSubjects">
                         {{ recordData.briefObject.subject.join(', ')}}
-                    </template>
-                    <template v-else>
+                    </dd>
+                    <dd v-else>
                         {{ $t('full_record.no_subjects') }}
-                    </template>
-                </p>
+                    </dd>
+                </dl>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p><a @click.prevent="displayMetadata()" class="metadata-link" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>

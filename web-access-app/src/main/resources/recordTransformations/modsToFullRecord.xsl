@@ -924,7 +924,7 @@
 				</th>
 				<td>
 					<xsl:if test="*[not(local-name() = 'relatedItem')]">
-						<table>
+						<table class="table">
 							<xsl:call-template name="modsNames"/>
 							<xsl:call-template name="modsTitles"/>
 							<xsl:call-template name="modsField">
@@ -997,14 +997,14 @@
 		<xsl:variable name="name" select="*[local-name() = 'name']"/>
 		<xsl:variable name="titleInfo" select="*[local-name() = 'titleInfo']"/>
 		<xsl:if test="boolean($name) or boolean($titleInfo)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsNames"/>
 				<xsl:call-template name="modsTitles"/>
 			</table>
 		</xsl:if>
 		<xsl:variable name="subject" select="*[local-name() = 'subject']"/>
 		<xsl:if test="boolean($subject)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsSubjects"/>
 			</table>
 		</xsl:if>
@@ -1017,7 +1017,7 @@
 		<xsl:variable name="targetAudience" select="*[local-name() = 'targetAudience']"/>
 
 		<xsl:if test="boolean($language) or boolean($typeOfResource) or boolean($genre) or boolean($identifier) or boolean($classification) or boolean($targetAudience) or boolean ($abstract)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsLanguages"/>
 				<xsl:call-template name="modsGroupedField">
 					<xsl:with-param name="defaultLabel">Type of Resource</xsl:with-param>
@@ -1049,7 +1049,7 @@
 		<xsl:variable name="originDate" select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate' or local-name() = 'displayDate']"/>
 
 		<xsl:if test="boolean($publisher) or boolean($issuance) or boolean($frequency) or boolean($edition) or boolean($place) or boolean($originDate)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsField">
 					<xsl:with-param name="label">Publisher</xsl:with-param>
 					<xsl:with-param name="field" select="$publisher"/>
@@ -1075,7 +1075,7 @@
 		<xsl:variable name="physicalDescription" select="*[local-name() = 'physicalDescription']"/>
 		<xsl:variable name="part" select="*[local-name() = 'part']"/>
 		<xsl:if test="boolean($location) or boolean($physicalDescription) or boolean($part)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsLocations"/>
 				<xsl:call-template name="modsPhysicalDescription"/>
 				<xsl:call-template name="modsParts"/>
@@ -1086,7 +1086,7 @@
 		<xsl:variable name="accessCondition" select="*[local-name() = 'accessCondition' and not(child::*)]"/>
 		<xsl:variable name="rightsHolder" select="*[local-name() = 'accessCondition']/*[local-name() = 'rights.holder']/*[local-name() = 'name']"/>
 		<xsl:if test="boolean($note) or boolean($accessCondition) or boolean($rightsHolder)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsGroupedFieldWithType">
 					<xsl:with-param name="defaultLabel">Note</xsl:with-param>
 					<xsl:with-param name="field" select="$note"/>
@@ -1107,7 +1107,7 @@
 
 		<xsl:if test="boolean($tableOfContents) and not ($tableOfContents[@shareable])">
 
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsGroupedFieldWithType">
 					<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
 					<xsl:with-param name="field" select="$tableOfContents"/>
@@ -1118,7 +1118,7 @@
 
 		<xsl:variable name="relatedItem" select="*[local-name() = 'relatedItem']"/>
 		<xsl:if test="boolean($relatedItem)">
-			<table>
+			<table class="table">
 				<xsl:call-template name="modsRelatedItems"/>
 			</table>
 		</xsl:if>

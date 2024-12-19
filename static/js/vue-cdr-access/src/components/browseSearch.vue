@@ -2,15 +2,13 @@
 Search form component displayed on full record pages, allowing keyword searches and changing display modes.
 -->
 <template>
-    <div>
-        <div class="browse-search field has-addons">
-            <div class="control">
-                <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query"
-                       :placeholder="searchText" :aria-label="searchText">
-            </div>
-            <div class="control">
-                <button @click="getResults" class="button">{{ $t('search.search') }}</button>
-            </div>
+    <div class="browse-search field has-addons">
+        <div class="control is-expanded">
+            <input @keyup.enter="getResults" class="input is-medium" type="text" v-model.trim="search_query"
+                    :placeholder="searchText" :aria-label="searchText">
+        </div>
+        <div class="control">
+            <button @click="getResults" class="button is-medium">{{ $t('search.search') }}</button>
         </div>
     </div>
 </template>
@@ -78,30 +76,3 @@ Search form component displayed on full record pages, allowing keyword searches 
         }
     };
 </script>
-
-<style scoped lang="scss">
-    .browse-search {
-        margin-right: 15px;
-        input, div:first-child  {
-            width: 100%;
-        }
-    }
-
-    .clear-options {
-        display: flex;
-    }
-
-    .clear-results {
-        font-size: 16px;
-    }
-
-    .button {
-        margin-right: 6px;
-    }
-
-    input, button {
-        font-size: 1.1rem;
-        height: 50px;
-        margin-top: 15px;
-    }
-</style>

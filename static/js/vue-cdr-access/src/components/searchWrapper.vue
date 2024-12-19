@@ -3,25 +3,27 @@ Top level component wrapper for search pages
 -->
 <template>
     <header-small/>
-    <div v-if="!show_404 && !show_503">
-        <div class="search-query-text">
-            Search results for "{{ $route.query.anywhere }}"
+    <div v-if="!show_404 && !show_503" class="container pt-5">
+        <div>
+            <h2 class="subtitle is-5">Search results for "{{ $route.query.anywhere }}"</h2>
+            <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         </div>
-        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
             <div class="columns">
-                <div v-if="hasFacets" class="facet-list column is-one-quarter facets-border border-box-left-top">
+                <div v-if="hasFacets" class="facet-list column is-one-quarter pt-5">
                     <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
                 </div>
 
-                <div v-if="records.length > 0" class="column is-three-quarters search-results-border border-box-left-top">
-                    <div class="bottomline paddedline">
-                        <p>
+                <div v-if="records.length > 0" class="column is-three-quarters">
+                    <div class="columns is-vcentered">
+                        <h2 class="column subtitle m-0">
                             Showing <span class="has-text-weight-bold">{{ recordDisplayCounts }}</span> of
                             <span class="has-text-weight-bold">{{ total_records }}</span> results found
-                        </p>
-                        <browse-sort browse-type="search"></browse-sort>
+                        </h2>
+                        <div class="column is-narrow">
+                            <browse-sort browse-type="search"></browse-sort>
+                        </div>
                     </div>
                     <list-display v-if="records.length > 0" :record-list="records" :exclude-browse-type-from-record-urls="true"></list-display>
                 </div>
@@ -154,47 +156,13 @@ Top level component wrapper for search pages
 </script>
 
 <style scoped lang="scss">
-    $light-gray: #E1E1E1;
-    $border-style: 1px solid $light-gray;
-
     img {
         display: block;
         margin: 25px auto;
     }
 
-    .facets-border {
-        border-bottom: $border-style;
-        border-top: $border-style;
-        font-size: 16px;
-        padding-bottom: 0;
-        padding-right: 0;
-        padding-top: 0;
-    }
-
-    .bottomline {
-        float: none;
-    }
-
     li.columns {
         margin-left: inherit;
         margin-right: inherit;
-    }
-
-    p {
-        margin: auto 0;
-        width: 100%;
-    }
-
-    @media screen and (max-width: 1024px) {
-        .bottomline {
-            display: inline-flex;
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .bottomline {
-            display: inline-block;
-            text-align: center;
-        }
     }
 </style>
