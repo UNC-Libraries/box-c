@@ -386,6 +386,6 @@ describe('fileRecord.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('.embargo').text()).toEqual(expect.stringMatching(/Embargoed Until:\s+2199-01-01/))
+        expect(wrapper.find('.embargo').text()).toEqual('2199-01-01')
     });
 });

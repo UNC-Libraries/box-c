@@ -13,13 +13,13 @@ force it to reload
                     :options="tableOptions">
             <thead>
             <tr>
-                <th><span class="sr-only">{{ $t('full_record.thumbnail') }}</span></th>
+                <th><span class="is-sr-only">{{ $t('full_record.thumbnail') }}</span></th>
                 <th>{{ $t('full_record.title') }}</th>
                 <th>{{ $t('full_record.file_type') }}</th>
                 <th>{{ $t('full_record.filesize') }}</th>
-                <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
-                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
-                <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
+                <th><span class="is-sr-only">{{ $t('full_record.view_file') }}</span></th>
+                <th><span class="is-sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th v-if="editAccess"><span class="is-sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
             <template #downloads="props">
@@ -120,16 +120,19 @@ export default {
                         row.classList.add('deleted');
                     }
                 },
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        text: 'Clear Sort',
-                        action: function (e, dt, node, config) {
-                            dt.data().order().length = 0;
-                            dt.ajax.reload();
-                        }
+                layout: {
+                    topStart: {
+                        buttons: [
+                            {
+                                text: 'Clear Sort',
+                                action: function (e, dt, node, config) {
+                                    dt.data().order().length = 0;
+                                    dt.ajax.reload();
+                                }
+                            }
+                        ]
                     }
-                ]
+                }
             }
         },
 

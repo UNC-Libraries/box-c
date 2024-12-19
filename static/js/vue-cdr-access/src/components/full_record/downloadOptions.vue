@@ -37,7 +37,7 @@
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
-                <p class="modal-card-title">{{ t('full_record.restricted_content', { resource_type: recordData.type.toLowerCase() }) }}</p>
+                <p class="modal-card-title">{{ t('full_record.restricted_content', { resource_type: resourceType }) }}</p>
                 <button @click="modal_open = false" class="delete close" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
@@ -83,7 +83,7 @@ export default {
     methods: {
         restrictedFiles(recordData) {
             // For files, need to check if there are download options
-            if (!this.restrictedContent && recordData.type === 'File') {
+            if (!this.restrictedContent && this.resourceType === 'File') {
                 return !this.hasDownloadOptions(recordData);
             }
             return this.restrictedContent;

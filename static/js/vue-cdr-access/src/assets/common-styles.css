@@ -21,29 +21,6 @@ a.button.is-link span {
     padding-right: 10px;
 }
 
-.browse-header h2 {
-    font-size: 2.5rem;
-    line-height: 1;
-    margin: 0 20px 20px 25px;
-    padding-left: 0;
-    font-weight: bold;
-    color: #0A5274;
-    word-wrap: anywhere;
-}
-
-.background-white {
-    background-color: white;
-}
-
-.button.is-primary {
-    background-color: #1A698C;
-    color: white;
-}
-
-.button.is-primary:hover {
-    background-color: #084b6b;
-}
-
 .image-download-options a {
     border: inherit;
     color: black;

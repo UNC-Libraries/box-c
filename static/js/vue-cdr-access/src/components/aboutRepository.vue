@@ -1,7 +1,7 @@
 <template>
     <header-small/>
-    <div id="about-repo" class="content-wrap">
-        <div class="contentarea">
+    <div id="about-repo" class="content container mt-4">
+        <div class="has-text-centered">
             <h2>{{ $t('about.headers.main') }}</h2>
         </div>
         <p>{{ $t('about.description') }}</p>
@@ -76,32 +76,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-    #about-repo {
-        width: 95%;
-
-        h2 {
-            font-size: 1.2rem;
-            text-align: center;
-        }
-
-        h3 {
-            font-size: 1.1rem;
-        }
-
-        p, a {
-            font-size: .9rem;
-        }
-
-        ul {
-            list-style-type: disc;
-            margin-left: 15px;
-
-            li {
-                margin-left: 25px;
-                text-indent: unset;
-            }
-        }
-    }
-</style>

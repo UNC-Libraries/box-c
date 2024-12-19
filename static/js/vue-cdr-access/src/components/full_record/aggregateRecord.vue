@@ -1,87 +1,83 @@
 <template>
-    <div class="content-wrap full_record">
-        <div class="full_record_top">
-            <div class="aggregate-record">
-                <div class="columns browse-top">
-                    <div class="column">
-                        <h2>{{ recordData.briefObject.title }}</h2>
-                        <div class="column">
-                            <div class="columns is-tablet">
-                                <div class="column is-narrow" :class="isDeleted">
-                                    <thumbnail :thumbnail-data="recordData"></thumbnail>
-                                    <div class="actionlink download-jump">
-                                        <a class="button action" :href="filesLink">
-                                            <i class="fa fa-download" aria-hidden="true"></i> Skip to Download
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="column">
-                                    <ul class="record-metadata">
-                                        <li v-if="fieldExists(recordData.briefObject.added)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.date_added') }}: </span>
-                                            {{ formatDate(recordData.briefObject.added) }}
-                                        </li>
-                                        <li>
-                                            <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
-                                            <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
-                                        </li>
-                                        <li v-if="fieldExists(recordData.findingAidUrl)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
-                                            <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
-                                        </li>
-                                        <li class="exhibits" v-if="fieldExists(recordData.exhibits)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.related_digital_exhibits') }}: </span>
-                                            <template v-for="(exhibit_link, title, index) in recordData.exhibits">
-                                                <a :href="exhibit_link">{{ title }}</a>
-                                                <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
-                                            </template>
-                                        </li>
-                                        <li v-if="fieldExists(recordData.briefObject.creator)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>
-                                            {{ recordData.briefObject.creator.join('; ') }}
-                                        </li>
-                                        <li>
-                                            <span class="has-text-weight-bold">{{ $t('full_record.contains') }}: </span>
-                                            {{ displayChildCount }}
-                                        </li>
-                                        <li v-if="fieldExists(recordData.briefObject.created)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.date_created') }}: </span>
-                                            {{ formatDate(recordData.briefObject.created) }}
-                                        </li>
-                                        <li class="embargo" v-if="fieldExists(recordData.embargoDate)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.embargo_date') }}: </span>
-                                            {{ recordData.embargoDate }}
-                                        </li>
-                                        <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <object-actions :record-data="recordData"></object-actions>
+    <div class="full_record">
+        <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
+            <div class="column is-narrow-desktop is-5-mobile" :class="isDeleted">
+                <thumbnail :thumbnail-data="recordData"></thumbnail>
+                <div class="download-jump mt-5 has-text-centered">
+                    <a class="button action is-primary is-responsive" :href="filesLink">
+                        <span class="icon"><i class="fa fa-download" aria-hidden="true"></i></span><span>Skip to Download</span>
+                    </a>
                 </div>
             </div>
+            <div class="column content is-7-mobile">
+                <h2 :class="isDeleted" class="title is-3 is-text-unc-blue">
+                    {{ recordData.briefObject.title }}
+                </h2>
+                <dl class="property-grid">
+                    <template v-if="fieldExists(recordData.briefObject.added)">
+                        <dt>{{ $t('full_record.date_added') }}</dt>
+                        <dd>{{ formatDate(recordData.briefObject.added) }}</dd>
+                    </template>
+                    <dt>{{ $t('display.collection') }}</dt>
+                    <dd><router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link></dd>
+                    <template v-if="fieldExists(recordData.findingAidUrl)">
+                        <dt>{{ $t('full_record.finding_aid') }}</dt>
+                        <dd><a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a></dd>
+                    </template>
+                    <template v-if="fieldExists(recordData.exhibits)">
+                        <dt>{{ $t('full_record.related_digital_exhibits') }}</dt>
+                        <dd class="exhibits">
+                            <span v-for="(exhibit_link, title, index) in recordData.exhibits">
+                                <a :href="exhibit_link">{{ title }}</a>
+                                <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                            </span>
+                        </dd>
+                    </template>
+                    <template v-if="fieldExists(recordData.briefObject.creator)">
+                        <dt>{{ $t('full_record.creator') }}</dt>
+                        <dd>{{ recordData.briefObject.creator.join('; ') }}</dd>
+                    </template>
+                    <dt>{{ $t('full_record.contains') }}</dt>
+                    <dd>{{ displayChildCount }}</dd>
+                    <template v-if="fieldExists(recordData.briefObject.created)">
+                        <dt>{{ $t('full_record.date_created') }}</dt>
+                        <dd>{{ formatDate(recordData.briefObject.created) }}</dd>
+                    </template>
+                    <template class="embargo" v-if="fieldExists(recordData.embargoDate)">
+                        <dt>{{ $t('full_record.embargo_date') }}</dt>
+                        <dd class="embargo">{{ recordData.embargoDate }}</dd>
+                    </template>
+                </dl>
+                <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
+            </div>
+            <object-actions :record-data="recordData"></object-actions>
         </div>
-        <div class="full_record_bottom container is-fluid">
-            <player :record-data="recordData"></player>
+        <div class="full_record_bottom pb-6">
+            <div class="container pb-5" v-if="recordData.viewerType">
+                <player :record-data="recordData"></player>
+            </div>
             <template v-if="childCount > 0">
-                <div class="file-list-header columns is-vcentered">
-                    <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
+                <div class="file-list-header columns is-vcentered container">
+                    <h3 class="column subtitle">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
                     <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
                                    :total-download-size="recordData.totalDownloadSize"
                                    :work-id="recordData.briefObject.id"
                                    :child-count="childCount">
                     </bulk-download>
                 </div>
-                <file-list id="file-display"
-                           :work-id="recordData.briefObject.id"
-                           :download-access="hasDownloadAccess(recordData)"
-                           :edit-access="hasPermission(recordData,'editDescription')">
-                </file-list>
+                <div class="container">
+                    <file-list id="file-display"
+                            :work-id="recordData.briefObject.id"
+                            :download-access="hasDownloadAccess(recordData)"
+                            :edit-access="hasPermission(recordData,'editDescription')">
+                    </file-list>
+                </div>
             </template>
-            <metadata-display :uuid="recordData.briefObject.id"
-                              :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
-            </metadata-display>
+            <div class="container">
+                <metadata-display :uuid="recordData.briefObject.id"
+                                :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
+                </metadata-display>
+            </div>
         </div>
         <neighbor-list :current-record-id="recordData.briefObject.id"
                        :neighbors="recordData.neighborList">
@@ -115,14 +111,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-    .actionlink.download-jump {
-        margin: 0 5px 0 0;
-    }
-
-    .actionlink a.action {
-        font-size: 1rem;
-        padding: 10px;
-    }
-</style>

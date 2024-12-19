@@ -159,8 +159,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.find(".container-note").exists()).toBe(true);
-        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
+        expect(wrapper.find("#works-only-on").exists()).toBe(true);
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
@@ -171,9 +170,8 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.getBriefObject();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
-        let works_only = wrapper.find('.container-note');
+        let works_only = wrapper.find('#works-only-on');
         expect(works_only.exists()).toBe(true);
-        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
     });
 
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {

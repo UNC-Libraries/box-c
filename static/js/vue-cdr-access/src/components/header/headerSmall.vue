@@ -20,23 +20,34 @@
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
                     </a>
                 </div>
                 <div id="navbar" class="menu navbar-menu" :class="{'is-active': mobileMenuOpen}" >
                     <router-link to="/collections" class="navbar-item">Browse Collections</router-link>
                     <router-link to="/aboutRepository" class="navbar-item">What's Here?</router-link>
                     <a v-if="adminAccess" :href="jumpToAdminUrl" class="navbar-item" target="_blank">Admin</a>
-                    <a class="navbar-item navbar-display" href="https://library.unc.edu/contact-us/">Contact Us</a>
+                    <a class="navbar-item is-hidden-desktop" href="https://library.unc.edu/contact-us/">Contact Us</a>
+                    <router-link to="/advancedSearch" class="navbar-item is-hidden-desktop">Advanced Search</router-link>
+                    <a v-if="isLoggedIn" class="navbar-item is-hidden-desktop" :href="logoutUrl">Log out</a>
+                    <a v-else :href="loginUrl" class="navbar-item is-hidden-desktop">Login</a>
                 </div>
-                <div class="search-row">
-                    <div class="search">
-                        <form method="get" action="basicSearch" class="search">
-                            <input name="queryType" type="hidden" value="anywhere">
-                            <label for="hsearch_text">Search the Digital Collections Repository</label>
-                            <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
-                            <button type="submit" class="button">Search</button>
-                        </form>
-                        <router-link class="navbar-item" to="/advancedSearch">Advanced Search</router-link>
+
+                <div class="search-row columns container">
+                    <form method="get" action="basicSearch" class="column">
+                        <input name="queryType" type="hidden" value="anywhere">
+                        <label for="hsearch_text" class="is-sr-only">Search the Digital Collections Repository</label>
+                        <div class="field has-addons">
+                            <p class="control is-expanded">
+                                <input name="query" type="text" placeholder="Search all collections" id="hsearch_text" class="input">
+                            </p>
+                            <p class="control">
+                                <button type="submit" class="button">Search</button>
+                            </p>
+                        </div>
+                    </form>
+                    <div class="column is-narrow is-hidden-touch">
+                        <router-link to="/advancedSearch" class="button is-text has-text-white">Advanced Search</router-link>
                     </div>
                 </div>
             </div>

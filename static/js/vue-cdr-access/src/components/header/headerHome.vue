@@ -15,6 +15,7 @@
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
                     </a>
                 </div>
                 <div id="navbar" class="menu navbar-menu" :class="{'is-active': mobileMenuOpen}">
@@ -40,14 +41,22 @@
         </div>
 
         <div class="search-row search-row-large">
-            <div class="search search-large container">
-                <form method="get" action="basicSearch" class="search">
+            <div class="columns container">
+                <form method="get" action="basicSearch" class="column">
                     <input name="queryType" type="hidden" value="anywhere">
-                    <label for="hsearch_text">Search the Digital Collections Repository</label>
-                    <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
-                    <button type="submit" class="button">Search</button>
+                    <label for="hsearch_text" class="is-sr-only">Search the Digital Collections Repository</label>
+                    <div class="field has-addons">
+                        <p class="control is-expanded">
+                            <input name="query" type="text" placeholder="Search all collections" id="hsearch_text" class="input is-medium">
+                        </p>
+                        <p class="control">
+                            <button type="submit" class="button is-medium">Search</button>
+                        </p>
+                    </div>
                 </form>
-                <router-link to="/advancedSearch">Advanced Search</router-link>
+                <div class="column is-narrow">
+                    <router-link to="/advancedSearch" class="button is-text has-text-white is-medium">Advanced Search</router-link>
+                </div>
             </div>
         </div>
     </header>
