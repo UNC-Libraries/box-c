@@ -6,7 +6,9 @@ Renders search results in a gallery view display in full record pages.
         <div class="grid is-col-min-9 is-column-gap-3 is-row-gap-6">
             <div v-for="record in recordList" class="cell">
                 <thumbnail :thumbnail-data="record" :link-to-url="recordUrl(record, 'gallery-display')"></thumbnail>
-                <router-link class="record-title mt-4" :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, 'gallery-display')">{{ record.title }}</router-link>
+                <div class="record-title mt-4" :class="{deleted: markedForDeletion(record)}">
+                    <router-link :to="recordUrl(record, 'gallery-display')">{{ record.title }}</router-link>
+                </div>
             </div>
         </div>
     </div>
@@ -36,12 +38,10 @@ Renders search results in a gallery view display in full record pages.
 <style scoped lang="scss">
     .browse-records-display {
         .record-title {
-            display: block;
             -ms-hyphens: auto;
             -webkit-hyphens: auto;
             hyphens: auto;
             line-height: 1.2;
-            max-width: 250px;
             overflow-wrap: break-word;
             font-size: 1.2rem;
             text-align: center;
