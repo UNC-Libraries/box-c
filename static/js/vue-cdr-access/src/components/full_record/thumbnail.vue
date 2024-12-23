@@ -1,6 +1,6 @@
 <template>
     <component :is="wrapperTag" :to="linkToPath" v-bind="linkAttributes" class="thumbnail" :class="imgClasses">
-        <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
+        <div v-if="src !== ''" :style="{ 'background-image': 'url(' + src + ')'}"
              :aria-label="imageAltText"
              role="img"
              class="thumbnail-viewer"
@@ -37,7 +37,7 @@ export default {
         },
         size: {
             type: String,
-            default: 'large'
+            default: 'medium'
         },
         asLink: {
             type: Boolean,
@@ -135,6 +135,9 @@ export default {
 
         src() {
             if (this.objectData.thumbnail_url !== undefined && this.canView()) {
+                if (this.size === 'medium' || this.size === 'small') {
+                    return this.objectData.thumbnail_url.replace('/large', '/small');
+                }
                 return this.objectData.thumbnail_url;
             }
 

@@ -210,7 +210,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         var filename = "bunny.jpg";
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(id);
-        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!64,64/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!160,160/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBody(filename)
@@ -235,7 +235,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         var filename = "bunny.jpg";
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(filePid.getId());
-        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!128,128/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!250,250/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBody(filename)
@@ -261,7 +261,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         var filename = "bunny.jpg";
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(collectionPid.getId());
-        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!128,128/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!250,250/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBody(filename)
@@ -311,7 +311,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         var placeholder = "placeholder.png";
         var id = URLEncoder.encode("/default_images/placeholder.png", UTF_8);
 
-        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!128,128/0/default.png"))
+        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!250,250/0/default.png"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile(placeholder)
