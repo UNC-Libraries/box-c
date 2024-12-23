@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="linkToPath" :title="tooltip" :aria-label="linkAltText" class="thumbnail" :class="imgClasses">
+    <component :is="wrapperTag" :to="linkToPath" v-bind="linkAttributes" class="thumbnail" :class="imgClasses">
         <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
              :aria-label="imageAltText"
              role="img"
@@ -12,7 +12,7 @@
                 <i class="fas fa-stack-1x foreground" :class="badgeIcon"></i>
             </div>
         </div>
-    </router-link>
+    </component>
 </template>
 
 <script>
@@ -38,6 +38,10 @@ export default {
         size: {
             type: String,
             default: 'large'
+        },
+        asLink: {
+            type: Boolean,
+            default: true
         }
     },
 
@@ -48,6 +52,19 @@ export default {
     },
 
     computed: {
+        wrapperTag() {
+            return this.asLink ? 'router-link' : 'div';
+        },
+
+        linkAttributes() {
+            // Return attributes only if the wrapper is a router-link
+            return this.asLink ? {
+                    title: this.tooltip,
+                    'aria-label': this.linkAltText,
+                }
+                : {};
+        },
+
         altText() {
             let text = this.objectData.altText;
             if (!text) {
@@ -107,6 +124,9 @@ export default {
         },
 
         linkToPath() {
+            if (!this.asLink) {
+                return undefined;
+            }
             if (this.linkToUrl !== '') {
                 return this.linkToUrl;
             }
@@ -140,8 +160,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+    .thumbnail {
+        color: #1A698C;
+    }
+
     @media screen and (max-width: 600px) {
-        a {
+        .thumbnail {
             margin-right: 15px;
         }
     }

@@ -273,4 +273,16 @@ describe('thumbnail.vue', () => {
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('a').attributes('title')).toEqual('View the contents of testCollection')
     });
+
+    it('with asLink=false, does not wrap with a link', async () => {
+        await wrapper.setProps({ thumbnailData: recordData, asLink: false });
+
+        expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
+        expect(wrapper.find('i.placeholder').exists()).toBe(false);
+        expect(wrapper.find('a').exists()).toBe(false);
+        let thumbWrapper = wrapper.find('div.thumbnail');
+        expect(thumbWrapper.attributes('class')).toEqual('thumbnail thumbnail-size-large has_tooltip');
+        expect(thumbWrapper.attributes('aria-label')).toBe(undefined);
+        expect(thumbWrapper.attributes('title')).toBe(undefined);
+    });
 });
