@@ -132,7 +132,7 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
         expect(wrapper.find('i.placeholder').exists()).toBe(false);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large has_tooltip');
+            .toEqual('thumbnail thumbnail-size-medium has_tooltip');
         let linkText = wrapper.find('a').attributes('aria-label');
         expect(linkText).toBe('Visit testCollection');
         let altText = wrapper.find('.thumbnail .thumbnail-viewer').attributes('aria-label');
@@ -164,7 +164,7 @@ describe('thumbnail.vue', () => {
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.thumbnail .placeholder').exists()).toBe(true);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large has_tooltip')
+            .toEqual('thumbnail thumbnail-size-medium has_tooltip')
     });
 
     it('displays a "file" placeholder for files, if no thumbnail', async () => {
@@ -223,7 +223,7 @@ describe('thumbnail.vue', () => {
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.fa-trash').exists()).toBe(true);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large deleted has_tooltip')
+            .toEqual('thumbnail thumbnail-size-medium deleted has_tooltip')
     });
 
     it('displays no icon if an item is not restricted or marked for deletion', async () => {
@@ -237,7 +237,19 @@ describe('thumbnail.vue', () => {
 
     it('sets the src for the image', () => {
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
+            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
+    });
+
+    it('sets the src to large for large thumbnail', async () => {
+        await wrapper.setProps({ thumbnailData: recordData, size: 'large' });
+        expect(wrapper.find('.thumbnail-viewer').attributes('style'))
             .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large);');
+    });
+
+    it('sets the src to small for small thumbnail', async () => {
+        await wrapper.setProps({ thumbnailData: recordData, size: 'small' });
+        expect(wrapper.find('.thumbnail-viewer').attributes('style'))
+            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
     });
 
     it('sets the url for the image', () => {
@@ -272,5 +284,17 @@ describe('thumbnail.vue', () => {
         updatedRecordData.briefObject.type = 'List';
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('a').attributes('title')).toEqual('View the contents of testCollection')
+    });
+
+    it('with asLink=false, does not wrap with a link', async () => {
+        await wrapper.setProps({ thumbnailData: recordData, asLink: false });
+
+        expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
+        expect(wrapper.find('i.placeholder').exists()).toBe(false);
+        expect(wrapper.find('a').exists()).toBe(false);
+        let thumbWrapper = wrapper.find('div.thumbnail');
+        expect(thumbWrapper.attributes('class')).toEqual('thumbnail thumbnail-size-medium has_tooltip');
+        expect(thumbWrapper.attributes('aria-label')).toBe(undefined);
+        expect(thumbWrapper.attributes('title')).toBe(undefined);
     });
 });

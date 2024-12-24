@@ -271,7 +271,7 @@ p.spacing {
 }
 
 img.data-thumb {
-  max-width: 60px;
+  max-width: 100px;
 }
 
 .child-records {
@@ -455,6 +455,11 @@ table.dataTable {
       top: 0;
     }
   }
+
+  img + .thumbnail-badge {
+    margin-left: 85px !important;
+    margin-top: -20px !important;
+  }
 }
 
 /* MODs display for work and file pages, plus modalMetadata.vue component */
@@ -492,7 +497,7 @@ table.dataTable {
 .relateditem {
   .thumbnail {
     .thumbnail-badge {
-      right: 40px;
+      right: 10px;
     }
 
     .thumbnail-viewer {

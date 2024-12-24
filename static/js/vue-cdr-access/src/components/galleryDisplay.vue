@@ -3,9 +3,9 @@ Renders search results in a gallery view display in full record pages.
 -->
 <template>
     <div class="browse-records-display">
-        <div class="grid is-col-min-9 is-column-gap-3 is-row-gap-6">
+        <div class="grid is-col-min-10 is-column-gap-3 is-row-gap-6">
             <div v-for="record in recordList" class="cell">
-                <thumbnail :thumbnail-data="record" :link-to-url="recordUrl(record, 'gallery-display')"></thumbnail>
+                <thumbnail :thumbnail-data="record" :link-to-url="recordUrl(record, 'gallery-display')" size="large"></thumbnail>
                 <div class="record-title mt-4" :class="{deleted: markedForDeletion(record)}">
                     <router-link :to="recordUrl(record, 'gallery-display')">{{ record.title }}</router-link>
                 </div>

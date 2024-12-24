@@ -121,7 +121,7 @@
 }
 
 .edit_form p {
-	padding-top: 7px;
+	margin: 10px 0;
 	text-align: left;
 }
 
@@ -381,12 +381,6 @@
 	font-weight: bold;
 	color: #555;
 }
-
-#run_enhancements_form #run_enhancements_force {
-	margin-left: 0;
-	margin-right: 0.5em;
-}
-
 
 
 .file_browse_dialog {

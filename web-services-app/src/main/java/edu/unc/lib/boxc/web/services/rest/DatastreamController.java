@@ -61,7 +61,7 @@ public class DatastreamController {
     private static final Logger log = LoggerFactory.getLogger(DatastreamController.class);
     private static final String SMALL = "small";
     private static final String LARGE = "large";
-    private static final Map<String, Integer> THUMB_SIZE_MAP = Map.of(SMALL, 64, LARGE, 128);
+    private static final Map<String, Integer> THUMB_SIZE_MAP = Map.of(SMALL, 160, LARGE, 250);
 
     @Autowired
     private FedoraContentService fedoraContentService;

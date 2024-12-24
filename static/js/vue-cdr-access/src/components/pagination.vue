@@ -2,23 +2,36 @@
 Pagination component for search results, listing pages, previous/next buttons, counts.
 -->
 <template>
-    <div class="columns pagination is-mobile">
+    <div class="columns is-mobile">
         <div class="column is-12">
-            <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">{{ $t('pagination.previous') }}</a></li>
-                <li v-else class="no-link start">Previous</li>
-                <li id="first-page-link" v-if="currentPage >= pageLimit - 1 && totalPageCount > pageLimit"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
-                                                           :class="{ current: currentPage === 1 }">1</a> ...</li>
-                <li v-for="(page, index) in currentPageList">
-                    <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
-                </li>
-                <li id="last-page-link" v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
-                    ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
-                           :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
-                </li>
-                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">{{ $t('pagination.next') }}</a></li>
-                <li v-else class="no-link end">Next</li>
-            </ul>
+            <nav v-if="numberOfRecords > 0" class="pagination is-centered is-justify-content-center" role="navigation" aria-label="pagination">
+                <a class="pagination-previous" :class="{'is-disabled': currentPage === 1 }" @click.prevent="pageUrl(currentPage - 1, $event)" href="#">{{ $t('pagination.previous') }}</a>
+                <a class="pagination-next" :class="{'is-disabled': currentPage === totalPageCount }" @click.prevent="pageUrl(currentPage + 1, $event)" href="#">{{ $t('pagination.next') }}</a>
+
+                <ul class="pagination-list is-flex-grow-0">
+                    <li id="first-page-link">
+                        <a href="#" @click.prevent="pageUrl(1, $event)" class="pagination-link" :class="{ 'is-current': currentPage === 1 }" v-bind="pageAriaFields(1)">
+                            1
+                        </a>
+                    </li>
+                    <li v-if="totalPageCount > maxPagesDisplayed && currentPageList[0] !== 2">
+                        <span class="pagination-ellipsis pagination-ellipsis-start">&hellip;</span>
+                    </li>
+                    <li v-if="totalPageCount > 2" v-for="(page, index) in currentPageList">
+                        <a href="#" @click.prevent="pageUrl(page, $event)" class="pagination-link" :class="{ 'is-current': currentPage === page }" v-bind="pageAriaFields(page)">
+                            {{ page }}
+                        </a>
+                    </li>
+                    <li v-if="totalPageCount > maxPagesDisplayed && currentPageList[currentPageList.length - 1] !== totalPageCount - 1">
+                        <span class="pagination-ellipsis pagination-ellipsis-end">&hellip;</span>
+                    </li>
+                    <li id="last-page-link" v-if="totalPageCount >= 2">
+                        <a href="#" @click.prevent="pageUrl(totalPageCount, $event)" class="pagination-link" :class="{ 'is-current': currentPage === totalPageCount }" v-bind="pageAriaFields(totalPageCount)">
+                            {{ totalPageCount }}
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </template>
@@ -41,8 +54,6 @@ Pagination component for search results, listing pages, previous/next buttons, c
         data() {
             return {
                 pageLimit: 5,
-                pageOffset: 2,
-                startRecord: 1,
                 totalPageCount: 1
             }
         },
@@ -60,43 +71,58 @@ Pagination component for search results, listing pages, previous/next buttons, c
                 return Math.ceil(parseInt(start_row) / parseInt(this.rows_per_page)) + 1;
             },
 
+            // List of pages to display, minus the first and last pages
             currentPageList() {
-                let page_list = range(1, this.totalPageCount + 1);
-
-                if (this.totalPageCount > this.pageLimit) {
+                if (this.totalPageCount > this.maxPagesDisplayed) {
                     let current_page = this.currentPage;
-                    let end_offset = 1;
-                    let slice_offset = 3;
-                    let slice_start;
-                    let slice_end;
+                    let padding_page_count = 3; // Target number of pages to display on either side of the current page, including first and last
+                    let range_start;
+                    let range_end;
 
-                    if (current_page === 1 || current_page === 2) { // first pages
-                        slice_start = 0;
-                        slice_end = this.pageLimit;
-                    } else if (current_page === this.totalPageCount) { // last page
-                        slice_start = current_page - this.pageLimit;
-                        slice_end = this.totalPageCount;
-                    } else if (current_page === this.totalPageCount - end_offset) { // next to last page
-                        slice_start = (current_page - this.pageLimit) + end_offset;
-                        slice_end = this.totalPageCount;
+                    if (current_page <= padding_page_count) { // first pages
+                        range_start = 2;
+                        range_end = this.maxPagesDisplayed;
+                    } else if (current_page >= this.totalPageCount - padding_page_count) { // last pages
+                        range_start = this.totalPageCount - this.pageLimit;
+                        range_end = this.totalPageCount;
                     } else { // all other pages
-                        slice_start = current_page - slice_offset;
-                        slice_end = current_page + this.pageOffset;
+                        range_start = current_page - padding_page_count + 1;
+                        range_end = current_page + padding_page_count;
                     }
-
-                    return page_list.slice(slice_start, slice_end);
+                    return range(range_start, range_end);
                 }
 
-                return page_list;
+                return range(2, this.totalPageCount);
+            },
+
+            maxPagesDisplayed() {
+                return this.pageLimit + 2;
             }
         },
 
         methods: {
+            pageAriaFields(page_number) {
+                if (this.currentPage === page_number) {
+                    return {
+                        'aria-label': `Page ${page_number}`,
+                        'aria-current': 'page'
+                    }
+                }
+                return {
+                    'aria-label': `Goto page ${page_number}`
+                }
+            },
+
             setPageTotal() {
                 this.totalPageCount = Math.ceil(this.numberOfRecords / this.rows_per_page);
             },
 
-            pageUrl(page_number) {
+            pageUrl(page_number, event) {
+                // Prevent default action if the button is disabled
+                var targetClasses = event.target.closest('a').classList;
+                if (targetClasses.contains('is-disabled') || targetClasses.contains('is-active')) {
+                    return;
+                }
                 if (page_number === undefined) page_number = 1;
 
                 let start_record = this.rows_per_page * (parseInt(page_number) - 1);
@@ -136,57 +162,11 @@ Pagination component for search results, listing pages, previous/next buttons, c
 </script>
 
 <style scoped lang="scss">
-    $link-color: #007FAE;
-    $no-link-color: #686868;
+    .is-current {
+        background-color: #007FAE;
+    }
 
-    .pagination {
-        display: inline-block;
-        margin-bottom: 1px;
-        margin-top: 20px;
-        width: 100%;
-
-        ul {
-            display: inline;
-
-            li {
-                display: inline;
-                margin: 5px;
-            }
-        }
-
-        .page-number {
-            background: linear-gradient(to bottom, #4B9CD3 0%, $link-color 100%);
-            border: 1px solid $link-color;
-            border-radius: 5px;
-            padding: 0.5em 1em;
-
-            &:hover {
-                color: white;
-                opacity: .8;
-                text-decoration: none;
-            }
-        }
-
-        a {
-            color: white;
-
-            &.back-next {
-                color: $link-color;
-            }
-        }
-
-        .current {
-            background: linear-gradient(to bottom, #fff 0%, #dcdcdc 100%);
-            border-color: $no-link-color;
-            color: black;
-
-            &:hover {
-                color: black;
-            }
-        }
-
-        .no-link {
-            color: $no-link-color;
-        }
+    .is-current:hover, .is-disabled:hover {
+        text-decoration: none;
     }
 </style>

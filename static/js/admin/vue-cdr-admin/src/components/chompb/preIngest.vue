@@ -140,18 +140,18 @@ export default {
     #chompb-preingest-ui {
         width: 96%;
         margin: 25px auto;
-    }
 
-    p {
-        text-align: center;
-        margin-top: 50px;
-    }
+        p {
+            text-align: center;
+            margin-top: 50px;
+        }
 
-    #copy-msg {
-        padding: 15px;
-        position: absolute;
-        right: 25px;
-        top: 0;
-        width: auto;
+        #copy-msg {
+            padding: 15px;
+            position: absolute;
+            right: 25px;
+            top: 0;
+            width: auto;
+        }
     }
 </style>
