@@ -59,7 +59,7 @@ public class ChompbController {
      * Get processing result files for a specific job
      * @param projectName
      * @param jobName
-     * @param filePath
+     * @param filename
      * @return
      * @throws IOException
      */
