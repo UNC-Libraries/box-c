@@ -11,6 +11,10 @@ body {
 	width: inherit;
 }
 
+.contentarea {
+	margin: 20px;
+}
+
 .contentarea.nobottom {
 	margin-bottom: 0;
 }
@@ -24,6 +28,10 @@ h1 {
 	color: #000;
 	font-size: 20px;
 	padding: 0 0 1em 0;
+}
+
+p {
+	line-height: 1.3rem;
 }
 
 .fullwidth {

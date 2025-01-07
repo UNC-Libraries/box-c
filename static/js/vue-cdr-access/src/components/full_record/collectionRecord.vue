@@ -2,7 +2,7 @@
     <div class="full_record">
         <div class="columns is-6-desktop browse-top container is-mobile is-1-mobile">
             <div class="column is-narrow-desktop is-5-mobile" :class="{restrictedContent: 'is-8'}">
-                <thumbnail :thumbnail-data="recordData"></thumbnail>
+                <thumbnail :thumbnail-data="recordData" :as-link="false"></thumbnail>
             </div>
             <div class="column content is-7-mobile pb-4">
                 <h2 :class="isDeleted" class="title is-3 is-text-unc-blue">

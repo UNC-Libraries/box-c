@@ -29,19 +29,24 @@
 	background-position: top center;
 	background-repeat: no-repeat;
 	background-size: contain;
-	width: 64px;
-	height: 64px;
+	width: 100px;
+	height: 100px;
 	margin: 0 auto;
 }
 
 .thumbnail.thumbnail-size-medium .thumbnail-viewer {
-	width: 112px;
-	height: 112px;
+	width: 160px;
+	height: 160px;
+
+	@media screen and (max-width: 768px) {
+		width: 125px;
+		height: 125px;
+	}
 }
 
 .thumbnail.thumbnail-size-large .thumbnail-viewer {
-	width: 128px;
-	height: 128px;
+	width: 250px;
+	height: 250px;
 	margin-top: .25rem;
 }
 
@@ -75,15 +80,15 @@
 }
 
 .thumbnail .placeholder {
-	font-size: 64px;
+	font-size: 100px;
 }
 
 .thumbnail.thumbnail-size-medium .placeholder {
-	font-size: 112px;
+	font-size: 160px;
 }
 
 .thumbnail.thumbnail-size-large .placeholder {
-	font-size: 128px;
+	font-size: 250px;
 }
 
 .thumbnail-badge .background {

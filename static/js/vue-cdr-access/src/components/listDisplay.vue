@@ -6,7 +6,7 @@ Renders search results in a list view display format
         <div class="columns">
             <div class="column">
                 <div v-for="(record, index) in recordList" class="columns is-mobile browseitem py-5" :class="{'has-background-white-ter': index % 2 === 0}">
-                    <div class="column is-narrow pt-4">
+                    <div class="column is-narrow pt-3">
                         <thumbnail :thumbnail-data="record" size="medium" :link-to-url="recordUrl(record, linkBrowseType)"></thumbnail>
                     </div>
                     <div class="column metadata-fields">
