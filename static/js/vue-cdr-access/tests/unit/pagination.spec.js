@@ -78,7 +78,7 @@ describe('pagination.vue', () => {
         expect(wrapper.vm.currentPageList).toEqual([2, 3]);
     });
 
-    it("calculates correct the pages to display with large number of pages", async () => {
+    it("calculates the correct pages to display with large number of pages", async () => {
         await wrapper.setProps({ numberOfRecords: 1000 });
         await changeToPage(1);
         expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);
@@ -106,7 +106,7 @@ describe('pagination.vue', () => {
         expect(wrapper.vm.currentPageList).toEqual([45, 46, 47, 48, 49]);
     });
 
-    it("calculates correct the pages to display with page limit number of pages plus first and last page", async () => {
+    it("calculates the correct pages to display with page limit number of pages plus first and last page", async () => {
         await wrapper.setProps({ numberOfRecords: 140 });
         await changeToPage(1);
         expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);

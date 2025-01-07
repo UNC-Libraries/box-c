@@ -119,7 +119,7 @@ Pagination component for search results, listing pages, previous/next buttons, c
 
             pageUrl(page_number, event) {
                 // Prevent default action if the button is disabled
-                var targetClasses = event.target.closest('a').classList;
+                let targetClasses = event.target.closest('a').classList;
                 if (targetClasses.contains('is-disabled') || targetClasses.contains('is-active')) {
                     return;
                 }
