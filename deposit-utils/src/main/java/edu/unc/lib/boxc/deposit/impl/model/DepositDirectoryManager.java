@@ -171,10 +171,6 @@ public class DepositDirectoryManager {
         return makeMetadataFilePath(eventsDir, pid, ".nt", createDirs);
     }
 
-    private Path makeMetadataFilePath(Path parentPath, PID pid, String extension) {
-        return makeMetadataFilePath(parentPath, pid, extension, false);
-    }
-
     private Path makeMetadataFilePath(Path parentPath, PID pid, String extension, boolean createDirs) {
         Path mdPath = parentPath;
         if (hashNesting) {
