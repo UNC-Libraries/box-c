@@ -73,7 +73,6 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         job = new IngestDepositRecordJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "pidMinter", pidMinter);
         setField(job, "depositModelManager", depositModelManager);

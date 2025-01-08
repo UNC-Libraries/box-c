@@ -134,7 +134,6 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         fitsCommand = new File(fitsHome, "fits.sh").toPath();
 
         job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setHttpClient(httpClient);
         job.setFitsHomePath(fitsHome.getAbsolutePath());

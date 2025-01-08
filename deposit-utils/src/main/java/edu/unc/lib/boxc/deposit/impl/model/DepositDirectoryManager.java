@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import edu.unc.lib.boxc.deposit.api.DepositConstants;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -36,6 +37,9 @@ public class DepositDirectoryManager {
     private Path descriptionDir;
     private Path historyDir;
     private Path eventsDir;
+    private Path altTextDir;
+    private Path techMdDir;
+    private Path dataDir;
     private PID depositPid;
     private boolean hashNesting;
 
@@ -49,6 +53,9 @@ public class DepositDirectoryManager {
         this.descriptionDir = depositDir.resolve(DESCRIPTION_DIR);
         this.historyDir = depositDir.resolve(HISTORY_DIR);
         this.eventsDir = depositDir.resolve(EVENTS_DIR);
+        this.altTextDir = depositDir.resolve(DepositConstants.ALT_TEXT_DIR);
+        this.techMdDir = depositDir.resolve(DepositConstants.TECHMD_DIR);
+        this.dataDir = depositDir.resolve(DepositConstants.DATA_DIR);
         this.hashNesting = hashNesting;
 
         if (createDirs) {
@@ -62,6 +69,9 @@ public class DepositDirectoryManager {
             Files.createDirectories(descriptionDir);
             Files.createDirectories(historyDir);
             Files.createDirectories(eventsDir);
+            Files.createDirectories(altTextDir);
+            Files.createDirectories(techMdDir);
+            Files.createDirectories(dataDir);
         } catch (IOException e) {
             throw new RepositoryException("Failed to create deposit directory: " + depositDir, e);
         }
@@ -99,11 +109,29 @@ public class DepositDirectoryManager {
      * @return get the path to where the MODS file for the given PID should be located
      */
     public Path getModsPath(PID pid) {
-        return makeMetadataFilePath(descriptionDir, pid, ".xml");
+        return getModsPath(pid, false);
+    }
+
+    public Path getModsPath(PID pid, boolean createDirs) {
+        return makeMetadataFilePath(descriptionDir, pid, ".xml", createDirs);
+    }
+
+    public Path getAltTextPath(PID pid) {
+        return getAltTextPath(pid, false);
+    }
+
+    /**
+     * Get the path to the alt text file for the provided object
+     * @param pid
+     * @param createDirs
+     * @return
+     */
+    public Path getAltTextPath(PID pid, boolean createDirs) {
+        return makeMetadataFilePath(altTextDir, pid, ".txt", createDirs);
     }
 
     public Path writeHistoryFile(PID pid, DatastreamType type, InputStream historyStream) {
-        Path historyPath = makeMetadataFilePath(historyDir, pid, type.getId() + ".xml");
+        Path historyPath = makeMetadataFilePath(historyDir, pid, type.getId() + ".xml", true);
 
         try {
             Files.copy(historyStream, historyPath);
@@ -115,7 +143,18 @@ public class DepositDirectoryManager {
     }
 
     public Path getHistoryFile(PID pid, DatastreamType type) {
-        return makeMetadataFilePath(historyDir, pid, type.getId() + ".xml");
+        return getHistoryFile(pid, type, false);
+    }
+
+    /**
+     * Get the path to the history file for the provided object for the provided datastream type
+     * @param pid
+     * @param type
+     * @param createDirs
+     * @return
+     */
+    public Path getHistoryFile(PID pid, DatastreamType type, boolean createDirs) {
+        return makeMetadataFilePath(historyDir, pid, type.getId() + ".xml", createDirs);
     }
 
     /**
@@ -125,18 +164,28 @@ public class DepositDirectoryManager {
      * @return
      */
     public Path getPremisPath(PID pid) {
-        return makeMetadataFilePath(eventsDir, pid, ".nt");
+        return getPremisPath(pid, false);
+    }
+
+    public Path getPremisPath(PID pid, boolean createDirs) {
+        return makeMetadataFilePath(eventsDir, pid, ".nt", createDirs);
     }
 
     private Path makeMetadataFilePath(Path parentPath, PID pid, String extension) {
+        return makeMetadataFilePath(parentPath, pid, extension, false);
+    }
+
+    private Path makeMetadataFilePath(Path parentPath, PID pid, String extension, boolean createDirs) {
         Path mdPath = parentPath;
         if (hashNesting) {
             String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
             mdPath = mdPath.resolve(hashing);
-            try {
-                Files.createDirectories(mdPath);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to create hashed metadata directory: " + mdPath, e);
+            if (createDirs) {
+                try {
+                    Files.createDirectories(mdPath);
+                } catch (IOException e) {
+                    throw new RepositoryException("Failed to create hashed metadata directory: " + mdPath, e);
+                }
             }
         }
         return mdPath.resolve(pid.getId() + extension);
@@ -149,19 +198,66 @@ public class DepositDirectoryManager {
         return depositDir.resolve(MODEL_FILENAME);
     }
 
+    /**
+     * @return the directory containing all files related to the deposit
+     */
     public Path getDepositDir() {
         return depositDir;
     }
 
+    /**
+     * @return the directory where description files are stored
+     */
     public Path getDescriptionDir() {
         return descriptionDir;
     }
 
+    /**
+     * @return the directory where history files are stored
+     */
     public Path getHistoryDir() {
         return historyDir;
     }
 
+    /**
+     * @return the directory where PREMIS event log files are stored
+     */
     public Path getEventsDir() {
         return eventsDir;
+    }
+
+    /**
+     * @return the directory where alt text files are stored
+     */
+    public Path getAltTextDir() {
+        return altTextDir;
+    }
+
+    /**
+     * @return the directory where technical metadata files are stored
+     */
+    public Path getTechMdDir() {
+        return techMdDir;
+    }
+
+    public Path getTechMdPath(PID pid) {
+        return getTechMdPath(pid, false);
+    }
+
+    /**
+     * Get the path to the technical metadata file for the provided object
+     * @param pid
+     * @param createDirs
+     * @return
+     */
+    public Path getTechMdPath(PID pid, boolean createDirs) {
+        return makeMetadataFilePath(techMdDir, pid, ".xml", createDirs);
+    }
+
+    /**
+     * @return Directory where local data files are stored
+     */
+    public Path getDataDir() {
+        return dataDir;
     }
 }

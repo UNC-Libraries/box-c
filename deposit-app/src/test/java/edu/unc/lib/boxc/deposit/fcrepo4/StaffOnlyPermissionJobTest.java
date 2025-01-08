@@ -40,7 +40,7 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
 
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
+        setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);

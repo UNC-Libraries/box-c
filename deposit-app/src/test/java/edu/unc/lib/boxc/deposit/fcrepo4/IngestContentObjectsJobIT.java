@@ -160,7 +160,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job = new IngestContentObjectsJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "pidMinter", pidMinter);
         setField(job, "aclService", aclService);

@@ -76,7 +76,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.setAclValidator(aclValidator);
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
+        setField(job, "depositsDirectory", depositsDirectory);
         job.setDepositStatusFactory(depositStatusFactory);
         job.setRepositoryObjectLoader(repoObjectLoader);
         setField(job, "pidMinter", pidMinter);

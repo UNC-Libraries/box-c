@@ -73,7 +73,6 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     public void init() {
         job = new NormalizeFileObjectsJob();
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);

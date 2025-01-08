@@ -64,11 +64,10 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         job = new DirectoryToBagJob();
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "depositModelManager", depositModelManager);
-        setField(job, "depositsDirectory", depositDirectory);
+        setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
 
         job.init();

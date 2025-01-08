@@ -181,7 +181,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job = new IngestContentObjectsJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "aclService", aclService);
         setField(job, "depositModelManager", depositModelManager);

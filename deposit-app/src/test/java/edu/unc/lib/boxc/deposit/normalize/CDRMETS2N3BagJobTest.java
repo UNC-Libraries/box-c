@@ -85,7 +85,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 
         job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
         setField(job, "depositModelManager", depositModelManager);
-        job.setDepositDirectory(depositDir);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "metsSipSchema", metsSipSchema);
