@@ -60,13 +60,13 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
     public void setup() throws Exception {
         job = new VocabularyEnforcementJob();
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "vocabManager", vocabManager);
         setField(job, "depositModelManager", depositModelManager);
+        job.init();
 
         PID depositPid = pidMinter.mintContentPid();
         depositStatus = new HashMap<>();

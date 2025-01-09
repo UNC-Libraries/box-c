@@ -59,7 +59,6 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         job = new ValidateFileAvailabilityJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setIngestSourceManager(sourceManager);
         setField(job, "depositModelManager", depositModelManager);
