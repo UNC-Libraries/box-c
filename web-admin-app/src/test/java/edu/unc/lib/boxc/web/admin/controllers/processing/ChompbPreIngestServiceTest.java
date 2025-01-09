@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.admin.controllers.processing;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -21,6 +22,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,12 +51,16 @@ public class ChompbPreIngestServiceTest {
     @Mock
     private Process mockProcess;
 
+    // Executor for testing that runs tasks synchronously
+    private final ExecutorService executorService = MoreExecutors.newDirectExecutorService();
+
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
         service = new ChompbPreIngestService();
         service.setBaseProjectsPath(tmpFolder);
         service.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        service.setExecutorService(executorService);
         when(agentPrincipals.getPrincipals()).thenReturn(new AccessGroupSetImpl("group"));
         when(globalPermissionEvaluator.hasGlobalPermission(any(AccessGroupSet.class), eq(Permission.ingest))).thenReturn(true);
     }
@@ -62,6 +68,7 @@ public class ChompbPreIngestServiceTest {
     @AfterEach
     public void closeService() throws Exception {
         closeable.close();
+        executorService.shutdown();
     }
 
     @Test
@@ -171,8 +178,9 @@ public class ChompbPreIngestServiceTest {
                 })
         ){
             service.startCropping(agentPrincipals, PROJ_NAME, "user@email.com");
+
             // Verify a single ProcessBuilder instance was created
-            assertEquals(1,mocked.constructed().size());
+            assertEquals(1, mocked.constructed().size());
         }
     }
 
