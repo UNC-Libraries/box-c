@@ -1,29 +1,22 @@
 package edu.unc.lib.boxc.deposit.impl.model;
 
+import edu.unc.lib.boxc.deposit.api.DepositConstants;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import org.apache.commons.io.FileUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.EVENTS_DIR;
 import static edu.unc.lib.boxc.deposit.api.DepositConstants.HISTORY_DIR;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static java.nio.file.Files.newOutputStream;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import edu.unc.lib.boxc.deposit.api.DepositConstants;
-import org.apache.commons.io.FileUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Manages a deposit directory for a single deposit
@@ -33,15 +26,15 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 public class DepositDirectoryManager {
     public static final String MODEL_FILENAME = "model.n3";
 
-    private Path depositDir;
-    private Path descriptionDir;
-    private Path historyDir;
-    private Path eventsDir;
-    private Path altTextDir;
-    private Path techMdDir;
-    private Path dataDir;
-    private PID depositPid;
-    private boolean hashNesting;
+    private final Path depositDir;
+    private final Path descriptionDir;
+    private final Path historyDir;
+    private final Path eventsDir;
+    private final Path altTextDir;
+    private final Path techMdDir;
+    private final Path dataDir;
+    private final PID depositPid;
+    private final boolean hashNesting;
 
     public DepositDirectoryManager(PID depositPid, Path depositBaseDir, boolean hashNesting) {
         this(depositPid, depositBaseDir, hashNesting, true);
@@ -82,25 +75,6 @@ public class DepositDirectoryManager {
             FileUtils.deleteDirectory(depositDir.toFile());
         } catch (IOException e) {
             throw new RepositoryException("Failed to cleanup deposit directory: " + depositDir, e);
-        }
-    }
-
-    /**
-     * Write the provided MODS out to file in the deposit
-     *
-     * @param pid
-     * @param modsEl
-     */
-    public void writeMods(PID pid, Element modsEl) {
-        Path modsPath = getModsPath(pid);
-
-        try (OutputStream fos = newOutputStream(modsPath)) {
-            // Make a new document for just the MODS, which should add in the xml declaration
-            Document modsDoc = new Document();
-            modsDoc.addContent(modsEl.clone());
-            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc, fos);
-        } catch (IOException e) {
-            throw new RepositoryException("Unable to write MODS for " + pid.getId(), e);
         }
     }
 
