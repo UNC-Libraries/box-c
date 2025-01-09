@@ -27,6 +27,7 @@ public class ChompbPreIngestService {
     private Path baseProjectsPath;
     private String serviceKeyPath;
     private String serviceUser;
+    private String chompbCommand = "chompb";
     private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
     private ExecutorService executorService;
 
@@ -39,7 +40,7 @@ public class ChompbPreIngestService {
     public String getProjectLists(AgentPrincipals agent) {
         assertHasPermission(agent);
 
-        return executeChompbCommand("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
+        return executeChompbCommand(chompbCommand, "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
     }
 
     /**
@@ -52,7 +53,7 @@ public class ChompbPreIngestService {
         assertHasPermission(agent);
         log.info("Starting cropping for project {} for user {}", projectName, agent.getUsername());
 
-        executeBackgroundCommand("chompb", "process_source_files",
+        executeBackgroundCommand(chompbCommand, "process_source_files",
                     "--action", "velocicroptor",
                     "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
                     "-k", serviceKeyPath,
@@ -160,5 +161,9 @@ public class ChompbPreIngestService {
 
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
+    }
+
+    public void setChompbCommand(String chompbCommand) {
+        this.chompbCommand = chompbCommand;
     }
 }
