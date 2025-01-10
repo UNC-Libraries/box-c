@@ -138,16 +138,21 @@ export default {
             if (action_info.action === 'action') {
                 Object.assign(row_data.processingJobs, { velocicroptor: { status: 'pending' } });
             }
-            var actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
+            let actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
             if (action_info.method === 'post' || action_info.method === 'get') {
                 axios({
                     method: action_info.method,
                     url: actionUrl
                 }).then((response) => {
                     console.log("Successfully triggered action", actionUrl);
+                    this.copy_error = false;
+                    this.copy_msg = `"${action_info.label}" action successfully triggered for project: ${projectName}`;
+                    this.clearCopyMessage();
                 }).catch((error) => {
+                    this.copy_error = true;
+                    this.copy_msg = `Error encountered while performing action" ${action_info.label}" for project: ${projectName}`;
                     console.log("Error encountered while performing action", error);
-                    alert("Error encountered while performing action");
+                    this.clearCopyMessage();
                 });
             } else if (action_info.method === 'link') {
                 this.$router.push(actionUrl);
@@ -184,7 +189,7 @@ export default {
             setTimeout(() => {
                 this.copy_error = false;
                 this.copy_msg = '';
-            }, 4000);
+            }, 5000);
         },
 
         async copyPath(project_path) {
