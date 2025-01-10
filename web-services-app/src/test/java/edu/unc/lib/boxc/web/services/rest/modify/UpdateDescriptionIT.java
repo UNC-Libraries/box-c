@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,6 +83,42 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateDescription", respMap.get("action"));
+        assertEquals("updated", respMap.get("status"));
+    }
+
+    @Test
+    public void testUpdateDescriptionNoChange() throws Exception {
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        var content = IOUtils.toByteArray(new FileInputStream(file));
+        PID objPid = makeWorkObject();
+
+        mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(content))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        ContentObject obj1 = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
+        var modifiedAfterFirst = obj1.getDescription().getLastModified();
+
+        // Repeat the update, so there should be no changes the second time
+        MvcResult result2 = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(content))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Invalid cache to make sure we get a fresh copy
+        repositoryObjectLoader.invalidate(objPid);
+        repositoryObjectLoader.invalidate(obj1.getDescription().getPid());
+
+        ContentObject obj2 = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
+        var modifiedAfterSecond = obj2.getDescription().getLastModified();
+
+        // Verify response from api
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result2);
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
+        assertEquals("unchanged", respMap.get("status"));
+        assertNotEquals(modifiedAfterFirst, modifiedAfterSecond, "Description should not have been updated");
     }
 
     @Test
