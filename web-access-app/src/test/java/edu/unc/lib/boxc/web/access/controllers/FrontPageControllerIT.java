@@ -57,7 +57,7 @@ public class FrontPageControllerIT {
                 "video", 21444L, "text", 46936L);
         when(queryLayer.getFormatCounts(any())).thenReturn(collectionStats);
 
-        MvcResult result = mvc.perform(get("/collectionStats")
+        MvcResult result = mvc.perform(get("/api/collectionStats")
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
                         .andReturn();
