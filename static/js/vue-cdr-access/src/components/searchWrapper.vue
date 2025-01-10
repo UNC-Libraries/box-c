@@ -129,7 +129,7 @@ Top level component wrapper for search pages
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
-                get(`${search_path}/${param_string}`).then((response) => {
+                get(`api/${search_path}/${param_string}`).then((response) => {
                     this.emptyJsonResponseCheck(response);
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;

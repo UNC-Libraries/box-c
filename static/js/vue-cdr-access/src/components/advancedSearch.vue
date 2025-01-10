@@ -2,7 +2,7 @@
     <header-small/>
     <div class="container py-5">
         <h2 class="title is-3 has-text-centered">{{ $t('adv_search.advanced') }}</h2>
-        <form id="advanced-search-form">
+        <form id="advanced-search-form" action="/api/advancedSearch" method="get">
             <div class="lightest columns container">
                 <div class="column has-background-white-bis p-4">
                     <h3 class="subtitle is-5">{{ $t('adv_search.search_for') }}</h3>
@@ -182,7 +182,7 @@ export default {
 
     methods: {
         getCollections() {
-            get('/advancedSearch/collectionsJson').then((response) => {
+            get('/api/advancedSearch/collectionsJson').then((response) => {
                 this.collections = response.data;
             }).catch(function (error) {
                 console.log(error);
@@ -190,7 +190,7 @@ export default {
         },
 
         getFormats() {
-            get('/advancedSearch/formats').then((response) => {
+            get('/api/advancedSearch/formats').then((response) => {
                 this.formats = response.data;
             }).catch(function (error) {
                 console.log(error);

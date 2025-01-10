@@ -52,7 +52,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
      * @param response
      * @return
      */
-    @RequestMapping(value = "/searchJson", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/searchJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> searchJson(@RequestParam("getFacets") Optional<Boolean> getFacets, HttpServletRequest request,
                                    HttpServletResponse response) {
@@ -68,7 +68,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
      * @param response
      * @return
      */
-    @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> searchJson(@PathVariable("pid") String pid,
                                    @RequestParam("getFacets") Optional<Boolean> getFacets,
@@ -76,7 +76,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return searchJsonRequest(request, getFacets.orElse(false), pid);
     }
 
-    @RequestMapping(value = "/list/{pid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/list/{pid}", method = RequestMethod.GET)
     public String listRedirect(@PathVariable("pid") String pid) {
         return "redirect:/record/{pid}";
     }
@@ -90,7 +90,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
      * @param response
      * @return
      */
-    @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> listJson(@PathVariable("pid") String pid,
                                  @RequestParam("getFacets") Optional<Boolean> getFacets,
@@ -114,7 +114,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
      * @param response
      * @return
      */
-    @RequestMapping(value = "/collectionsJson", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/collectionsJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody Map<String, Object> browseCollectionsJson(HttpServletRequest request,
                                                                HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);

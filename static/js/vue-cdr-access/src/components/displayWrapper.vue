@@ -183,7 +183,7 @@ Top level component for full record pages with searching/browsing, including Adm
             retrieveSearchResults() {
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
-                get(`/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
+                get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.facet_list = response.data.facetFields;
@@ -205,7 +205,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     link += '/';
                 }
 
-               return get(`${link}json`).then((response) => {
+               return get(`/api${link}json`).then((response) => {
                    this.emptyJsonResponseCheck(response);
                    this.container_info = response.data;
 

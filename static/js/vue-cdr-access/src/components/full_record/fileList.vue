@@ -86,7 +86,7 @@ export default {
         // File objects don't have any child metadata, so wrap the file object in an array
         ajaxOptions() {
             return  {
-                url: `/listJson/${this.workId}?rows=10`,
+                url: `/api/listJson/${this.workId}?rows=10`,
                 dataSrc: (d) => this.resourceType === 'Work' ? d.metadata : [d.container],
                 data: (d) => {
                     const sorts = ['title', 'fileFormatDescription', 'fileSize'];

@@ -13,7 +13,7 @@ import static org.springframework.http.HttpStatus.OK;
  */
 @Controller
 public class UserInformationController {
-    @RequestMapping(value = "/userInformation", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/api/userInformation", method = RequestMethod.HEAD)
     public ResponseEntity<Object> getUserInformation() {
         return ResponseEntity.status(OK).contentLength(0).build();
     }
