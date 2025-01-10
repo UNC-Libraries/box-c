@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -88,9 +89,14 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
 
     @Test
     public void testUpdateDescriptionNoChange() throws Exception {
+        doNothing().when(aclService)
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSetImpl.class), eq(editDescription));
+
         File file = new File("src/test/resources/mods/valid-mods.xml");
         var content = IOUtils.toByteArray(new FileInputStream(file));
         PID objPid = makeWorkObject();
+
+        assertDescriptionNotUpdated(objPid);
 
         mvc.perform(post("/edit/description/" + objPid.getUUID())
                 .content(content))
