@@ -124,7 +124,7 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateDescription", respMap.get("action"));
         assertEquals("unchanged", respMap.get("status"));
-        assertNotEquals(modifiedAfterFirst, modifiedAfterSecond, "Description should not have been updated");
+        assertEquals(modifiedAfterFirst, modifiedAfterSecond, "Description should not have been updated");
     }
 
     @Test
