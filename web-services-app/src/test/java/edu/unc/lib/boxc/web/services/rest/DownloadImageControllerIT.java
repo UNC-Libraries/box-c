@@ -277,7 +277,7 @@ public class DownloadImageControllerIT {
     }
 
     @Test
-    public void testAccessImageInvalidSize() throws Exception {
+    public void testAccessImageInvalidSizeRequested() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
@@ -291,7 +291,7 @@ public class DownloadImageControllerIT {
     }
 
     @Test
-    public void testAccessImageNegativeSize() throws Exception {
+    public void testAccessImageNegativeSizeRequested() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
@@ -305,7 +305,7 @@ public class DownloadImageControllerIT {
     }
 
     @Test
-    public void testAccessImageZeroSize() throws Exception {
+    public void testAccessImageZeroSizeRequested() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
@@ -392,6 +392,24 @@ public class DownloadImageControllerIT {
 
         mvc.perform(get("/downloadImage/" + pidString + "/500"))
                 .andExpect(status().isServiceUnavailable())
+                .andReturn();
+    }
+
+    @Test
+    public void testGetImageWithZeroByteJP2() throws Exception {
+        PID filePid = makePid();
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream originalDatastream = mock(Datastream.class);
+        Datastream jp2Datastream = mock(Datastream.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(originalDatastream);
+        when(originalDatastream.getExtent()).thenReturn("1200x1200");
+        when(jp2Datastream.getExtent()).thenReturn(null);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+
+        mvc.perform(get("/downloadImage/" + filePid.getId() + "/160"))
+                .andExpect(status().isNotFound())
                 .andReturn();
     }
 }

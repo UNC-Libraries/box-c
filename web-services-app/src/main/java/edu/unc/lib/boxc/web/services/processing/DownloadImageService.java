@@ -82,6 +82,9 @@ public class DownloadImageService {
         if (!Objects.equals(size, FULL_SIZE)) {
             int integerSize = parseSize(size);
             var longerSide = getLongestSide(contentObjectRecord);
+            if (longerSide == 0) {
+                return null;
+            }
             // request is bigger than or equal to full size, so we will switch to full size
             if (integerSize >= longerSide) {
                 return FULL_SIZE;
