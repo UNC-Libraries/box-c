@@ -64,7 +64,6 @@ describe('velocicroptorReport.vue', () => {
 
     it("contains a data tables", () => {
         expect(wrapper.findComponent({ name: 'dataTable' }).exists()).toBe(true);
-        console.log(wrapper.html());
     });
 
     it("populates CSV download link", () => {

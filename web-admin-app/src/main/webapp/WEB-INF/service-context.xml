@@ -83,6 +83,7 @@
         <property name="serviceKeyPath" value="${boxctron.service.key}" />
         <property name="serviceUser" value="${boxctron.service.user}" />
         <property name="executorService" ref="chompbCommandExecutor" />
+        <property name="chompbCommand" value="${chompb.command}" />
     </bean>
 
     <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
