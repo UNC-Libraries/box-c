@@ -274,10 +274,17 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         String viewerPid = null;
         if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject,
-                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals).getId();
+            var child = accessCopiesService.getFirstMatchingChild(briefObject,
+                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals);
+            if (child == null) {
+                throw new NotFoundException("Cannot find child PDF for " + pidString);
+            }
+            viewerPid = child.getId();
         } else {
-            accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            if (viewerPid == null) {
+                throw new IllegalArgumentException("Resource is not a PDF: " + pidString);
+            }
         }
 
         model.addAttribute("viewerPid", viewerPid);
@@ -320,6 +327,13 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                     viewerType = "pdf";
                 }
             }
+        }
+
+        // When the viewer object is not the current object, check if the user has access to view the viewer object
+        if (viewerPid != null && !briefObject.getId().equals(viewerPid)
+                && !aclService.hasAccess(PIDs.get(viewerPid), principals, Permission.viewOriginal)) {
+            viewerPid = null;
+            viewerType = null;
         }
 
         var viewerProperties = new HashMap<String, Object>();
