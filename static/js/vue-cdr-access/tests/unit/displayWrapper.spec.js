@@ -70,7 +70,7 @@ describe('displayWrapper.vue', () => {
     }
 
     it("retrieves data", async () => {
-        stubQueryResponse(`listJson/${response.container.id}?.+`, response);
+        stubQueryResponse(`api/listJson/${response.container.id}?.+`, response);
         await router.push(`/record/${response.container.id}`);
         mountApp();
         wrapper.vm.getBriefObject();
@@ -130,7 +130,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
+        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp({
             container_info: {
@@ -163,7 +163,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
-        stubQueryResponse(`searchJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
+        stubQueryResponse(`api/searchJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp();
 
@@ -183,8 +183,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for admin unit", async () => {
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
             {
                 'briefObject': {
                     type: 'AdminUnit',
@@ -220,8 +220,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for collection object", async () => {
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
             {
                 'briefObject': briefObjectData.briefObject,
                 'resourceType': 'Collection',
@@ -240,8 +240,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for folder object", async () => {
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
             {
                 'briefObject': {
                     type: 'Folder',
@@ -281,8 +281,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for admin unit and maintains them after checking works only", async () => {
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
             {
                 'briefObject': {
                     type: 'AdminUnit',
@@ -323,7 +323,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if no data is returned", async () => {
-        stubQueryResponse(`/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`, '');
+        stubQueryResponse(`/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`, '');
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
         mountApp();
 
@@ -332,7 +332,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if a 4xx status code is returned", async () => {
-        moxios.stubRequest('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
             status: 404,
             response: JSON.stringify({ message: 'Nothing to see here' })
         });
@@ -344,7 +344,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("displays a '503 page' if JSON responds with an error", async () => {
-        moxios.stubRequest('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
             status: 503,
             response: JSON.stringify({ message: 'bad stuff happened' })
         });

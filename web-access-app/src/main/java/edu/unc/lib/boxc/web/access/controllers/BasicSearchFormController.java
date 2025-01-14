@@ -28,7 +28,7 @@ import java.util.HashMap;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/basicSearch")
+@RequestMapping("/api/basicSearch")
 public class BasicSearchFormController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(BasicSearchFormController.class);
     @Autowired

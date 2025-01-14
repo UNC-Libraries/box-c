@@ -73,7 +73,7 @@ describe('collectionBrowseWrapper.vue', () => {
     });
 
     it("retrieves data", (done) => {
-        moxios.stubRequest('collectionsJson', {
+        moxios.stubRequest('api/collectionsJson', {
             status: 200,
             response: JSON.stringify(response)
         });
@@ -86,7 +86,7 @@ describe('collectionBrowseWrapper.vue', () => {
     });
 
     it("displays a '503 page' if JSON responds with an error", (done) => {
-        moxios.stubRequest('collectionsJson', {
+        moxios.stubRequest('api/collectionsJson', {
             status: 503,
             response: JSON.stringify({ message: 'bad stuff happened' })
         });

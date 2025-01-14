@@ -51,7 +51,7 @@ describe('metadataDisplay.vue', () => {
 
     it("loads record MODS metadata as html", (done) => {
         const html_data = "<table><tr><th>Title</th><td><p>Listen for real</p></td></tr></table>";
-        const url = `record/${record.uuid}/metadataView`;
+        const url = `api/record/${record.uuid}/metadataView`;
         moxios.stubRequest(new RegExp(url), {
             status: 200,
             response: html_data
@@ -67,7 +67,7 @@ describe('metadataDisplay.vue', () => {
 
     it("does not load record MODS metadata if empty", (done) => {
         const html_data = "";
-        const url = `record/${record.uuid}/metadataView`;
+        const url = `api/record/${record.uuid}/metadataView`;
         moxios.stubRequest(new RegExp(url), {
             status: 200,
             response: html_data

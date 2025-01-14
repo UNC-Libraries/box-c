@@ -71,7 +71,7 @@ import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/record")
+@RequestMapping("/api/record")
 public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
     private final String VIEWER_PID = "viewerPid";
