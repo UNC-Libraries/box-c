@@ -407,6 +407,7 @@ public class DownloadImageControllerIT {
         when(originalDatastream.getExtent()).thenReturn("1200x1200");
         when(jp2Datastream.getExtent()).thenReturn(null);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(contentObjectSolrRecord.getPid()).thenReturn(filePid);
 
         mvc.perform(get("/downloadImage/" + filePid.getId() + "/160"))
                 .andExpect(status().isNotFound())
