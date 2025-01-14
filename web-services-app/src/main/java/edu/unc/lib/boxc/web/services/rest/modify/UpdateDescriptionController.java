@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,10 @@ public class UpdateDescriptionController {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         try (InputStream modsStream = request.getInputStream()) {
             updateService.updateDescription(new UpdateDescriptionRequest(agent, pid, modsStream));
+            result.put("status", "updated");
+        } catch (StateUnmodifiedException e) {
+            log.info("No changes were made to {}", pid.getRepositoryPath());
+            result.put("status", "unchanged");
         } catch (MetadataValidationException e) {
             if (e.getMessage() != null) {
                 result.put("error", e.getMessage());
