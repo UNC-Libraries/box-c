@@ -35,14 +35,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.AV_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_TYPE;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_URL;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_PID;
@@ -337,7 +336,7 @@ public class FullRecordControllerTest {
         when(briefObject.getAncestorIds()).thenReturn(PID_3 + "/" + PID_1);
         when(queryLayer.getObjectById(any())).thenReturn(briefObject);
 
-        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(PID_1);
+        when(accessCopiesService.getDatastreamPid(any(), any(), eq(AV_MIMETYPE_REGEX))).thenReturn(PID_1);
         when(accessCopiesService.hasViewableFiles(any(), any())).thenReturn(false);
 
         var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
