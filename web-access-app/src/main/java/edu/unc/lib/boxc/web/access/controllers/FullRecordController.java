@@ -74,10 +74,10 @@ import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 @RequestMapping("/api/record")
 public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
-    private final String VIEWER_PID = "viewerPid";
-    private final String VIEWER_TYPE = "viewerType";
-    private final String STREAMING_URL = "streamingUrl";
-    private final String STREAMING_TYPE = "streamingType";
+    protected static final String VIEWER_PID = "viewerPid";
+    protected static final String VIEWER_TYPE = "viewerType";
+    protected static final String STREAMING_URL = "streamingUrl";
+    protected static final String STREAMING_TYPE = "streamingType";
     private final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
 
     @Autowired

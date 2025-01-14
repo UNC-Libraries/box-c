@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
@@ -35,11 +36,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_TYPE;
+import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_URL;
+import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_PID;
+import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_TYPE;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -60,6 +67,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FullRecordControllerTest {
     private static final String PID_1 = "bc9795df-0de9-444c-a4ac-9585378b2d88";
     private static final String PID_2 = "5c79c898-8698-4fba-84d3-64317b3c73f5";
+    private static final String PID_3 = "3a4996d1-bcfa-41b3-9e46-a51bf106ad9b";
+    private static final String PID_PARENT_COLL = "44f1a025-0edb-44ba-8d21-a5728d6d937c";
     protected MockMvc mvc;
     private AutoCloseable closeable;
     @InjectMocks
@@ -113,6 +122,9 @@ public class FullRecordControllerTest {
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
 
         SerializationUtil.injectSettings(searchSettings, null, globalPermissionEvaluator);
+        when(neighborService.getNeighboringItems(any(), anyInt(), any())).thenReturn(Collections.emptyList());
+        when(childrenCountService.getChildrenCount(any(), any())).thenReturn(1L);
+        when(workFilesizeService.getTotalFilesize(any(), any())).thenReturn(100L);
     }
 
     @AfterEach
@@ -193,16 +205,12 @@ public class FullRecordControllerTest {
     @Test
     public void testHandleJsonRequestWorkWithPdf() throws Exception {
         when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getParentCollection()).thenReturn(PID_2);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
         when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
         when(queryLayer.getObjectById(any())).thenReturn(briefObject);
 
         when(childBriefObject.getId()).thenReturn(PID_2);
         when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(childBriefObject);
-
-        when(childrenCountService.getChildrenCount(any(), any())).thenReturn(1L);
-        when(neighborService.getNeighboringItems(any(), anyInt(), any())).thenReturn(Collections.emptyList());
-        when(workFilesizeService.getTotalFilesize(any(), any())).thenReturn(100L);
 
         when(accessCopiesService.getDatastreamPid(any(), any(), eq(PDF_MIMETYPE_REGEX))).thenReturn(PID_1);
 
@@ -211,8 +219,10 @@ public class FullRecordControllerTest {
                 .andReturn();
 
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(PID_1, respMap.get("viewerPid"));
-        assertEquals("pdf", respMap.get("viewerType"));
+        assertEquals(PID_1, respMap.get(VIEWER_PID));
+        assertEquals("pdf", respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
         assertEquals(100, respMap.get("totalDownloadSize"));
         assertNotNull(respMap.get("briefObject"));
     }
@@ -220,16 +230,12 @@ public class FullRecordControllerTest {
     @Test
     public void testHandleJsonRequestWorkWithPdfWithoutPermission() throws Exception {
         when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getParentCollection()).thenReturn(PID_2);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
         when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
         when(queryLayer.getObjectById(any())).thenReturn(briefObject);
 
         when(childBriefObject.getId()).thenReturn(PID_2);
         when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(childBriefObject);
-
-        when(childrenCountService.getChildrenCount(any(), any())).thenReturn(1L);
-        when(neighborService.getNeighboringItems(any(), anyInt(), any())).thenReturn(Collections.emptyList());
-        when(workFilesizeService.getTotalFilesize(any(), any())).thenReturn(100L);
 
         // Returning the child for viewer pid, but user doesn't have permission to view child
         when(accessCopiesService.getDatastreamPid(any(), any(), eq(PDF_MIMETYPE_REGEX))).thenReturn(PID_2);
@@ -240,9 +246,109 @@ public class FullRecordControllerTest {
                 .andReturn();
 
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertNull(respMap.get("viewerPid"));
-        assertNull(respMap.get("viewerType"));
+        assertNull(respMap.get(VIEWER_PID));
+        assertNull(respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
         assertEquals(100, respMap.get("totalDownloadSize"));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestFileWithStreaming() throws Exception {
+        String streamingUrl = "http://example.com/streaming";
+        String streamingType = "audio";
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(briefObject.getContentStatus()).thenReturn(List.of(FacetConstants.HAS_STREAMING));
+        when(briefObject.getStreamingType()).thenReturn(streamingType);
+        when(briefObject.getStreamingUrl()).thenReturn(streamingUrl);
+        when(briefObject.getAncestorIds()).thenReturn(PID_3 + "/" + PID_1);
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get(VIEWER_PID));
+        assertEquals("streaming", respMap.get(VIEWER_TYPE));
+        assertEquals(streamingType, respMap.get(STREAMING_TYPE));
+        assertEquals(streamingUrl, respMap.get(STREAMING_URL));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithStreamingChild() throws Exception {
+        String streamingUrl = "http://example.com/streaming";
+        String streamingType = "audio";
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+
+        when(childBriefObject.getId()).thenReturn(PID_2);
+        when(childBriefObject.getStreamingType()).thenReturn(streamingType);
+        when(childBriefObject.getStreamingUrl()).thenReturn(streamingUrl);
+        when(childBriefObject.getContentStatus()).thenReturn(List.of(FacetConstants.HAS_STREAMING));
+        when(accessCopiesService.getFirstStreamingChild(any(), any())).thenReturn(childBriefObject);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get(VIEWER_PID));
+        assertEquals("streaming", respMap.get(VIEWER_TYPE));
+        assertEquals(streamingType, respMap.get(STREAMING_TYPE));
+        assertEquals(streamingUrl, respMap.get(STREAMING_URL));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithIiifFiles() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+
+        when(childBriefObject.getId()).thenReturn(PID_2);
+        when(accessCopiesService.hasViewableFiles(any(), any())).thenReturn(true);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get(VIEWER_PID));
+        assertEquals("clover", respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
+        assertEquals(100, respMap.get("totalDownloadSize"));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestAVFile() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
+        when(briefObject.getAncestorIds()).thenReturn(PID_3 + "/" + PID_1);
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+
+        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(PID_1);
+        when(accessCopiesService.hasViewableFiles(any(), any())).thenReturn(false);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(PID_1, respMap.get(VIEWER_PID));
+        assertEquals("clover", respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
         assertNotNull(respMap.get("briefObject"));
     }
 
