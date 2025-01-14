@@ -288,7 +288,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             }
         }
 
-        model.addAttribute("viewerPid", viewerPid);
+        model.addAttribute(VIEWER_PID, viewerPid);
         model.addAttribute("briefObject", briefObject);
         model.addAttribute("template", "ajax");
 
