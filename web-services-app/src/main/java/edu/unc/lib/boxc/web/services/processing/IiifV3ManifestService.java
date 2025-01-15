@@ -158,7 +158,7 @@ public class IiifV3ManifestService {
         assertHasAccess(pid, agent);
         var contentObjs = listViewableFiles(pid, agent.getPrincipals());
         if (contentObjs.isEmpty()) {
-            throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
+            throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
         }
         ContentObjectRecord rootObj = contentObjs.get(0);
         return constructCanvasSection(rootObj);
