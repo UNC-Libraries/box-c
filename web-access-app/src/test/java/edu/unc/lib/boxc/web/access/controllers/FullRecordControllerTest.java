@@ -351,7 +351,7 @@ public class FullRecordControllerTest {
         assertNotNull(respMap.get("briefObject"));
     }
 
-    public static Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
+    private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
         MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(result.getResponse().getContentAsString(), type);
