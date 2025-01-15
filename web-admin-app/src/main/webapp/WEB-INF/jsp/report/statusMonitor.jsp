@@ -2,7 +2,6 @@
 	
 </div>
 
-<link rel="stylesheet" type="text/css" href="/static/css/admin/status_monitor.css" />
 <script>
 	var require = {
 		config: {

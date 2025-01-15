@@ -2,9 +2,6 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="/static/css/admin/jquery.xmleditor.css" />
-
 <s:eval var="viewRecordUrl" expression=
 	"T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, 'record', resultObject.id)" />
 <s:eval var="originalSubpath" expression=
