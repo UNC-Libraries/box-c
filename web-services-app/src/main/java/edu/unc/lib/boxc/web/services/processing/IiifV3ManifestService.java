@@ -156,12 +156,13 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
+        ContentObjectRecord rootObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        var contentObjs = listViewableFiles(rootObj, agent.getPrincipals());
         if (contentObjs.isEmpty()) {
             throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
         }
-        ContentObjectRecord rootObj = contentObjs.get(0);
-        return constructCanvasSection(rootObj);
+        ContentObjectRecord obj = contentObjs.get(0);
+        return constructCanvasSection(obj);
     }
 
     /**
@@ -335,32 +336,8 @@ public class IiifV3ManifestService {
     }
 
     /**
-     * List viewable files for the specified object's canvas
-     * @param pid
-     * @param principals
-     * @return
-     */
-    private List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
-        ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
-        if (briefObj == null) {
-            throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
-        }
-        String resourceType = briefObj.getResourceType();
-        if (hasViewableContent(briefObj)) {
-            return Collections.singletonList(briefObj);
-        }
-        if (!ResourceType.Work.nameEquals(resourceType)) {
-            return Collections.emptyList();
-        }
-
-        var mdObjs = performQuery(briefObj, principals);
-        mdObjs.add(0, briefObj);
-        return mdObjs;
-    }
-
-    /**
-     * List viewable files for the specified object's manifest
-     * @param rootObj
+     * List viewable files for the specified object
+     * @param rootObj content object record
      * @param principals
      * @return
      */
