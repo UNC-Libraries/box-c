@@ -83,7 +83,7 @@
 	vertical-align: middle;
 }
 
-#status_monitor table th, td {
+#status_monitor table th, #status_monitor table td {
 	padding: 6px 10px;
 	white-space: nowrap;
 	overflow-x: hidden;

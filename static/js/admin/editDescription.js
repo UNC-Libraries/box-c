@@ -7,9 +7,9 @@ require.config({
 		"text" : "js/admin/lib/text",
 		"underscore" : "js/admin/lib/underscore",
 		"tpl" : "js/admin/lib/tpl",
-		"autosize" : "js/admin/xmleditor/lib/jquery.autosize-min",
-		"json2" : "js/admin/xmleditor/lib/json2",
-		"cycle" : "js/admin/xmleditor/lib/cycle",
+		"autosize" : "js/xmleditor/lib/jquery.autosize-min",
+		"json2" : "js/xmleditor/lib/json2",
+		"cycle" : "js/xmleditor/lib/cycle",
 		"ace" : "js/xmleditor/lib/ace/src-min/ace",
 		"vkbeautify" : "js/xmleditor/lib/vkbeautify",
 		"xmleditor" : "js/xmleditor/jquery.xmleditor"
