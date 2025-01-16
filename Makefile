@@ -42,8 +42,8 @@ build-admin-concat:
 		static/css/admin/admin_forms.css \
 		static/css/fontawesome.min.css \
 		static/css/structure_browse.css \
-		static/css/status_monitor.css \
-		static/css/cdr_vue_modal_styles.css \
+		static/css/admin/status_monitor.css \
+		static/build/admin/cdr_vue_modal_styles.css \
 		static/js/admin/vue-cdr-admin/dist/assets/index.css \
 		> static/build/admin/cdr-admin.css
 
@@ -77,9 +77,7 @@ build-access-concat:
 	sass static/build/access/cdr-ui.scss  static/build/access/cdr-ui.css --style "expanded"
 
 	cat static/css/cdrui_styles.css \
-		static/css/structure_browse.css \
-		static/css/cdr-ui.css \
-		static/css/cdr_vue_modal_styles.css \
+		static/build/access/cdr-ui.css \
 		static/css/fontawesome.min.css \
 		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/build/access/cdr-access.css
