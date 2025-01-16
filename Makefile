@@ -79,6 +79,7 @@ build-access-concat:
 	sass static/build/access/cdr-ui.scss  static/build/access/cdr-ui.css --style "expanded"
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/bulma-no-dark-mode.min.css \
 		static/css/cdrui_styles.css \
 		static/build/access/cdr-ui.css \
 		static/css/fontawesome.min.css \
