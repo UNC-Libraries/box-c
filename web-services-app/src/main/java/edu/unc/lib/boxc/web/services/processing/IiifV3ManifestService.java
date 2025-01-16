@@ -156,12 +156,11 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        ContentObjectRecord rootObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
-        var contentObjs = listViewableFiles(rootObj, agent.getPrincipals());
-        if (contentObjs.isEmpty()) {
+        ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        if (obj == null || !hasViewableContent(obj)) {
             throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
         }
-        ContentObjectRecord obj = contentObjs.get(0);
+
         return constructCanvasSection(obj);
     }
 
@@ -336,8 +335,8 @@ public class IiifV3ManifestService {
     }
 
     /**
-     * List viewable files for the specified object
-     * @param rootObj content object record
+     * List viewable files for the specified object's manifest
+     * @param rootObj
      * @param principals
      * @return
      */
