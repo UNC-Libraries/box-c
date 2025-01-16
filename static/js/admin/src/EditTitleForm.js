@@ -1,4 +1,4 @@
-define('EditTitleForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editTitleForm',
+define('EditTitleForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editTitleForm',
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
     function($, ui, _, RemoteStateChangeMonitor, editTitleForm, ModalLoadingOverlay, AbstractForm) {
 

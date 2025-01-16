@@ -11,4 +11,4 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/statusMonitor"></script>
+<script type="text/javascript" src="/static/js/admin/lib/require.js" data-main="/static/js/admin/statusMonitor"></script>

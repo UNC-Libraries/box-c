@@ -1,4 +1,4 @@
-define('EditTypeBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/editTypeForm"], function($, AbstractBatchAction, editTypeTemplate) {
+define('EditTypeBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/admin/editTypeForm"], function($, AbstractBatchAction, editTypeTemplate) {
 	function EditTypeBatchAction(context) {
 		this._create(context);
 	};

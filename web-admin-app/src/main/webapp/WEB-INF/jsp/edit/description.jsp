@@ -19,7 +19,7 @@
 		}
 	};
 </script>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/admin/editDescription"></script>
+<script type="text/javascript" src="/static/js/admin/lib/require.js" data-main="/static/js/admin/editDescription"></script>
 
 <div class="edit_desc_page contentarea">
 	<div>

@@ -1,18 +1,18 @@
 require.config({
 	urlArgs: "v=5.0-SNAPSHOT",
-	baseUrl: "/static/js/",
+	baseUrl: "/static/",
 	paths: {
-		"jquery" : "cdr-admin",
-		"jquery-ui" : "cdr-admin",
-		"text" : "lib/text",
-		"underscore" : "lib/underscore",
-		"tpl" : "lib/tpl",
-		"autosize" : "xmleditor/lib/jquery.autosize-min",
-		"json2" : "xmleditor/lib/json2",
-		"cycle" : "xmleditor/lib/cycle",
-		"ace" : "xmleditor/lib/ace/src-min/ace",
-		"vkbeautify" : "xmleditor/lib/vkbeautify",
-		"xmleditor" : "xmleditor/jquery.xmleditor"
+		"jquery" : "assets/admin/cdr-admin",
+		"jquery-ui" : "assets/admin/cdr-admin",
+		"text" : "js/admin/lib/text",
+		"underscore" : "js/admin/lib/underscore",
+		"tpl" : "js/admin/lib/tpl",
+		"autosize" : "js/admin/xmleditor/lib/jquery.autosize-min",
+		"json2" : "js/admin/xmleditor/lib/json2",
+		"cycle" : "js/admin/xmleditor/lib/cycle",
+		"ace" : "js/xmleditor/lib/ace/src-min/ace",
+		"vkbeautify" : "js/xmleditor/lib/vkbeautify",
+		"xmleditor" : "js/xmleditor/jquery.xmleditor"
 	},
 	shim: {
 		"ace" : ["jquery"],
@@ -24,7 +24,7 @@ require.config({
 	}
 });
 
-define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", "tpl!../templates/admin/pathTrail"], function(module, $, ui, ace, xmleditor, pathTemplate) {
+define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", "tpl!templates/admin/pathTrail"], function(module, $, ui, ace, xmleditor, pathTemplate) {
 	
 	var pid = window.location.pathname;
 	pid = pid.substring(pid.lastIndexOf("/") + 1);

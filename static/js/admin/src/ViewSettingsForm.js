@@ -1,4 +1,4 @@
-define('ViewSettingsForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/viewSettingsForm',
+define('ViewSettingsForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/viewSettingsForm',
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
     function($, ui, _, RemoteStateChangeMonitor, viewSettingsForm, ModalLoadingOverlay, AbstractForm) {
 

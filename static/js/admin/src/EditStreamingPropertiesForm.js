@@ -1,4 +1,4 @@
-define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editStreamingPropertiesForm',
+define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editStreamingPropertiesForm',
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
     function($, ui, _, RemoteStateChangeMonitor, editStreamingPropertiesForm, ModalLoadingOverlay, AbstractForm) {
         let defaultOptions = {

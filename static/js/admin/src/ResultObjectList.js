@@ -10,7 +10,7 @@ define('ResultObjectList', ['jquery', 'ResultObject' ], function($, ResultObject
 			refreshEntryUrl : "entry/",
 			parent : null,
 			splitLoadLimit : 70,
-			resultEntryTemplate : 'tpl!../templates/admin/resultEntry'
+			resultEntryTemplate : 'tpl!templates/admin/resultEntry'
 		},
 		
 		init: function(options) {

@@ -1,4 +1,4 @@
-define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/runEnhancementsForm"], function($, AbstractBatchAction, runEnhancementsTemplate) {
+define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/admin/runEnhancementsForm"], function($, AbstractBatchAction, runEnhancementsTemplate) {
 
 	function RunEnhancementsBatchAction(context) {
 		this._create(context);

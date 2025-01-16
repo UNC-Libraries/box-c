@@ -1,4 +1,4 @@
-define('EditThumbnailForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editThumbnailForm',
+define('EditThumbnailForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editThumbnailForm',
         'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'],
     function($, ui, _, RemoteStateChangeMonitor, addWorkTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 

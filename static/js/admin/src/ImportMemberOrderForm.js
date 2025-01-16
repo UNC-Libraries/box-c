@@ -1,4 +1,4 @@
-define('ImportMemberOrderForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/importMemberOrderForm',
+define('ImportMemberOrderForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!templates/admin/importMemberOrderForm',
         'ModalLoadingOverlay', 'AbstractFileUploadForm'],
     function($, ui, _, importTemplate, ModalLoadingOverlay, AbstractFileUploadForm) {
 

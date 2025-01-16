@@ -1,4 +1,4 @@
-define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editFilenameForm',
+define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editFilenameForm',
 		'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'], 
 		function($, ui, _, RemoteStateChangeMonitor, editFilenameForm, ModalLoadingOverlay, AbstractForm) {
 	

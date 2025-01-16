@@ -1,4 +1,4 @@
-define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'ActionEventHandler', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
+define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'ActionEventHandler', 'tpl!templates/admin/statusMonitor/depositMonitorJob', 'tpl!templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
 		function($, ui, _, AbstractStatusMonitor, ActionEventHandler, depositMonitorJobTemplate, depositMonitorDetailsTemplate, ResubmitPackageForm) {
 			
 	var defaultOptions = {

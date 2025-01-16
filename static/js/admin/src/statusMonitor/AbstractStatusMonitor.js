@@ -1,4 +1,4 @@
-define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/statusMonitor/overview', 'tpl!../templates/admin/statusMonitor/details', 'moment'], 
+define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!templates/admin/statusMonitor/overview', 'tpl!templates/admin/statusMonitor/details', 'moment'], 
 		function($, ui, _, overviewTemplate, detailsTemplate) {
 
 	var defaultOptions = {

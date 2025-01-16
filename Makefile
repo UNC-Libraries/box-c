@@ -49,6 +49,7 @@ build-admin-concat:
 
 	cp static/build/admin/cdr-admin.js static/assets/admin/
 	cp static/build/admin/cdr-admin.css static/assets/admin/
+	cp -r static/css/images static/assets/admin/
 
 ifneq ($(VERSION), "")
 	for i in static/js/admin/*.js; do \

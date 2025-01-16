@@ -1,7 +1,7 @@
 /**
  * Implements functionality and UI for the generic Ingest Package form
  */
-define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/ingestPackageForm', 
+define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/ingestPackageForm', 
 		'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'], 
 		function($, ui, _, RemoteStateChangeMonitor, ingestPackageTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 	

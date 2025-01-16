@@ -1,4 +1,4 @@
-define('UpdateViewSettingsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/viewSettingsForm"], function($, AbstractBatchAction, viewSettingsTemplate, ) {
+define('UpdateViewSettingsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/admin/viewSettingsForm"], function($, AbstractBatchAction, viewSettingsTemplate, ) {
     function UpdateViewSettingsBatchAction(context) {
         this._create(context);
     }

@@ -1,4 +1,4 @@
-define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/deleteForm', 
+define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/deleteForm', 
 		'AbstractForm', 'DeleteBatchAction', 'AlertHandler'],
 		function($, ui, _, RemoteStateChangeMonitor, deleteForm,	AbstractForm, DeleteBatchAction) {
 	
