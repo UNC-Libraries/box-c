@@ -13,6 +13,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
@@ -67,6 +68,8 @@ public class IiifV3ManifestServiceTest {
     private AccessGroupSet principals;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+    @Mock
+    private SimpleIdRequest simpleIdRequest;
     private AutoCloseable closeable;
     private ContentObjectSolrRecord workObj;
     private IiifV3ManifestService manifestService;

@@ -342,16 +342,14 @@ public class IiifV3ManifestService {
      */
     private List<ContentObjectRecord> listViewableFiles(ContentObjectRecord rootObj, AccessGroupSet principals) {
         String resourceType = rootObj.getResourceType();
+        if (hasViewableContent(rootObj)) {
+            return Collections.singletonList(rootObj);
+        }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return Collections.emptyList();
         }
-        if (!hasViewableContent(rootObj)) {
-            return Collections.emptyList();
-        }
 
-        var mdObjs = performQuery(rootObj, principals);
-        mdObjs.add(0, rootObj);
-        return mdObjs;
+        return performQuery(rootObj, principals);
     }
 
     private List<ContentObjectRecord> performQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
