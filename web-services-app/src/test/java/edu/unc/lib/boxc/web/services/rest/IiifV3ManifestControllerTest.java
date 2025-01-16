@@ -158,7 +158,7 @@ public class IiifV3ManifestControllerTest {
         assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/manifest", respJson.get("id").textValue());
         assertEquals("Test Work", respJson.get("label").get("none").get(0).textValue());
         assertFalse(respJson.get("metadata").isEmpty());
-        assertNull(respJson.get("items"));
+        assertFalse(respJson.get("items").isEmpty());
     }
 
     @Test

@@ -110,7 +110,7 @@ public class IiifV3ManifestServiceTest {
 
     private void setAsImage(ContentObjectSolrRecord fileObj) {
         var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
-        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||240x750");
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
     }
 
