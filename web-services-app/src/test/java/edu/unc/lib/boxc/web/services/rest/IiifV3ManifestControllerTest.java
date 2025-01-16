@@ -172,7 +172,7 @@ public class IiifV3ManifestControllerTest {
         fileObj.setId("5d72b84a-983c-4a45-8caa-dc9857987da2");
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object");
-        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
         var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);

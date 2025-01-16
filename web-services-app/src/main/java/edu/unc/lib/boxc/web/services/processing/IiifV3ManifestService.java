@@ -325,7 +325,7 @@ public class IiifV3ManifestService {
         var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
         var isValidDatastream = jp2Datastream != null && !jp2Datastream.getExtent().isEmpty();
         var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-        // check if original datastream mimetype is image or video
+        // check if original datastream mimetype is audio or video
         if (!isValidDatastream && originalDatastream != null) {
             var mimetype = originalDatastream.getMimetype();
             isValidDatastream = isAudio(mimetype, contentObj) || isVideo(mimetype);
