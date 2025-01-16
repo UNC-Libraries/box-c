@@ -14,24 +14,24 @@ setup-build-dirs:
 
 build-admin-concat:
 	rm -rf static/build/admin/*
-	rm -f static/assets/admin/cdr-admin.js
-	rm -f static/assets/admin/cdr-admin.css
+	rm -f static/assets/admin/cdr-admin.*
 
-	cat static/js/lib/jquery.min.js > static/build/admin/cdr-admin.js
+	cat static/js/admin/lib/jquery.min.js > static/build/admin/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/build/admin/cdr-admin.js
-	cat static/js/lib/jquery-ui.min.js >> static/build/admin/cdr-admin.js
+	cat static/js/admin/lib/jquery-ui.min.js >> static/build/admin/cdr-admin.js
 	echo "});" >> static/build/admin/cdr-admin.js
-	cat static/js/admin/lib/jquery.detachplus.js \
-		static/js/lib/moment.min.js \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/js/admin/lib/jquery.detachplus.js \
+		static/js/admin/lib/moment.min.js \
 		static/js/public/src/Structure* \
 		static/js/public/src/ResourceTypeUtilities.js \
 		static/js/admin/src/*.js \
 		static/js/admin/src/*/*.js \
 		>> static/build/admin/cdr-admin.js
-
 	sass static/css/sass/cdr_vue_modal_styles.scss static/build/admin/cdr_vue_modal_styles.css --style "expanded"
 
-	cat static/css/reset.css \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/reset.css \
 		static/css/cdr_common.css \
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
@@ -68,21 +68,24 @@ build-admin-npm:
 
 build-access-concat:
 	rm -rf static/build/access/*
-	rm -f static/assets/access/cdr-access.css
+	rm -f static/assets/access/cdr-access.*
 
-	cat static/css/sass/cdr_homepage.scss \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/sass/cdr_homepage.scss \
 		static/css/sass/cdr_ui_styles.scss \
 		static/css/sass/cdr_vue_modal_styles.scss \
 		> static/build/access/cdr-ui.scss
 	sass static/build/access/cdr-ui.scss  static/build/access/cdr-ui.css --style "expanded"
 
-	cat static/css/cdrui_styles.css \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/cdrui_styles.css \
 		static/build/access/cdr-ui.css \
 		static/css/fontawesome.min.css \
 		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/build/access/cdr-access.css
 
 	cp static/build/access/cdr-access.css static/assets/access/
+	cp -r static/webfonts static/assets/
 
 SUSPEND = "n"
 
