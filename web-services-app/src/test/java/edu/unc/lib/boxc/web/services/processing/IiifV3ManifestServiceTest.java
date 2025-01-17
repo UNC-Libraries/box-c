@@ -25,6 +25,7 @@ import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -245,6 +246,16 @@ public class IiifV3ManifestServiceTest {
 
         var canvas = manifestService.buildCanvas(filePid, agent);
         assertFileCanvasPopulated(canvas, FILE1_ID, IMAGE);
+    }
+
+    @Test
+    public void buildCanvasNonViewableFileTest() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            var fileObj1 = createFileRecord(FILE1_ID, IMAGE, false);
+            var filePid = PIDs.get(FILE1_ID);
+            when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+            manifestService.buildCanvas(filePid, agent);
+        });
     }
 
     @Test
