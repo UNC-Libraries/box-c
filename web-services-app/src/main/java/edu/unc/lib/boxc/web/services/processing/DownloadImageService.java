@@ -193,6 +193,11 @@ public class DownloadImageService {
         return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";
     }
 
+    public boolean isValidJP2Datastream (ContentObjectRecord contentObjectRecord) {
+        var datastream = contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        return datastream != null && datastream.getFilesize() != 0;
+    }
+
     public void setIiifBasePath(String iiifBasePath) {
         this.iiifBasePath = iiifBasePath;
     }

@@ -19,20 +19,15 @@ import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import edu.unc.lib.boxc.web.services.utils.DownloadTestHelper;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.io.File;
-import java.io.IOException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -41,7 +36,6 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -102,7 +96,7 @@ public class DownloadImageControllerIT {
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId())).thenReturn(originalDatastream);
         when(originalDatastream.getFilename()).thenReturn(filename);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
-
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/max/0/default.jpg"))
@@ -141,6 +135,7 @@ public class DownloadImageControllerIT {
         when(originalDatastream.getFilename()).thenReturn(filename);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
         when(jp2Datastream.getExtent()).thenReturn("1200x1200");
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/800"))
@@ -175,6 +170,7 @@ public class DownloadImageControllerIT {
         when(originalDatastream.getExtent()).thenReturn("1200x1200");
         when(originalDatastream.getFilename()).thenReturn(filename);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/2500"))
@@ -192,7 +188,11 @@ public class DownloadImageControllerIT {
     public void testFullSizeAccessImageNoFullSizePermissions() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream jp2Datastream = mock(Datastream.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
+
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
 
@@ -211,6 +211,9 @@ public class DownloadImageControllerIT {
         Datastream originalDatastream = mock(Datastream.class);
         Datastream jp2Datastream = mock(Datastream.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
+
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
 
@@ -249,6 +252,7 @@ public class DownloadImageControllerIT {
         when(originalDatastream.getFilename()).thenReturn(filename);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
         when(jp2Datastream.getExtent()).thenReturn("1200x1300");
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/1800"))
@@ -280,7 +284,10 @@ public class DownloadImageControllerIT {
     public void testAccessImageInvalidSizeRequested() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream jp2Datastream = mock(Datastream.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/library"))
                 .andExpect(status().isBadRequest())
@@ -294,7 +301,10 @@ public class DownloadImageControllerIT {
     public void testAccessImageNegativeSizeRequested() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream jp2Datastream = mock(Datastream.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/-1"))
                 .andExpect(status().isBadRequest())
@@ -309,6 +319,9 @@ public class DownloadImageControllerIT {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        Datastream jp2Datastream = mock(Datastream.class);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/0"))
                 .andExpect(status().isBadRequest())
@@ -406,6 +419,7 @@ public class DownloadImageControllerIT {
         when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(originalDatastream);
         when(originalDatastream.getExtent()).thenReturn("1200x1200");
         when(jp2Datastream.getExtent()).thenReturn(null);
+        when(jp2Datastream.getFilesize()).thenReturn(0L);
         when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
         when(contentObjectSolrRecord.getPid()).thenReturn(filePid);
 

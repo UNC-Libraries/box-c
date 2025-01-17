@@ -59,11 +59,17 @@ public class DownloadImageController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        if (!downloadImageService.isValidJP2Datastream(contentObjectRecord)) {
+            log.error("No valid JP2 datastream for {}", pidString);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         String validatedSize = downloadImageService.getSize(contentObjectRecord, size);
         if (validatedSize == null) {
             log.error("No validated size found for {}", pidString);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         if (Objects.equals(validatedSize, ImageServerUtil.FULL_SIZE)) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
