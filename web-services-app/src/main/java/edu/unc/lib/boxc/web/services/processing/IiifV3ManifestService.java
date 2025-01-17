@@ -323,7 +323,7 @@ public class IiifV3ManifestService {
         }
 
         var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        var isValidDatastream = jp2Datastream != null && !jp2Datastream.getExtent().isEmpty();
+        var isValidDatastream = isValidJP2(jp2Datastream);
         var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         // check if original datastream mimetype is audio or video
         if (!isValidDatastream && originalDatastream != null) {
@@ -332,6 +332,10 @@ public class IiifV3ManifestService {
         }
 
         return isValidDatastream;
+    }
+
+    private boolean isValidJP2(Datastream jp2Datastream) {
+        return jp2Datastream != null && !jp2Datastream.getExtent().isEmpty() && jp2Datastream.getFilesize() != 0;
     }
 
     /**

@@ -97,7 +97,7 @@ public class IiifV3ManifestServiceTest {
         closeable.close();
     }
 
-    private ContentObjectRecord createFileRecord(String id, String type, boolean extentPresent) {
+    private ContentObjectRecord createFileRecord(String id, String type, boolean isValidImage) {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(id);
         fileObj.setResourceType(ResourceType.File.name());
@@ -105,16 +105,16 @@ public class IiifV3ManifestServiceTest {
         if (Objects.equals(type, VIDEO)) {
             setAsVideo(fileObj);
         } else {
-            setAsImage(fileObj, extentPresent);
+            setAsImage(fileObj, isValidImage);
         }
         return fileObj;
     }
 
-    private void setAsImage(ContentObjectSolrRecord fileObj, boolean extentPresent) {
+    private void setAsImage(ContentObjectSolrRecord fileObj, boolean isValidJP2) {
         var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
         var jp2Info = "jp2|image/jp2|image.jp2|jp2|0|||";
-        if (extentPresent) {
-            jp2Info += "240x750";
+        if (isValidJP2) {
+            jp2Info = "jp2|image/jp2|image.jp2|jp2|5|||240x750";
         }
         var jp2Ds = new DatastreamImpl(jp2Info);
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
