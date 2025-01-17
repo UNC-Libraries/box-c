@@ -59,7 +59,7 @@ public class DownloadImageController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        if (!downloadImageService.isValidJP2Datastream(contentObjectRecord)) {
+        if (downloadImageService.isInvalidJP2Datastream(contentObjectRecord)) {
             log.error("No valid JP2 datastream for {}", pidString);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

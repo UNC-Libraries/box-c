@@ -43,10 +43,6 @@ public class DownloadImageService {
      */
     public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, boolean attachment)
             throws IOException {
-        if (contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         var contentDispositionHeader = "inline;";
         if (attachment) {
             String filename = getDownloadFilename(contentObjectRecord, size);
@@ -147,7 +143,8 @@ public class DownloadImageService {
     }
 
     /**
-     * If the shortest side of the content object is smaller than the size requested, return the placeholder
+     * If the shortest side of the content object is smaller than the size requested or if there is no
+     * valid JP2, then return the placeholder
      * @param contentObjectRecord
      * @param size
      * @return true if service needs to return a placeholder image
@@ -155,6 +152,9 @@ public class DownloadImageService {
     private boolean needsPlaceholder(ContentObjectRecord contentObjectRecord, String size) {
         if (Objects.equals(FULL_SIZE, size)) {
             return false;
+        }
+        if (isInvalidJP2Datastream(contentObjectRecord)) {
+            return true;
         }
         var shortestSide = getShortestSide(contentObjectRecord);
         return shortestSide < Integer.parseInt(size);
@@ -193,9 +193,9 @@ public class DownloadImageService {
         return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";
     }
 
-    public boolean isValidJP2Datastream (ContentObjectRecord contentObjectRecord) {
+    public boolean isInvalidJP2Datastream(ContentObjectRecord contentObjectRecord) {
         var datastream = contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        return datastream != null && datastream.getFilesize() != 0;
+        return datastream == null || datastream.getFilesize() == 0;
     }
 
     public void setIiifBasePath(String iiifBasePath) {

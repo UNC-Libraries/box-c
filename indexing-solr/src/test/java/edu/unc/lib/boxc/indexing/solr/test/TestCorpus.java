@@ -40,7 +40,10 @@ public class TestCorpus {
     public PID pid4;
     public PID pid5;
     public PID pid6;
+    public PID pid7;
     public PID pid6File;
+
+    public PID pid7File;
     public PID nonExistentPid;
 
     public TestCorpus() {
@@ -50,7 +53,9 @@ public class TestCorpus {
         pid4 = makePid();
         pid5 = makePid();
         pid6 = makePid();
+        pid7 = makePid();
         pid6File = makePid();
+        pid7File = makePid();
         nonExistentPid = makePid();
     }
 
@@ -79,7 +84,7 @@ public class TestCorpus {
         newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
         List<String> collectionDatastream = List.of(
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid2.getId() + "|1200x1200");
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid2.getId() + "|1200x1200");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), collectionDatastream);
         docs.add(newDoc);
 
@@ -119,7 +124,7 @@ public class TestCorpus {
         newDoc.addField("resourceType", ResourceType.File.name());
         List<String> imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum||1200x1200",
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid6File.getId() + "|1200x1200");
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid6File.getId() + "|1200x1200");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
         newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
         newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
@@ -137,8 +142,44 @@ public class TestCorpus {
         newDoc.addField("resourceType", ResourceType.Work.name());
         List<String> workDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|" + pid6File.getId() + "|1200x1200",
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid6File.getId() + "|1200x1200");
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid6File.getId() + "|1200x1200");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), workDatastreams);
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
+        docs.add(newDoc);
+
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Work2");
+        newDoc.addField("id", pid7.getId());
+        newDoc.addField("rollup", pid7.getId());
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid3));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid3));
+        newDoc.addField("resourceType", ResourceType.Work.name());
+        List<String> work2Datastreams = Arrays.asList(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|" + pid6File.getId() + "|1200x1200",
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid6File.getId() + "|1200x1200");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), work2Datastreams);
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
+        docs.add(newDoc);
+
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "File2");
+        newDoc.addField("id", pid7File.getId());
+        newDoc.addField("rollup", pid7.getId());
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid3, pid7));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid3, pid7));
+        newDoc.addField("resourceType", ResourceType.File.name());
+        List<String> fileDatastreams = Arrays.asList(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum||120x120",
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid7File.getId() + "|120x120");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), fileDatastreams);
         newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
         newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
         docs.add(newDoc);
@@ -154,7 +195,7 @@ public class TestCorpus {
         newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
         List<String> collection2Datastream = List.of(
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + pid2.getId() + "|120x120");
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|0||" + pid2.getId() + "|1200x1200");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), collection2Datastream);
         docs.add(newDoc);
 

@@ -279,6 +279,30 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testGetThumbnailForFileWithDimensionsTooSmallForThumbnail() throws Exception {
+        var corpus = populateCorpus();
+        var collectionPid = corpus.pid7File;
+        var placeholder = "placeholder.png";
+        var id = URLEncoder.encode("/default_images/placeholder.png", UTF_8);
+
+        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!250,250/0/default.png"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile(placeholder)
+                        .withHeader("Content-Type", "image/png")));
+
+        MvcResult result = mvc.perform(get("/thumb/" + collectionPid.getId() + "/large"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        // TO DO assert correct image returned
+        assertEquals(MediaType.IMAGE_PNG_VALUE, response.getContentType());
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
     public void testGetInvalidThumbnailSize() throws Exception {
         var corpus = populateCorpus();
         PID filePid = corpus.pid6File;
@@ -305,7 +329,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testGetThumbnailReturnPlaceholder() throws Exception {
+    public void testGetThumbnailReturnPlaceholderForZeroByteJP2() throws Exception {
         var corpus = populateCorpus();
         var collectionPid = corpus.pid3;
         var placeholder = "placeholder.png";
