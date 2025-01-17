@@ -5,6 +5,8 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,17 +15,21 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Service for interacting with the chompb command-line tool for pre-ingest processing
  * @author lfarrell
  */
 public class ChompbPreIngestService {
+    private static final Logger log = LoggerFactory.getLogger(ChompbPreIngestService.class);
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private Path baseProjectsPath;
     private String serviceKeyPath;
     private String serviceUser;
+    private String chompbCommand = "chompb";
     private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
+    private ExecutorService executorService;
 
     /**
      * List all the chompb projects in the base projects path
@@ -34,13 +40,20 @@ public class ChompbPreIngestService {
     public String getProjectLists(AgentPrincipals agent) {
         assertHasPermission(agent);
 
-        return executeChompbCommand("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
+        return executeChompbCommand(chompbCommand, "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
     }
 
-    public String startCropping(AgentPrincipals agent, String projectName, String email) {
+    /**
+     * Start the chompb process for a specific project
+     * @param agent
+     * @param projectName
+     * @param email
+     */
+    public void startCropping(AgentPrincipals agent, String projectName, String email) {
         assertHasPermission(agent);
+        log.info("Starting cropping for project {} for user {}", projectName, agent.getUsername());
 
-        return executeChompbCommand("chompb", "process_source_files",
+        executeBackgroundCommand(chompbCommand, "process_source_files",
                     "--action", "velocicroptor",
                     "-w", baseProjectsPath.resolve(projectName).toAbsolutePath().toString(),
                     "-k", serviceKeyPath,
@@ -53,6 +66,7 @@ public class ChompbPreIngestService {
         String outputString;
 
         try {
+            log.debug("Executing chompb command: {}", String.join(" ", command));
             ProcessBuilder builder = new ProcessBuilder(command);
             builder.redirectErrorStream(true);
             Process process = builder.start();
@@ -63,6 +77,7 @@ public class ChompbPreIngestService {
             while ((line = br.readLine()) != null) {
                 output.append(line).append("\n");
             }
+
             outputString = output.toString().trim();
             if (process.waitFor() != 0) {
                 throw new RepositoryException("Command exited with status code " + process.waitFor() + ": " + outputString);
@@ -74,7 +89,15 @@ public class ChompbPreIngestService {
             throw new RepositoryException("Interrupted while waiting for chompb command to complete", e);
         }
 
+        log.debug("Chompb command output: {}", outputString);
         return outputString;
+    }
+
+    protected void executeBackgroundCommand(String... command) {
+        log.debug("Submitting background chompb command: {}", String.join(" ", command));
+        executorService.submit(() -> {
+            executeChompbCommand(command);
+        });
     }
 
     /**
@@ -134,5 +157,13 @@ public class ChompbPreIngestService {
 
     public void setServiceUser(String serviceUser) {
         this.serviceUser = serviceUser;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    public void setChompbCommand(String chompbCommand) {
+        this.chompbCommand = chompbCommand;
     }
 }

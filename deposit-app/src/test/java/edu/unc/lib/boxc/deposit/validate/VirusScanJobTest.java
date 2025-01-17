@@ -101,7 +101,6 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job = new VirusScanJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         job.setMaxStreamSize(300l);
         setField(job, "pidMinter", pidMinter);
         job.setClamClient(clamClient);

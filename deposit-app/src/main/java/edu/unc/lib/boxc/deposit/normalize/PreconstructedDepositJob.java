@@ -37,8 +37,6 @@ public class PreconstructedDepositJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         try {
-            DepositDirectoryManager dirManager = new DepositDirectoryManager(
-                    depositPID, getDepositsDirectory().toPath(), true);
             Map<String, String> depositStatus = getDepositStatus();
             // Determine if we are importing an external deposit dir, or starting from one already in place
             String sourceUriProp = depositStatus.get(DepositField.sourceUri.name());
@@ -53,7 +51,7 @@ public class PreconstructedDepositJob extends AbstractDepositJob {
                 }
             }
             // Check to see if there is a model file to import
-            Path modelPath = dirManager.getModelPath();
+            Path modelPath = depositDirectoryManager.getModelPath();
             if (Files.exists(modelPath)) {
                 log.info("Importing preconstructed model file included in deposit directory");
                 Model importModel = RDFModelUtil.createModel(Files.newInputStream(modelPath), "N3");

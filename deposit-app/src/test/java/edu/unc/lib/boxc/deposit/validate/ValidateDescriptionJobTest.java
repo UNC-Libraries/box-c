@@ -41,7 +41,6 @@ public class ValidateDescriptionJobTest extends AbstractDepositJobTest {
         job = new ValidateDescriptionJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);

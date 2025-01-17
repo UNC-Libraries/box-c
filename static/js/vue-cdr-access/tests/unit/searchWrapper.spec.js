@@ -163,7 +163,7 @@ describe('searchWrapper.vue', () => {
     });
 
     it("displays facets if facets but no results", (done) => {
-        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+        moxios.stubRequest(`api/searchJson/?anywhere=&getFacets=true`, {
             status: 200,
             response: JSON.stringify(facets_no_results)
         });
@@ -177,7 +177,7 @@ describe('searchWrapper.vue', () => {
 
     it("does not display facets if there are no facets and no results", (done) => {
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+        moxios.stubRequest(`api/searchJson/?anywhere=&getFacets=true`, {
             status: 200,
             response: JSON.stringify(no_results)
         });
@@ -197,7 +197,7 @@ describe('searchWrapper.vue', () => {
     });
 
     it("displays a 'page not found' message if JSON response is an empty", (done) => {
-        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+        moxios.stubRequest(`api/searchJson/?anywhere=&getFacets=true`, {
             status: 200,
             response: JSON.stringify('')
         });
@@ -210,7 +210,7 @@ describe('searchWrapper.vue', () => {
     });
 
     it("displays a '503 page' if JSON responds with an error", (done) => {
-        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+        moxios.stubRequest(`api/searchJson/?anywhere=&getFacets=true`, {
             status: 503,
             response: JSON.stringify({ message: 'bad stuff happened' })
         });
@@ -230,7 +230,7 @@ describe('searchWrapper.vue', () => {
 });
 
 function loadFullData() {
-    moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+    moxios.stubRequest(`api/searchJson/?anywhere=&getFacets=true`, {
         status: 200,
         response: JSON.stringify(response)
     });

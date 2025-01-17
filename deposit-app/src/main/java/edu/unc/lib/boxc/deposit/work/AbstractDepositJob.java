@@ -1,13 +1,6 @@
 package edu.unc.lib.boxc.deposit.work;
 
-import static edu.unc.lib.boxc.deposit.api.DepositConstants.ALT_TEXT_DIR;
-import static edu.unc.lib.boxc.deposit.api.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.boxc.deposit.api.DepositConstants.HISTORY_DIR;
-import static edu.unc.lib.boxc.deposit.api.DepositConstants.TECHMD_DIR;
 import static edu.unc.lib.boxc.model.api.ids.PIDConstants.DEPOSITS_QUALIFIER;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +18,8 @@ import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
+import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -105,24 +100,13 @@ public abstract class AbstractDepositJob implements Runnable {
     @Autowired
     private File depositsDirectory;
 
-    // Directory for this deposit
-    private File depositDirectory;
-
-    // Directory for local data files
-    private File dataDirectory;
-
-    // Directory containing PREMIS event files for individual objects in this
-    // deposit
-    private File eventsDirectory;
-
-    private File techmdDir;
-
     private String depositJobId;
 
     protected boolean rollbackDatasetOnFailure = true;
 
     @Autowired
     protected DepositModelManager depositModelManager;
+    protected DepositDirectoryManager depositDirectoryManager;
 
     public AbstractDepositJob() {
     }
@@ -136,13 +120,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @PostConstruct
     public void init() {
-        this.depositDirectory = new File(depositsDirectory, depositUUID);
-        this.dataDirectory = new File(depositDirectory,
-                DepositConstants.DATA_DIR);
-        this.eventsDirectory = new File(depositDirectory,
-                DepositConstants.EVENTS_DIR);
-
-        this.techmdDir = new File(depositDirectory, TECHMD_DIR);
+        this.depositDirectoryManager = new DepositDirectoryManager(depositPID, depositsDirectory.toPath(), true);
     }
 
     @Override
@@ -241,15 +219,15 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public File getAltTextDir() {
-        return new File(getDepositDirectory(), ALT_TEXT_DIR);
+        return depositDirectoryManager.getAltTextDir().toFile();
     }
 
     public File getDescriptionDir() {
-        return new File(getDepositDirectory(), DESCRIPTION_DIR);
+        return depositDirectoryManager.getDescriptionDir().toFile();
     }
 
     public File getDescriptionHistoryDir() {
-        return new File(getDepositDirectory(), HISTORY_DIR);
+        return depositDirectoryManager.getHistoryDir().toFile();
     }
 
     /**
@@ -270,7 +248,7 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return path for mods
      */
     public Path getModsPath(PID pid, boolean createDirs) {
-        return getMetadataPath(getDescriptionDir(), pid, ".xml", createDirs);
+        return depositDirectoryManager.getModsPath(pid, createDirs);
     }
 
     /**
@@ -280,7 +258,7 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return Path for the alt text
      */
     public Path getAltTextPath(PID pid, boolean createDirs) {
-        return getMetadataPath(getAltTextDir(), pid, ".txt", createDirs);
+        return depositDirectoryManager.getAltTextPath(pid, createDirs);
     }
 
     /**
@@ -290,7 +268,7 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return
      */
     public Path getModsHistoryPath(PID pid) {
-        return getMetadataPath(getDescriptionHistoryDir(), pid, ".xml", false);
+        return depositDirectoryManager.getHistoryFile(pid, DatastreamType.MD_DESCRIPTIVE, false);
     }
 
     public File getDepositsDirectory() {
@@ -298,23 +276,19 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public File getDepositDirectory() {
-        return depositDirectory;
+        return depositDirectoryManager.getDepositDir().toFile();
     }
 
     public File getTechMdDirectory() {
-        return techmdDir;
-    }
-
-    public void setDepositDirectory(File depositDirectory) {
-        this.depositDirectory = depositDirectory;
+        return depositDirectoryManager.getTechMdDir().toFile();
     }
 
     public File getDataDirectory() {
-        return dataDirectory;
+        return depositDirectoryManager.getDataDir().toFile();
     }
 
     public File getEventsDirectory() {
-        return eventsDirectory;
+        return depositDirectoryManager.getEventsDir().toFile();
     }
 
     public PremisLoggerFactory getPremisLoggerFactory() {
@@ -384,27 +358,11 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public File getPremisFile(PID pid) {
-        return getMetadataPath(eventsDirectory, pid, ".nt", true).toFile();
+        return depositDirectoryManager.getPremisPath(pid, true).toFile();
     }
 
     public Path getTechMdPath(PID pid, boolean createDirs) {
-        return getMetadataPath(getTechMdDirectory(), pid, ".xml", createDirs);
-    }
-
-    private Path getMetadataPath(File baseDir, PID pid, String extension, boolean createDirs) {
-        Path mdBasePath = baseDir.toPath();
-
-        String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path hashedPath = mdBasePath.resolve(hashing);
-        if (createDirs) {
-            try {
-                Files.createDirectories(hashedPath);
-            } catch (IOException e) {
-                failJob(e, "Unable to create metadata path {0}", hashedPath);
-            }
-        }
-
-        return hashedPath.resolve(pid.getId() + extension);
+        return depositDirectoryManager.getTechMdPath(pid, createDirs);
     }
 
     /**

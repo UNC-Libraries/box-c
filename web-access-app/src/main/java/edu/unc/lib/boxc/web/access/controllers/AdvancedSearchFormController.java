@@ -36,20 +36,20 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
             .sorted()
             .collect(Collectors.toList());
 
-    @RequestMapping(path = "/advancedSearch/collectionsJson", produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/api/advancedSearch/collectionsJson", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getCollections() {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
         return SerializationUtil.resultsToJSON(collectionResultResponse, accessGroups);
     }
 
-    @RequestMapping(path = "/advancedSearch/formats", produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/api/advancedSearch/formats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getFormats() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(FORMAT_VALUES);
     }
 
-    @RequestMapping(path = "/advancedSearch", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/advancedSearch", method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
         // If the user has submitted the search form, then generate a search state
         // and forward them to the search servlet.

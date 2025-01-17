@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="search-row columns container">
-                    <form method="get" action="basicSearch" class="column">
+                    <form method="get" action="api/basicSearch" class="column">
                         <input name="queryType" type="hidden" value="anywhere">
                         <label for="hsearch_text" class="is-sr-only">Search the Digital Collections Repository</label>
                         <div class="field has-addons">

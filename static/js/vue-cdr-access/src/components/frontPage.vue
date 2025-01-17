@@ -73,7 +73,7 @@ export default {
 
     methods: {
         getCollectionStats() {
-            get('/collectionStats').then((response) => {
+            get('/api/collectionStats').then((response) => {
                 this.collectionStats = response.data;
             }).catch(function (error) {
                 console.log(error);

@@ -46,7 +46,7 @@ Top level component used for the collection browse page
 
         methods: {
             retrieveData() {
-                get('collectionsJson').then((response) => {
+                get('api/collectionsJson').then((response) => {
                     this.records = response.data.metadata;
                     this.is_loading = false;
                 }).catch((error) => {

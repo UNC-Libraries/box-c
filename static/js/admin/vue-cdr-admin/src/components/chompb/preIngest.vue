@@ -21,10 +21,14 @@ https://vuejs.org/guide/built-ins/teleport.html
                 </thead>
                 <template #actions="props">
                     <a @click.prevent="copyPath(props.rowData.projectPath)" href="#">Copy Path</a>
-                    <template v-for="action in props.rowData.allowedActions">
-                        <a class="is-capitalized" @click.prevent="actionPath(action, props.rowData.projectProperties.name)">
-                            {{ capitalizeAction(action) }}
+                    <template v-for="actionInfo in listAllowedActions(props.rowData)">
+                        <a v-if="!actionInfo.disabled"
+                           @click.prevent="performAction(actionInfo, props.rowData)">
+                            {{ actionInfo.label }}
                         </a>
+                        <span v-else>
+                            {{ actionInfo.label }}
+                        </span>
                     </template>
                 </template>
             </data-table>
@@ -36,6 +40,7 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bm';
+import axios from 'axios';
 
 DataTable.use(DataTablesCore);
 
@@ -91,19 +96,100 @@ export default {
 
         copyMsgClass() {
             return this.copy_error ? 'is-danger' : 'is-success';
+        },
+
+        actionMapping() {
+            return {
+                'velocicroptor_action': {
+                    'jobName': 'velocicroptor',
+                    'action': 'action',
+                    'label': 'Crop color bars',
+                    'confirm': true,
+                    'confirmMessage': 'Are you sure you want to crop color bars for this project?',
+                    'disabled': false,
+                    'method': 'post'
+                },
+                'velocicroptor_processing_results': {
+                    'jobName': 'velocicroptor',
+                    'action': 'processing_results',
+                    'label': 'View crop report',
+                    'confirm': false,
+                    'disabled': false,
+                    'method': 'link'
+                },
+                'velocicroptor_pending': {
+                    'jobName': 'velocicroptor',
+                    'action': 'pending',
+                    'label': 'Crop in progress',
+                    'confirm': false,
+                    'disabled': true
+                }
+            };
         }
     },
 
     methods: {
-        actionPath(action_type, action_name) {
-            return this.$router.push(`/admin/chompb/${action_type}/${action_name}`);
+        performAction(action_info, row_data) {
+            let projectName = row_data.projectProperties.name;
+            // Action requires confirmation, exiting early if the user cancels
+            if (action_info.confirm && !confirm(action_info.confirmMessage)) {
+                return;
+            }
+            if (action_info.action === 'action') {
+                Object.assign(row_data.processingJobs, { velocicroptor: { status: 'pending' } });
+            }
+            let actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
+            if (action_info.method === 'post' || action_info.method === 'get') {
+                axios({
+                    method: action_info.method,
+                    url: actionUrl
+                }).then((response) => {
+                    console.log("Successfully triggered action", actionUrl);
+                    this.copy_error = false;
+                    this.copy_msg = `"${action_info.label}" action successfully triggered for project: ${projectName}`;
+                    this.clearCopyMessage();
+                }).catch((error) => {
+                    this.copy_error = true;
+                    this.copy_msg = `Error encountered while performing action" ${action_info.label}" for project: ${projectName}`;
+                    console.log("Error encountered while performing action", error);
+                    this.clearCopyMessage();
+                });
+            } else if (action_info.method === 'link') {
+                this.$router.push(actionUrl);
+            }
+        },
+
+        getActionMapping(action_name) {
+            return structuredClone(this.actionMapping[action_name]);
+        },
+
+        listAllowedActions(row_data) {
+            let resultActions = [];
+            let processingJobs = row_data.processingJobs;
+            if (row_data.allowedActions.indexOf('crop_color_bars') > -1) {
+                let processingResult = processingJobs['velocicroptor'];
+                let processingStatus = processingResult ? processingResult.status : '';
+
+                // if status is completed, then allow processing again and allow viewing the report
+                if (processingStatus === 'completed') {
+                    resultActions.push(this.getActionMapping('velocicroptor_action'));
+                    resultActions.push(this.getActionMapping('velocicroptor_processing_results'));
+                } else if (processingStatus === 'pending') {
+                    // if status is pending, then display "Cropping in progress"
+                    resultActions.push(this.getActionMapping('velocicroptor_pending'));
+                } else {
+                    // if no status or any other status, then allow processing
+                    resultActions.push(this.getActionMapping('velocicroptor_action'));
+                }
+            }
+            return resultActions;
         },
 
         clearCopyMessage() {
             setTimeout(() => {
                 this.copy_error = false;
                 this.copy_msg = '';
-            }, 4000);
+            }, 5000);
         },
 
         async copyPath(project_path) {
@@ -117,17 +203,6 @@ export default {
                 console.error('Failed to copy: ', err);
             }
             this.clearCopyMessage();
-        },
-
-        /**
-         * For some reason the first word in an action doesn't capitalize correctly
-         * using CSS, though subsequent words do. So, just up case the first letter in the string.
-         * @param action
-         * @returns {*}
-         */
-        capitalizeAction(action) {
-            let text = action.replaceAll('_', ' ');
-            return text.charAt(0).toUpperCase() + text.slice(1);
         }
     }
 }

@@ -20,7 +20,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * @author bbpennel, krwong
  */
 @Controller
-@RequestMapping("/collectionStats")
+@RequestMapping("/api/collectionStats")
 public class FrontPageController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FrontPageController.class);
 

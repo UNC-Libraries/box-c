@@ -41,11 +41,11 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
 
         job = new PreconstructedDepositJob();
         job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
+        job.init();
     }
 
     @Test
@@ -69,7 +69,7 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
         Files.createDirectory(externalBasePath);
         DepositDirectoryManager extDirManager = new DepositDirectoryManager(depositPid, externalBasePath, true);
         status.put(DepositField.sourceUri.name(), extDirManager.getDepositDir().toUri().toString());
-        Files.createFile(extDirManager.getPremisPath(depositPid));
+        Files.createFile(extDirManager.getPremisPath(depositPid, true));
 
         job.run();
 
@@ -87,7 +87,7 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
         DepositDirectoryManager preDirManager = new DepositDirectoryManager(
                 depositPid, depositsDirectory.toPath(), true);
         status.put(DepositField.sourceUri.name(), preDirManager.getDepositDir().toUri().toString());
-        Files.createFile(preDirManager.getPremisPath(depositPid));
+        Files.createFile(preDirManager.getPremisPath(depositPid, true));
 
         job.run();
 
@@ -130,7 +130,7 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
         importModel.write(writer, "N3");
 
         status.put(DepositField.sourceUri.name(), extDirManager.getDepositDir().toUri().toString());
-        Files.createFile(extDirManager.getPremisPath(depositPid));
+        Files.createFile(extDirManager.getPremisPath(depositPid, true));
 
         job.run();
 

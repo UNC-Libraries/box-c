@@ -71,14 +71,15 @@ import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/record")
+@RequestMapping("/api/record")
 public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
-    private final String VIEWER_PID = "viewerPid";
-    private final String VIEWER_TYPE = "viewerType";
-    private final String STREAMING_URL = "streamingUrl";
-    private final String STREAMING_TYPE = "streamingType";
-    private final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
+    protected static final String VIEWER_PID = "viewerPid";
+    protected static final String VIEWER_TYPE = "viewerType";
+    protected static final String STREAMING_URL = "streamingUrl";
+    protected static final String STREAMING_TYPE = "streamingType";
+    private static final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
+    protected static final String AV_MIMETYPE_REGEX = "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")";
 
     @Autowired
     private AccessControlService aclService;
@@ -99,7 +100,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     @Autowired
     private ObjectAclFactory objectAclFactory;
 
-    @Autowired(required = true)
+    @Autowired
     private XSLViewResolver xslViewResolver;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -272,15 +273,22 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
-        String viewerPid = null;
+        String viewerPid;
         if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject,
-                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals).getId();
+            var child = accessCopiesService.getFirstMatchingChild(briefObject,
+                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals);
+            if (child == null) {
+                throw new NotFoundException("Cannot find child PDF for " + pidString);
+            }
+            viewerPid = child.getId();
         } else {
-            accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            if (viewerPid == null) {
+                throw new IllegalArgumentException("Resource is not a PDF: " + pidString);
+            }
         }
 
-        model.addAttribute("viewerPid", viewerPid);
+        model.addAttribute(VIEWER_PID, viewerPid);
         model.addAttribute("briefObject", briefObject);
         model.addAttribute("template", "ajax");
 
@@ -288,47 +296,63 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     }
 
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
-        String viewerType = null;
-        String viewerPid = null;
-        String streamingUrl = null;
-        String streamingType = null;
+        String viewerType;
+        String viewerPid ;
         ContentObjectRecord workStreamingContent = null;
 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+        if (imageViewerNeeded) {
+            return makeViewerProperties("clover", null, null, null);
+        }
 
-        if (!imageViewerNeeded) {
+        boolean hasStreamingContent = briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING);
+        if (!hasStreamingContent) {
             workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
         }
 
-        if (imageViewerNeeded) {
-            viewerType = "clover";
-        } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
-            viewerType = "streaming";
-            streamingUrl = (workStreamingContent != null) ? workStreamingContent.getStreamingUrl() :
-                    briefObject.getStreamingUrl();
-            streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
-                    briefObject.getStreamingType();
-        } else {
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
-                    "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");
-
-            if (viewerPid != null) {
-                viewerType = "clover";
-            } else {
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-                if (viewerPid != null) {
-                    viewerType = "pdf";
-                }
-            }
+        if (hasStreamingContent || workStreamingContent != null) {
+            return makeStreamingProperties((workStreamingContent != null) ? workStreamingContent : briefObject);
         }
 
+        viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AV_MIMETYPE_REGEX);
+
+        if (viewerPid != null) {
+            viewerType = "clover";
+        } else {
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            viewerType = viewerPid != null ? "pdf" : null;
+        }
+
+        // When the viewer object is not the current object, check if the user has access to view the viewer object
+        if (noAccessToViewChildObject(viewerPid, briefObject, principals)) {
+            viewerPid = null;
+            viewerType = null;
+        }
+
+        return makeViewerProperties(viewerType, viewerPid, null, null);
+    }
+
+    private Map<String, Object> makeStreamingProperties(ContentObjectRecord briefObject) {
+        return makeViewerProperties("streaming",
+                null,
+                briefObject.getStreamingUrl(),
+                briefObject.getStreamingType());
+    }
+
+    private Map<String, Object> makeViewerProperties(String viewType, String viewerPid,
+                                                     String streamingUrl, String streamingType) {
         var viewerProperties = new HashMap<String, Object>();
-        viewerProperties.put(VIEWER_TYPE, viewerType);
+        viewerProperties.put(VIEWER_TYPE, viewType);
         viewerProperties.put(VIEWER_PID, viewerPid);
         viewerProperties.put(STREAMING_URL, streamingUrl);
         viewerProperties.put(STREAMING_TYPE, streamingType);
-
         return viewerProperties;
+    }
+
+    private boolean noAccessToViewChildObject(String viewerPid, ContentObjectRecord briefObject,
+                                            AccessGroupSet principals) {
+        return viewerPid != null && !briefObject.getId().equals(viewerPid)
+                && !aclService.hasAccess(PIDs.get(viewerPid), principals, Permission.viewOriginal);
     }
 
     /**

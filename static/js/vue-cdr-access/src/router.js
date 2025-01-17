@@ -68,7 +68,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const store = useAccessStore();
 
-  axios.head('/userInformation').then((response) => {
+  axios.head('/api/userInformation').then((response) => {
     store.setUsername(response.headers['username']);
     store.setIsLoggedIn();
     store.setViewAdmin(response.headers['can-view-admin']);

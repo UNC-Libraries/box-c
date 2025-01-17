@@ -50,7 +50,7 @@ describe('modalMetadata.vue', () => {
 
     it("fetches the record metadata when the modal is opened", () => {
         moxios.install();
-        moxios.stubRequest(`record/${updated_uuid}/metadataView`, {
+        moxios.stubRequest(`api/record/${updated_uuid}/metadataView`, {
             status: 200,
             responseText: {
                 data: response

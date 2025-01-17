@@ -66,7 +66,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
     private void initJob(String uuid) {
         job = new BagIt2N3BagJob();
         job.setDepositUUID(uuid);
-        job.setDepositDirectory(depositDir);
         job.setExecutorService(executorService);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
