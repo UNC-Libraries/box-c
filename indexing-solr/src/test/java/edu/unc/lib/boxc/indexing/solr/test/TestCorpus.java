@@ -28,6 +28,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
  *     > obj4
  *     > obj5
  *     > obj6
+ *     > obj7
  *   > obj3
  *
  * @author bbpennel
@@ -42,7 +43,6 @@ public class TestCorpus {
     public PID pid6;
     public PID pid7;
     public PID pid6File;
-
     public PID pid7File;
     public PID nonExistentPid;
 

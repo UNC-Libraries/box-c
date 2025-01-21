@@ -94,7 +94,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
-        assertEquals(2, docListAfter.getNumFound());
+        assertEquals(4, docListAfter.getNumFound());
 
         assertObjectsNotExist(corpus.pid2, corpus.pid4, corpus.pid6, corpus.pid5);
     }
@@ -108,7 +108,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        assertEquals(7, docListAfter.getNumFound());
+        assertEquals(9, docListAfter.getNumFound());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
-        assertEquals(5, docListAfter.getNumFound(), "One object should have been removed");
+        assertEquals(7, docListAfter.getNumFound(), "One object should have been removed");
 
         assertObjectsNotExist(corpus.pid6);
     }
