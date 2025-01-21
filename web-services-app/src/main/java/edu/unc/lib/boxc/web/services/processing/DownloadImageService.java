@@ -43,10 +43,6 @@ public class DownloadImageService {
      */
     public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, boolean attachment)
             throws IOException {
-        if (contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         var contentDispositionHeader = "inline;";
         if (attachment) {
             String filename = getDownloadFilename(contentObjectRecord, size);
@@ -82,6 +78,9 @@ public class DownloadImageService {
         if (!Objects.equals(size, FULL_SIZE)) {
             int integerSize = parseSize(size);
             var longerSide = getLongestSide(contentObjectRecord);
+            if (longerSide == 0) {
+                return null;
+            }
             // request is bigger than or equal to full size, so we will switch to full size
             if (integerSize >= longerSide) {
                 return FULL_SIZE;
@@ -144,7 +143,8 @@ public class DownloadImageService {
     }
 
     /**
-     * If the shortest side of the content object is smaller than the size requested, return the placeholder
+     * If the shortest side of the content object is smaller than the size requested or if there is no
+     * valid JP2, then return the placeholder
      * @param contentObjectRecord
      * @param size
      * @return true if service needs to return a placeholder image
@@ -152,6 +152,9 @@ public class DownloadImageService {
     private boolean needsPlaceholder(ContentObjectRecord contentObjectRecord, String size) {
         if (Objects.equals(FULL_SIZE, size)) {
             return false;
+        }
+        if (isInvalidJP2Datastream(contentObjectRecord)) {
+            return true;
         }
         var shortestSide = getShortestSide(contentObjectRecord);
         return shortestSide < Integer.parseInt(size);
@@ -188,6 +191,11 @@ public class DownloadImageService {
         // pixel length should be in !123,123 format
         var formattedSize = "!" + size + "," + size;
         return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";
+    }
+
+    public boolean isInvalidJP2Datastream(ContentObjectRecord contentObjectRecord) {
+        var datastream = contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        return datastream == null || datastream.getFilesize() == 0;
     }
 
     public void setIiifBasePath(String iiifBasePath) {

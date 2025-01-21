@@ -13,6 +13,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
@@ -24,6 +25,7 @@ import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -95,7 +97,7 @@ public class IiifV3ManifestServiceTest {
         closeable.close();
     }
 
-    private ContentObjectRecord createFileRecord(String id, String type) {
+    private ContentObjectRecord createFileRecord(String id, String type, boolean isValidImage) {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(id);
         fileObj.setResourceType(ResourceType.File.name());
@@ -103,14 +105,18 @@ public class IiifV3ManifestServiceTest {
         if (Objects.equals(type, VIDEO)) {
             setAsVideo(fileObj);
         } else {
-            setAsImage(fileObj);
+            setAsImage(fileObj, isValidImage);
         }
         return fileObj;
     }
 
-    private void setAsImage(ContentObjectSolrRecord fileObj) {
+    private void setAsImage(ContentObjectSolrRecord fileObj, boolean isValidJP2) {
         var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
-        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        var jp2Info = "jp2|image/jp2|image.jp2|jp2|0|||";
+        if (isValidJP2) {
+            jp2Info = "jp2|image/jp2|image.jp2|jp2|5|||240x750";
+        }
+        var jp2Ds = new DatastreamImpl(jp2Info);
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
     }
 
@@ -153,8 +159,8 @@ public class IiifV3ManifestServiceTest {
 
     @Test
     public void buildManifestWorkWithViewableFilesTest() {
-        var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
-        var fileObj2 = createFileRecord(FILE2_ID, IMAGE);
+        var fileObj1 = createFileRecord(FILE1_ID, IMAGE, true);
+        var fileObj2 = createFileRecord(FILE2_ID, IMAGE, true);
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);
         when(solrSearchService.getSearchResults(any()))
                 .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj1, fileObj2)));
@@ -171,8 +177,28 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
+    public void buildManifestNoJP2ExtentFileImageTest() {
+        var fileObj1 = createFileRecord(FILE1_ID, IMAGE, false);
+        var filePid = PIDs.get(FILE1_ID);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+
+        var manifest = manifestService.buildManifest(filePid, agent);
+        assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/manifest",
+                manifest.getID().toString());
+        var canvases = manifest.getCanvases();
+        assertEquals(0, canvases.size());
+
+        assertEquals("<a href=\"http://example.com/record/faffb3e1-85fc-451f-9075-c60fc7584c7b\">View full record</a>",
+                manifest.getMetadata().get(0).getValue().getString());
+
+        assertNull(manifest.getViewingDirection());
+        assertTrue(manifest.getBehaviors().isEmpty());
+    }
+
+    @Test
     public void buildManifestViewableFileImageTest() {
-        var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
+        var fileObj1 = createFileRecord(FILE1_ID, IMAGE, true);
         var filePid = PIDs.get(FILE1_ID);
         when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
@@ -193,7 +219,7 @@ public class IiifV3ManifestServiceTest {
 
     @Test
     public void buildManifestViewableFileVideoTest() {
-        var fileObj1 = createFileRecord(FILE1_ID, "video");
+        var fileObj1 = createFileRecord(FILE1_ID, "video", true);
         var filePid = PIDs.get(FILE1_ID);
         when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
@@ -214,7 +240,7 @@ public class IiifV3ManifestServiceTest {
 
     @Test
     public void buildCanvasViewableFileTest() {
-        var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
+        var fileObj1 = createFileRecord(FILE1_ID, IMAGE, true);
         var filePid = PIDs.get(FILE1_ID);
         when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
@@ -223,9 +249,19 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
+    public void buildCanvasNonViewableFileTest() {
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            var fileObj1 = createFileRecord(FILE1_ID, IMAGE, false);
+            var filePid = PIDs.get(FILE1_ID);
+            when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+            manifestService.buildCanvas(filePid, agent);
+        });
+    }
+
+    @Test
     public void buildManifestViewInfoMultipleFilesTest() {
-        var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
-        var fileObj2 = createFileRecord(FILE2_ID, IMAGE);
+        var fileObj1 = createFileRecord(FILE1_ID, IMAGE, true);
+        var fileObj2 = createFileRecord(FILE2_ID, IMAGE, true);
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);
         when(solrSearchService.getSearchResults(any()))
                 .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj1, fileObj2)));

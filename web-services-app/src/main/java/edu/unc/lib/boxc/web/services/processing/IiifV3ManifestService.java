@@ -80,12 +80,13 @@ public class IiifV3ManifestService {
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
-        if (contentObjs.isEmpty()) {
+        ContentObjectRecord rootObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        if (rootObj == null) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
+        var contentObjs = listViewableFiles(rootObj, agent.getPrincipals());
         log.debug("Constructing manifest for {} containing {} items", pid.getId(), contentObjs.size());
-        ContentObjectRecord rootObj = contentObjs.get(0);
+
         var manifest = new Manifest(getManifestPath(rootObj), new Label(getTitle(rootObj)));
         manifest.setMetadata(constructMetadataSection(rootObj));
         addAttribution(manifest, rootObj);
@@ -155,9 +156,12 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
-        ContentObjectRecord rootObj = contentObjs.get(0);
-        return constructCanvasSection(rootObj);
+        ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        if (obj == null || !hasViewableContent(obj)) {
+            throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
+        }
+
+        return constructCanvasSection(obj);
     }
 
     /**
@@ -319,9 +323,9 @@ public class IiifV3ManifestService {
         }
 
         var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        var isValidDatastream = jp2Datastream != null;
+        var isValidDatastream = jp2Datastream != null && jp2Datastream.getFilesize() != 0;
         var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-        // check if original datastream mimetype is image or video
+        // check if original datastream mimetype is audio or video
         if (!isValidDatastream && originalDatastream != null) {
             var mimetype = originalDatastream.getMimetype();
             isValidDatastream = isAudio(mimetype, contentObj) || isVideo(mimetype);
@@ -331,27 +335,21 @@ public class IiifV3ManifestService {
     }
 
     /**
-     * List viewable files for the specified object
-     * @param pid
+     * List viewable files for the specified object's manifest
+     * @param rootObj
      * @param principals
      * @return
      */
-    private List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
-        ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
-        if (briefObj == null) {
-            return Collections.emptyList();
-        }
-        String resourceType = briefObj.getResourceType();
-        if (hasViewableContent(briefObj)) {
-            return Collections.singletonList(briefObj);
+    private List<ContentObjectRecord> listViewableFiles(ContentObjectRecord rootObj, AccessGroupSet principals) {
+        String resourceType = rootObj.getResourceType();
+        if (hasViewableContent(rootObj)) {
+            return Collections.singletonList(rootObj);
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return Collections.emptyList();
         }
 
-        var mdObjs = performQuery(briefObj, principals);
-        mdObjs.add(0, briefObj);
-        return mdObjs;
+        return performQuery(rootObj, principals);
     }
 
     private List<ContentObjectRecord> performQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {

@@ -34,6 +34,7 @@ import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.WID
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -140,7 +141,7 @@ public class IiifV3ManifestControllerTest {
         fileObj.setId("5d72b84a-983c-4a45-8caa-dc9857987da2");
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object");
-        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|5|||240x750x500");
         fileObj.setDatastream(List.of(originalDs.toString()));
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);
         when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
@@ -161,13 +162,45 @@ public class IiifV3ManifestControllerTest {
     }
 
     @Test
+    public void testGetManifestWithNonValidJP2() throws Exception {
+        var workObj = new ContentObjectSolrRecord();
+        workObj.setId(OBJECT_ID);
+        workObj.setResourceType(ResourceType.Work.name());
+        workObj.setTitle("Test Work");
+
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId("5d72b84a-983c-4a45-8caa-dc9857987da2");
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|5|||240x750");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj)));
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        assertEquals("Manifest", respJson.get("type").textValue());
+        assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/manifest", respJson.get("id").textValue());
+        assertEquals("Test Work", respJson.get("label").get("none").get(0).textValue());
+        assertFalse(respJson.get("metadata").isEmpty());
+        assertNull(respJson.get("items"));
+    }
+
+    @Test
     public void testGetCanvasWithImageFile() throws Exception {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(OBJECT_ID);
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object");
-        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
-        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|5|||240x750");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|5|||240x750");
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
         when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
         when(solrSearchService.getSearchResults(any()))
@@ -269,7 +302,7 @@ public class IiifV3ManifestControllerTest {
     }
 
     @Test
-    public void testGetCanvasWithNoExtentInformation() throws Exception {
+    public void testGetCanvasWithNoOriginalFileExtentInformation() throws Exception {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(OBJECT_ID);
         fileObj.setResourceType(ResourceType.File.name());
@@ -294,6 +327,27 @@ public class IiifV3ManifestControllerTest {
         assertNull(body.get(WIDTH));
         assertNull(body.get(HEIGHT));
         assertNull(body.get(DURATION));
+    }
+
+    @Test
+    public void testGetCanvasWithNonValidJP2() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|5|||240x750");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
+
+        mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
     }
 
     @Test
