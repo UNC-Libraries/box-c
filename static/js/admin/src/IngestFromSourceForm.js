@@ -1,4 +1,4 @@
-define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadingOverlay', 'StringUtilities', "tpl!../templates/admin/ingestSourceCandidates", "tpl!../templates/admin/ingestSourceMetadata"], function($, AbstractFileUploadForm, ModalLoadingOverlay, StringUtilities, candidatesTemplate, metadataTemplate) {
+define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadingOverlay', 'StringUtilities', "tpl!templates/admin/ingestSourceCandidates", "tpl!templates/admin/ingestSourceMetadata"], function($, AbstractFileUploadForm, ModalLoadingOverlay, StringUtilities, candidatesTemplate, metadataTemplate) {
 
 	var defaultOptions = {
 			title : 'Ingest from file server',

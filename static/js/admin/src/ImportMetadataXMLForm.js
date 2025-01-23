@@ -1,4 +1,4 @@
-define('ImportMetadataXMLForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../templates/admin/importMetadataXMLForm', 
+define('ImportMetadataXMLForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!templates/admin/importMetadataXMLForm', 
 		'ModalLoadingOverlay', 'AbstractFileUploadForm'], 
 		function($, ui, _, importTemplate, ModalLoadingOverlay, AbstractFileUploadForm) {
 	

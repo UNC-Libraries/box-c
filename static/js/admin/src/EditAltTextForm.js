@@ -1,4 +1,4 @@
-define('EditAltTextForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editAltTextForm',
+define('EditAltTextForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editAltTextForm',
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
     function($, ui, _, RemoteStateChangeMonitor, editAltTextForm, ModalLoadingOverlay, AbstractForm) {
 

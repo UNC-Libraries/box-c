@@ -2,7 +2,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" type="text/css" href="/static/css/cdr_admin.css" />
+<link rel="stylesheet" type="text/css" href="/static/assets/admin/cdr-admin.css" />
 
 <meta name="description" content="Digital Collections Repository" />
 <meta name="keywords" content="Digital Collections Repository" />

@@ -10,12 +10,12 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultUrl : null, 
 			selectedId : false,
 			
-			resultTableTemplate : "tpl!../templates/admin/resultTableView",
-			resultEntryTemplate : "tpl!../templates/admin/resultEntry",
-			resultTableHeaderTemplate : "tpl!../templates/admin/resultTableHeader",
-			searchMenuTemplate : "tpl!../templates/admin/searchMenu",
-			navBarTemplate : "tpl!../templates/admin/navigationBar",
-			pathTrailTemplate : "tpl!../templates/admin/pathTrail",
+			resultTableTemplate : "tpl!templates/admin/resultTableView",
+			resultEntryTemplate : "tpl!templates/admin/resultEntry",
+			resultTableHeaderTemplate : "tpl!templates/admin/resultTableHeader",
+			searchMenuTemplate : "tpl!templates/admin/searchMenu",
+			navBarTemplate : "tpl!templates/admin/navigationBar",
+			pathTrailTemplate : "tpl!templates/admin/pathTrail",
 			
 			resultFields : undefined,
 			resultActions : [

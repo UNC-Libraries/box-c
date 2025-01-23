@@ -8,7 +8,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			resultUrl : null, 
 			selectedId : false,
 			queryPath : 'list',
-			template : "tpl!../templates/admin/searchMenu"
+			template : "tpl!templates/admin/searchMenu"
 		},
 		
 		_create : function() {

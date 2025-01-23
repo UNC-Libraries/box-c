@@ -22,7 +22,7 @@
 				<c:when test="${not empty contentPage}">
 					<c:import url="${contentPage}" />
 					<div id="vue-admin-app"></div>
-					<script type="module" crossorigin src="/static/js/vue-admin-index.js"></script>
+					<script type="module" crossorigin src="/static/assets/admin/vue-admin-index.js"></script>
 				</c:when>
 				<c:otherwise>
 					<c:import url="error/404.jsp" />

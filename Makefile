@@ -2,39 +2,54 @@ VERSION = ""
 
 build-all: build-admin build-access
 
-build-admin: build-admin-npm build-admin-concat
+build-admin: setup-build-dirs build-admin-npm build-admin-concat
 
-build-access: build-access-npm build-access-concat
+build-access: setup-build-dirs build-access-npm build-access-concat
+
+setup-build-dirs:
+	mkdir -p static/build/admin/
+	mkdir -p static/assets/admin/
+	mkdir -p static/build/access/
+	mkdir -p static/assets/access/
 
 build-admin-concat:
-	cat static/js/lib/jquery.min.js > static/js/cdr-admin.js
-	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-admin.js
-	cat static/js/lib/jquery-ui.min.js >> static/js/cdr-admin.js
-	echo "});" >> static/js/cdr-admin.js
-	cat static/js/admin/lib/jquery.detachplus.js \
-		static/js/lib/moment.min.js \
+	rm -rf static/build/admin/*
+	rm -f static/assets/admin/cdr-admin.*
+
+	cat static/js/admin/lib/jquery.min.js > static/build/admin/cdr-admin.js
+	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/build/admin/cdr-admin.js
+	cat static/js/admin/lib/jquery-ui.min.js >> static/build/admin/cdr-admin.js
+	echo "});" >> static/build/admin/cdr-admin.js
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/js/admin/lib/jquery.detachplus.js \
+		static/js/admin/lib/moment.min.js \
 		static/js/public/src/Structure* \
 		static/js/public/src/ResourceTypeUtilities.js \
 		static/js/admin/src/*.js \
 		static/js/admin/src/*/*.js \
-		>> static/js/cdr-admin.js
+		>> static/build/admin/cdr-admin.js
+	sass static/css/sass/cdr_vue_modal_styles.scss static/build/admin/cdr_vue_modal_styles.css --style "expanded"
 
-	sass static/css/sass/cdr_vue_modal_styles.scss  static/css/cdr_vue_modal_styles.css --style "expanded"
-
-	cat static/css/reset.css \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/reset.css \
 		static/css/cdr_common.css \
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
 		static/css/admin/jquery.contextMenu.css \
+		static/css/admin/jquery.xmleditor.css \
 		static/css/admin/cdradmin.css \
 		static/css/admin/search_results.css \
 		static/css/admin/admin_forms.css \
-		static/css/admin/collector.css \
-		static/css/admin/fontawesome/all.min.css \
+		static/css/fontawesome.min.css \
 		static/css/structure_browse.css \
-		static/css/cdr_vue_modal_styles.css \
+		static/css/admin/status_monitor.css \
+		static/build/admin/cdr_vue_modal_styles.css \
 		static/js/admin/vue-cdr-admin/dist/assets/index.css \
-		> static/css/cdr_admin.css
+		> static/build/admin/cdr-admin.css
+
+	cp static/build/admin/cdr-admin.js static/assets/admin/
+	cp static/build/admin/cdr-admin.css static/assets/admin/
+	cp -r static/css/images static/assets/admin/
 
 ifneq ($(VERSION), "")
 	for i in static/js/admin/*.js; do \
@@ -44,41 +59,41 @@ ifneq ($(VERSION), "")
 endif
 
 build-admin-npm:
+	rm -f static/assets/admin/vue-admin-index.js
+
 	# Build vue admin application files
 	npm --prefix static/js/admin/vue-cdr-admin ci
 	npm --prefix static/js/admin/vue-cdr-admin run build
 
-	cp static/js/admin/vue-cdr-admin/dist/assets/vue-admin-index.js static/js/vue-admin-index.js
+	cp static/js/admin/vue-cdr-admin/dist/assets/vue-admin-index.js static/assets/admin/vue-admin-index.js
 
 build-access-concat:
-	# Make sure file is empty
-	cat /dev/null > static/css/sass/cdr-ui.scss
+	rm -rf static/build/access/*
+	rm -f static/assets/access/cdr-access.*
 
-	cat static/css/sass/cdr_homepage.scss \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/sass/cdr_homepage.scss \
 		static/css/sass/cdr_ui_styles.scss \
-		>> static/css/sass/cdr-ui.scss
-	sass static/css/sass/cdr-ui.scss  static/css/cdr-ui.css --style "expanded"
-	cat static/js/lib/jquery.min.js > static/js/cdr-access.js
-	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
-	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
-	echo "});" >> static/js/cdr-access.js
+		static/css/sass/cdr_vue_modal_styles.scss \
+		> static/build/access/cdr-ui.scss
+	sass static/build/access/cdr-ui.scss  static/build/access/cdr-ui.css --style "expanded"
 
-	cat \
-		static/js/public/src/*.js \
-		>> static/js/cdr-access.js
-
-	cat static/css/cdrui_styles.css \
-		static/css/fluid_cap.css \
-		static/css/structure_browse.css \
-		static/css/cdr-ui.css \
-		static/css/cdr_vue_modal_styles.css \
+	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/bulma-no-dark-mode.min.css \
+		static/css/cdrui_styles.css \
+		static/build/access/cdr-ui.css \
 		static/css/fontawesome.min.css \
 		static/js/vue-cdr-access/dist/assets/index.css \
-		> static/css/cdr_access.css
+		> static/build/access/cdr-access.css
+
+	cp static/build/access/cdr-access.css static/assets/access/
+	cp -r static/webfonts static/assets/
 
 SUSPEND = "n"
 
 build-access-npm:
+	rm -f static/assets/access/vue-access-index.js
+
 	# Build vue application(s) files
 	npm --prefix static/js/vue-cdr-access ci
 	npm --prefix static/js/vue-cdr-access run build
@@ -87,7 +102,8 @@ build-access-npm:
 	# npm install minify -g
 	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
 
-	cp -R static/js/vue-cdr-access/dist/* static/
+	cp static/js/vue-cdr-access/dist/assets/vue-access-index.js static/assets/access/vue-access-index.js
+
 SUSPEND = "n"
 
 build-bxc:

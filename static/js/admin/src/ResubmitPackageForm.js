@@ -1,7 +1,7 @@
 /**
  * Implements functionality and UI for the Resubmit Package form
  */
-define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/resubmitPackageForm', 
+define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/resubmitPackageForm', 
 		'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'], 
 		function($, ui, _, RemoteStateChangeMonitor, resubmitPackageTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 	

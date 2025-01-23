@@ -1,7 +1,7 @@
 /**
  * Implements functionality and UI for adding a single file to an aggregate work
  */
-define('AddFileForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/addFileForm',
+define('AddFileForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/addFileForm',
 	'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'],
 	function($, ui, _, RemoteStateChangeMonitor, addWorkTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 

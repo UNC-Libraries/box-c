@@ -1,4 +1,4 @@
-define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/exportMetadataForm"], function($, AbstractBatchAction, exportMetadataTemplate) {
+define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/admin/exportMetadataForm"], function($, AbstractBatchAction, exportMetadataTemplate) {
 
 	function ExportMetadataXMLBatchAction(context) {
 		this._create(context);

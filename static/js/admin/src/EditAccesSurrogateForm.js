@@ -1,4 +1,4 @@
-define('EditAccessSurrogateForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editAccessSurrogateForm',
+define('EditAccessSurrogateForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!templates/admin/editAccessSurrogateForm',
         'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'],
     function($, ui, _, RemoteStateChangeMonitor, addWorkTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
         let defaultOptions = {

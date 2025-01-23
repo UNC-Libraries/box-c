@@ -1,4 +1,4 @@
-define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChangeMonitor', 'AlertHandler', 'ModalLoadingOverlay', 'tpl!../templates/admin/editCollectionSettings'], 
+define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChangeMonitor', 'AlertHandler', 'ModalLoadingOverlay', 'tpl!templates/admin/editCollectionSettings'], 
 	function($, _, RemoteStateChangeMonitor, alertHandler, ModalLoadingOverlay, editSettingsTemplate) {
 			
 	function EditCollectionSettingsAction(context) {

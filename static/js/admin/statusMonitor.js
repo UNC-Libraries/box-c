@@ -1,22 +1,22 @@
 require.config({
 	urlArgs: "v=5.0-SNAPSHOT",
-	baseUrl: '/static/js/',
+	baseUrl: '/static/',
 	paths: {
-		'jquery' : 'cdr-admin',
-		'jquery-ui' : 'cdr-admin',
-		'text' : 'lib/text',
-		'underscore' : 'lib/underscore',
-		'tpl' : 'lib/tpl',
-		'qtip' : 'lib/jquery.qtip.min',
+		'jquery' : 'assets/admin/cdr-admin',
+		'jquery-ui' : 'assets/admin/cdr-admin',
+		'text' : 'js/admin/lib/text',
+		'underscore' : 'js/admin/lib/underscore',
+		'tpl' : 'js/admin/lib/tpl',
+		'qtip' : 'js/admin/lib/jquery.qtip.min',
 		
-		'StatusMonitorManager' : 'cdr-admin',
-		'AbstractStatusMonitor' : 'cdr-admin',
-		'ActionEventHandler' : 'cdr-admin',
-		'DepositMonitor' : 'cdr-admin',
-		'URLUtilities' : 'cdr-admin',
+		'StatusMonitorManager' : 'assets/admin/cdr-admin',
+		'AbstractStatusMonitor' : 'assets/admin/cdr-admin',
+		'ActionEventHandler' : 'assets/admin/cdr-admin',
+		'DepositMonitor' : 'assets/admin/cdr-admin',
+		'URLUtilities' : 'assets/admin/cdr-admin',
 		
-		"editable" : "admin/lib/jqueryui-editable.min",
-		'moment' : 'cdr-admin'
+		"editable" : "js/admin/lib/jqueryui-editable.min",
+		'moment' : 'assets/admin/cdr-admin'
 	},
 	shim: {
 		'qtip' : ['jquery'],

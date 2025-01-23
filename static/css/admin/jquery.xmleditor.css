@@ -617,7 +617,7 @@
 	min-height: 600px;
 }
 
-.highlighted {
+#xml_editor .highlighted {
 	background-color: #ffff00;
 	position: absolute;
 	box-shadow: 0 0 2px 2px #eeeeee;
