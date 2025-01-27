@@ -26,7 +26,9 @@ import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -76,7 +78,7 @@ public class ChompbPreIngestServiceTest {
         String expectedOutput = "[ { \"projectPath\" : \"/path/to/project\" } ]";
         InputStream mockInputStream = new ByteArrayInputStream(expectedOutput.getBytes());
         when(mockProcess.getInputStream()).thenReturn(mockInputStream);
-        when(mockProcess.waitFor()).thenReturn(0);
+        when(mockProcess.waitFor(anyLong(), any())).thenReturn(true);
 
         try (MockedConstruction<ProcessBuilder> ignored = Mockito.mockConstruction(ProcessBuilder.class,
                 (mock, context) -> {
@@ -93,7 +95,7 @@ public class ChompbPreIngestServiceTest {
         String expectedOutput = "error";
         InputStream mockInputStream = new ByteArrayInputStream(expectedOutput.getBytes());
         when(mockProcess.getInputStream()).thenReturn(mockInputStream);
-        when(mockProcess.waitFor()).thenReturn(1);
+        when(mockProcess.waitFor(anyLong(), any())).thenReturn(false);
 
         try (MockedConstruction<ProcessBuilder> ignored = Mockito.mockConstruction(ProcessBuilder.class,
                 (mock, context) -> {
@@ -101,7 +103,7 @@ public class ChompbPreIngestServiceTest {
                 })
         ){
             var e = assertThrows(RuntimeException.class, () -> service.executeChompbCommand("chompb"));
-            assertEquals("Command exited with status code 1: error", e.getMessage());
+            assertTrue(e.getMessage().contains("Command timed out"), e.getMessage());
         }
     }
 
