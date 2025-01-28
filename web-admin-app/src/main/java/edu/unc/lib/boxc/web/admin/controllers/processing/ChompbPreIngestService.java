@@ -71,7 +71,6 @@ public class ChompbPreIngestService {
 
     protected String executeChompbCommand(String... command) {
         StringBuilder output = new StringBuilder();
-        StringBuilder errorOutput = new StringBuilder();
         String outputString;
 
         try {
@@ -79,27 +78,16 @@ public class ChompbPreIngestService {
             ProcessBuilder builder = new ProcessBuilder(command);
             builder.redirectErrorStream(true);
 
-            // Add environment debugging
-            log.debug("Process environment: {}", builder.environment());
-            log.debug("Process directory: {}", builder.directory());
-
-            log.debug("Starting process...");
             Process process = builder.start();
-            log.debug("Process started with PID: {}", process.pid());
 
             // Use a separate thread to read the output concurrently
             log.debug("Creating output reader task");
             var outputReaderTask = getOutputReaderTask(process.getInputStream(), output);
-            log.debug("Output reader task created");
 
-            log.debug("Waiting for process to complete");
             // If any errors occurred while reading the output, they will be thrown here
             waitForProcess(process, Arrays.asList(command), outputReaderTask, output);
-            log.debug("Process wait completed");
 
-            log.debug("Joining output reader task");
             outputReaderTask.join();
-            log.debug("Output reader task joined");
 
             int exitCode = process.exitValue();
             log.debug("Process exit code: {}", exitCode);
@@ -112,10 +100,8 @@ public class ChompbPreIngestService {
             outputString = output.toString().trim();
             log.debug("Finished executing chompb command");
         } catch (IOException e) {
-            log.error("IO Exception during process execution", e);
             throw new RepositoryException("Failed to execute chompb command", e);
         } catch (InterruptedException e) {
-            log.error("Process execution interrupted", e);
             Thread.currentThread().interrupt();
             throw new RepositoryException("Interrupted while waiting for chompb command to complete", e);
         }
@@ -126,14 +112,12 @@ public class ChompbPreIngestService {
 
     private static CompletableFuture<Void> getOutputReaderTask(InputStream inputStream, StringBuilder output) {
         return CompletableFuture.runAsync(() -> {
-            log.debug("Starting output reader thread");
             try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    log.debug("Read line: {}", line);
                     output.append(line).append(System.lineSeparator());
                 }
-                log.debug("Finished reading output");
+                log.debug("Finished reading output: {}", output);
             } catch (IOException e) {
                 log.error("Error reading command output", e);
                 throw new RepositoryException("Error reading command output", e);
@@ -160,25 +144,20 @@ public class ChompbPreIngestService {
     }
 
     protected void executeBackgroundCommand(String... command) {
-        log.debug("Submitting background chompb command: {}", String.join(" ", command));
+        final var joinedCommand = String.join(" ", command);
+        log.debug("Submitting background chompb command: {}", joinedCommand);
         try {
-            Future<?> future = executorService.submit(() -> {
-                log.debug("Background thread started for command: {}", String.join(" ", command));
+            executorService.submit(() -> {
+                log.debug("Background thread started for command: {}", joinedCommand);
                 try {
                     executeChompbCommand(command);
                     log.debug("Background command completed successfully");
                 } catch (Exception e) {
-                    log.error("Background command failed", e);
+                    log.error("Background command failed: {}", command, e);
                     throw e;
                 }
             });
-
-            // Optional: Add some immediate validation that the task was submitted
-            if (future.isCancelled()) {
-                log.error("Task was cancelled immediately after submission");
-            }
         } catch (RejectedExecutionException e) {
-            log.error("Task was rejected by executor", e);
             throw new RepositoryException("Failed to schedule background command", e);
         }
     }
