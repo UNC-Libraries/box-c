@@ -16,9 +16,9 @@ export default defineConfig({
         minify: false,
         rollupOptions: {
             output: {
-                entryFileNames: `assets/vue-access-[name].js`,
-                chunkFileNames: `assets/vue-access-[name].js`,
-                assetFileNames: `assets/[name].[ext]`
+                entryFileNames: `assets/access/vue-access-[name].js`,
+                chunkFileNames: `assets/access/vue-access-[name].js`,
+                assetFileNames: `assets/access/[name].[ext]`
             }
         }
     },

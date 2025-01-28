@@ -83,7 +83,6 @@ build-access-concat:
 		static/css/cdrui_styles.css \
 		static/build/access/cdr-ui.css \
 		static/css/fontawesome.min.css \
-		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/build/access/cdr-access.css
 
 	cp static/build/access/cdr-access.css static/assets/access/
@@ -102,7 +101,8 @@ build-access-npm:
 	# npm install minify -g
 	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
 
-	cp static/js/vue-cdr-access/dist/assets/vue-access-index.js static/assets/access/vue-access-index.js
+	cp static/js/vue-cdr-access/dist/assets/access/vue-access-index.js static/assets/access/vue-access-index.js
+	cp static/js/vue-cdr-access/dist/assets/access/index.css static/assets/access/index.css
 
 SUSPEND = "n"
 
