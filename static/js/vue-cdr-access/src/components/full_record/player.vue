@@ -7,13 +7,14 @@
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
-            <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
+          <VPdfViewer :src="pdfPath"/>
         </template>
     </div>
 </template>
 
 <script>
 import { applyPureReactInVue } from 'veaury';
+import { VPdfViewer } from '@vue-pdf-viewer/viewer';
 import Viewer from '@samvera/clover-iiif/viewer';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
@@ -23,7 +24,7 @@ const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
 export default {
     name: 'player',
 
-    components: {streamingPlayer, clover: applyPureReactInVue(Viewer) },
+    components: {streamingPlayer, VPdfViewer, clover: applyPureReactInVue(Viewer) },
 
     mixins: [permissionUtils],
 
@@ -62,12 +63,14 @@ export default {
                 },
                 showIIIFBadge: false
             }
-        }
-    },
+        },
 
-    methods: {
-        viewer(viewer_type) {
-            return `/api/record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
+        pdfPath() {
+          let port = location.port;
+          if (port !== '') {
+            port = `:${port}`;
+          }
+          return `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
         }
     }
 }

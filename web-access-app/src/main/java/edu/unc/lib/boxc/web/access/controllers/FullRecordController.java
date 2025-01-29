@@ -260,41 +260,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return SerializationUtil.objectToJSON(recordProperties);
     }
 
-    @GetMapping("/{pid}/pdfViewer")
-    public String handlePdfViewerRequest(@PathVariable("pid") String pidString, Model model,
-                                         HttpServletRequest request) {
-        PID pid = PIDs.get(pidString);
-
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewOriginal);
-
-        // Retrieve the object's record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
-        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
-
-        String viewerPid;
-        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            var child = accessCopiesService.getFirstMatchingChild(briefObject,
-                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals);
-            if (child == null) {
-                throw new NotFoundException("Cannot find child PDF for " + pidString);
-            }
-            viewerPid = child.getId();
-        } else {
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-            if (viewerPid == null) {
-                throw new IllegalArgumentException("Resource is not a PDF: " + pidString);
-            }
-        }
-
-        model.addAttribute(VIEWER_PID, viewerPid);
-        model.addAttribute("briefObject", briefObject);
-        model.addAttribute("template", "ajax");
-
-        return "fullRecord/pdfViewer";
-    }
-
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType;
         String viewerPid ;

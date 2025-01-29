@@ -2,16 +2,15 @@
     "name": "vue-cdr-access",
     "version": "0.1.0",
     "private": true,
-    "scripts":
-    {
+    "scripts": {
         "dev": "vite",
         "serve": "vite preview",
         "build": "vite build",
         "test": "jest"
     },
-    "dependencies":
-    {
+    "dependencies": {
         "@samvera/clover-iiif": "^2.10.2",
+        "@vue-pdf-viewer/viewer": "^2.0.0",
         "@vueuse/head": "^2.0.0",
         "axios": "^1.7.7",
         "canvas": "^2.11.2",
@@ -35,8 +34,7 @@
         "vue-i18n": "^10.0.5",
         "vue-router": "^4.4.5"
     },
-    "devDependencies":
-    {
+    "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.25.7",
         "@babel/preset-env": "^7.25.8",
         "@intlify/vue-i18n-loader": "^5.0.1",
