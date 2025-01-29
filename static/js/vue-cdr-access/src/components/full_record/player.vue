@@ -7,7 +7,9 @@
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
-          <VPdfViewer :src="pdfPath"/>
+          <div :style="{ width: 'auto', height: '700px'}">
+            <VPdfViewer :src="src"/>
+          </div>
         </template>
     </div>
 </template>
@@ -31,6 +33,12 @@ export default {
     props: {
         recordData: Object
     },
+
+  data() {
+    return {
+      src: '',
+    };
+  },
 
     computed: {
         pdfFileAcceptableForDisplay() {
@@ -63,15 +71,22 @@ export default {
                 },
                 showIIIFBadge: false
             }
-        },
-
-        pdfPath() {
-          let port = location.port;
-          if (port !== '') {
-            port = `:${port}`;
-          }
-          return `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
         }
+    },
+
+  mounted() {
+    let port = location.port;
+    if (port !== '') {
+      port = `:${port}`;
     }
+
+    this.src = `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
+  }
 }
 </script>
+
+<style lang="scss">
+  .vpv-container {
+    padding-top: 25px;
+  }
+</style>
