@@ -161,7 +161,7 @@ public class SerializationUtil {
         }
 
         if (metadata.getFilesizeSort() != null) {
-            result.put("filesizeTotal", metadata.getFilesizeSort());
+            result.put(SearchFieldKey.FILESIZE.getUrlParam(), metadata.getFilesizeSort());
         }
 
         if (metadata.getAbstractText() != null) {

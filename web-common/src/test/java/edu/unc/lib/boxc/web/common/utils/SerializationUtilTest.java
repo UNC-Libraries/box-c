@@ -240,7 +240,7 @@ public class SerializationUtilTest extends Assertions {
         assertEquals(List.of("image"), groupMap.get(SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam()));
         assertEquals(List.of("jpeg"), groupMap.get(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam()));
         assertEquals(List.of("JPEG"), groupMap.get(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getUrlParam()));
-        assertEquals(582753, groupMap.get("filesizeTotal")); // using the incorrect name in the class
+        assertEquals(582753, groupMap.get(SearchFieldKey.FILESIZE.getUrlParam())); // using the incorrect name in the class
         assertEquals(ResourceType.File.name(), groupMap.get(SearchFieldKey.RESOURCE_TYPE.getUrlParam()));
         assertEquals("2019-01-01T00:00:00.000Z", groupMap.get(SearchFieldKey.DATE_ADDED.getUrlParam()));
         assertEquals("2019-01-01T00:01:00.000Z", groupMap.get(SearchFieldKey.DATE_UPDATED.getUrlParam()));
