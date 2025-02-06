@@ -44,6 +44,10 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 
         uuidGenerator = new DefaultUuidGenerator();
 
+        onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+                .maximumRedeliveries(0)
+                .log(LoggingLevel.WARN, "JP2 Derivative generation failed: ${exception.message}");
+
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
                 .maximumRedeliveries("{{error.maxRedeliveries}}")
