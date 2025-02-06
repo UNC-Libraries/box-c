@@ -7,7 +7,7 @@ import cloneDeep from 'lodash.clonedeep';
 import downloadOptions from '@/components/full_record/downloadOptions.vue';
 
 const record = {
-        filesizeTotal: 694904,
+        filesize: 694904,
         added: "2023-03-27T13:01:58.067Z",
         format: [
             "Image"
@@ -42,7 +42,7 @@ const record = {
 }
 
 const collectionRecord = {
-    filesizeTotal: 694904,
+    filesize: 694904,
     added: "2023-03-27T13:01:58.067Z",
     title: "Collection Title",
     type: "Collection",

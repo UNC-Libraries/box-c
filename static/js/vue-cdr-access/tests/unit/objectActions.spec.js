@@ -12,7 +12,7 @@ import cloneDeep from 'lodash.clonedeep';
 const record = {
     containingWorkUUID: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
     briefObject: {
-        filesizeTotal: 694904,
+        filesize: 694904,
         added: "2023-03-27T13:01:58.067Z",
         format: [
             "Image"

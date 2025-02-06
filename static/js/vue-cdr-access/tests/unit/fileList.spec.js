@@ -7,7 +7,7 @@ import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 
 let briefObject = {
-    filesizeTotal: 694904,
+    filesize: 694904,
     format: [
         "Image"
     ],

@@ -59,7 +59,7 @@ describe('analyticsUtils', () => {
     it("sends events to analytics platforms", (done) => {
         const briefObj = {
             briefObject: {
-                filesizeTotal: 35845559,
+                filesize: 35845559,
                 added: "2023-03-07T14:47:46.863Z",
                 counts: {
                     child: 1

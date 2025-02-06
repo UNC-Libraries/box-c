@@ -10,7 +10,7 @@ import cloneDeep from 'lodash.clonedeep';
 const record = {
     containingWorkUUID: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
     briefObject: {
-        filesizeTotal: 694904,
+        filesize: 694904,
         added: "2023-03-27T13:01:58.067Z",
         format: [
             "Image"
@@ -116,7 +116,7 @@ const record = {
     viewerType: "clover",
     neighborList: [
         {
-            filesizeTotal: 69481,
+            filesize: 69481,
             added: "2023-01-17T13:53:48.103Z",
             format: [
                 "Image"
@@ -222,7 +222,7 @@ const record = {
             timestamp: 1679935418494
         },
         {
-            filesizeTotal: 694904,
+            filesize: 694904,
             added: "2023-03-27T13:01:58.067Z",
             format: [
                 "Image"
