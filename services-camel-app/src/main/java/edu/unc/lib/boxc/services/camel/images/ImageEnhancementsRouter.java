@@ -48,7 +48,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
                 .handled(true)
                 .maximumRedeliveries(0)
-                .log(LoggingLevel.ERROR, "JP2 Derivative generation failed: ${exception.message}");
+                .log(LoggingLevel.ERROR, log, "${exception.message}");
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
