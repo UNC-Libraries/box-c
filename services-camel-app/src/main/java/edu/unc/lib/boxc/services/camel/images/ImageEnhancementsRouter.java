@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import JP2ImageConverter.errors.CommandException;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -45,6 +46,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         uuidGenerator = new DefaultUuidGenerator();
 
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+                .handled(true)
                 .maximumRedeliveries(0)
                 .log(LoggingLevel.WARN, "JP2 Derivative generation failed: ${exception.message}");
 
