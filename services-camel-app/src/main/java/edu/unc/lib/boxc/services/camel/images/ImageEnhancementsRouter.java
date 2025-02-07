@@ -46,9 +46,8 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         uuidGenerator = new DefaultUuidGenerator();
 
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
-                .handled(true)
                 .maximumRedeliveries(0)
-                .log(LoggingLevel.ERROR, log, "${exception.message}");
+                .log(LoggingLevel.ERROR, "${exception.message}");
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
