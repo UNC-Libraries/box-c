@@ -24,15 +24,14 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.MediaType;
 
-import java.awt.*;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -129,7 +128,7 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
 
     @Test
     public void addBinaryTest() {
-        var binPid = pidMinter.mintContentPid();
+        var binPid = getTechnicalMetadataPid(pid);
         fileObject.addBinary(binPid, storageUri, "file.txt",
                 MediaType.TEXT_PLAIN_VALUE, null, RDF.type, PcdmUse.Transcript);
         verify(repoObjFactory).createOrUpdateBinary(eq(binPid), eq(storageUri),eq("file.txt"),
@@ -141,7 +140,7 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
 
     @Test
     public void addBinaryWithAssociationRelationTest() {
-        var binPid = pidMinter.mintContentPid();
+        var binPid = getTechnicalMetadataPid(pid);
         var binObj = mock(BinaryObject.class);
         when(repoObjFactory.createOrUpdateBinary(eq(binPid), eq(storageUri), eq("file.txt"),
                 eq(MediaType.TEXT_PLAIN_VALUE), any(), isNull(), any())).thenReturn(binObj);
@@ -153,17 +152,23 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
 
     @Test
     public void getBinaryObjectsTest() {
-        var binPid = pidMinter.mintContentPid();
-        var binObj = mock(BinaryObject.class);
-        when(driver.getRepositoryObject(eq(binPid), eq(BinaryObject.class))).thenReturn(binObj);
+        var origFilePid = getOriginalFilePid(pid);
+        var technicalMetadataPid = getTechnicalMetadataPid(pid);
+        resc.addProperty(PcdmModels.hasFile, model.createResource(origFilePid.getRepositoryPath()));
+        resc.addProperty(PcdmModels.hasFile, model.createResource(technicalMetadataPid.getRepositoryPath()));
+        var origFileBinObj = mock(BinaryObject.class);
+        var technicalMdBinObj = mock(BinaryObject.class);
+        when(driver.getRepositoryObject(eq(origFilePid), eq(BinaryObject.class))).thenReturn(origFileBinObj);
+        when(driver.getRepositoryObject(eq(technicalMetadataPid), eq(BinaryObject.class))).thenReturn(technicalMdBinObj);
 
+        assertTrue(fileObject.getBinaryObjects().contains(origFileBinObj));
+        assertTrue(fileObject.getBinaryObjects().contains(technicalMdBinObj));
     }
 
     @Test
     public void getBinaryObjectTest() {
-        var binPid = pidMinter.mintContentPid();
-        var origFilePid = getOriginalFilePid(binPid);
-        resc.addProperty(PcdmModels.hasFile, origFilePid.getRepositoryPath());
+        var origFilePid = getOriginalFilePid(pid);
+        resc.addProperty(PcdmModels.hasFile, model.createResource(origFilePid.getRepositoryPath()));
         var binObj = mock(BinaryObject.class);
         when(driver.getRepositoryObject(eq(origFilePid), eq(BinaryObject.class))).thenReturn(binObj);
 
