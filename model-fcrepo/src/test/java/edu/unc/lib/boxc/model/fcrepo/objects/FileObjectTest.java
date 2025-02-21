@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -121,21 +122,34 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
         var originalFilePid = getOriginalFilePid(pid);
 
         verify(repoObjFactory).createOrUpdateBinary(eq(originalFilePid), eq(storageUri), eq("file.txt"),
-                eq(MediaType.TEXT_PLAIN_VALUE), any(), isNull(), modelCaptor.capture());
+                eq(MediaType.TEXT_PLAIN_VALUE), any(), isNull(), isNull());
+    }
 
-        assertNull(modelCaptor.getValue());
+    @Test
+    public void getOriginalFileTest() {
+        var origFilePid = getOriginalFilePid(pid);
+        resc.addProperty(PcdmModels.hasFile, model.createResource(origFilePid.getRepositoryPath()));
+        var binObj = mock(BinaryObject.class);
+        when(driver.getRepositoryObject(eq(origFilePid), eq(BinaryObject.class))).thenReturn(binObj);
+
+        assertEquals(binObj, fileObject.getOriginalFile());
     }
 
     @Test
     public void addBinaryTest() {
         var binPid = getTechnicalMetadataPid(pid);
-        fileObject.addBinary(binPid, storageUri, "file.txt",
+        var binObj = mock(BinaryObject.class);
+        when(repoObjFactory.createOrUpdateBinary(eq(binPid), eq(storageUri),eq("file.txt"),
+                eq(MediaType.TEXT_PLAIN_VALUE), any(), any(), any())).thenReturn(binObj);
+
+        var createdBinary = fileObject.addBinary(binPid, storageUri, "file.txt",
                 MediaType.TEXT_PLAIN_VALUE, null, RDF.type, PcdmUse.Transcript);
         verify(repoObjFactory).createOrUpdateBinary(eq(binPid), eq(storageUri),eq("file.txt"),
                 eq(MediaType.TEXT_PLAIN_VALUE), any(), isNull(), modelCaptor.capture());
 
         assertTrue(modelCaptor.getValue().getResource(binPid.getRepositoryPath())
                 .hasProperty(RDF.type, PcdmUse.Transcript));
+        assertEquals(binObj, createdBinary);
     }
 
     @Test
@@ -161,8 +175,10 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
         when(driver.getRepositoryObject(eq(origFilePid), eq(BinaryObject.class))).thenReturn(origFileBinObj);
         when(driver.getRepositoryObject(eq(technicalMetadataPid), eq(BinaryObject.class))).thenReturn(technicalMdBinObj);
 
-        assertTrue(fileObject.getBinaryObjects().contains(origFileBinObj));
-        assertTrue(fileObject.getBinaryObjects().contains(technicalMdBinObj));
+        var binaryObjects = fileObject.getBinaryObjects();
+        assertTrue(binaryObjects.contains(origFileBinObj));
+        assertTrue(binaryObjects.contains(technicalMdBinObj));
+        assertEquals(2, binaryObjects.size());
     }
 
     @Test
@@ -180,5 +196,10 @@ public class FileObjectTest extends AbstractFedoraObjectTest {
         assertThrows(NotFoundException.class, () -> {
             fileObject.getBinaryObject(ORIGINAL_FILE.getId());
         });
+    }
+
+    @Test
+    public void getResourceTypeTest() {
+        assertEquals(ResourceType.File, fileObject.getResourceType());
     }
 }
