@@ -124,8 +124,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     public void invalidTypeTest() {
         Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
             types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-
-            assertEquals(work, work.validateType());
+            work.validateType();
         });
     }
 
