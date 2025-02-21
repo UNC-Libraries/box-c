@@ -1,8 +1,10 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
@@ -26,6 +28,7 @@ import java.util.List;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDepositManifestPid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,6 +95,19 @@ public class DepositRecordTest extends AbstractFedoraObjectTest {
     }
 
     @Test
+    public void getResourceTypeTest() {
+        assertEquals(ResourceType.DepositRecord, depositRecord.getResourceType());
+    }
+
+    @Test
+    public void getParentTest() {
+        var repoObj = mock(RepositoryObject.class);
+        when(driver.getParentObject(any())).thenReturn(repoObj);
+
+        assertEquals(repoObj, depositRecord.getParent());
+    }
+
+    @Test
     public void addManifestTest() {
         var filename = "file.txt";
         depositRecord.addManifest(manifestUri, filename, MediaType.TEXT_PLAIN_VALUE, null, null);
@@ -135,11 +151,24 @@ public class DepositRecordTest extends AbstractFedoraObjectTest {
 
     @Test
     public void listManifestsTest() {
+        var pid1 = pidMinter.mintContentPid();
+        var pid2 = pidMinter.mintContentPid();
+        resc.addProperty(Cdr.hasManifest, model.createResource(pid1.getRepositoryPath()));
+        resc.addProperty(Cdr.hasManifest, model.createResource(pid2.getRepositoryPath()));
 
+        var manifestPids = depositRecord.listManifests();
+        assertEquals(2, manifestPids.size());
+        assertTrue(manifestPids.contains(pid1));
+        assertTrue(manifestPids.contains(pid2));
     }
 
     @Test
     public void listDepositedObjectsTest() {
+        var pid1 = pidMinter.mintContentPid();
+        var pid2 = pidMinter.mintContentPid();
+        var pids = List.of(pid1, pid2);
+        when(driver.listRelated(eq(depositRecord), eq(Cdr.originalDeposit))).thenReturn(pids);
 
+        assertEquals(pids, depositRecord.listDepositedObjects());
     }
 }
