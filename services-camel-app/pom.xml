@@ -232,6 +232,11 @@
         <groupId>com.github.tomakehurst</groupId>
         <artifactId>wiremock-jre8-standalone</artifactId>
     </dependency>
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${javax.annotation.version}</version>
+    </dependency>
 
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
