@@ -108,7 +108,7 @@
         <activemq.version>5.18.6</activemq.version>
         <activemq-protobuf.version>1.1</activemq-protobuf.version>
         
-        <slf4j.version>2.1.0-alpha1</slf4j.version>
+        <slf4j.version>1.8.0-beta4</slf4j.version>
         <logback.version>1.5.16</logback.version>
         <reload4j.version>1.2.26</reload4j.version>
 
