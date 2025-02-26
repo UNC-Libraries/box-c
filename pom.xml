@@ -72,7 +72,6 @@
         <spring.version>5.3.39</spring.version>
         <spring.ws.version>3.1.8</spring.ws.version>
         
-        <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.12.0</junit.jupiter.version>
         <grizzly.version>2.4.4</grizzly.version>
         <jersey.version>2.34</jersey.version>
@@ -658,12 +657,6 @@
                 <version>${javax.activation.version}</version>
             </dependency>
             
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
