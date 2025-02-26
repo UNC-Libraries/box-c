@@ -192,6 +192,11 @@
         <artifactId>jaxb-impl</artifactId>
         <scope>compile</scope>
     </dependency>
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${javax.annotation.version}</version>
+    </dependency>
 
     <!-- Testing -->
     <dependency>
