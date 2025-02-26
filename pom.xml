@@ -79,7 +79,7 @@
         <mockito.junit.version>5.11.0</mockito.junit.version>
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
-        <awaitility.version>4.0.3</awaitility.version>
+        <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
         <jackson.version>2.13.2</jackson.version>
