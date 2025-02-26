@@ -71,12 +71,12 @@
         <spring.version>5.3.32</spring.version>
         <spring.ws.version>3.1.8</spring.ws.version>
         
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <junit.version>4.13.2</junit.version>
+        <junit.jupiter.version>5.12.0</junit.jupiter.version>
         <grizzly.version>2.4.4</grizzly.version>
         <jersey.version>2.34</jersey.version>
-        <mockito.version>5.11.0</mockito.version>
-        <mockito.junit.version>5.11.0</mockito.junit.version>
+        <mockito.version>5.15.2</mockito.version>
+        <mockito.junit.version>5.15.2</mockito.junit.version>
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <awaitility.version>4.0.3</awaitility.version>
