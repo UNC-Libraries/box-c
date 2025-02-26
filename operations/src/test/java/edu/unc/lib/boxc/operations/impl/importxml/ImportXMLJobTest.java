@@ -336,7 +336,7 @@ public class ImportXMLJobTest {
     }
 
     private void assertAddressesSet(String... expectedAddresses) throws Exception {
-        verify(msg).setFrom((Address) argThat(address -> address.toString().equals(FROM_EMAIL)));
+        verify(msg).setFrom(argThat(address -> address.toString().equals(FROM_EMAIL)));
         verify(msg, times(expectedAddresses.length))
                 .addRecipient(eq(Message.RecipientType.TO), addressCaptor.capture());
         List<Address> toAddresses = addressCaptor.getAllValues();
