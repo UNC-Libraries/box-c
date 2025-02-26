@@ -59,7 +59,7 @@
         <javax.jaxb.impl.version>2.4.0-b180830.0438</javax.jaxb.impl.version>
         <javax.jaxb-core.version>2.3.0.1</javax.jaxb-core.version>
         <jakarta.xml.bind.version>3.0.1</jakarta.xml.bind.version>
-        <glassfish-jaxb.version>3.1.0-M1</glassfish-jaxb.version>
+        <glassfish-jaxb.version>3.0.2</glassfish-jaxb.version>
         <javax.activation.version>1.1.1</javax.activation.version>
         
         <cdr.version>5.0-SNAPSHOT</cdr.version>
@@ -102,7 +102,7 @@
         <commons-csv.version>1.13.0</commons-csv.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-fileupload.version>1.5</commons-fileupload.version>
-        <commons-collections.version>4.5.0-M3</commons-collections.version>
+        <commons-collections.version>4.4</commons-collections.version>
         <abdera.version>1.1.3</abdera.version>
         
         <activemq.version>5.18.6</activemq.version>
@@ -808,7 +808,7 @@
             <dependency>
                 <groupId>org.jvnet.mimepull</groupId>
                 <artifactId>mimepull</artifactId>
-                <version>${mimepull.version}}</version>
+                <version>${mimepull.version}</version>
             </dependency>
             
             <dependency>
