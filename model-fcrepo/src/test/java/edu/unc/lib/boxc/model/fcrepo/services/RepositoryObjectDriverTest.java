@@ -7,14 +7,21 @@ import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import org.apache.http.HttpStatus;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -33,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -42,23 +48,38 @@ public class RepositoryObjectDriverTest {
     private RepositoryObjectDriver repositoryObjectDriver;
     private PIDMinter pidMinter;
     private PID pid;
+    private PID parentPid;
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
     private SparqlQueryService sparqlQueryService;
     @Mock
     private FcrepoClient fcrepoClient;
+    @Mock
+    private QueryExecution mockQueryExec;
+    @Mock
+    private ResultSet mockResultSet;
+    @Mock
+    private QuerySolution mockQuerySolution;
+    @Mock
+    private Resource mockParentResource;
 
     @BeforeEach
     public void init() {
         closeable = openMocks(this);
         pidMinter = new RepositoryPIDMinter();
         pid = pidMinter.mintContentPid();
+        parentPid = pidMinter.mintContentPid();
         repositoryObjectDriver = new RepositoryObjectDriver();
         repositoryObjectDriver.setClient(fcrepoClient);
         repositoryObjectDriver.setPidMinter(pidMinter);
         repositoryObjectDriver.setRepositoryObjectLoader(repoObjLoader);
         repositoryObjectDriver.setSparqlQueryService(sparqlQueryService);
+
+        when(mockQueryExec.execSelect()).thenReturn(mockResultSet);
+        when(mockResultSet.nextSolution()).thenReturn(mockQuerySolution);
+        when(mockQuerySolution.getResource("pid")).thenReturn(mockParentResource);
+        when(mockParentResource.getURI()).thenReturn(parentPid.getRepositoryPath());
     }
 
     @AfterEach
@@ -160,13 +181,35 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void getParentPidTest() {
+    public void getParentPidBinaryObjectTest() {
+        var object = mock(BinaryObject.class);
 
+        when(object.getPid()).thenReturn(pid);
+        when(sparqlQueryService.executeQuery(any())).thenReturn(mockQueryExec);
+        when(mockResultSet.hasNext()).thenReturn(true).thenReturn(false);
+
+        assertEquals(parentPid, repositoryObjectDriver.getParentPid(object));
+    }
+
+    @Test
+    public void getParentPidContentObjectTest() {
+        var object = mock(ContentObject.class);
+        var model = ModelFactory.createDefaultModel();
+        var resource = model.getResource(pid.getRepositoryPath());
+        var parentResc = model.getResource(parentPid.getRepositoryPath());
+        resource.addProperty(PcdmModels.memberOf, parentResc);
+
+        when(object.getResource()).thenReturn(resource);
+        when(object.getPid()).thenReturn(pid);
+
+        assertEquals(parentPid, repositoryObjectDriver.getParentPid(object));
     }
     @Test
-    public void getParentPidNoParentTest() {
+    public void getParentPidContentObjectNoParentTest() {
         Assertions.assertThrows(OrphanedObjectException.class, () -> {
-            var object = mock(RepositoryObject.class);
+            var object = mock(ContentObject.class);
+            var resource = mock(Resource.class);
+            when(object.getResource()).thenReturn(resource);
             when(object.getPid()).thenReturn(pid);
             repositoryObjectDriver.getParentPid(object);
         });
@@ -178,14 +221,5 @@ public class RepositoryObjectDriverTest {
             var object = mock(RepositoryObject.class);
             repositoryObjectDriver.getParentPid(object);
         });
-    }
-    @Test
-    public void getParentPidBinaryObjectTest() {
-
-    }
-
-    @Test
-    public void getParentPidContentObjectTest() {
-
     }
 }
