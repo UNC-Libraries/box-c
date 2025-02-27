@@ -55,10 +55,11 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <javax.annotation.version>1.3.2</javax.annotation.version>
-        <javax.jaxb.version>2.3.1</javax.jaxb.version>
+        <javax.jaxb.api.version>2.4.0-b180830.0359</javax.jaxb.api.version>
+        <javax.jaxb.impl.version>2.4.0-b180830.0438</javax.jaxb.impl.version>
         <javax.jaxb-core.version>2.3.0.1</javax.jaxb-core.version>
         <jakarta.xml.bind.version>3.0.1</jakarta.xml.bind.version>
-        <glassfish-jaxb.version>3.0.1</glassfish-jaxb.version>
+        <glassfish-jaxb.version>3.0.2</glassfish-jaxb.version>
         <javax.activation.version>1.1.1</javax.activation.version>
         
         <cdr.version>5.0-SNAPSHOT</cdr.version>
@@ -68,38 +69,37 @@
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         <jp24u.version>1.0-SNAPSHOT</jp24u.version>
         
-        <spring.version>5.3.32</spring.version>
+        <spring.version>5.3.39</spring.version>
         <spring.ws.version>3.1.8</spring.ws.version>
         
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
         <grizzly.version>2.4.4</grizzly.version>
         <jersey.version>2.34</jersey.version>
-        <mockito.version>5.11.0</mockito.version>
-        <mockito.junit.version>5.11.0</mockito.junit.version>
+        <mockito.version>5.15.2</mockito.version>
+        <mockito.junit.version>5.15.2</mockito.junit.version>
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
-        <awaitility.version>4.0.3</awaitility.version>
+        <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
-        <jackson.version>2.13.2</jackson.version>
-        <jackson.databind.version>2.13.4.2</jackson.databind.version>
+        <jackson.version>2.18.2</jackson.version>
+        <jackson.databind.version>2.18.2</jackson.databind.version>
         <jesque.version>2.2.0</jesque.version>
         
-        <joda-time.version>2.10.1</joda-time.version>
-        <jmustache.version>1.14</jmustache.version>
+        <joda-time.version>2.13.1</joda-time.version>
+        <jmustache.version>1.16</jmustache.version>
         <mail.version>1.4.7</mail.version>
         <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
-        <guava.version>32.0.0-jre</guava.version>
+        <guava.version>32.1.3-jre</guava.version>
         <sword2-server.version>1.0</sword2-server.version>
         
-        <httpclient.version>4.5.13</httpclient.version>
-        <commons-compress.version>1.26.0</commons-compress.version>
-        <commons-codec.version>1.17.1</commons-codec.version>
-        <commons-io.version>2.17.0</commons-io.version>
-        <commons-csv.version>1.6</commons-csv.version>
-        <commons-lang3.version>3.8.1</commons-lang3.version>
+        <httpclient.version>4.5.14</httpclient.version>
+        <commons-compress.version>1.27.1</commons-compress.version>
+        <commons-codec.version>1.18.0</commons-codec.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <commons-csv.version>1.13.0</commons-csv.version>
+        <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-fileupload.version>1.5</commons-fileupload.version>
         <commons-collections.version>4.4</commons-collections.version>
         <abdera.version>1.1.3</abdera.version>
@@ -107,18 +107,19 @@
         <activemq.version>5.17.6</activemq.version>
         <activemq-protobuf.version>1.1</activemq-protobuf.version>
         
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.13</logback.version>
-        <reload4j.version>1.2.20</reload4j.version>
+        <reload4j.version>1.2.26</reload4j.version>
 
-        <iiif-apis.version>0.3.8</iiif-apis.version>
+        <iiif-apis.version>0.3.11</iiif-apis.version>
         
-        <jdom.version>2.0.6</jdom.version>
-        <jaxen.version>1.1.6</jaxen.version>
-        <saxon.version>9.9.1-6</saxon.version>
+        <jdom.version>2.0.6.1</jdom.version>
+        <jaxen.version>1.2.0</jaxen.version>
+        <saxon.version>9.9.1-8</saxon.version>
         <xerces.version>2.12.0</xerces.version>
         <xml-apis.version>1.4.01</xml-apis.version>
-        <xom.version>1.2.5</xom.version>
+        <xom.version>1.3.9</xom.version>
+        <mimepull.version>1.10.0</mimepull.version>
 
         <taglibs.version>1.2.5</taglibs.version>
         <jakarta.servlet.api.version>4.0.4</jakarta.servlet.api.version>
@@ -126,13 +127,13 @@
         <jsp-api.version>2.3.6</jsp-api.version>
 
         <jedis.version>3.10.0</jedis.version>
-        <solr.version>9.6.1</solr.version>
+        <solr.version>9.8.0</solr.version>
         <metrics.version>5.0.0</metrics.version>
-        <jena.version>4.4.0</jena.version>
+        <jena.version>4.10.0</jena.version>
 
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
-        <camel.version>3.22.1</camel.version>
-        <tika.version>2.8.0</tika.version>
+        <camel.version>3.22.3</camel.version>
+        <tika.version>2.9.3</tika.version>
         
         <maven.failsafe.version>2.22.1</maven.failsafe.version>
         <maven.surefire.version>2.22.1</maven.surefire.version>
@@ -624,7 +625,7 @@
             <dependency>
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
-                <version>${javax.jaxb.version}</version>
+                <version>${javax.jaxb.api.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -636,7 +637,7 @@
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-impl</artifactId>
-                <version>${javax.jaxb.version}</version>
+                <version>${javax.jaxb.impl.version}</version>
                 <scope>test</scope>
             </dependency>
             <!-- Java 9+ jaxb versions -->
@@ -656,12 +657,6 @@
                 <version>${javax.activation.version}</version>
             </dependency>
             
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
@@ -806,7 +801,7 @@
             <dependency>
                 <groupId>org.jvnet.mimepull</groupId>
                 <artifactId>mimepull</artifactId>
-                <version>1.9.7</version>
+                <version>${mimepull.version}</version>
             </dependency>
             
             <dependency>
