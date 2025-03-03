@@ -229,7 +229,7 @@ public class RepositoryObjectDriver {
     public List<PID> listRelated(RepositoryObject obj, Property relation) {
         PID pid = obj.getPid();
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                relation, pid.getURI());
+                relation, pid.getRepositoryPath());
         return SparqlListingHelper.listPids(sparqlQueryService, queryString);
     }
 
