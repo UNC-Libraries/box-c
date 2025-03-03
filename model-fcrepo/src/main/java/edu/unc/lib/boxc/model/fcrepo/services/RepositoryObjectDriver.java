@@ -190,7 +190,7 @@ public class RepositoryObjectDriver {
      */
     public PID fetchContainer(RepositoryObject child, Property membershipRelation) {
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                membershipRelation, child.getPid().getURI());
+                membershipRelation, child.getPid().getRepositoryPath());
 
         try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
             ResultSet results = qexec.execSelect();

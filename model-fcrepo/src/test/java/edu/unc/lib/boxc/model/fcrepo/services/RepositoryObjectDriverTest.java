@@ -14,15 +14,11 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import org.apache.http.HttpStatus;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -58,24 +54,12 @@ public class RepositoryObjectDriverTest {
     private PIDMinter pidMinter;
     private PID pid;
     private PID parentPid;
-    @Mock
-    private RepositoryObjectLoader repoObjLoader;
-//    @Mock
-//    private
     protected Model sparqlModel;
     protected SparqlQueryService sparqlQueryService;
     @Mock
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
     private FcrepoClient fcrepoClient;
-    @Mock
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Mock
-    private QueryExecution mockQueryExec;
-    @Mock
-    private ResultSet mockResultSet;
-    @Mock
-    private QuerySolution mockQuerySolution;
-    @Mock
-    private Resource mockParentResource;
 
     @BeforeEach
     public void init() {
@@ -90,11 +74,6 @@ public class RepositoryObjectDriverTest {
         repositoryObjectDriver.setPidMinter(pidMinter);
         repositoryObjectDriver.setRepositoryObjectLoader(repoObjLoader);
         repositoryObjectDriver.setSparqlQueryService(sparqlQueryService);
-
-//        when(mockQueryExec.execSelect()).thenReturn(mockResultSet);
-//        when(mockResultSet.nextSolution()).thenReturn(mockQuerySolution);
-//        when(mockQuerySolution.getResource("pid")).thenReturn(mockParentResource);
-//        when(mockParentResource.getURI()).thenReturn(parentPid.getRepositoryPath());
     }
 
     @AfterEach
@@ -198,10 +177,11 @@ public class RepositoryObjectDriverTest {
     @Test
     public void getParentPidBinaryObjectTest() {
         var object = mock(BinaryObject.class);
+        var resource = sparqlModel.getResource(pid.getRepositoryPath());
 
         when(object.getPid()).thenReturn(pid);
-        when(sparqlQueryService.executeQuery(any())).thenReturn(mockQueryExec);
-        when(mockResultSet.hasNext()).thenReturn(true).thenReturn(false);
+        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
+        parentResource.addProperty(PcdmModels.hasFile, resource);
 
         assertEquals(parentPid, repositoryObjectDriver.getParentPid(object));
     }
@@ -241,37 +221,35 @@ public class RepositoryObjectDriverTest {
     @Test
     public void getParentObjectTest() {
         var object = mock(BinaryObject.class);
+        var resource = sparqlModel.getResource(pid.getRepositoryPath());
 
         when(object.getPid()).thenReturn(pid);
-        when(sparqlQueryService.executeQuery(any())).thenReturn(mockQueryExec);
-        when(mockResultSet.hasNext()).thenReturn(true).thenReturn(false);
+        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
+        parentResource.addProperty(PcdmModels.hasFile, resource);
 
         repositoryObjectDriver.getParentObject(object);
         verify(repoObjLoader).getRepositoryObject(eq(parentPid));
     }
 
-//    @Test
-//    public void fetchContainerTest() {
-//        var object = mock(BinaryObject.class);
-//
-//        when(object.getPid()).thenReturn(pid);
-//        when(sparqlQueryService.executeQuery(any())).thenReturn(mockQueryExec);
-//        when(mockResultSet.hasNext()).thenReturn(true).thenReturn(false);
-//
-//        assertEquals(parentPid, repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
-//    }
+    @Test
+    public void fetchContainerTest() {
+        var object = mock(BinaryObject.class);
+        var resource = sparqlModel.getResource(pid.getRepositoryPath());
 
-//    @Test
-//    public void fetchContainerNullTest() {
-//        var object = mock(BinaryObject.class);
-//
-//        when(object.getPid()).thenReturn(pid);
-//        when(sparqlQueryService.executeQuery(any())).thenReturn(mockQueryExec);
-//        when(mockResultSet.hasNext()).thenReturn(true).thenReturn(false);
-//        when(mockQuerySolution.getResource("pid")).thenReturn(null);
-//
-//        assertNull(repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
-//    }
+        when(object.getPid()).thenReturn(pid);
+        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
+        parentResource.addProperty(PcdmModels.hasFile, resource);
+
+        assertEquals(parentPid, repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
+    }
+
+    @Test
+    public void fetchContainerNullTest() {
+        var object = mock(BinaryObject.class);
+        when(object.getPid()).thenReturn(pid);
+
+        assertNull(repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
+    }
 
     @Test
     public void getBinaryStreamTest() throws FcrepoOperationFailedException {
@@ -308,29 +286,33 @@ public class RepositoryObjectDriverTest {
     @Test
     public void listRelatedTest() {
         var object = mock(ContentObject.class);
-        var model = ModelFactory.createDefaultModel();
-        var resource = model.getResource(pid.getRepositoryPath());
+        var resource = sparqlModel.getResource(pid.getRepositoryPath());
         when(object.getPid()).thenReturn(pid);
         when(object.getResource()).thenReturn(resource);
 
-        var relatedObject = mock(ContentObject.class);
         var relatedObjectPid = pidMinter.mintContentPid();
-        var relatedModel = ModelFactory.createDefaultModel();
-        var relatedResource = relatedModel.getResource(relatedObjectPid.getRepositoryPath());
-        when(relatedObject.getPid()).thenReturn(relatedObjectPid);
-        when(relatedObject.getResource()).thenReturn(relatedResource);
+        var relatedResource = sparqlModel.getResource(relatedObjectPid.getRepositoryPath());
 
         var relation = PcdmModels.hasRelatedObject;
-        repositoryObjectFactory.createRelationship(object, relation, relatedResource);
+        relatedResource.addProperty(relation, resource);
 
-        indexTriples(object, relatedObject);
         assertEquals(List.of(relatedObjectPid), repositoryObjectDriver.listRelated(object, relation));
     }
 
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
-            sparqlModel.add(obj.getResource().getModel());
-        }
+    @Test
+    public void listMembersTest() {
+        var object = mock(ContentObject.class);
+        var resource = sparqlModel.getResource(pid.getRepositoryPath());
+        when(object.getPid()).thenReturn(pid);
+        when(object.getResource()).thenReturn(resource);
+
+        var memberObjectPid = pidMinter.mintContentPid();
+        var memberResource = sparqlModel.getResource(memberObjectPid.getRepositoryPath());
+
+        var relation = PcdmModels.memberOf;
+        memberResource.addProperty(relation, resource);
+
+        assertEquals(List.of(memberObjectPid), repositoryObjectDriver.listMembers(object));
     }
 }
 
