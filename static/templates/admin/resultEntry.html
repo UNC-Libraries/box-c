@@ -34,6 +34,11 @@
 			<% } %>
 		</div>
 	</td>
+	<td class="collection_id">
+		<div title="<%= metadata.collectionId ? metadata.collectionId : '' %>">
+			<%= metadata.collectionId? metadata.collectionId.substring(0, metadata.collectionId.indexOf('T')) : '-' %>
+		</div>
+	</td>
 	<td class="creator">
 		<div>
 			<%= metadata.creator? metadata.creator[0] : '-' %><%= metadata.creator && metadata.creator.length > 1? '&nbsp;et al' : '' %> 

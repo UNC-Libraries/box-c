@@ -393,6 +393,10 @@
 	width: 100%;
 }
 
+result_table colgroup > .collection_id, .result_table .column_headers > .collection_id > a {
+	width: 120px;
+}
+
 .result_table colgroup > .creator, .result_table .column_headers > .creator > a {
 	width: 120px;
 }
