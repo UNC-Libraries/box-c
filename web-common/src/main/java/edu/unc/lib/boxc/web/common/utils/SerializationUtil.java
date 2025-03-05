@@ -140,6 +140,10 @@ public class SerializationUtil {
             result.put("type", metadata.getResourceType());
         }
 
+        if (metadata.getCollectionId() != null) {
+            result.put("collectionId", metadata.getCollectionId());
+        }
+
         if (metadata.getCreator() != null) {
             result.put("creator", metadata.getCreator());
         }
