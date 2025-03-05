@@ -14,10 +14,10 @@
                         <dt>{{ $t('full_record.date_added') }}</dt>
                         <dd>{{ formatDate(recordData.briefObject.added) }}</dd>
                     </template>
-                  <template v-if="fieldExists(recordData.briefObject.collectionId)">
-                    <dt>{{ $t('full_record.collection_id') }}</dt>
-                    <dd>{{ formatDate(recordData.briefObject.collectionId) }}</dd>
-                  </template>
+                    <template v-if="fieldExists(recordData.briefObject.collectionId)">
+                      <dt>{{ $t('full_record.collection_id') }}</dt>
+                      <dd>{{ formatDate(recordData.briefObject.collectionId) }}</dd>
+                    </template>
                     <template v-if="fieldExists(recordData.findingAidUrl)">
                         <dt>{{ $t('full_record.finding_aid') }}</dt>
                         <dd><a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a></dd>
