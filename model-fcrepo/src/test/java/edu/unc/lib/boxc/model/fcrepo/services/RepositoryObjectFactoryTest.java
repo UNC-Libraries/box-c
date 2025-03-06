@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,8 +19,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.update.UpdateAction;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -28,6 +31,8 @@ import org.fcrepo.client.PutBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
@@ -69,6 +74,8 @@ public class RepositoryObjectFactoryTest {
     private FcrepoResponse mockResponse;
     @Mock
     private PID pid;
+    @Captor
+    private ArgumentCaptor<String> sparqlCaptor;
 
     private RepositoryObjectFactoryImpl repoObjFactory;
     private PIDMinter pidMinter;
@@ -198,5 +205,73 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory.addMember(parent, member);
 
         verify(sparqlUpdateService).executeUpdate(eq(memberPid.getRepositoryPath()), anyString());
+    }
+
+    @Test
+    public void createExclusiveRelationshipNewTest() {
+        var fileObject = mock(FileObject.class);
+        var filePid = pidMinter.mintContentPid();
+        when(fileObject.getPid()).thenReturn(filePid);
+        Model objectModel = ModelFactory.createDefaultModel();
+        var fileResc = objectModel.getResource(filePid.getRepositoryPath());
+        when(fileObject.getModel(true)).thenReturn(objectModel);
+        when(fileObject.getMetadataUri()).thenReturn(filePid.getRepositoryUri());
+
+        repoObjFactory.createExclusiveRelationship(fileObject, Ebucore.filename, "afilename");
+
+        verify(sparqlUpdateService).executeUpdate(eq(filePid.getRepositoryPath()), sparqlCaptor.capture());
+        var sparql = sparqlCaptor.getValue();
+
+        // Verify that the sparql update action can be parsed and executed
+        UpdateAction.parseExecute(sparql, objectModel);
+        assertTrue(objectModel.contains(fileResc, Ebucore.filename, "afilename"));
+    }
+
+    @Test
+    public void createExclusiveRelationshipReplaceMultipleTest() {
+        var fileObject = mock(FileObject.class);
+        var filePid = pidMinter.mintContentPid();
+        when(fileObject.getPid()).thenReturn(filePid);
+        Model objectModel = ModelFactory.createDefaultModel();
+        var fileResc = objectModel.getResource(filePid.getRepositoryPath());
+        fileResc.addLiteral(Ebucore.filename, "oldfilename1");
+        fileResc.addLiteral(Ebucore.filename, "oldfilename2");
+        when(fileObject.getModel(true)).thenReturn(objectModel);
+        when(fileObject.getMetadataUri()).thenReturn(filePid.getRepositoryUri());
+
+        repoObjFactory.createExclusiveRelationship(fileObject, Ebucore.filename, "newfilename");
+
+        verify(sparqlUpdateService).executeUpdate(eq(filePid.getRepositoryPath()), sparqlCaptor.capture());
+        var sparql = sparqlCaptor.getValue();
+
+        // Verify that the sparql update action can be parsed and executed
+        UpdateAction.parseExecute(sparql, objectModel);
+        assertTrue(objectModel.contains(fileResc, Ebucore.filename, "newfilename"));
+        assertFalse(objectModel.contains(fileResc, Ebucore.filename, "oldfilename1"));
+        assertFalse(objectModel.contains(fileResc, Ebucore.filename, "oldfilename2"));
+    }
+
+    @Test
+    public void createExclusiveRelationshipReplaceContainingQuotesTest() {
+        var fileObject = mock(FileObject.class);
+        var filePid = pidMinter.mintContentPid();
+        when(fileObject.getPid()).thenReturn(filePid);
+        Model objectModel = ModelFactory.createDefaultModel();
+        var fileResc = objectModel.getResource(filePid.getRepositoryPath());
+        String oldName = "oldfilename1";
+        fileResc.addLiteral(Ebucore.filename, "oldfilename1");
+        when(fileObject.getModel(true)).thenReturn(objectModel);
+        when(fileObject.getMetadataUri()).thenReturn(filePid.getRepositoryUri());
+
+        String expectedName = "new\"file\"name";
+        repoObjFactory.createExclusiveRelationship(fileObject, Ebucore.filename, expectedName);
+
+        verify(sparqlUpdateService).executeUpdate(eq(filePid.getRepositoryPath()), sparqlCaptor.capture());
+        var sparql = sparqlCaptor.getValue();
+
+        // Verify that the sparql update action can be parsed and executed
+        UpdateAction.parseExecute(sparql, objectModel);
+        assertTrue(objectModel.contains(fileResc, Ebucore.filename, expectedName));
+        assertFalse(objectModel.contains(fileResc, Ebucore.filename, oldName));
     }
 }
