@@ -16,7 +16,6 @@ import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
@@ -40,20 +39,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -176,13 +171,18 @@ public class RepositoryObjectDriverTest {
         Assertions.assertThrows(FedoraException.class, () -> {
             var fileObject = mock(FileObjectImpl.class);
             var uri = URI.create("good/metadata");
+            var response = mock(FcrepoResponse.class);
             var get = mock(GetBuilder.class);
+            var model = ModelFactory.createDefaultModel();
+            var inputStream = RDFModelUtil.streamModel(model);
 
             when(fileObject.getMetadataUri()).thenReturn(uri);
             when(fileObject.getPid()).thenReturn(pid);
+            when(get.perform()).thenReturn(response);
             when(get.accept(any())).thenReturn(get);
             when(fcrepoClient.get(any())).thenReturn(get);
-            doThrow(new IOException("something is wrong")).when(get).perform();
+            when(response.getBody()).thenReturn(inputStream);
+            doThrow(new IOException("something is wrong")).when(response).close();
 
             repositoryObjectDriver.loadModel(fileObject, true);
         });
