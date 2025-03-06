@@ -145,6 +145,7 @@ public class RepositoryObjectDriverTest {
     public void loadModelCheckForUpdatesFalseTest() {
         var fileObject = mock(FileObjectImpl.class);
         when(fileObject.hasModel()).thenReturn(true);
+        when(fileObject.isUnmodified()).thenReturn(false);
 
         repositoryObjectDriver.loadModel(fileObject, false);
         verify(fileObject, never()).storeModel(any());
