@@ -121,7 +121,7 @@ public class SerializationUtil {
         }
 
         if (metadata.get_version_() != null) {
-            result.put(SearchFieldKey.VERSION.getUrlParam(), metadata.get_version_());
+            result.put("_version_", metadata.get_version_());
         }
 
         if (metadata.getStatus() != null && !metadata.getStatus().isEmpty()) {
