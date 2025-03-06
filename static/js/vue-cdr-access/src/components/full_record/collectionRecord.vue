@@ -16,7 +16,7 @@
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.collectionId)">
                       <dt>{{ $t('full_record.collection_id') }}</dt>
-                      <dd>{{ formatDate(recordData.briefObject.collectionId) }}</dd>
+                      <dd>{{ recordData.briefObject.collectionId }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.findingAidUrl)">
                         <dt>{{ $t('full_record.finding_aid') }}</dt>

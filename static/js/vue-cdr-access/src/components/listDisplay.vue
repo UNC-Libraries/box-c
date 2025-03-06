@@ -100,7 +100,7 @@ Renders search results in a list view display format
             },
 
             showCollection(record) {
-                return record.type !== 'AdminUnit' && record.type !== 'Collection' &&
+                return record.type !== 'AdminUnit' && record.type === 'Collection' &&
                     record.objectPath[2].collectionId !== null;
             }
         }
