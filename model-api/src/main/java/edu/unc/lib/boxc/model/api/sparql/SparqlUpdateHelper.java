@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.impl.LiteralImpl;
 
 /**
  * Helper methods for creating basic sparql update queries
@@ -122,7 +123,7 @@ public class SparqlUpdateHelper {
 
         StringBuilder query = new StringBuilder();
         query.append("DELETE { ");
-        if (previousValues != null && previousValues.size() > 0) {
+        if (previousValues != null && !previousValues.isEmpty()) {
             for (Object obj : previousValues) {
                 query.append(subjString).append(propertyString).append(getObjectAsString(obj)).append(" . \n");
             }
@@ -179,7 +180,7 @@ public class SparqlUpdateHelper {
         if (object instanceof Resource) {
             return '<' + ((Resource) object).getURI() + '>';
         } else if (object instanceof String) {
-            return '"' + object.toString() + '"';
+            return '"' + escapeSparqlString(object.toString()) + '"';
         } else if (object instanceof Literal) {
             Literal literal = (Literal) object;
             RDFDatatype type = literal.getDatatype();
@@ -194,6 +195,11 @@ public class SparqlUpdateHelper {
 
             return '"' + object.toString() + "\"^^<" + typeUri + ">";
         }
+    }
+
+    public static String escapeSparqlString(String input) {
+        return input.replace("\\", "\\\\")
+                .replace("\"", "\\\"")  ;
     }
 
     private static void addInsert(StringBuilder query, String subjUri, Property property,
