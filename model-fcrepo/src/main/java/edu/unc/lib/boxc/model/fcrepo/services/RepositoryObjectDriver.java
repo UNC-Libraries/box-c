@@ -99,8 +99,9 @@ public class RepositoryObjectDriver {
     public RepositoryObjectDriver loadModel(RepositoryObject obj, boolean checkForUpdates) throws FedoraException {
         long start = System.nanoTime();
         URI metadataUri = obj.getMetadataUri();
-        // Model needs to be loaded if not present, or if checkForUpdates is true and either in a tx or obj has changed
-        if (obj.hasModel() && !(checkForUpdates && (FedoraTransaction.isStillAlive() || !obj.isUnmodified()))) {
+        // Model does not need to be loaded if it is already present AND if checkForUpdates is false, OR
+        // if the tx is no longer alive or the object is unmodified
+        if (obj.hasModel() && (!checkForUpdates || (!FedoraTransaction.isStillAlive() || obj.isUnmodified()))) {
             log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
             return this;
         }
