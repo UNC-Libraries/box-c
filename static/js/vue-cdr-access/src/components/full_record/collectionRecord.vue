@@ -15,7 +15,7 @@
                         <dd>{{ formatDate(recordData.briefObject.added) }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.collectionId)">
-                      <dt>{{ $t('full_record.collection_id') }}</dt>
+                      <dt>{{ $t('display.collection_id') }}</dt>
                       <dd>{{ recordData.briefObject.collectionId }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.findingAidUrl)">
