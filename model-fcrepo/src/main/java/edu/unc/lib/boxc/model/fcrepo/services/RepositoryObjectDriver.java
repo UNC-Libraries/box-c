@@ -100,8 +100,8 @@ public class RepositoryObjectDriver {
         long start = System.nanoTime();
         URI metadataUri = obj.getMetadataUri();
         // Model does not need to be loaded if it is already present AND if checkForUpdates is false, OR
-        // if the tx is no longer alive or the object is unmodified
-        if (obj.hasModel() && (!checkForUpdates || (!FedoraTransaction.isStillAlive() || obj.isUnmodified()))) {
+        // checkForUpdates is true but the tx is no longer alive or the object is unmodified
+        if (obj.hasModel() && !(checkForUpdates && (FedoraTransaction.isStillAlive() || !obj.isUnmodified()))) {
             log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
             return this;
         }

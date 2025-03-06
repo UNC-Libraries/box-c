@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -38,6 +39,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,7 +137,7 @@ public class RepositoryObjectDriverTest {
         var fileObject = mock(FileObjectImpl.class);
         when(fileObject.hasModel()).thenReturn(true);
 
-        repositoryObjectDriver.loadModel(fileObject, true);
+        repositoryObjectDriver.loadModel(fileObject, false);
         verify(fileObject, never()).storeModel(any());
     }
 
@@ -149,11 +152,16 @@ public class RepositoryObjectDriverTest {
 
     @Test
     public void loadModelNoCurrentTransactionTest() {
-        var fileObject = mock(FileObjectImpl.class);
-        when(fileObject.hasModel()).thenReturn(true);
+        try (MockedStatic<FedoraTransaction> mockedStatic = Mockito.mockStatic(FedoraTransaction.class)) {
+            var fileObject = mock(FileObjectImpl.class);
+            when(fileObject.hasModel()).thenReturn(true);
+            when(fileObject.isUnmodified()).thenReturn(true);
+            mockedStatic.when(FedoraTransaction::isStillAlive).thenReturn(false);
 
-        repositoryObjectDriver.loadModel(fileObject, true);
-        verify(fileObject, never()).storeModel(any());
+            repositoryObjectDriver.loadModel(fileObject, true);
+            verify(fileObject, never()).storeModel(any());
+        }
+
     }
 
     @Test
