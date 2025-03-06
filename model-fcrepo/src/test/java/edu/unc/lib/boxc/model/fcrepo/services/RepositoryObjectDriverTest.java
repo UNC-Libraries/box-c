@@ -112,7 +112,7 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void loadModelTest() throws FcrepoOperationFailedException, IOException {
+    public void loadModelNoModelTest() throws FcrepoOperationFailedException, IOException {
         var fileObject = mock(FileObjectImpl.class);
         var uri = URI.create("good/metadata");
         var response = mock(FcrepoResponse.class);
@@ -133,19 +133,32 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void loadModelAlreadyHasModelTest() {
+    public void loadModelHasModelCheckForUpdatesTrueTest() throws FcrepoOperationFailedException, IOException {
         var fileObject = mock(FileObjectImpl.class);
-        when(fileObject.hasModel()).thenReturn(true);
+        var uri = URI.create("good/metadata");
+        var response = mock(FcrepoResponse.class);
+        var get = mock(GetBuilder.class);
+        var model = ModelFactory.createDefaultModel();
+        var inputStream = RDFModelUtil.streamModel(model);
 
-        repositoryObjectDriver.loadModel(fileObject, false);
-        verify(fileObject, never()).storeModel(any());
+        when(fileObject.getMetadataUri()).thenReturn(uri);
+        when(fileObject.getPid()).thenReturn(pid);
+        // object has been modified
+        when(fileObject.isUnmodified()).thenReturn(false);
+        when(get.perform()).thenReturn(response);
+        when(get.accept(any())).thenReturn(get);
+        when(fcrepoClient.get(any())).thenReturn(get);
+        when(response.getBody()).thenReturn(inputStream);
+
+        repositoryObjectDriver.loadModel(fileObject, true);
+        verify(fileObject).storeModel(any());
+        verify(fileObject).setEtag(any());
     }
 
     @Test
-    public void loadModelCheckForUpdatesFalseTest() {
+    public void loadModelHasModelCheckForUpdatesFalseTest() {
         var fileObject = mock(FileObjectImpl.class);
         when(fileObject.hasModel()).thenReturn(true);
-        when(fileObject.isUnmodified()).thenReturn(false);
 
         repositoryObjectDriver.loadModel(fileObject, false);
         verify(fileObject, never()).storeModel(any());
@@ -162,7 +175,6 @@ public class RepositoryObjectDriverTest {
             repositoryObjectDriver.loadModel(fileObject, true);
             verify(fileObject, never()).storeModel(any());
         }
-
     }
 
     @Test
