@@ -76,6 +76,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						"select" : {name : "", colClass : "narrow", dataType : "index", sortField : "collection"},
 						"resourceType" : {name : "", colClass : "narrow", sortField : "resourceType"},
 						"title" : {name : "Title", colClass : "itemdetails", dataType : "title", sortField : "title"},
+						"collectionId" : {name : "Collection Id", colClass : "collection_id", sortField : "collectionId"},
 						"creator" : {name : "Creator", colClass : "creator", sortField : "creator"},
 						"dateAdded" : {name : "Deposited", colClass : "date_added", sortField : "dateAdded"},
 						"dateModified" : {name : "Modified", colClass : "date_added", sortField : "dateUpdated"},

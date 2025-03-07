@@ -31,7 +31,8 @@ import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 @Controller
 public class ResultEntryController extends AbstractSearchController {
     private final List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(), SearchFieldKey.TITLE.name(),
-            SearchFieldKey.CREATOR.name(), SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(),
+            SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.CREATOR.name(),
+            SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(),
             SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.STREAMING_TYPE.name(),
             SearchFieldKey.STREAMING_URL.name(), SearchFieldKey.VERSION.name(), SearchFieldKey.ROLE_GROUP.name(),
