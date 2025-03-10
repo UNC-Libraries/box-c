@@ -2,24 +2,22 @@ package edu.unc.lib.boxc.auth.api.services;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmbargoUtilTest {
+    public static long ONE_MINUTE = 60000L;
     @Test
     public void isEmbargoActiveTrueTest() {
-        // 1900 + 2000 = 3900
-        var date = new Date( 2000, Calendar.FEBRUARY,1);
-        assertTrue(EmbargoUtil.isEmbargoActive(ldate));
+        var date = new Date(System.currentTimeMillis() + ONE_MINUTE);
+        assertTrue(EmbargoUtil.isEmbargoActive(date));
     }
 
     @Test
     public void isEmbargoActiveFalseTest() {
-        // 1900 + 100 = 2000
-        var date = new Date( 100, Calendar.FEBRUARY,1);
+        var date = new Date(System.currentTimeMillis() - ONE_MINUTE);
         assertFalse(EmbargoUtil.isEmbargoActive(date));
     }
 
