@@ -99,7 +99,8 @@ public class RepositoryObjectDriver {
     public RepositoryObjectDriver loadModel(RepositoryObject obj, boolean checkForUpdates) throws FedoraException {
         long start = System.nanoTime();
         URI metadataUri = obj.getMetadataUri();
-        // Model needs to be loaded if not present, or if checkForUpdates is true and either in a tx or obj has changed
+        // Model does not need to be loaded if it is already present AND if checkForUpdates is false, OR
+        // checkForUpdates is true but the tx is no longer alive or the object is unmodified
         if (obj.hasModel() && !(checkForUpdates && (FedoraTransaction.isStillAlive() || !obj.isUnmodified()))) {
             log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
             return this;
@@ -190,12 +191,12 @@ public class RepositoryObjectDriver {
      */
     public PID fetchContainer(RepositoryObject child, Property membershipRelation) {
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                membershipRelation, child.getPid().getURI());
+                membershipRelation, child.getPid().getRepositoryPath());
 
         try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
             ResultSet results = qexec.execSelect();
 
-            for (; results.hasNext();) {
+            while (results.hasNext()) {
                 QuerySolution soln = results.nextSolution();
                 Resource res = soln.getResource("pid");
 
@@ -229,7 +230,7 @@ public class RepositoryObjectDriver {
     public List<PID> listRelated(RepositoryObject obj, Property relation) {
         PID pid = obj.getPid();
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                relation, pid.getURI());
+                relation, pid.getRepositoryPath());
         return SparqlListingHelper.listPids(sparqlQueryService, queryString);
     }
 
@@ -254,17 +255,17 @@ public class RepositoryObjectDriver {
     public PID getParentPid(RepositoryObject obj) {
         if (obj instanceof BinaryObject) {
             return fetchContainer(obj, PcdmModels.hasFile);
-        } else if (obj instanceof ContentObject) {
+        }
+        if (obj instanceof ContentObject) {
             // For resources in the membership hierarchy, use reverse membership
             Statement memberOf = obj.getResource().getProperty(PcdmModels.memberOf);
             if (memberOf != null) {
                 return PIDs.get(memberOf.getObject().toString());
             }
-        } else {
-            throw new ObjectTypeMismatchException("Unable to get parent object for " + obj.getPid()
-                    + ", resources of type " + obj.getClass().getName() + " are not eligible.");
+            throw new OrphanedObjectException("Cannot find a parent container for object " + obj.getPid());
         }
-        throw new OrphanedObjectException("Cannot find a parent container for object " + obj.getPid());
+        throw new ObjectTypeMismatchException("Unable to get parent object for " + obj.getPid()
+                + ", resources of type " + obj.getClass().getName() + " are not eligible.");
     }
 
     /**
