@@ -6,7 +6,6 @@
 				<colgroup>
 					<% _.each(resultFields, function(resultField) { %>
 						<% if (resultField.colClass == "collection_id" && container.type != "AdminUnit") { %>
-							<col class="<%= resultField.colClass %>" style="display:none">
 						<% } else { %>
 							<col class="<%= resultField.colClass %>">
 					<% }}); %>
@@ -15,8 +14,6 @@
 					<tr class="column_headers">
 						<% _.each(resultFields, function(resultField) { %>
 							<% if (resultField.colClass == "collection_id" && container.type != "AdminUnit") { %>
-								<th class="<%= resultField.colClass
-										%><%= ('sortField' in resultField)? ' sort_col' : '' %>" style="display:none"></th>
 							<% } else { %>
 								<th class="<%= resultField.colClass%><%= ('sortField' in resultField)? ' sort_col' : '' %>" <%=
 								('sortField' in resultField)? ' data-field="' + resultField.sortField + '"' : '' %> <%=
