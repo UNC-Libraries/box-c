@@ -393,6 +393,10 @@
 	width: 100%;
 }
 
+.result_table colgroup > .collection_id, .result_table .column_headers > .collection_id > a {
+	width: 120px;
+}
+
 .result_table colgroup > .creator, .result_table .column_headers > .creator > a {
 	width: 120px;
 }
@@ -469,6 +473,14 @@
 
 .itemdetails > div > .warning_symbol {
 	font-size: 110%;
+}
+
+.res_entry > .collection_id > div {
+	font-size: 70%;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	width: 114px;
 }
 
 .res_entry > .creator > div {
