@@ -67,8 +67,8 @@ public class ExportCsvServiceTest {
         var outputStream = mock(OutputStream.class);
         var object = mock(ContentObjectRecord.class);
 
-        when(solrQueryLayerService.addSelectedContainer(eq(pid), any(), any(), eq(principals)))
-                .thenReturn(object);
+        when(solrQueryLayerService.addSelectedContainer(
+                any(), any(), any(), any())).thenReturn(object);
         exportCsvService.streamCsv(pids, agent, outputStream);
         verify(accessControlService).assertHasAccess(eq(pid), eq(principals), eq(viewHidden));
     }
