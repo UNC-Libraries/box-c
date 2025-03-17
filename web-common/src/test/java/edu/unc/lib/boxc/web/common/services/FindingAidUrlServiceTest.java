@@ -63,7 +63,7 @@ public class FindingAidUrlServiceTest {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         String collId = "55555";
-        assertEquals(BASE_URL + collId + "/", service.getFindingAidUrl(collId));
+        assertEquals(BASE_URL + collId, service.getFindingAidUrl(collId));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class FindingAidUrlServiceTest {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         String collId = "55555 oh+no";
-        assertEquals(BASE_URL + "55555%20oh+no/", service.getFindingAidUrl(collId));
+        assertEquals(BASE_URL + "55555%20oh+no", service.getFindingAidUrl(collId));
     }
 
     @Test
