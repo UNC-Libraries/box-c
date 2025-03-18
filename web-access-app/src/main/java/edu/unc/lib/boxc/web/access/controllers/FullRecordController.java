@@ -78,7 +78,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     protected static final String VIEWER_TYPE = "viewerType";
     protected static final String STREAMING_URL = "streamingUrl";
     protected static final String STREAMING_TYPE = "streamingType";
-    private static final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
     protected static final String AV_MIMETYPE_REGEX = "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")";
 
     @Autowired
