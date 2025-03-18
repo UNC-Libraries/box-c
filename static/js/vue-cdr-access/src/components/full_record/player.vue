@@ -75,8 +75,7 @@ export default {
     },
 
     beforeMount() {
-        const license_key = import.meta.env.VITE_VPV_LICENSE ?? '';
-        useLicense(license_key);
+        useLicense(window.pdfViewerLicense);
     },
 
     mounted() {
