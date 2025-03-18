@@ -16,7 +16,7 @@
 
 <script>
 import { applyPureReactInVue } from 'veaury';
-import { VPdfViewer } from '@vue-pdf-viewer/viewer';
+import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
 import Viewer from '@samvera/clover-iiif/viewer';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
@@ -74,7 +74,11 @@ export default {
         }
     },
 
-  mounted() {
+    beforeMount() {
+        useLicense(window.pdfViewerLicense);
+    },
+
+    mounted() {
     let port = location.port;
     if (port !== '') {
       port = `:${port}`;
