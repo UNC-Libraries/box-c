@@ -7,16 +7,16 @@
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
-          <div :style="{ width: 'auto', height: '700px'}">
-            <VPdfViewer :src="src"/>
-          </div>
+            <div :style="{ width: 'auto', height: '700px'}">
+                <VPdfViewer :src="src"/>
+            </div>
         </template>
     </div>
 </template>
 
 <script>
 import { applyPureReactInVue } from 'veaury';
-import { VPdfViewer } from '@vue-pdf-viewer/viewer';
+import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
 import Viewer from '@samvera/clover-iiif/viewer';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
@@ -34,11 +34,11 @@ export default {
         recordData: Object
     },
 
-  data() {
-    return {
-      src: '',
-    };
-  },
+    data() {
+        return {
+            src: '',
+        };
+    },
 
     computed: {
         pdfFileAcceptableForDisplay() {
@@ -74,19 +74,24 @@ export default {
         }
     },
 
-  mounted() {
-    let port = location.port;
-    if (port !== '') {
-      port = `:${port}`;
-    }
+    beforeMount() {
+        const license_key = import.meta.env.VITE_VPV_LICENSE ?? '';
+        useLicense(license_key);
+    },
 
-    this.src = `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
-  }
+    mounted() {
+        let port = location.port;
+        if (port !== '') {
+            port = `:${port}`;
+        }
+
+        this.src = `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
+    }
 }
 </script>
 
 <style lang="scss">
-  .vpv-container {
+.vpv-container {
     padding-top: 25px;
-  }
+}
 </style>
