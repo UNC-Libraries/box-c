@@ -20,6 +20,7 @@
         "datatables.net-vue3": "^3.0.2",
         "date-fns": "^2.30.0",
         "date-fns-tz": "^2.0.0",
+        "estree-walker": "^2.0.2",
         "lodash.chunk": "^4.2.0",
         "lodash.clonedeep": "^4.5.0",
         "lodash.debounce": "^4.0.8",
