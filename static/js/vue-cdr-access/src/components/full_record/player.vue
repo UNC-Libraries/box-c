@@ -26,7 +26,7 @@ const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
 export default {
     name: 'player',
 
-    components: {streamingPlayer, VPdfViewer, useLicense, clover: applyPureReactInVue(Viewer) },
+    components: {streamingPlayer, VPdfViewer, clover: applyPureReactInVue(Viewer) },
 
     mixins: [permissionUtils],
 
