@@ -7,8 +7,8 @@
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
-          <div :style="{ width: 'auto', height: '700px'}">
-            <VPdfViewer :src="src"/>
+          <div class="boxc-pdf-viewer">
+            <VPdfViewer :src="pdfPath"/>
           </div>
         </template>
     </div>
@@ -34,11 +34,11 @@ export default {
         recordData: Object
     },
 
-  data() {
-    return {
-      src: '',
-    };
-  },
+    data() {
+      return {
+        src: '',
+      };
+    },
 
     computed: {
         pdfFileAcceptableForDisplay() {
@@ -52,10 +52,16 @@ export default {
             return file_size <= MAX_PDF_VIEWER_FILE_SIZE;
         },
 
+        baseUrl() {
+            const url_info = window.location;
+            const port = url_info.port !== '' ? `:${url_info.port}` : '';
+            return `${url_info.hostname}${port}`;
+        },
+
         manifestPath() {
             const url_info = window.location;
             const port = url_info.port !== '' ? `:${url_info.port}` : '';
-            return `https://${url_info.hostname}${port}/services/api/iiif/v3/${this.recordData.briefObject.id}/manifest`
+            return `https://${this.baseUrl}/services/api/iiif/v3/${this.recordData.briefObject.id}/manifest`
         },
 
         cloverOptions() {
@@ -71,26 +77,32 @@ export default {
                 },
                 showIIIFBadge: false
             }
+        },
+
+        pdfPath() {
+            return `https://${this.baseUrl}}/indexablecontent/${this.recordData.viewerPid}`;
         }
     },
 
     beforeMount() {
         useLicense(window.pdfViewerLicense);
-    },
-
-    mounted() {
-    let port = location.port;
-    if (port !== '') {
-      port = `:${port}`;
     }
-
-    this.src = `https://${location.hostname}${port}/indexablecontent/${this.recordData.briefObject.id}`;
-  }
 }
 </script>
 
 <style lang="scss">
   .vpv-container {
     padding-top: 25px;
+  }
+
+  .boxc-pdf-viewer {
+      height: 700px;
+      width: auto;
+  }
+
+  @media (max-width: 768px) {
+      .boxc-pdf-viewer {
+          height: 100vh;
+      }
   }
 </style>

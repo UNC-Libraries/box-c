@@ -3,29 +3,20 @@ package edu.unc.lib.boxc.web.access.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
-import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
-import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
-import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
-import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,11 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -80,34 +69,15 @@ public class FullRecordControllerTest {
     @Mock
     private NeighborQueryService neighborService;
     @Mock
-    private GetCollectionIdService collectionIdService;
-    @Mock
-    private FindingAidUrlService findingAidUrlService;
-    @Mock
     private AccessCopiesService accessCopiesService;
     @Mock
     private WorkFilesizeService workFilesizeService;
-    @Mock
-    private XmlDocumentFilteringService xmlDocumentFilteringService;
-    @Mock
-    private ObjectAclFactory objectAclFactory;
-
-    @Mock
-    private XSLViewResolver xslViewResolver;
-    @Mock
-    private RepositoryObjectLoader repositoryObjectLoader;
-
     @Mock
     protected SolrQueryLayerService queryLayer;
     @Mock
     protected SearchSettings searchSettings;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
-    @Mock
-    protected SearchStateFactory searchStateFactory;
-    @Mock
-    private SetFacetTitleByIdService setFacetTitleByIdService;
-
     @Mock
     private ContentObjectRecord briefObject;
     @Mock
@@ -129,76 +99,6 @@ public class FullRecordControllerTest {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestWorkWithPdf() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(childBriefObject.getId()).thenReturn(PID_2);
-        when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(childBriefObject);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("viewerPid", PID_2))
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestWorkWithNoPdf() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(null);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isNotFound())
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestPdfFile() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(PID_1);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("viewerPid", PID_1))
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestNonPdfFile() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(null);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestNoPermission() throws Exception {
-        var pid = PIDs.get(PID_1);
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        doThrow(new AccessRestrictionException("No permission")).when(aclService).assertHasAccess(
-                any(), eq(pid), any(), eq(Permission.viewOriginal));
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isForbidden())
-                .andReturn();
     }
 
     @Test
