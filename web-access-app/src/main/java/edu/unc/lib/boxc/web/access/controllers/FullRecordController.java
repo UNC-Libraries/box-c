@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +61,6 @@ import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIM
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -157,7 +155,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
     /**
      * JSON representation of full record
-     * Can remove the non-JSON version of the full record once all JSP files are ported over
      * @param pidString
      * @return
      */
