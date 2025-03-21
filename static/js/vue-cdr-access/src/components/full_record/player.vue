@@ -80,7 +80,7 @@ export default {
         },
 
         pdfPath() {
-            return `https://${this.baseUrl}}/indexablecontent/${this.recordData.viewerPid}`;
+            return `https://${this.baseUrl}/indexablecontent/${this.recordData.viewerPid}`;
         }
     },
 
