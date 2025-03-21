@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +61,6 @@ import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIM
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -78,7 +76,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     protected static final String VIEWER_TYPE = "viewerType";
     protected static final String STREAMING_URL = "streamingUrl";
     protected static final String STREAMING_TYPE = "streamingType";
-    private static final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
     protected static final String AV_MIMETYPE_REGEX = "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")";
 
     @Autowired
@@ -158,7 +155,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
     /**
      * JSON representation of full record
-     * Can remove the non-JSON version of the full record once all JSP files are ported over
      * @param pidString
      * @return
      */
@@ -258,41 +254,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
         recordProperties.put("pageSubtitle", briefObject.getTitle());
         return SerializationUtil.objectToJSON(recordProperties);
-    }
-
-    @GetMapping("/{pid}/pdfViewer")
-    public String handlePdfViewerRequest(@PathVariable("pid") String pidString, Model model,
-                                         HttpServletRequest request) {
-        PID pid = PIDs.get(pidString);
-
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewOriginal);
-
-        // Retrieve the object's record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
-        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
-
-        String viewerPid;
-        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            var child = accessCopiesService.getFirstMatchingChild(briefObject,
-                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals);
-            if (child == null) {
-                throw new NotFoundException("Cannot find child PDF for " + pidString);
-            }
-            viewerPid = child.getId();
-        } else {
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-            if (viewerPid == null) {
-                throw new IllegalArgumentException("Resource is not a PDF: " + pidString);
-            }
-        }
-
-        model.addAttribute(VIEWER_PID, viewerPid);
-        model.addAttribute("briefObject", briefObject);
-        model.addAttribute("template", "ajax");
-
-        return "fullRecord/pdfViewer";
     }
 
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {

@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import player from '@/components/full_record/player.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import { VPdfViewer } from '@vue-pdf-viewer/viewer';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
@@ -151,7 +152,7 @@ describe('player.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('iframe').exists()).toBe(true);
+        expect(wrapper.findComponent(VPdfViewer).exists()).toBe(true);
     });
 
     it("does not display viewer for pdfs larger than the max allowed size", async () => {
@@ -164,7 +165,7 @@ describe('player.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('iframe').exists()).toBe(false);
+        expect(wrapper.findComponent(VPdfViewer).exists()).toBe(false);
     });
 
     it("uses the streaming player for streaming files", async () => {

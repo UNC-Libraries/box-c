@@ -11,11 +11,13 @@ module.exports = {
     customExportConditions: ['node', 'node-addons'],
     url: 'https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a'
   },
+  "transformIgnorePatterns": ["node_modules/pdf-js-dist"],
   transform: {
     "^.+\\.vue$": "@vue/vue3-jest",
     "^.+\\js$": "babel-jest"
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(jpg|jpeg|png|gif|svg|webp)$': '<rootDir>/__mocks__/fileMock.js'
   }
 };

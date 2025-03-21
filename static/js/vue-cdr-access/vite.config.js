@@ -18,7 +18,8 @@ export default defineConfig({
             output: {
                 entryFileNames: `assets/access/vue-access-[name].js`,
                 chunkFileNames: `assets/access/vue-access-[name].js`,
-                assetFileNames: `assets/access/[name].[ext]`
+                assetFileNames: `assets/access/[name].[ext]`,
+                inlineDynamicImports: true
             }
         }
     },

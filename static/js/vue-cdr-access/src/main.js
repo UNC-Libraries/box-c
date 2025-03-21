@@ -27,6 +27,7 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
 
     // Set this here as it gives a build error otherwise
     window.matomoSiteSrcUrl = import.meta.env.VITE_MATOMO_SITE_SRC_URL || '';
+    window.pdfViewerLicense = import.meta.env.VITE_VPV_LICENSE || ''
 
     window.dcr_browse_records = createApp({
         render() {
