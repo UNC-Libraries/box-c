@@ -8,7 +8,7 @@
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
           <div id="vpv" class="boxc-pdf-viewer">
-            <VPdfViewer ref="vpvRef" :src="pdfPath" :initial-scale="2"/>
+            <VPdfViewer ref="vpvRef" :src="pdfPath" :initial-scale="initialZoom"/>
           </div>
         </template>
     </div>
@@ -82,7 +82,7 @@ export default {
         },
 
         initialZoom() {
-            return ZoomControl.zoom(ZoomLevel.PageWidth)
+            return ZoomLevel.PageWidth
         }
     },
 
