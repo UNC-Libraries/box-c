@@ -8,7 +8,7 @@
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
           <div class="boxc-pdf-viewer">
-            <VPdfViewer :src="pdfPath"/>
+            <VPdfViewer :src="pdfPath" :initial-scale="1"/>
           </div>
         </template>
     </div>
@@ -59,8 +59,6 @@ export default {
         },
 
         manifestPath() {
-            const url_info = window.location;
-            const port = url_info.port !== '' ? `:${url_info.port}` : '';
             return `https://${this.baseUrl}/services/api/iiif/v3/${this.recordData.briefObject.id}/manifest`
         },
 
