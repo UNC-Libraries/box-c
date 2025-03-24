@@ -7,8 +7,8 @@
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
-          <div class="boxc-pdf-viewer">
-            <VPdfViewer :src="pdfPath" :initial-scale="1"/>
+          <div id="vpv" class="boxc-pdf-viewer">
+            <VPdfViewer ref="vpvRef" :src="pdfPath" :initial-scale="initialZoom"/>
           </div>
         </template>
     </div>
@@ -16,7 +16,8 @@
 
 <script>
 import { applyPureReactInVue } from 'veaury';
-import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
+import { VPdfViewer, useLicense, ZoomLevel } from '@vue-pdf-viewer/viewer';
+import { ref, unref } from 'vue';
 import Viewer from '@samvera/clover-iiif/viewer';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
@@ -41,6 +42,10 @@ export default {
     },
 
     computed: {
+        zoomControl() {
+            return vpvRef.value?.zoomControl
+        },
+
         pdfFileAcceptableForDisplay() {
             const original_file = this.recordData.briefObject.datastream.find(file => file.startsWith('original_file'));
             if (original_file === undefined) {
@@ -79,6 +84,12 @@ export default {
 
         pdfPath() {
             return `https://${this.baseUrl}/indexablecontent/${this.recordData.viewerPid}`;
+        },
+
+        initialZoom() {
+            const zoomCtrl = unref(this.zoomControl)
+            if (!zoomCtrl) return
+            zoomCtrl.zoom(ZoomLevel.PageWidth)
         }
     },
 
