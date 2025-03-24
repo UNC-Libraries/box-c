@@ -9,25 +9,28 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static edu.unc.lib.boxc.auth.api.Permission.ingest;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -41,6 +44,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class ExportCsvServiceTest {
     private static final String BASE_URL = "http://example.com/";
+    private static final String WORK_ID = "5d72b84a-983c-4a45-8caa-dc9857987da2";
     @Mock
     private SolrQueryLayerService solrQueryLayerService;
     @Mock
@@ -56,9 +60,8 @@ public class ExportCsvServiceTest {
     @Mock
     private ContentObjectRecord object;
     @Mock
-    private OutputStream outputStream;
-    @Mock
     private SearchResultResponse response;
+    private ByteArrayOutputStream outputStream;
     private AutoCloseable closeable;
     private PID pid;
     private ExportCsvService exportCsvService;
@@ -77,6 +80,7 @@ public class ExportCsvServiceTest {
         exportCsvService.setRepositoryObjectLoader(repositoryObjectLoader);
         exportCsvService.setBaseUrl(BASE_URL);
         resultList = new ArrayList<>();
+        outputStream = new ByteArrayOutputStream();
 
         when(agent.getPrincipals()).thenReturn(principals);
         when(response.getResultList()).thenReturn(resultList);
@@ -101,12 +105,37 @@ public class ExportCsvServiceTest {
         when(object.getTitle()).thenReturn("a good title");
         when(object.getAncestorNames()).thenReturn("name");
         when(object.getAncestorPathFacet()).thenReturn(facet);
+        when(object.getRoleGroup()).thenReturn(Arrays.asList("curator|admin", "patron|public"));
+        when(object.getContentStatus()).thenReturn(List.of(FacetConstants.CONTENT_NOT_DESCRIBED));
         when(facet.getHighestTier()).thenReturn(1);
 
         exportCsvService.streamCsv(pids, agent, outputStream);
         verify(accessControlService).assertHasAccess(
                 any(), eq(pid), eq(principals), eq(viewHidden));
         verify(childrenCountService).addChildrenCounts(any(), any());
+        var result = outputStream.toString(StandardCharsets.UTF_8);
+        assertFalse(result.isBlank());
+    }
+
+    @Test
+    public void testStreamCsvFileObject() {
+        var searchResponse = mock(SearchResultResponse.class);
+        var facet = mock(CutoffFacet.class);
+        var facetNode = mock(CutoffFacetNode.class);
+
+        when(solrQueryLayerService.addSelectedContainer(
+                any(), any(), anyBoolean(), any())).thenReturn(object);
+        when(solrQueryLayerService.getSearchResults(any())).thenReturn(searchResponse);
+        when(object.getResourceType()).thenReturn(ResourceType.File.name());
+        when(object.getId()).thenReturn(pid.getId());
+        when(object.getTitle()).thenReturn("a good title");
+        when(object.getAncestorNames()).thenReturn("/Root/Unit/Collection/Folder/Work/File");
+        when(object.getContentStatus()).thenReturn(List.of(FacetConstants.CONTENT_DESCRIBED));
+        when(object.getAncestorPathFacet()).thenReturn(facet);
+        when(facet.getHighestTier()).thenReturn(1);
+        when(facet.getHighestTierNode()).thenReturn(facetNode);
+        when(facetNode.getSearchKey()).thenReturn(WORK_ID);
+        exportCsvService.streamCsv(pids, agent, outputStream);
     }
 
     @Test
