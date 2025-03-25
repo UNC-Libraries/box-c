@@ -8,7 +8,7 @@
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
           <div id="vpv" class="boxc-pdf-viewer">
-            <VPdfViewer :src="pdfPath" :initial-scale="pageWidth"/>
+            <VPdfViewer :src="pdfPath" initial-scale="pageWidth"/>
           </div>
         </template>
     </div>
