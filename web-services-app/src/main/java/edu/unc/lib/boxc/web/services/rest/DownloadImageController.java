@@ -77,7 +77,7 @@ public class DownloadImageController {
 
         try {
             analyticsTracker.trackEvent(request, "download access copy", pid, principals);
-            return downloadImageService.streamImage(contentObjectRecord, validatedSize, true);
+            return downloadImageService.streamDownload(contentObjectRecord, validatedSize);
         } catch (IOException e) {
             log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
         }
