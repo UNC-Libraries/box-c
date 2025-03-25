@@ -38,6 +38,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -135,7 +136,13 @@ public class ExportCsvServiceTest {
         when(facet.getHighestTier()).thenReturn(1);
         when(facet.getHighestTierNode()).thenReturn(facetNode);
         when(facetNode.getSearchKey()).thenReturn(WORK_ID);
+
         exportCsvService.streamCsv(pids, agent, outputStream);
+        verify(accessControlService).assertHasAccess(
+                any(), eq(pid), eq(principals), eq(viewHidden));
+        verify(childrenCountService).addChildrenCounts(any(), any());
+        var result = outputStream.toString(StandardCharsets.UTF_8);
+        assertFalse(result.isBlank());
     }
 
     @Test
