@@ -60,6 +60,26 @@
         <groupId>org.apache.activemq</groupId>
         <artifactId>activemq-client</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-jms</artifactId>
+        <version>${camel.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-spring</artifactId>
+        <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-pool</artifactId>
+        <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
+        <version>3.1.0</version>
+    </dependency>
 
     <dependency>
         <groupId>commons-io</groupId>
@@ -191,6 +211,11 @@
         <groupId>com.sun.xml.bind</groupId>
         <artifactId>jaxb-impl</artifactId>
         <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${javax.annotation.version}</version>
     </dependency>
 
     <!-- Testing -->

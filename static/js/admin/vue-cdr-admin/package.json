@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "axios": "^1.8.2",
     "datatables.net": "^2.1.6",
     "datatables.net-bm": "^2.1.6",
     "datatables.net-searchpanes-bm": "^2.3.2",
@@ -39,6 +39,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "moxios": "^0.4.0",
     "sass": "^1.77.8",
-    "vite": "4.5.5"
+    "vite": "4.5.9"
   }
 }

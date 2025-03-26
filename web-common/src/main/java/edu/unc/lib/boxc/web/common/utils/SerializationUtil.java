@@ -113,11 +113,11 @@ public class SerializationUtil {
         }
 
         if (metadata.getId() != null) {
-            result.put("id", metadata.getId());
+            result.put(SearchFieldKey.ID.getUrlParam(), metadata.getId());
         }
 
         if (metadata.getTitle() != null) {
-            result.put("title", metadata.getTitle());
+            result.put(SearchFieldKey.TITLE.getUrlParam(), metadata.getTitle());
         }
 
         if (metadata.get_version_() != null) {
@@ -125,27 +125,31 @@ public class SerializationUtil {
         }
 
         if (metadata.getStatus() != null && !metadata.getStatus().isEmpty()) {
-            result.put("status", metadata.getStatus());
+            result.put(SearchFieldKey.STATUS.getUrlParam(), metadata.getStatus());
         }
 
         if (metadata.getContentStatus() != null && !metadata.getContentStatus().isEmpty()) {
-            result.put("contentStatus", metadata.getContentStatus());
+            result.put(SearchFieldKey.CONTENT_STATUS.getUrlParam(), metadata.getContentStatus());
         }
 
         if (metadata.getSubject() != null) {
-            result.put("subject", metadata.getSubject());
+            result.put(SearchFieldKey.SUBJECT.getUrlParam(), metadata.getSubject());
         }
 
         if (metadata.getResourceType() != null) {
-            result.put("type", metadata.getResourceType());
+            result.put(SearchFieldKey.RESOURCE_TYPE.getUrlParam(), metadata.getResourceType());
+        }
+
+        if (metadata.getCollectionId() != null) {
+            result.put(SearchFieldKey.COLLECTION_ID.getUrlParam(), metadata.getCollectionId());
         }
 
         if (metadata.getCreator() != null) {
-            result.put("creator", metadata.getCreator());
+            result.put(SearchFieldKey.CREATOR.getUrlParam(), metadata.getCreator());
         }
 
         if (metadata.getDatastream() != null) {
-            result.put("datastream", metadata.getDatastream());
+            result.put(SearchFieldKey.DATASTREAM.getUrlParam(), metadata.getDatastream());
         }
 
         if (metadata.getFileFormatCategory() != null) {
@@ -161,7 +165,7 @@ public class SerializationUtil {
         }
 
         if (metadata.getFilesizeSort() != null) {
-            result.put("filesizeTotal", metadata.getFilesizeSort());
+            result.put(SearchFieldKey.FILESIZE.getUrlParam(), metadata.getFilesizeSort());
         }
 
         if (metadata.getAbstractText() != null) {

@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import JP2ImageConverter.errors.CommandException;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -43,6 +44,10 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
 
         uuidGenerator = new DefaultUuidGenerator();
+
+        onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+                .maximumRedeliveries(0)
+                .log(LoggingLevel.ERROR, "${exception.message}");
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")

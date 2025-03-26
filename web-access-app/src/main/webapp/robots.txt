@@ -1,9 +1,9 @@
 User-agent: *
 Disallow: /content
-Disallow: /jp2Proxy
-Disallow: /sort
 Disallow: /Shibboleth.sso
-Disallow: /searchJson
-Disallow: /structure
-Disallow: /iiif/v3
-Disallow: /downloadImage
+Disallow: /api/searchJson
+Disallow: /api/advancedSearch
+Disallow: /services/api/iiif
+Disallow: /services/api/downloadImage
+
+Crawl-delay: 5

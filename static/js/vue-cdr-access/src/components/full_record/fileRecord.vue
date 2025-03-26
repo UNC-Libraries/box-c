@@ -30,9 +30,9 @@
                         <dt>{{ $t('full_record.creator') }}</dt>
                         <dd>{{ recordData.briefObject.creator.join('; ') }}</dd>
                     </template>
-                    <template v-if="fieldExists(recordData.briefObject.filesizeTotal)">
+                    <template v-if="fieldExists(recordData.briefObject.filesize)">
                         <dt>{{ $t('full_record.filesize') }}</dt>
-                        <dd>{{ formatFilesize(recordData.briefObject.filesizeTotal) }}</dd>
+                        <dd>{{ formatFilesize(recordData.briefObject.filesize) }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.created)">
                         <dt>{{ $t('full_record.date_created') }}</dt>

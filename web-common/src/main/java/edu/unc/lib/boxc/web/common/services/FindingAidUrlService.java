@@ -50,7 +50,7 @@ public class FindingAidUrlService {
                     public Optional<String> load(String key) throws Exception {
                         String baseCollId = key.replace("-z", "");
                         baseCollId = UriUtils.encodePath(baseCollId, StandardCharsets.UTF_8);
-                        String url = URIUtil.join(findingAidBaseUrl, baseCollId) + "/";
+                        String url = URIUtil.join(findingAidBaseUrl, baseCollId);
                         HttpHead req = new HttpHead(url);
                         try (CloseableHttpResponse resp = httpClient.execute(req)) {
                             StatusLine statusLine = resp.getStatusLine();

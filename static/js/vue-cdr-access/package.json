@@ -12,7 +12,7 @@
         "@samvera/clover-iiif": "^2.10.2",
         "@vue-pdf-viewer/viewer": "^2.3.0",
         "@vueuse/head": "^2.0.0",
-        "axios": "^1.7.7",
+        "axios": "^1.8.4",
         "canvas": "^2.11.2",
         "datatables.net": "^2.1.8",
         "datatables.net-bm": "^2.1.8",
@@ -31,7 +31,7 @@
         "pinia": "^2.2.4",
         "veaury": "^2.5.1",
         "vue": "^3.5.12",
-        "vue-i18n": "^10.0.5",
+        "vue-i18n": "^10.0.6",
         "vue-router": "^4.4.5"
     },
     "devDependencies": {
@@ -54,6 +54,6 @@
         "moxios": "^0.4.0",
         "pretty": "^2.0.0",
         "sass": "^1.69.7",
-        "vite": "4.5.9"
+        "vite": "4.5.10"
     }
 }

@@ -55,7 +55,7 @@
   </mods:physicalDescription>
   <mods:relatedItem type="isReferencedBy">
     <mods:location>
-      <mods:url displayLabel="Link to finding aid">https://finding-aids.lib.unc.edu/1234</mods:url>
+      <mods:url displayLabel="Link to finding aid">https://finding-aids.lib.unc.edu/catalog/1234</mods:url>
     </mods:location>
   </mods:relatedItem>
   <mods:relatedItem type="isReferencedBy" displayLabel="Digital Exhibit">

@@ -189,7 +189,7 @@ public class FileObjectImpl extends AbstractContentObject implements FileObject 
 
         StmtIterator it = resc.listProperties(PcdmModels.hasFile);
         try {
-            for (; it.hasNext(); ) {
+            while (it.hasNext()) {
                 PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
 
                 if (binaryPid.getComponentPath().endsWith("/" + name)) {
