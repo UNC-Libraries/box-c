@@ -177,8 +177,8 @@ public class TestCorpus {
         newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid3, pid7));
         newDoc.addField("resourceType", ResourceType.File.name());
         List<String> fileDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum||120x120",
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid7File.getId() + "|120x120");
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum||170x120",
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|766||" + pid7File.getId() + "|170x120");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), fileDatastreams);
         newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
         newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");

@@ -181,8 +181,8 @@ public class DownloadImageService {
         if (isInvalidJP2Datastream(contentObjectRecord)) {
             return true;
         }
-        var shortestSide = getShortestSide(contentObjectRecord);
-        return shortestSide < Integer.parseInt(size);
+        var longestSide = getLongestSide(contentObjectRecord);
+        return longestSide < Integer.parseInt(size);
     }
 
     private int[] getImageDimensions(ContentObjectRecord contentObjectRecord) {
@@ -202,14 +202,6 @@ public class DownloadImageService {
         }
 
         return Math.max(extent[0], extent[1]);
-    }
-
-    private int getShortestSide(ContentObjectRecord contentObjectRecord) {
-        var extent = getImageDimensions(contentObjectRecord);
-        if (extent.length == 0) {
-            return 0;
-        }
-        return Math.min(extent[0], extent[1]);
     }
 
     private String getPlaceholderUrl(String size) {
