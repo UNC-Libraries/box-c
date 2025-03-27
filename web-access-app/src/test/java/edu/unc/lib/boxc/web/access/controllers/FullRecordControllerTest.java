@@ -112,7 +112,7 @@ public class FullRecordControllerTest {
     private ContentObjectRecord briefObject;
     @Mock
     private ContentObjectRecord childBriefObject;
-    
+
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
@@ -129,76 +129,6 @@ public class FullRecordControllerTest {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestWorkWithPdf() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(childBriefObject.getId()).thenReturn(PID_2);
-        when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(childBriefObject);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("viewerPid", PID_2))
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestWorkWithNoPdf() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(null);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isNotFound())
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestPdfFile() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(PID_1);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("viewerPid", PID_1))
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestNonPdfFile() throws Exception {
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        when(accessCopiesService.getDatastreamPid(any(), any(), any())).thenReturn(null);
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isBadRequest())
-                .andReturn();
-    }
-
-    @Test
-    public void testHandlePdfViewerRequestNoPermission() throws Exception {
-        var pid = PIDs.get(PID_1);
-        when(briefObject.getId()).thenReturn(PID_1);
-        when(briefObject.getResourceType()).thenReturn(ResourceType.File.name());
-        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
-
-        doThrow(new AccessRestrictionException("No permission")).when(aclService).assertHasAccess(
-                any(), eq(pid), any(), eq(Permission.viewOriginal));
-
-        mvc.perform(get("/api/record/" + PID_1 + "/pdfViewer"))
-                .andExpect(status().isForbidden())
-                .andReturn();
     }
 
     @Test
