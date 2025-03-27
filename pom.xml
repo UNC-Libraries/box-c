@@ -149,7 +149,7 @@
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
-        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         
         <build-tools.path>common-utils/src/main/resources/</build-tools.path>
     </properties>
@@ -284,6 +284,13 @@
                         <fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
                         <buildDirectory>${project.build.directory}</buildDirectory>
                     </systemPropertyVariables>
+                    <includes>
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
                 </configuration>
             </plugin>
             <plugin>
