@@ -267,6 +267,42 @@ public class DownloadImageControllerIT {
     }
 
     @Test
+    public void testGetImageFromJp2WithOneSideLongerAndOneSideShorter() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
+        var filename = "bunny.jpg";
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream originalDatastream = mock(Datastream.class);
+        Datastream jp2Datastream = mock(Datastream.class);
+
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/!1800,1800/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile(filename)
+                        .withHeader("Content-Type", "image/jpeg")));
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(originalDatastream);
+        when(originalDatastream.getExtent()).thenReturn("1200x1900");
+        when(originalDatastream.getFilename()).thenReturn(filename);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getExtent()).thenReturn("1200x1900");
+        when(jp2Datastream.getFilesize()).thenReturn(5L);
+        when(contentObjectSolrRecord.getPid()).thenReturn(pid);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/1800"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var response = result.getResponse();
+
+        assertEquals("attachment; filename=bunny_1800px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("image/jpeg", response.getContentType());
+        DownloadTestHelper.assertCorrectImageReturned(response.getContentAsByteArray());
+    }
+
+    @Test
     public void testGetImageNoViewReducedPermission() throws Exception {
         var pid = makePid();
         doThrow(new AccessRestrictionException()).when(accessControlService)

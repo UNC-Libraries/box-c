@@ -170,7 +170,7 @@ public class DatastreamController {
         var pixelSize = THUMB_SIZE_MAP.get(size).toString();
 
         try {
-            return downloadImageService.streamImage(thumbObjRecord, pixelSize, false);
+            return downloadImageService.streamThumbnail(thumbObjRecord, pixelSize);
         } catch (IOException e) {
             log.error("Error streaming thumbnail for {} at size {}", pidString, pixelSize, e);
         }

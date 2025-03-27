@@ -35,22 +35,18 @@ public class DownloadImageService {
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
     /**
-     * Method contacts the IIIF server for the requested access copy image and returns it
+     * Method returns response for thumbnail access copy image
      * @param contentObjectRecord solr record of the file
      * @param size a string which is either "max" for full size or a pixel length like "1200"
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, boolean attachment)
+    public ResponseEntity<InputStreamResource> streamThumbnail(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
         var contentDispositionHeader = "inline;";
-        if (attachment) {
-            String filename = getDownloadFilename(contentObjectRecord, size);
-            contentDispositionHeader = "attachment; filename=" + filename;
-        }
-
         var url = "";
         var contentType = MediaType.IMAGE_JPEG;
+
         if (needsPlaceholder(contentObjectRecord, size)) {
             url = getPlaceholderUrl(size);
             contentType = MediaType.IMAGE_PNG;
@@ -59,6 +55,35 @@ public class DownloadImageService {
             url = ImageServerUtil.buildURL(iiifBasePath, pidString, size);
         }
 
+        return streamImage(url, contentDispositionHeader, contentType);
+    }
+
+    /**
+     * Method returns response for downloading access copy image
+     * @param contentObjectRecord solr record of the file
+     * @param size a string which is either "max" for full size or a pixel length like "1200"
+     * @return a response entity which contains headers and content of the access copy image
+     * @throws IOException
+     */
+    public ResponseEntity<InputStreamResource> streamDownload(ContentObjectRecord contentObjectRecord, String size)
+            throws IOException {
+        String filename = getDownloadFilename(contentObjectRecord, size);
+        var contentDispositionHeader = "attachment; filename=" + filename;
+        String pidString = contentObjectRecord.getPid().getId();
+        var url = ImageServerUtil.buildURL(iiifBasePath, pidString, size);
+
+        return streamImage(url, contentDispositionHeader, MediaType.IMAGE_JPEG);
+    }
+
+    /**
+     * Method contacts the IIIF server for the requested access copy image
+     * @param url image server URL
+     * @param contentDispositionHeader attachment or inline
+     * @param contentType PNG or JPEG
+     * @return a response entity which contains headers and content of the access copy image
+     * @throws IOException
+     */
+    private ResponseEntity<InputStreamResource> streamImage(String url, String contentDispositionHeader, MediaType contentType) throws IOException {
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
 
@@ -156,8 +181,8 @@ public class DownloadImageService {
         if (isInvalidJP2Datastream(contentObjectRecord)) {
             return true;
         }
-        var shortestSide = getShortestSide(contentObjectRecord);
-        return shortestSide < Integer.parseInt(size);
+        var longestSide = getLongestSide(contentObjectRecord);
+        return longestSide < Integer.parseInt(size);
     }
 
     private int[] getImageDimensions(ContentObjectRecord contentObjectRecord) {
@@ -177,14 +202,6 @@ public class DownloadImageService {
         }
 
         return Math.max(extent[0], extent[1]);
-    }
-
-    private int getShortestSide(ContentObjectRecord contentObjectRecord) {
-        var extent = getImageDimensions(contentObjectRecord);
-        if (extent.length == 0) {
-            return 0;
-        }
-        return Math.min(extent[0], extent[1]);
     }
 
     private String getPlaceholderUrl(String size) {
