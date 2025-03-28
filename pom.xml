@@ -73,7 +73,6 @@
         <spring.ws.version>3.1.8</spring.ws.version>
         
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
-        <junit-platform-runner.version>1.12.0</junit-platform-runner.version>
         <grizzly.version>2.4.4</grizzly.version>
         <jersey.version>2.34</jersey.version>
         <mockito.version>5.15.2</mockito.version>
@@ -671,12 +670,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-params</artifactId>
                 <version>${junit.jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-runner</artifactId>
-                <version>${junit-platform-runner.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
