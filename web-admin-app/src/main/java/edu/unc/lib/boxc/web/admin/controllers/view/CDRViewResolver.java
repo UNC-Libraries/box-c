@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.admin.controllers.view;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
@@ -19,7 +20,11 @@ public class CDRViewResolver extends InternalResourceViewResolver {
     protected AbstractUrlBasedView buildView(String viewName) throws Exception {
         LOG.debug("In DCR View Resolver:" + viewName + " to base view: " + baseView);
         this.getAttributesMap().put("contentPage", subViewPrefix + viewName + this.getSuffix());
-        return super.buildView(baseView);
+        try {
+            return super.buildView(baseView);
+        } catch (Exception e) {
+            throw new RepositoryException("Failed to build view for " + viewName, e);
+        }
     }
 
     public String getBaseView() {

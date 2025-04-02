@@ -102,12 +102,7 @@ public class ImageServerV2Service {
                                 .setContentType(ContentType.APPLICATION_JSON).build();
                         httpResp.setEntity(updatedRespData);
 
-                        try (InputStream in = httpResp.getEntity().getContent()) {
-                            IOUtils.copy(in, outStream);
-                            outStream.flush();
-                        } catch (IOException e) {
-                            throw new ClientAbortException(e);
-                        }
+                        copyStream(httpResp, outStream);
                     }
                     return;
                 }
@@ -121,6 +116,15 @@ public class ImageServerV2Service {
             retryServerError--;
         } while (retryServerError >= 0 && (statusCode == 500 || statusCode == 404));
         LOG.error("Unexpected failure while getting image server path {}: {}", statusLine, path);
+    }
+
+    private void copyStream(CloseableHttpResponse httpResp, OutputStream outStream) throws ClientAbortException {
+        try (InputStream in = httpResp.getEntity().getContent()) {
+            IOUtils.copy(in, outStream);
+            outStream.flush();
+        } catch (IOException e) {
+            throw new ClientAbortException(e);
+        }
     }
 
     public void streamJP2(String simplepid, String region, String size, String rotatation, String quality,
@@ -152,12 +156,7 @@ public class ImageServerV2Service {
                     response.setHeader("Content-Type", "image/jpeg");
                     response.setHeader("content-disposition", "inline");
 
-                    try (InputStream in = httpResp.getEntity().getContent()) {
-                        IOUtils.copy(in, outStream);
-                        outStream.flush();
-                    } catch (IOException e) {
-                        throw new ClientAbortException(e);
-                    }
+                    copyStream(httpResp, outStream);
                 }
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
