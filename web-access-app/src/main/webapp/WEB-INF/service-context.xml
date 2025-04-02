@@ -78,26 +78,6 @@
         class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
     </bean>
 
-    <!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
-        p:suffix=".jsp"/> -->
-    <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
-        <property name="exposedContextBeanNames">
-            <list>
-                <value>searchSettings</value>
-                <value>permsHelper</value>
-                <value>gaTrackingID</value>
-                <value>accessBaseUrl</value>
-                <value>adminBaseUrl</value>
-                <value>formsBaseUrl</value>
-            </list>
-        </property>
-        <property name="viewClass"
-            value="org.springframework.web.servlet.view.JstlView" />
-        <property name="baseView" value="/WEB-INF/jsp/index" />
-        <property name="subViewPrefix" value="" />
-        <property name="redirectHttp10Compatible" value="false" />
-    </bean>
-
     <bean class="edu.unc.lib.boxc.web.common.view.XSLViewResolver">
         <property name="views">
             <map>
