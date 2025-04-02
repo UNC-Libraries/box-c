@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -38,7 +41,6 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
-import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 
 /**
  * Generates request, connects to, and streams the output from an iiif v2 server.  Sets pertinent headers.
@@ -100,7 +102,12 @@ public class ImageServerV2Service {
                                 .setContentType(ContentType.APPLICATION_JSON).build();
                         httpResp.setEntity(updatedRespData);
 
-                        FileIOUtil.stream(outStream, httpResp);
+                        try (InputStream in = httpResp.getEntity().getContent()) {
+                            IOUtils.copy(in, outStream);
+                            outStream.flush();
+                        } catch (IOException e) {
+                            throw new ClientAbortException(e);
+                        }
                     }
                     return;
                 }
@@ -145,7 +152,12 @@ public class ImageServerV2Service {
                     response.setHeader("Content-Type", "image/jpeg");
                     response.setHeader("content-disposition", "inline");
 
-                    FileIOUtil.stream(outStream, httpResp);
+                    try (InputStream in = httpResp.getEntity().getContent()) {
+                        IOUtils.copy(in, outStream);
+                        outStream.flush();
+                    } catch (IOException e) {
+                        throw new ClientAbortException(e);
+                    }
                 }
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {

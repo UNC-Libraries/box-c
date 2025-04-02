@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.view;
+package edu.unc.lib.boxc.web.admin.controllers.view;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

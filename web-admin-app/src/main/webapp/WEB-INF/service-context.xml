@@ -86,7 +86,7 @@
         <property name="chompbCommand" value="${chompb.command}" />
     </bean>
 
-    <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
+    <bean class="edu.unc.lib.boxc.web.admin.controllers.view.CDRViewResolver" p:suffix=".jsp">
         <property name="exposedContextBeanNames">
             <list>
                 <value>searchSettings</value>
