@@ -17,7 +17,7 @@ public class CDRViewResolver extends InternalResourceViewResolver {
     protected String baseView;
     protected String subViewPrefix;
 
-    protected AbstractUrlBasedView buildView(String viewName) throws Exception {
+    protected AbstractUrlBasedView buildView(String viewName) {
         LOG.debug("In DCR View Resolver:" + viewName + " to base view: " + baseView);
         this.getAttributesMap().put("contentPage", subViewPrefix + viewName + this.getSuffix());
         try {
