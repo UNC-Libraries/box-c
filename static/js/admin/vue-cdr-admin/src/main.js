@@ -3,6 +3,9 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import { usePermissionsStore } from './stores/permissions';
+import Vueform from '@vueform/vueform';
+import vueformConfig from './../vueform.config';
+import '@vueform/vueform/dist/vueform.css';
 import './assets/common-styles.css'
 
 const pinia = createPinia();
@@ -10,7 +13,7 @@ window.perms_editor = createApp({
   render() {
     return h(App);
   }
-}).use(pinia).use(router).mount('#vue-admin-app');
+}).use(Vueform, vueformConfig).use(pinia).use(router).mount('#vue-admin-app');
 
 /**
  * Need to define our Pinia store instance as a global, due to the way the build scopes variables,

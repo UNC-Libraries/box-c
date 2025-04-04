@@ -26,7 +26,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			}
 			
 			if (folderOrCollection) {
-				items["addWork"] = { name : "Add Work" };
+				items["addWork"] = { name : "Add Work", className: 'add-work' };
 			}
 			
 			if (this.container.type === "Work") {
