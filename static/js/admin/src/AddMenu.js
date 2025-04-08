@@ -104,7 +104,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 							case "addWork" :
 								new CreateWorkObjectForm({
 									alertHandler : self.options.alertHandler
-								}).open(self.container.id);
+								});
 								break;
 							case "addFile" :
 								new AddFileForm({
