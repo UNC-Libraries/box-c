@@ -9,7 +9,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "@samvera/clover-iiif": "^2.10.2",
+        "@samvera/clover-iiif": "^2.14.0",
         "@vue-pdf-viewer/viewer": "^2.3.0",
         "@vueuse/head": "^2.0.0",
         "axios": "^1.8.4",
