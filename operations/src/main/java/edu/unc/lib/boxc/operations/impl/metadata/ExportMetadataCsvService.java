@@ -56,7 +56,7 @@ public class ExportMetadataCsvService {
      * @param agent user agent making the request
      * @return path to the CSV file
      */
-    public Path exportCsv(List<PID> pids, AgentPrincipals agent) throws Exception {
+    public Path exportCsv(List<PID> pids, AgentPrincipals agent) throws IOException {
         var csvPath = Files.createTempFile("metadata", ".csv");
         var completedExport = false;
 
@@ -71,6 +71,7 @@ public class ExportMetadataCsvService {
             }
             completedExport = true;
         } catch (IOException e) {
+            log.error("Failed to export CSV: {}", e.getMessage());
             throw new RepositoryException("Failed to export CSV: ", e);
         } finally {
             // Cleanup the csv file if it is incomplete
@@ -95,7 +96,9 @@ public class ExportMetadataCsvService {
 
     // Print a single objects metadata to the CSV export
     private void printRecord(CSVPrinter printer, ContentObjectRecord object) throws IOException {
-        printer.print("ref_id");
+        log.debug("Printing record for {}", object.getId());
+        
+        printer.print(REF_ID);
         printer.print(object.getId());
         printer.print(object.getTitle());
         printer.println();
