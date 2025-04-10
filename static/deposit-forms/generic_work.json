@@ -9,41 +9,19 @@
   "p_1": {
     "type": "static",
     "tag": "p",
-    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
+    "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
     "addClass": "has-text-centered"
   },
   "p_2": {
     "type": "static",
     "tag": "p",
-    "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
+    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
     "addClass": "has-text-centered"
   },
   "h2_1": {
     "type": "static",
     "tag": "h2",
-    "content": "Issue information"
-  },
-  "date_of_issue": {
-    "type": "text",
-    "label": "Date of issue",
-    "placeholder": "Ex. 2004, 1995/6"
-  },
-  "volume": {
-    "type": "text",
-    "label": "Volume"
-  },
-  "number": {
-    "type": "text",
-    "label": "Number"
-  },
-  "filter_divider_1": {
-    "type": "static",
-    "tag": "hr"
-  },
-  "h2_2": {
-    "type": "static",
-    "tag": "h2",
-    "content": "Publication Information"
+    "content": "Item information"
   },
   "title": {
     "type": "text",
@@ -53,39 +31,38 @@
       "required"
     ]
   },
-  "alternate_title": {
+  "date_created": {
     "type": "text",
-    "label": "Alternate Title",
-    "description": "Please enter any alternate or variant forms of the title."
+    "label": "Date Created",
+    "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
+    "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
   },
-  "preceding_title": {
+  "description": {
+    "type": "textarea",
+    "name": "description",
+    "label": "Description",
+    "cols": 20,
+    "rows": 5
+  },
+  "keywords": {
     "type": "text",
-    "label": "Preceding Title"
+    "label": "Keywords",
+    "description": "Please enter your comma-separated keywords here."
   },
-  "succeeding_title": {
-    "type": "text",
-    "label": "Succeeding Title"
-  },
-  "genre": {
+  "language": {
     "type": "select",
     "search": true,
     "native": false,
-    "label": "Genre",
+    "label": "Language",
     "inputType": "search",
     "autocomplete": "off",
-    "items": [
-      "",
-      "Almanacs",
-      "Annual reports",
-      "Newsletters",
-      "Newspapers",
-      "Periodicals",
-      "Posters",
-      "Yearbooks"
-    ],
+    "items": "/static/deposit-forms/data/iso639-2b.json",
+    "labelProp": "label",
+    "valueProp": "value",
     "columns": {
       "container": 12
-    }
+    },
+    "default": "eng"
   },
   "resource_type": {
     "type": "select",
@@ -97,99 +74,94 @@
     "items": [
       "",
       "text",
-      "still image"
-    ],
-    "columns": {
-      "container": 12
-    }
-  },
-  "publisher": {
-    "type": "text",
-    "label": "Publisher"
-  },
-  "place_of_publication": {
-    "type": "text",
-    "label": "Place of Publication"
-  },
-  "issuance": {
-    "type": "select",
-    "search": true,
-    "native": false,
-    "label": "Issuance",
-    "inputType": "search",
-    "autocomplete": "off",
-    "items": [
-      "",
-      "monographic",
-      "single_unit",
-      "multipart monograph",
-      "continuing",
-      "serial",
-      "integrating resource"
+      "cartographic",
+      "notated music",
+      "sound recording-musical",
+      "sound recording-nonmusical",
+      "sound recording",
+      "still image",
+      "moving image",
+      "three dimensional object",
+      "software, multimedia",
+      "mixed material"
     ],
     "columns": {
       "container": 12
     },
-    "default": "continuing"
+    "default": "text"
   },
-  "frequency": {
-    "type": "select",
-    "search": true,
-    "native": false,
-    "label": "Frequency",
-    "inputType": "search",
-    "autocomplete": "off",
-    "items": [
-      "Continuously updated",
-      "Daily",
-      "Semiweekly",
-      "Three times a week",
-      "Weekly",
-      "Biweekly",
-      "Three times a month",
-      "Semimonthly",
-      "Monthly",
-      "Bimonthly",
-      "Quarterly",
-      "Three times a year",
-      "Semiannual",
-      "Annual",
-      "Biennial",
-      "Triennial",
-      "Completely irregular"
-    ],
-    "columns": {
-      "container": 12
-    }
-  },
-  "language": {
-    "type": "select",
-    "search": true,
-    "native": false,
-    "label": "Language",
-    "inputType": "search",
-    "autocomplete": "off",
-    "items": "/forms/data/iso639-2b.json",
-    "labelProp": "label",
-    "valueProp": "value",
-    "columns": {
-      "container": 12
-    },
-    "default": "eng"
-  },
-  "related_url": {
-    "type": "text", "label": "Related URL"
-  },
-  "filter_divider_2": {
+  "filter_divider_1": {
     "type": "static",
     "tag": "hr"
   },
   "h2_3": {
     "type": "static",
     "tag": "h2",
-    "content": "Subject Information - Topical"
+    "content": "Creator Information (Personal name)"
+  },
+  "creator_personal_name": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "first_name": {
+          "type": "text",
+          "label": "First Name"
+        },
+        "last_name": {
+          "type": "text",
+          "label": "Last Name"
+        }
+      },
+      "terms_of_address": {
+        "type": "text",
+        "label": "Terms of Address",
+        "placeholder": "Ex. Jr., Sr."
+      },
+      "life_dates": {
+        "type": "text",
+        "label": "Life Dates",
+        "placeholder": "Ex. 1954-2001"
+      }
+    }
+  },
+  "filter_divider_2": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h2_4": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Creator Information (Corporate name)"
   },
   "p_3": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
+  },
+  "creator_corporate_name": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "name": {
+          "type": "text",
+          "label": "Name",
+          "placeholder": "Cecil G. Sheps Center for Health Services Research"
+        }
+      }
+    }
+  },
+  "filter_divider_3": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h2_5": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Topical"
+  },
+  "p_4": {
     "type": "static",
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
@@ -207,16 +179,16 @@
       }
     }
   },
-  "filter_divider_3": {
+  "filter_divider_4": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_4": {
+  "h2_6": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Personal Names"
   },
-  "p_4": {
+  "p_5": {
     "type": "static",
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
@@ -234,16 +206,16 @@
       }
     }
   },
-  "filter_divider_4": {
+  "filter_divider_5": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_5": {
+  "h2_7": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Corporate Names"
   },
-  "p_5": {
+  "p_6": {
     "type": "static",
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
@@ -261,16 +233,16 @@
       }
     }
   },
-  "filter_divider_5": {
+  "filter_divider_6": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_6": {
+  "h2_8": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Geographic"
   },
-  "p_6": {
+  "p_7": {
     "type": "static",
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
@@ -288,21 +260,32 @@
       }
     }
   },
-  "filter_divider_6": {
+  "filter_divider_7": {
     "type": "static",
     "tag": "hr"
   },
   "main_file": {
     "type": "file",
     "label": "File",
-    "upload-temp-endpoint": false,
+    "upload-temp-file": {
+      "url": "/forms/api/uploads",
+      "method": "POST"
+    },
+    "remove-endpoint": {
+      "url": "/forms/api/uploads",
+      "method": "DELETE"
+    },
     "description": "No more than 1.5gb total for all files",
     "addClass": "required",
     "rules": [
       "required"
     ]
   },
-  "h2_7": {
+  "filter_divider_8": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h2_9": {
     "type": "static",
     "tag": "h2",
     "content": "Supplemental Files"
@@ -315,7 +298,14 @@
         "supplemental_file": {
           "type": "file",
           "label": "Supplemental File",
-          "upload-temp-endpoint": false,
+          "upload-temp-file": {
+            "url": "/forms/api/uploads",
+            "method": "POST"
+          },
+          "remove-endpoint": {
+            "url": "/forms/api/uploads",
+            "method": "DELETE"
+          },
           "description": "No more than 1.5gb total for all files"
         },
         "description": {
@@ -329,7 +319,7 @@
       }
     }
   },
-  "filter_divider_7": {
+  "filter_divider_9": {
     "type": "static",
     "tag": "hr"
   },

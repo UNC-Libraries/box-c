@@ -514,7 +514,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');
 						perms_editor_store.setMetadata(metadata);
-						perms_editor_store.setShowModal(true);
+						perms_editor_store.setShowPermissionsModal(true);
 						perms_editor_store.setAlertHandler(self.options.alertHandler);
 						perms_editor_store.setActionHandler(self.actionHandler);
 						perms_editor_store.setResultObject(resultObject);
@@ -523,7 +523,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "staffPermissions":
 						perms_editor_store.setPermissionType('Staff');
 						perms_editor_store.setMetadata(metadata);
-						perms_editor_store.setShowModal(true);
+						perms_editor_store.setShowPermissionsModal(true);
 						perms_editor_store.setAlertHandler(self.options.alertHandler);
 						break;
 				}

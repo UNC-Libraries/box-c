@@ -2,6 +2,7 @@ import { createApp, h } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import {useFormsStore} from './stores/forms';
 import { usePermissionsStore } from './stores/permissions';
 import Vueform from '@vueform/vueform';
 import vueformConfig from './../vueform.config';
@@ -22,3 +23,7 @@ window.perms_editor = createApp({
  * Used by resultObjectActionMenu.js
  */
 window.perms_editor_store = usePermissionsStore();
+/**
+ * Used by addMenu.js
+ */
+window.forms_app_store = useFormsStore();

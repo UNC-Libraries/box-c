@@ -97,10 +97,6 @@ build-access-npm:
 	npm --prefix static/js/vue-cdr-access ci
 	npm --prefix static/js/vue-cdr-access run build
 
-	# Minify viewer.js file for pdf viewer (Uncomment the lines below if changes are made to the viewer.js file. Requires nodejs 15.x or higher)
-	# npm install minify -g
-	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
-
 	cp static/js/vue-cdr-access/dist/assets/access/vue-access-index.js static/assets/access/vue-access-index.js
 	cp static/js/vue-cdr-access/dist/assets/access/index.css static/assets/access/index.css
 	cp static/js/vue-cdr-access/dist/assets/access/watermark.webp static/assets/access/watermark.webp

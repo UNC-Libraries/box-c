@@ -1,15 +1,15 @@
 <template>
-    <teleport to="#vue-cdr-admin-add-work">
-        <div id="dcr-forms-app" class="columns is-centered">
-            <div class="column is-12">
-                <button class="button" @click="is_open = true">Open!</button>
-                <div class="modal" :class="{'is-active': is_open}">
-                    <div @click="closeModal()" class="modal-background"></div>
-                    <div class="modal-content">
+    <div id="dcr-forms-app">
+        <link href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/versions/bulma-prefixed.min.css" rel="stylesheet">
+        <div class="bulma-columns bulma-is-centered">
+            <div class="bulma-column bulma-is-12">
+                <div class="bulma-modal" :class="{'bulma-is-active': showFormsModal}">
+                    <div @click="closeModal()" class="bulma-modal-background"></div>
+                    <div class="bulma-modal-content">
                         <div v-if="form === ''">
                             <h1 class="has-text-centered">Add a work to the current collection</h1>
-                            <div class="column has-text-centered">
-                                <div class="select">
+                            <div class="bulma-column has-text-centered">
+                                <div class="bulma-select">
                                     <select v-model="form" @change="getSchema()">
                                         <option value="">-- Please select a form --</option>
                                         <option value="generic_work">Generic Work</option>
@@ -23,39 +23,49 @@
                                  :endpoint="async (FormData, form$) => submitForm(FormData, form$)"
                                  @response="handleResponse"/>
                     </div>
-                    <button @click="closeModal()" class="modal-close is-large" aria-label="close"></button>
+                    <button @click="closeModal()" class="bulma-modal-close bulma-is-large" aria-label="close"></button>
                 </div>
             </div>
         </div>
-    </teleport>
+    </div>
 </template>
 
 <script>
+import {mapActions, mapState} from 'pinia';
+import {useFormsStore} from '@/stores/forms';
+
 export default {
-    name: 'formContainer',
+    name: 'modalDepositForms',
 
     data() {
         return {
-            is_open: false,
             form: '',
             schema: {}
         }
     },
 
+    computed: {
+        ...mapState(useFormsStore, ['alertHandler', 'containerId', 'showFormsModal'])
+    },
+
     methods: {
+        ...mapActions(useFormsStore, ['setAlertHandler', 'setShowFormsModal']),
+
         async getSchema() {
             if (this.form !== '') {
-                await fetch(`./forms/${this.form}.json`)
+                await fetch(`/static/deposit-forms/${this.form}.json`)
                     .then(response => response.json())
                     .then(data => {
                         this.schema = data;
                     });
             }
         },
+
         closeModal() {
-            this.is_open = false;
+            this.setShowFormsModal(false);
             this.form = '';
         },
+
         /**
          * See https://vueform.com/docs/handling-form-data#submit-via-function
          * @param FormData
@@ -78,13 +88,14 @@ export default {
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
 
-            return await form$.$vueform.services.axios.post('/my/endpoint',
+            return await form$.$vueform.services.axios.post('/forms/api/deposits',
                 formData /* | data | requestData */,
                 {
                     cancelToken: form$.cancelToken.token,
                 }
             );
         },
+
         handleResponse(response, form$) {
             console.log(response) // axios response
         }
@@ -107,12 +118,7 @@ $forms-warning-size: 1.5em;
     h2 {
         color: #005B90;
     }
-    .modal-content {
-        background: white;
-        padding: 25px;
-        min-height: 300px;
-        width: 90%;
-    }
+
     select {
         margin: auto;
     }
@@ -121,6 +127,8 @@ $forms-warning-size: 1.5em;
         font-size: $forms-warning-size;
     }
     .required {
+        color: inherit;
+
         label {
             &:after {
                 color: $forms-warning-color;
@@ -131,6 +139,17 @@ $forms-warning-size: 1.5em;
     }
     label span {
         font-weight: bold;
+    }
+
+    .bulma-modal {
+        z-index: 99;
+    }
+
+    .bulma-modal-content {
+        background: white;
+        padding: 25px;
+        min-height: 300px;
+        width: 90%;
     }
 }
 </style>

@@ -26,7 +26,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			}
 			
 			if (folderOrCollection) {
-				items["addWork"] = { name : "Add Work", className: 'add-work' };
+				items["addWork"] = { name : "Add Work", className: 'add-dcr-work' };
 			}
 			
 			if (this.container.type === "Work") {
@@ -102,9 +102,9 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 								}).open(self.container.id);
 								break;
 							case "addWork" :
-								new CreateWorkObjectForm({
-									alertHandler : self.options.alertHandler
-								});
+								forms_app_store.setShowFormsModal(true);
+								forms_app_store.setContainerId(self.container.id);
+								forms_app_store.setAlertHandler(self.options.alertHandler);
 								break;
 							case "addFile" :
 								new AddFileForm({
