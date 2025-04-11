@@ -1,8 +1,11 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -21,8 +24,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static edu.unc.lib.boxc.model.api.ResourceType.Work;
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
+import static java.util.Arrays.asList;
 
 /**
  * Service which outputs a CSV listing of metadata that will be submitted to DOMino for Aspace digital object generation
@@ -30,24 +38,24 @@ import java.util.List;
  * @author krwong
  */
 //TODO: add ref_id support
-public class ExportMetadataCsvService {
-    private static final Logger log = LoggerFactory.getLogger(ExportMetadataCsvService.class);
+public class ExportDominoMetadataService {
+    private static final Logger log = LoggerFactory.getLogger(ExportDominoMetadataService.class);
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
-    public static final String REF_ID = "ref_id";
-    public static final String UUID = "uuid";
-    public static final String WORK_TITLE = "work_title";
+    public static final String REF_ID_NAME = "ref_id";
+    public static final String CONTENT_ID_NAME = "content_id";
+    public static final String WORK_TITLE_NAME = "work_title";
 
-    public static final String[] CSV_HEADERS = {REF_ID, UUID, WORK_TITLE};
+    public static final String[] CSV_HEADERS = {CONTENT_ID_NAME, REF_ID_NAME, WORK_TITLE_NAME};
 
     private AccessControlService aclService;
     private SolrSearchService solrSearchService;
 
-    private static final List<String> PARENT_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
+    private static final List<String> PARENT_REQUEST_FIELDS = asList(
+            SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
 
-    private static final List<String> METADATA_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
+    private static final List<String> METADATA_FIELDS = asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name());
 
     /**
@@ -64,12 +72,14 @@ public class ExportMetadataCsvService {
             for (PID pid : pids) {
                 aclService.assertHasAccess("Insufficient permissions to export metadata for " + pid.getId(),
                         pid, agent.getPrincipals(), Permission.viewHidden);
-                var workRec = getRecord(pid, agent);
-                assertWorkRecordValid(pid, workRec);
+                var parentRec = getRecord(pid, agent);
+                assertRecordValid(pid, parentRec);
 
-                printRecords(printer, getRecords(workRec, agent));
+                printRecords(printer, getRecords(parentRec, agent));
             }
             completedExport = true;
+        } catch (AccessRestrictionException | InvalidOperationForObjectType e) {
+            throw e;
         } catch (IOException e) {
             log.error("Failed to export CSV: {}", e.getMessage());
             throw new RepositoryException("Failed to export CSV: ", e);
@@ -97,14 +107,14 @@ public class ExportMetadataCsvService {
     // Print a single objects metadata to the CSV export
     private void printRecord(CSVPrinter printer, ContentObjectRecord object) throws IOException {
         log.debug("Printing record for {}", object.getId());
-        
-        printer.print(REF_ID);
+
         printer.print(object.getId());
+        printer.print(REF_ID_NAME);
         printer.print(object.getTitle());
         printer.println();
     }
 
-    // Query for all immediate children/members of the specified record, in default sort order
+    // Query for all children/members of the specified record, in default sort order
     private List<ContentObjectRecord> getRecords(ContentObjectRecord parentRec, AgentPrincipals agent) {
         SearchState searchState = new SearchState();
         searchState.setIgnoreMaxRows(true);
@@ -122,10 +132,17 @@ public class ExportMetadataCsvService {
         return solrSearchService.getObjectById(workRequest);
     }
 
-    private void assertWorkRecordValid(PID pid, ContentObjectRecord workRec) {
-        if (workRec == null) {
+    private void assertRecordValid(PID pid, ContentObjectRecord parentRec) {
+        if (parentRec == null) {
             throw new NotFoundException("Unable to find requested record " + pid.getId()
                     + ", it either does not exist or is not accessible");
+        }
+        List<ResourceType> allowedTypes = Arrays.asList(ResourceType.ContentRoot, ResourceType.AdminUnit,
+                ResourceType.Collection, ResourceType.Folder);
+        var resourceType = ResourceType.valueOf(parentRec.getResourceType());
+        if (!allowedTypes.contains(resourceType)) {
+            throw new InvalidOperationForObjectType("Object " + pid.getId() + " of type "
+                    + resourceType.name() + " is not valid for DOMino metadata export");
         }
     }
 

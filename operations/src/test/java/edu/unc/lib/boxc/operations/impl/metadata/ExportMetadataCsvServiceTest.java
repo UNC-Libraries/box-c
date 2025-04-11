@@ -1,11 +1,14 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -30,8 +33,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -51,12 +59,12 @@ public class ExportMetadataCsvServiceTest {
     @Mock
     private AccessControlService aclService;
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    private ExportMetadataCsvService csvService;
+    private ExportDominoMetadataService csvService;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
-        csvService = new ExportMetadataCsvService();
+        csvService = new ExportDominoMetadataService();
         csvService.setSolrSearchService(solrSearchService);
         csvService.setAclService(aclService);
     }
@@ -67,23 +75,76 @@ public class ExportMetadataCsvServiceTest {
     }
 
     @Test
-    public void metadataCsvTest() throws Exception {
+    public void exportDominoMetadataTest() throws Exception {
+        var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null);
         var workRecord1 = makeWorkRecord(UUID1, "Work 1");
         var workRecord2 = makeWorkRecord(UUID2, "Work 2");
-        mockResults(workRecord1, workRecord2);
-        when(solrSearchService.getSearchResults(any()))
-                .thenReturn(makeResultResponse(workRecord1))
-                .thenReturn(makeResultResponse(workRecord2));
+        mockParentResults(collectionRecord);
+        mockChildrenResults(workRecord1, workRecord2);
 
-        var resultPath = csvService.exportCsv(asPidList(UUID1, UUID2), agent);
-        var csvRecords = parseCsv(ExportMetadataCsvService.CSV_HEADERS, resultPath);
-        assertContainsEntry(csvRecords, "ref_id", UUID1, "Work 1");
-        assertContainsEntry(csvRecords, "ref_id", UUID2, "Work 2");
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
+        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
+        assertContainsEntry(csvRecords, UUID1, "ref_id", "Work 1");
+        assertContainsEntry(csvRecords, UUID2, "ref_id", "Work 2");
         assertNumberOfEntries(2, csvRecords);
     }
+    
+    @Test
+    public void recordNotFoundTest() {
+        assertThrows(NullPointerException.class, () -> {
+            when(solrSearchService.getSearchResults(
+                    any()).getResultList());
+            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
+            assertTrue(Files.notExists(csvPath));
+        });
+    }
 
-    private void mockResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
+    @Test
+    public void userNoPermissionTest() {
+        assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException())
+                    .when(aclService)
+                    .assertHasAccess(anyString(), eq(PIDs.get(COLLECTION_UUID)), any(), eq(Permission.viewHidden));
+            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
+            assertTrue(Files.notExists(csvPath));
+        });
+    }
+
+    @Test
+    public void parentWithNoChildrenTest() {
+        var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null);
+        mockParentResults(collectionRecord);
+
+        assertThrows(NullPointerException.class, () -> {
+            when(solrSearchService.getSearchResults(
+                    any()).getResultList());
+            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
+            assertTrue(Files.notExists(csvPath));
+        });
+    }
+
+    @Test
+    public void invalidIdTypeTest() throws Exception {
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1");
+        mockParentResults(workRecord1);
+
+        try {
+            csvService.exportCsv(asPidList(UUID1), agent);
+            fail();
+        } catch (InvalidOperationForObjectType e) {
+            assertEquals("Object " + UUID1 + " of type " + workRecord1.getResourceType()
+                    + " is not valid for DOMino metadata export", e.getMessage());
+        }
+    }
+
+    private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
         when(solrSearchService.getObjectById(any())).thenReturn(parentRec, parentRecs);
+    }
+
+    private void mockChildrenResults(ContentObjectRecord... results) {
+        when(solrSearchService.getSearchResults(any())).thenReturn(makeResultResponse(results));
     }
 
     private SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
@@ -102,18 +163,17 @@ public class ExportMetadataCsvServiceTest {
                 .getRecords();
     }
 
-    private void assertContainsEntry(List<CSVRecord> csvRecords, String refId, String uuid,
-                                     String title) {
+    private void assertContainsEntry(List<CSVRecord> csvRecords, String contentId, String refId, String title) {
         for (CSVRecord record : csvRecords) {
-            if (!uuid.equals(record.get(ExportMetadataCsvService.UUID))) {
+            if (!contentId.equals(record.get(ExportDominoMetadataService.CONTENT_ID_NAME))) {
                 continue;
             }
-            assertEquals(refId, record.get(ExportMetadataCsvService.REF_ID));
-            assertEquals(uuid, record.get(ExportMetadataCsvService.UUID));
-            assertEquals(title, record.get(ExportMetadataCsvService.WORK_TITLE));
+            assertEquals(contentId, record.get(ExportDominoMetadataService.CONTENT_ID_NAME));
+            assertEquals(refId, record.get(ExportDominoMetadataService.REF_ID_NAME));
+            assertEquals(title, record.get(ExportDominoMetadataService.WORK_TITLE_NAME));
             return;
         }
-        fail("No entry found for uuid " + uuid);
+        fail("No entry found for contentId " + contentId);
     }
 
     private void assertNumberOfEntries(int expected, List<CSVRecord> csvParser) throws IOException {
