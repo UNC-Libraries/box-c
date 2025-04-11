@@ -24,12 +24,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
-import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
 import static java.util.Arrays.asList;
 
 /**
@@ -73,7 +71,7 @@ public class ExportDominoMetadataService {
                 aclService.assertHasAccess("Insufficient permissions to export metadata for " + pid.getId(),
                         pid, agent.getPrincipals(), Permission.viewHidden);
                 var parentRec = getRecord(pid, agent);
-                assertRecordValid(pid, parentRec);
+                assertParentRecordValid(pid, parentRec);
 
                 printRecords(printer, getRecords(parentRec, agent));
             }
@@ -121,6 +119,7 @@ public class ExportDominoMetadataService {
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
         CutoffFacet selectedPath = parentRec.getPath();
         searchState.addFacet(selectedPath);
+        searchState.setResourceTypes(asList(Work.name()));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
         var searchRequest = new SearchRequest(searchState, agent.getPrincipals());
@@ -132,7 +131,7 @@ public class ExportDominoMetadataService {
         return solrSearchService.getObjectById(workRequest);
     }
 
-    private void assertRecordValid(PID pid, ContentObjectRecord parentRec) {
+    private void assertParentRecordValid(PID pid, ContentObjectRecord parentRec) {
         if (parentRec == null) {
             throw new NotFoundException("Unable to find requested record " + pid.getId()
                     + ", it either does not exist or is not accessible");
