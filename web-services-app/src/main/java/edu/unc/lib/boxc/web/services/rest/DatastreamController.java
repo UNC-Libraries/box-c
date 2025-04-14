@@ -40,7 +40,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
@@ -104,7 +103,7 @@ public class DatastreamController {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
         if (isDerivative(datastream)) {
-            derivativeContentService.streamData(pid, datastream, principals, false, response);
+            derivativeContentService.streamData(pid, datastream, principals, false, request.getHeader("Range"), response);
         } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
             fedoraContentService.streamEventLog(pid, principals, download, response);
         } else {
