@@ -125,33 +125,40 @@ public class DerivativeContentService {
 
             // Stream the requested range
             try (FileInputStream inputStream = new FileInputStream(file)) {
-                var outStream = response.getOutputStream();
                 // Skip to the start position
-                inputStream.skip(start);
-
-                // Copy only the requested range
-                long bytesToCopy = contentLength;
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int bytesRead;
-                try {
-                    while (bytesToCopy > 0 && (bytesRead =
-                            inputStream.read(buffer, 0, (int) Math.min(buffer.length, bytesToCopy))) != -1) {
-                        outStream.write(buffer, 0, bytesRead);
-                        bytesToCopy -= bytesRead;
-                    }
-                } catch (IOException e) {
-                    // Silently ignore IO errors while streaming, such as the client closing the connection
-                    log.debug("IO error while streaming range: {}", e.getMessage());
-                    if (!response.isCommitted()) {
-                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    }
+                var skipped = inputStream.skip(start);
+                if (skipped != start) {
+                    throw new IOException("Unable to skip to the requested range start: " + start);
                 }
+                // Copy only the requested range
+                copyRangeBytesToResponse(inputStream, response, contentLength);
             }
         } catch (IllegalArgumentException e) {
             log.debug("Failed to parse range header: {}", rangeHeader, e);
             // HttpRange will throw IllegalArgumentException for invalid range header values
             response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
             response.setHeader("Content-Range", "bytes */" + fileLength);
+        }
+    }
+
+    private void copyRangeBytesToResponse(FileInputStream inputStream,
+            HttpServletResponse response, long contentLength) throws IOException {
+        var outStream = response.getOutputStream();
+        long bytesToCopy = contentLength;
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead;
+        try {
+            while (bytesToCopy > 0 && (bytesRead =
+                    inputStream.read(buffer, 0, (int) Math.min(buffer.length, bytesToCopy))) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+                bytesToCopy -= bytesRead;
+            }
+        } catch (IOException e) {
+            // Silently ignore IO errors while streaming, such as the client closing the connection
+            log.debug("IO error while streaming range: {}", e.getMessage());
+            if (!response.isCommitted()) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
