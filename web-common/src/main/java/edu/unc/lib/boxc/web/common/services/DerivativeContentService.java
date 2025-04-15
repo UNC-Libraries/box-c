@@ -4,8 +4,6 @@ import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPer
 import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.listDerivativeTypes;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -19,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRange;
-import org.springframework.http.MediaType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -74,7 +71,7 @@ public class DerivativeContentService {
         Derivative deriv = getDerivative(pid, dsName, derivType);
 
         File derivFile = deriv.getFile();
-        response.setHeader(CONTENT_TYPE, derivType.getMimetype());
+        response.setContentType(derivType.getMimetype());
         String filename = derivFile.getName();
         if (asAttachment) {
             response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
@@ -90,8 +87,7 @@ public class DerivativeContentService {
 
     private void streamEntireFile(File file, HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(CONTENT_LENGTH, Long.toString(file.length()));
-        response.setHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setContentLengthLong(file.length());
 
         OutputStream outStream = response.getOutputStream();
         IOUtils.copy(new FileInputStream(file), outStream, BUFFER_SIZE);
@@ -120,7 +116,7 @@ public class DerivativeContentService {
             // Set appropriate headers for partial content
             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-            response.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength));
+            response.setContentLengthLong(contentLength);
             response.setHeader(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength);
 
             // Stream the requested range
@@ -170,7 +166,7 @@ public class DerivativeContentService {
         return derivType;
     }
 
-    private Derivative getDerivative (PID pid, String dsName, DatastreamType datastreamType) {
+    private Derivative getDerivative(PID pid, String dsName, DatastreamType datastreamType) {
         Derivative derivative = derivativeService.getDerivative(pid, datastreamType);
         if (derivative == null) {
             throw new ResourceNotFoundException("Derivative " + dsName + " does not exist for object " + pid);

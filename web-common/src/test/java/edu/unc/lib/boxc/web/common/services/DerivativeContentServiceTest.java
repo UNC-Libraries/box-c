@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,7 +89,8 @@ public class DerivativeContentServiceTest {
         // Verify response status and headers
         verify(response).setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
         verify(response).setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-        verify(response).setHeader(HttpHeaders.CONTENT_LENGTH, "100");
+        verify(response).setContentLengthLong(100);
+        verify(response).setContentType(dataType.getMimetype());
         verify(response).setHeader(HttpHeaders.CONTENT_RANGE, "bytes 200-299/1000");
         verify(response).setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "inline; filename=\"test.m4a\"");
@@ -119,6 +121,8 @@ public class DerivativeContentServiceTest {
 
         // Verify response status and headers
         verify(response).setStatus(HttpServletResponse.SC_OK);
+        verify(response).setContentLengthLong(1000);
+        verify(response).setContentType(dataType.getMimetype());
         verify(response, never()).setHeader(eq(HttpHeaders.CONTENT_RANGE), anyString());
         verify(response).setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"test.m4a\"");
@@ -142,6 +146,16 @@ public class DerivativeContentServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             derivativeContentService.streamData(pid, "garbage", principals, true, null, response);
+        });
+    }
+
+    @Test
+    public void testStreamDerivativeDoesNotExist() throws Exception {
+        PID pid = makePid();
+        DatastreamType dataType = DatastreamType.AUDIO_ACCESS_COPY;
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            derivativeContentService.streamData(pid, dataType.getId(), principals, true, null, response);
         });
     }
 
@@ -204,7 +218,7 @@ public class DerivativeContentServiceTest {
         derivativeContentService.streamData(pid, dataType.getId(), principals, false, rangeHeader, response);
 
         // Verify full file headers
-        verify(response).setHeader("Content-Length", "1000");
+        verify(response).setContentLengthLong(1000);
 
         // Verify content length matches full file
         assertEquals(1000, outputStream.size());
