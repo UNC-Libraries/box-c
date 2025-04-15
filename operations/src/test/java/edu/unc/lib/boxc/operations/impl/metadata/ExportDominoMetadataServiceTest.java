@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -28,13 +29,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,10 +48,11 @@ import static org.mockito.MockitoAnnotations.openMocks;
 /**
  * @author krwong
  */
-public class ExportMetadataCsvServiceTest {
+public class ExportDominoMetadataServiceTest {
     private static final String UUID1 = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String UUID2 = "ba70a1ee-fa7c-437f-a979-cc8b16599652";
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
+    private static final String COLLECTION_UUID2 = "ba70a1ee-fa7c-437f-a979-cc8b16599652";
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
 
     private AutoCloseable closeable;
@@ -58,6 +61,9 @@ public class ExportMetadataCsvServiceTest {
     private SolrSearchService solrSearchService;
     @Mock
     private AccessControlService aclService;
+    @Mock
+    private SearchResultResponse searchResultResponse;
+
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     private ExportDominoMetadataService csvService;
 
@@ -77,13 +83,13 @@ public class ExportMetadataCsvServiceTest {
     @Test
     public void exportDominoMetadataTest() throws Exception {
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
-                "Collection", null, null, null);
+                "Collection", null, null, null, new Date());
         var workRecord1 = makeWorkRecord(UUID1, "Work 1");
         var workRecord2 = makeWorkRecord(UUID2, "Work 2");
         mockParentResults(collectionRecord);
         mockChildrenResults(workRecord1, workRecord2);
 
-        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
         assertContainsEntry(csvRecords, UUID1, "ref_id", "Work 1");
         assertContainsEntry(csvRecords, UUID2, "ref_id", "Work 2");
@@ -91,52 +97,87 @@ public class ExportMetadataCsvServiceTest {
     }
     
     @Test
-    public void recordNotFoundTest() {
-        assertThrows(NullPointerException.class, () -> {
-            when(solrSearchService.getSearchResults(
-                    any()).getResultList());
-            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
-            assertTrue(Files.notExists(csvPath));
+    public void parentNotFoundTest() {
+        when(solrSearchService.getObjectById(any())).thenThrow(NotFoundException.class);
+
+        assertThrows(NotFoundException.class, () -> {
+            csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         });
     }
 
     @Test
     public void userNoPermissionTest() {
+        doThrow(new AccessRestrictionException())
+                .when(aclService)
+                .assertHasAccess(anyString(), eq(PIDs.get(COLLECTION_UUID)), any(), eq(Permission.viewHidden));
+
         assertThrows(AccessRestrictionException.class, () -> {
-            doThrow(new AccessRestrictionException())
-                    .when(aclService)
-                    .assertHasAccess(anyString(), eq(PIDs.get(COLLECTION_UUID)), any(), eq(Permission.viewHidden));
-            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
-            assertTrue(Files.notExists(csvPath));
+            csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         });
     }
 
     @Test
-    public void parentWithNoChildrenTest() {
+    public void parentWithNoChildrenTest() throws Exception {
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
-                "Collection", null, null, null);
+                "Collection", null, null, null, new Date());
         mockParentResults(collectionRecord);
+        when(solrSearchService.getSearchResults(any())).thenReturn(searchResultResponse);
 
-        assertThrows(NullPointerException.class, () -> {
-            when(solrSearchService.getSearchResults(
-                    any()).getResultList());
-            var csvPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent);
-            assertTrue(Files.notExists(csvPath));
-        });
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
+        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
+        assertNumberOfEntries(0, csvRecords);
     }
 
     @Test
-    public void invalidIdTypeTest() throws Exception {
+    public void invalidIdTypeTest() {
         var workRecord1 = makeWorkRecord(UUID1, "Work 1");
         mockParentResults(workRecord1);
 
-        try {
-            csvService.exportCsv(asPidList(UUID1), agent);
-            fail();
-        } catch (InvalidOperationForObjectType e) {
-            assertEquals("Object " + UUID1 + " of type " + workRecord1.getResourceType()
-                    + " is not valid for DOMino metadata export", e.getMessage());
-        }
+        var exception = assertThrows(InvalidOperationForObjectType.class, () -> {
+            csvService.exportCsv(asPidList(UUID1), agent, "*", "*");
+        });
+        assertEquals("Object " + UUID1 + " of type " + workRecord1.getResourceType()
+                + " is not valid for DOMino metadata export", exception.getMessage());
+    }
+
+    @Test
+    public void filterForRecordsCreatedAfterStartDate() throws Exception {
+        var collectionRecord1 = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null, new Date());
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1");
+        Date dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXX").parse("2019-00-00T00:00:00Z");
+        var collectionRecord2 = makeRecord(COLLECTION_UUID2, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null, dateCreated);
+        var workRecord2 = makeWorkRecordWithDate(COLLECTION_UUID, UUID2, "Work 2", dateCreated);
+
+        mockParentResults(collectionRecord1, collectionRecord2);
+        mockChildrenResults(workRecord1);
+
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent,
+                "2020-00-00T00:00:00Z", "*");
+        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
+        assertContainsEntry(csvRecords, UUID1, "ref_id", "Work 1");
+        assertNumberOfEntries(1, csvRecords);
+    }
+
+    @Test
+    public void filterForRecordsCreatedBeforeEndDate() throws Exception {
+        var collectionRecord1 = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null, new Date());
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1");
+        Date dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXX").parse("2019-00-00T00:00:00Z");
+        var collectionRecord2 = makeRecord(COLLECTION_UUID2, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", null, null, null, dateCreated);
+        var workRecord2 = makeWorkRecordWithDate(COLLECTION_UUID, UUID2, "Work 2", dateCreated);
+
+        mockParentResults(collectionRecord1, collectionRecord2);
+        mockChildrenResults(workRecord2);
+
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent,
+                "*", "2020-00-00T00:00:00Z");
+        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
+        assertContainsEntry(csvRecords, UUID2, "ref_id", "Work 2");
+        assertNumberOfEntries(1, csvRecords);
     }
 
     private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
@@ -185,11 +226,18 @@ public class ExportMetadataCsvServiceTest {
     }
 
     private ContentObjectRecord makeWorkRecord(String uuid, String title) {
-        return makeRecord(uuid, COLLECTION_UUID, ResourceType.Work, title, null, null, null);
+        Date dateCreated = new Date();
+        return makeRecord(uuid, COLLECTION_UUID, ResourceType.Work, title, null, null,
+                null, dateCreated);
+    }
+
+    private ContentObjectRecord makeWorkRecordWithDate(String collectionId, String uuid, String title, Date date) {
+        return makeRecord(uuid, collectionId, ResourceType.Work, title, null, null,
+                null, date);
     }
 
     private ContentObjectRecord makeRecord(String uuid, String parentUuid, ResourceType resourceType, String title,
-                                           String filename, String mimetype, Integer order) {
+                                           String filename, String mimetype, Integer order, Date dateCreated) {
         var rec = new ContentObjectSolrRecord();
         rec.setId(uuid);
         rec.setAncestorPath(makeAncestorPath(parentUuid));
@@ -198,6 +246,7 @@ public class ExportMetadataCsvServiceTest {
         rec.setFileFormatType(Arrays.asList(mimetype));
         rec.setMemberOrderId(order);
         rec.setRoleGroup(Arrays.asList("patron|public", "canViewOriginals|everyone"));
+        rec.setDateCreated(dateCreated);
         if (filename != null) {
             var datastream = new DatastreamImpl(null, DatastreamType.ORIGINAL_FILE.getId(), 0l, mimetype,
                     filename, null, null, null);
