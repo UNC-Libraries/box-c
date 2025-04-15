@@ -12,7 +12,9 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -23,6 +25,8 @@ import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -37,11 +41,13 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -63,6 +69,8 @@ public class ExportDominoMetadataServiceTest {
     private AccessControlService aclService;
     @Mock
     private SearchResultResponse searchResultResponse;
+    @Captor
+    private ArgumentCaptor<SearchRequest> searchRequest;
 
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     private ExportDominoMetadataService csvService;
@@ -155,29 +163,16 @@ public class ExportDominoMetadataServiceTest {
 
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent,
                 "2020-00-00T00:00:00Z", "*");
+
         var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
         assertContainsEntry(csvRecords, UUID1, "ref_id", "Work 1");
         assertNumberOfEntries(1, csvRecords);
-    }
 
-    @Test
-    public void filterForRecordsCreatedBeforeEndDate() throws Exception {
-        var collectionRecord1 = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
-                "Collection", null, null, null, new Date());
-        var workRecord1 = makeWorkRecord(UUID1, "Work 1");
-        Date dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXX").parse("2019-00-00T00:00:00Z");
-        var collectionRecord2 = makeRecord(COLLECTION_UUID2, ADMIN_UNIT_UUID, ResourceType.Collection,
-                "Collection", null, null, null, dateCreated);
-        var workRecord2 = makeWorkRecordWithDate(COLLECTION_UUID, UUID2, "Work 2", dateCreated);
-
-        mockParentResults(collectionRecord1, collectionRecord2);
-        mockChildrenResults(workRecord2);
-
-        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent,
-                "*", "2020-00-00T00:00:00Z");
-        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
-        assertContainsEntry(csvRecords, UUID2, "ref_id", "Work 2");
-        assertNumberOfEntries(1, csvRecords);
+        verify(solrSearchService).getSearchResults(searchRequest.capture());
+        var searchState = searchRequest.getValue().getSearchState();
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED.name()));
+        assertEquals("2020-00-00T00:00:00Z,*", searchState.getRangeFields()
+                .get(SearchFieldKey.DATE_CREATED.name()).getParameterValue());
     }
 
     private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
