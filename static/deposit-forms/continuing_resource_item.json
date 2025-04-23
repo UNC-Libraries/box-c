@@ -26,15 +26,18 @@
   "date_of_issue": {
     "type": "text",
     "label": "Date of issue",
-    "placeholder": "Ex. 2004, 1995/6"
+    "placeholder": "Ex. 2004, 1995/6",
+    "default": ""
   },
   "volume": {
     "type": "text",
-    "label": "Volume"
+    "label": "Volume",
+    "default": ""
   },
   "number": {
     "type": "text",
-    "label": "Number"
+    "label": "Number",
+    "default": ""
   },
   "filter_divider_1": {
     "type": "static",
@@ -56,15 +59,18 @@
   "alternate_title": {
     "type": "text",
     "label": "Alternate Title",
-    "description": "Please enter any alternate or variant forms of the title."
+    "description": "Please enter any alternate or variant forms of the title.",
+    "default": ""
   },
   "preceding_title": {
     "type": "text",
-    "label": "Preceding Title"
+    "label": "Preceding Title",
+    "default": ""
   },
   "succeeding_title": {
     "type": "text",
-    "label": "Succeeding Title"
+    "label": "Succeeding Title",
+    "default": ""
   },
   "genre": {
     "type": "select",
@@ -105,11 +111,13 @@
   },
   "publisher": {
     "type": "text",
-    "label": "Publisher"
+    "label": "Publisher",
+    "default": ""
   },
   "place_of_publication": {
     "type": "text",
-    "label": "Place of Publication"
+    "label": "Place of Publication",
+    "default": ""
   },
   "issuance": {
     "type": "select",
@@ -178,7 +186,8 @@
     "default": "eng"
   },
   "related_url": {
-    "type": "text", "label": "Related URL"
+    "type": "text", "label": "Related URL",
+    "default": ""
   },
   "filter_divider_2": {
     "type": "static",
@@ -202,7 +211,8 @@
         "subject_topical": {
           "type": "text",
           "label": "Subject (Topical)",
-          "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century"
+          "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century",
+          "default": ""
         }
       }
     }
@@ -229,7 +239,8 @@
         "subject_personal": {
           "type": "text",
           "label": "Subject (Name) - Personal",
-          "placeholder": "Ex. David, King of Israel--Art"
+          "placeholder": "Ex. David, King of Israel--Art",
+          "default": ""
         }
       }
     }
@@ -256,7 +267,8 @@
         "subject_corporate": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
-          "placeholder": "Ex. Mt. Olive Pickle Company--History"
+          "placeholder": "Ex. Mt. Olive Pickle Company--History",
+          "default": ""
         }
       }
     }
@@ -283,7 +295,8 @@
         "subject_geographic": {
           "type": "text",
           "label": "Subject (Geographic)",
-          "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals"
+          "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals",
+          "default": ""
         }
       }
     }
@@ -295,7 +308,6 @@
   "main_file": {
     "type": "file",
     "label": "File",
-    "upload-temp-endpoint": false,
     "description": "No more than 1.5gb total for all files",
     "addClass": "required",
     "rules": [
@@ -315,7 +327,6 @@
         "supplemental_file": {
           "type": "file",
           "label": "Supplemental File",
-          "upload-temp-endpoint": false,
           "description": "No more than 1.5gb total for all files"
         },
         "description": {
@@ -324,7 +335,8 @@
           "label": "Description",
           "description": "Include an optional description of this supplemental file.",
           "cols": 20,
-          "rows": 5
+          "rows": 5,
+          "default": ""
         }
       }
     }
@@ -333,7 +345,7 @@
     "type": "static",
     "tag": "hr"
   },
-  "email": {
+  "depositorEmail": {
     "type": "text",
     "inputType": "email",
     "addClass": "required",

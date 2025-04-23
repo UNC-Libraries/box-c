@@ -2,7 +2,7 @@
   "h1": {
     "type": "static",
     "tag": "h1",
-    "content": "Continuing resource item",
+    "content": "Generic work",
     "bottom": "1",
     "addClass": "has-text-centered"
   },
@@ -23,72 +23,80 @@
     "tag": "h2",
     "content": "Item information"
   },
-  "title": {
-    "type": "text",
-    "label": "Title",
-    "addClass": "required",
-    "rules": [
-      "required"
-    ]
-  },
-  "date_created": {
-    "type": "text",
-    "label": "Date Created",
-    "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
-    "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
-  },
-  "description": {
-    "type": "textarea",
-    "name": "description",
-    "label": "Description",
-    "cols": 20,
-    "rows": 5
-  },
-  "keywords": {
-    "type": "text",
-    "label": "Keywords",
-    "description": "Please enter your comma-separated keywords here."
-  },
-  "language": {
-    "type": "select",
-    "search": true,
-    "native": false,
-    "label": "Language",
-    "inputType": "search",
-    "autocomplete": "off",
-    "items": "/static/deposit-forms/data/iso639-2b.json",
-    "labelProp": "label",
-    "valueProp": "value",
-    "columns": {
-      "container": 12
-    },
-    "default": "eng"
-  },
-  "resource_type": {
-    "type": "select",
-    "search": true,
-    "native": false,
-    "label": "Resource Type",
-    "inputType": "search",
-    "autocomplete": "off",
-    "items": [
-      "",
-      "text",
-      "cartographic",
-      "notated music",
-      "sound recording-musical",
-      "sound recording-nonmusical",
-      "sound recording",
-      "still image",
-      "moving image",
-      "three dimensional object",
-      "software, multimedia",
-      "mixed material"
-    ],
-    "columns": {
-      "container": 12
-    },
-    "default": "text"
+  "item-info": {
+    "type": "object",
+    "schema": {
+      "title": {
+        "type": "text",
+        "label": "Title",
+        "addClass": "required",
+        "rules": [
+          "required"
+        ]
+      },
+      "date-created": {
+        "type": "text",
+        "label": "Date Created",
+        "default": "",
+        "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
+        "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
+      },
+      "description": {
+        "type": "textarea",
+        "name": "description",
+        "label": "Description",
+        "default": "",
+        "cols": 20,
+        "rows": 5
+      },
+      "keywords": {
+        "type": "text",
+        "label": "Keywords",
+        "default": [],
+        "description": "Please enter your comma-separated keywords here."
+      },
+      "language": {
+        "type": "select",
+        "search": true,
+        "native": false,
+        "label": "Language",
+        "inputType": "search",
+        "autocomplete": "off",
+        "items": "/static/deposit-forms/data/iso639-2b.json",
+        "labelProp": "label",
+        "valueProp": "value",
+        "columns": {
+          "container": 12
+        },
+        "default": "eng"
+      },
+      "resource_type": {
+        "type": "select",
+        "search": true,
+        "native": false,
+        "label": "Resource Type",
+        "inputType": "search",
+        "autocomplete": "off",
+        "items": [
+          "",
+          "text",
+          "cartographic",
+          "notated music",
+          "sound recording-musical",
+          "sound recording-nonmusical",
+          "sound recording",
+          "still image",
+          "moving image",
+          "three dimensional object",
+          "software, multimedia",
+          "mixed material"
+        ],
+        "columns": {
+          "container": 12
+        },
+        "default": "text"
+      }
+    }
   },
   "filter_divider_1": {
     "type": "static",
@@ -99,31 +107,27 @@
     "tag": "h2",
     "content": "Creator Information (Personal name)"
   },
-  "creator_personal_name": {
-    "type": "list",
-    "label": "",
-    "object":  {
-      "schema": {
-        "first_name": {
-          "type": "text",
-          "label": "First Name"
-        },
-        "last_name": {
-          "type": "text",
-          "label": "Last Name"
-        }
-      },
-      "terms_of_address": {
-        "type": "text",
-        "label": "Terms of Address",
-        "placeholder": "Ex. Jr., Sr."
-      },
-      "life_dates": {
-        "type": "text",
-        "label": "Life Dates",
-        "placeholder": "Ex. 1954-2001"
-      }
-    }
+  "fname": {
+    "type": "text",
+    "label": "First Name",
+    "default": ""
+  },
+  "lname": {
+    "type": "text",
+    "label": "Last Name",
+    "default": ""
+  },
+  "terms-address": {
+    "type": "text",
+    "label": "Terms of Address",
+    "default": "",
+    "placeholder": "Ex. Jr., Sr."
+  },
+  "dates": {
+    "type": "text",
+    "label": "Life Dates",
+    "default": "",
+    "placeholder": "Ex. 1954-2001"
   },
   "filter_divider_2": {
     "type": "static",
@@ -139,7 +143,7 @@
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "creator_corporate_name": {
+  "corporate-creator": {
     "type": "list",
     "label": "",
     "object":  {
@@ -147,6 +151,7 @@
         "name": {
           "type": "text",
           "label": "Name",
+          "default": "",
           "placeholder": "Cecil G. Sheps Center for Health Services Research"
         }
       }
@@ -166,14 +171,15 @@
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
   },
-  "subject_topical": {
+  "subject-info-topical": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_topical": {
+        "subject-topical": {
           "type": "text",
           "label": "Subject (Topical)",
+          "default": "",
           "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century"
         }
       }
@@ -193,14 +199,15 @@
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
   },
-  "subject_personal": {
+  "subject-personal-name": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_personal": {
+        "subject-personal-name": {
           "type": "text",
           "label": "Subject (Name) - Personal",
+          "default": "",
           "placeholder": "Ex. David, King of Israel--Art"
         }
       }
@@ -220,14 +227,15 @@
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "subject_corporate": {
+  "subject-info-corporate-name": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_corporate": {
+        "subject-corporate-name": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
+          "default": "",
           "placeholder": "Ex. Mt. Olive Pickle Company--History"
         }
       }
@@ -247,14 +255,15 @@
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
   },
-  "subject_geographic": {
+  "subject-info-geographic": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_geographic": {
+        "subject-geographic": {
           "type": "text",
           "label": "Subject (Geographic)",
+          "default": "",
           "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals"
         }
       }
@@ -264,17 +273,9 @@
     "type": "static",
     "tag": "hr"
   },
-  "main_file": {
+  "filez": {
     "type": "file",
     "label": "File",
-    "upload-temp-file": {
-      "url": "/forms/api/uploads",
-      "method": "POST"
-    },
-    "remove-endpoint": {
-      "url": "/forms/api/uploads",
-      "method": "DELETE"
-    },
     "description": "No more than 1.5gb total for all files",
     "addClass": "required",
     "rules": [
@@ -290,28 +291,21 @@
     "tag": "h2",
     "content": "Supplemental Files"
   },
-  "supplemental_file": {
+  "supplemental": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "supplemental_file": {
+        "supplemental-file": {
           "type": "file",
           "label": "Supplemental File",
-          "upload-temp-file": {
-            "url": "/forms/api/uploads",
-            "method": "POST"
-          },
-          "remove-endpoint": {
-            "url": "/forms/api/uploads",
-            "method": "DELETE"
-          },
           "description": "No more than 1.5gb total for all files"
         },
-        "description": {
+        "supp-description": {
           "type": "textarea",
           "name": "description",
           "label": "Description",
+          "default": "",
           "description": "Include an optional description of this supplemental file.",
           "cols": 20,
           "rows": 5
@@ -323,7 +317,7 @@
     "type": "static",
     "tag": "hr"
   },
-  "email": {
+  "depositorEmail": {
     "type": "text",
     "inputType": "email",
     "addClass": "required",

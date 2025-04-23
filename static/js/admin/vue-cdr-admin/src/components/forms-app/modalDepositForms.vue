@@ -73,31 +73,37 @@ export default {
          * @returns {Promise<axios.AxiosResponse<any>>}
          */
         async submitForm(FormData, form$) {
-            // Using FormData will EXCLUDE conditional elements and it
-            // will submit the form as "Content-Type: multipart/form-data".
-            const formData = FormData;
-
-            // Using form$.data will INCLUDE conditional elements and it
-            // will submit the form as "Content-Type: application/json".
-            const data = form$.data;
-
-            // Using form$.requestData will EXCLUDE conditional elements and it
-            // will submit the form as "Content-Type: application/json".
-            const requestData = form$.requestData;
-
+            const request_data = this.formatSubmission(form$.requestData);
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
 
             return await form$.$vueform.services.axios.post('/forms/api/deposits',
-                formData /* | data | requestData */,
-                {
-                    cancelToken: form$.cancelToken.token,
-                }
+                form$.requestData /* | data | requestData */, { cancelToken: form$.cancelToken.token }
             );
         },
 
+        // axios response
         handleResponse(response, form$) {
-            console.log(response) // axios response
+            console.log(response)
+        },
+
+        formatSubmission(data) {
+            let submission_package = {
+                depositorEmail: data.depositorEmail,
+                destination: this.containerId,
+                form: "generic",
+                sendEmailReceipt: /lib.unc.edu/.test(window.location)
+            }
+            delete data.depositorEmail;
+            data.supplemental.forEach((f) => {
+               if (f['supplemental-file'] == null) {
+                delete f['supplemental-file'];
+               }
+            });
+            submission_package.values = data;
+            submission_package.values.file = data.file.data.id;
+
+            return submission_package;
         }
     }
 }
