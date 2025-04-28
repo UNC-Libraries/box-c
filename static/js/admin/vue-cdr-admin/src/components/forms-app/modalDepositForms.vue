@@ -74,11 +74,13 @@ export default {
          */
         async submitForm(FormData, form$) {
             const request_data = this.formatSubmission(form$.requestData);
+            // Show loading spinner
+            // form$.submitting = true;
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
 
-            return await form$.$vueform.services.axios.post('/forms/api/deposits',
-                form$.requestData /* | data | requestData */, { cancelToken: form$.cancelToken.token }
+            return await form$.$vueform.services.axios.post(`/services/api/edit/ingest/${this.containerId}`,
+                request_data /* | data | requestData */, { cancelToken: form$.cancelToken.token }
             );
         },
 
@@ -89,21 +91,11 @@ export default {
 
         formatSubmission(data) {
             let submission_package = {
-                depositorEmail: data.depositorEmail,
                 destination: this.containerId,
-                form: "generic",
+                form: this.form,
                 sendEmailReceipt: /lib.unc.edu/.test(window.location)
             }
-            delete data.depositorEmail;
-            data.supplemental.forEach((f) => {
-               if (f['supplemental-file'] == null) {
-                delete f['supplemental-file'];
-               }
-            });
-            submission_package.values = data;
-            submission_package.values.file = data.file.data.id;
-
-            return submission_package;
+            return Object.assign({}, submission_package, data);
         }
     }
 }
