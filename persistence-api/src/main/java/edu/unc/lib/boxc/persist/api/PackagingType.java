@@ -16,6 +16,7 @@ public enum PackagingType {
     BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3"),
     BAGIT("http://purl.org/net/sword/package/BagIt"),
     DIRECTORY("http://cdr.unc.edu/DirectoryIngest"),
+    WORK_FORM_DEPOSIT("https://library.unc.edu/dcr/packaging/WorkFormJson1.0"),
     BXC3_TO_5_MIGRATION("https://library.unc.edu/dcr/packaging/bxc3To5Migration");
 
     private String uri;

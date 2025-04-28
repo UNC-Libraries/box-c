@@ -39,12 +39,20 @@
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
+
+    <bean id="workFormDepositorHandler" class="edu.unc.lib.boxc.deposit.impl.submit.WorkFormDepositorHandler">
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositsDirectory" ref="depositsDirectory" />
+    </bean>
     
     <util:map id="packageHandlers">
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).WORK_FORM_DEPOSIT}" value-ref="workFormDepositorHandler" />
+
     </util:map>
     
     <bean id="depositsDirectory" class="java.io.File">
