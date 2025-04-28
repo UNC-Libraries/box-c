@@ -273,9 +273,11 @@
     "type": "static",
     "tag": "hr"
   },
-  "filez": {
-    "type": "file",
-    "label": "File",
+  "files": {
+    "type": "multifile",
+    "label": "File(s)",
+    "drop": true,
+    "sort": true,
     "description": "No more than 1.5gb total for all files",
     "addClass": "required",
     "rules": [
@@ -283,37 +285,6 @@
     ]
   },
   "filter_divider_8": {
-    "type": "static",
-    "tag": "hr"
-  },
-  "h2_9": {
-    "type": "static",
-    "tag": "h2",
-    "content": "Supplemental Files"
-  },
-  "supplemental": {
-    "type": "list",
-    "label": "",
-    "object":  {
-      "schema": {
-        "supplemental-file": {
-          "type": "file",
-          "label": "Supplemental File",
-          "description": "No more than 1.5gb total for all files"
-        },
-        "supp-description": {
-          "type": "textarea",
-          "name": "description",
-          "label": "Description",
-          "default": "",
-          "description": "Include an optional description of this supplemental file.",
-          "cols": 20,
-          "rows": 5
-        }
-      }
-    }
-  },
-  "filter_divider_9": {
     "type": "static",
     "tag": "hr"
   },
