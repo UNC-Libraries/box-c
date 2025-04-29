@@ -11,20 +11,6 @@ export default defineConfig({
     locales: { en },
     locale: 'en',
     endpoints: {
-        submit: {
-            url: (form) => {
-                // submit to the destination from the form
-                const destinationId = form.data.destination;
-                return `/services/api/edit/ingest/${destinationId}`;
-            },
-            method: 'post',
-            data: (form) => {
-                return {
-                    ...form.data,
-                    type: 'https://library.unc.edu/dcr/packaging/WorkFormJson1.0'
-                };
-            }
-        },
         uploadTempFile: {
             url: '/services/api/edit/ingest/stageFile',
             method: 'post'
@@ -32,6 +18,6 @@ export default defineConfig({
         removeTempFile: {
             url: '/services/api/edit/ingest/removeStagedFile',
             method: 'post',
-        },
+        }
     }
 });

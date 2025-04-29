@@ -305,7 +305,7 @@
     "type": "static",
     "tag": "hr"
   },
-  "files": {
+  "file": {
     "type": "multifile",
     "label": "File(s)",
     "drop": true,
@@ -330,6 +330,13 @@
       "max:255",
       "email"
     ]
+  },
+  "type": {
+    "type": "text",
+    "inputType": "hidden",
+    "addClass": "is-hidden",
+    "default": "https://library.unc.edu/dcr/packaging/WorkFormJson1.0",
+    "name": "type"
   },
   "submit": {
     "button-label": "Submit Deposit",

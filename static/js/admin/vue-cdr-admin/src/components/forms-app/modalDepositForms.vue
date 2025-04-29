@@ -68,34 +68,27 @@ export default {
 
         /**
          * See https://vueform.com/docs/handling-form-data#submit-via-function
+         * for different types of ways to submit data as multipart/form-data or application/json
          * @param FormData
          * @param form$
          * @returns {Promise<axios.AxiosResponse<any>>}
          */
         async submitForm(FormData, form$) {
-            const request_data = this.formatSubmission(form$.requestData);
             // Show loading spinner
             // form$.submitting = true;
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
 
             return await form$.$vueform.services.axios.post(`/services/api/edit/ingest/${this.containerId}`,
-                request_data /* | data | requestData */, { cancelToken: form$.cancelToken.token }
+                FormData, {
+                    cancelToken: form$.cancelToken.token
+                }
             );
         },
 
         // axios response
         handleResponse(response, form$) {
             console.log(response)
-        },
-
-        formatSubmission(data) {
-            let submission_package = {
-                destination: this.containerId,
-                form: this.form,
-                sendEmailReceipt: /lib.unc.edu/.test(window.location)
-            }
-            return Object.assign({}, submission_package, data);
         }
     }
 }
