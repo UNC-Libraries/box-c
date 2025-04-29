@@ -299,13 +299,6 @@
       "email"
     ]
   },
-  "type": {
-    "type": "text",
-    "inputType": "hidden",
-    "addClass": "is-hidden",
-    "default": "https://library.unc.edu/dcr/packaging/WorkFormJson1.0",
-    "name": "type"
-  },
   "submit": {
     "button-label": "Submit Deposit",
     "secondary": true,

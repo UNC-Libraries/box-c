@@ -78,10 +78,21 @@ export default {
             // form$.submitting = true;
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
+            // Create a new FormData object for our custom submission
+            const submissionData = new window.FormData();
+
+            // Convert form data to a JSON string
+            const jsonString = JSON.stringify(FormData);
+            const jsonFile = new File([jsonString], 'form-data.json', { type: 'application/json' });
+            submissionData.append('file', jsonFile);
+            submissionData.append('type', 'https://library.unc.edu/dcr/packaging/WorkFormJson1.0');
 
             return await form$.$vueform.services.axios.post(`/services/api/edit/ingest/${this.containerId}`,
-                FormData, {
-                    cancelToken: form$.cancelToken.token
+                submissionData, {
+                    cancelToken: form$.cancelToken.token,
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
             );
         },
