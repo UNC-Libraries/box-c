@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import freemarker.template.TemplateException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Bag;
