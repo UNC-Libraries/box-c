@@ -1,0 +1,44 @@
+{
+  "date_of_issue": "",
+  "volume": "",
+  "number": "",
+  "title": "Test publication",
+  "alternate_title": "",
+  "preceding_title": "",
+  "succeeding_title": "",
+  "genre": null,
+  "resource_type": null,
+  "publisher": "",
+  "place_of_publication": "",
+  "issuance": "continuing",
+  "frequency": null,
+  "language": "eng",
+  "related_url": "",
+  "subject_topical": [
+    {
+      "subject_topical": ""
+    }
+  ],
+  "subject_personal": [
+    {
+      "subject_personal": ""
+    }
+  ],
+  "subject_corporate": [
+    {
+      "subject_corporate": ""
+    }
+  ],
+  "subject_geographic": [
+    {
+      "subject_geographic": ""
+    }
+  ],
+  "file": [
+    {
+      "originalName": "test.json",
+      "tmp": "ingest-5377669890231254282.tmp"
+    }
+  ],
+  "depositorEmail": "b@example.com"
+}

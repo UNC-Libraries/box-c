@@ -1,0 +1,44 @@
+{
+  "title": "test work",
+  "date_created": "",
+  "description": "hello world",
+  "keywords": [],
+  "language": "eng",
+  "resource_type": "text",
+  "fname": "",
+  "lname": "",
+  "terms_address": "",
+  "dates": "",
+  "corporate_creator": [
+    {
+      "name": ""
+    }
+  ],
+  "subject_info_topical": [
+    {
+      "subject_topical": ""
+    }
+  ],
+  "subject_personal_name": [
+    {
+      "subject_personal_name": ""
+    }
+  ],
+  "subject_info_corporate_name": [
+    {
+      "subject_corporate_name": ""
+    }
+  ],
+  "subject_info_geographic": [
+    {
+      "subject_geographic": ""
+    }
+  ],
+  "file": [
+    {
+      "original_name": "test.json",
+      "tmp": "ingest_1187021924102481924.tmp"
+    }
+  ],
+  "depositor_email": "b@example.com"
+}
