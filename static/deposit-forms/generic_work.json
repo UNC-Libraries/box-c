@@ -166,7 +166,7 @@
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
   },
-  "subject_info_topical": {
+  "subject_topical": {
     "type": "list",
     "label": "",
     "object":  {
@@ -194,12 +194,12 @@
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
   },
-  "subject_personal_name": {
+  "subject_personal": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_personal_name": {
+        "subject_personal": {
           "type": "text",
           "label": "Subject (Name) - Personal",
           "default": "",
@@ -222,12 +222,12 @@
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "subject_info_corporate_name": {
+  "subject_corporate": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_corporate_name": {
+        "subject_corporate": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
           "default": "",
@@ -250,7 +250,7 @@
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
   },
-  "subject_info_geographic": {
+  "subject_geographic": {
     "type": "list",
     "label": "",
     "object":  {
