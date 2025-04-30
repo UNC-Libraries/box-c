@@ -6,7 +6,7 @@ import {useFormsStore} from './stores/forms';
 import { usePermissionsStore } from './stores/permissions';
 import Vueform from '@vueform/vueform';
 import vueformConfig from './../vueform.config';
-import '@vueform/vueform/dist/vueform.css';
+import './assets/vueform.nodark.css';
 import './assets/common-styles.css'
 
 const pinia = createPinia();

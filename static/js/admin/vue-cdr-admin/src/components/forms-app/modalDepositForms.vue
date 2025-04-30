@@ -1,5 +1,5 @@
 <template>
-    <div id="dcr-forms-app">
+    <div id="dcr-forms-app" class="vf-boxc">
         <link href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/versions/bulma-prefixed.min.css" rel="stylesheet">
         <div class="bulma-columns bulma-is-centered">
             <div class="bulma-column bulma-is-12">
