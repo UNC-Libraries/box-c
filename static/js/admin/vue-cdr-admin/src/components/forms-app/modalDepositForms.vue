@@ -74,15 +74,13 @@ export default {
          * @returns {Promise<axios.AxiosResponse<any>>}
          */
         async submitForm(FormData, form$) {
-            // Show loading spinner
-            // form$.submitting = true;
             // Setting cancel token
             form$.cancelToken = form$.$vueform.services.axios.CancelToken.source();
             // Create a new FormData object for our custom submission
             const submissionData = new window.FormData();
 
             // Convert form data to a JSON string
-            const jsonString = JSON.stringify(FormData);
+            const jsonString = JSON.stringify(form$.requestData);
             const jsonFile = new File([jsonString], 'form-data.json', { type: 'application/json' });
             submissionData.append('file', jsonFile);
             submissionData.append('type', 'https://library.unc.edu/dcr/packaging/WorkFormJson1.0');
@@ -99,7 +97,13 @@ export default {
 
         // axios response
         handleResponse(response, form$) {
-            console.log(response)
+            if (response.status === 200) {
+                this.form = '';
+                this.alertHandler.alertHandler('success', 'Form submitted successfully.');
+            } else {
+                this.alertHandler.alertHandler('error', 'There was an error submitting the form.');
+                console.log(response)
+            }
         }
     }
 }
