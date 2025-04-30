@@ -23,80 +23,75 @@
     "tag": "h2",
     "content": "Item information"
   },
-  "item-info": {
-    "type": "object",
-    "schema": {
-      "title": {
-        "type": "text",
-        "label": "Title",
-        "addClass": "required",
-        "rules": [
-          "required"
-        ]
-      },
-      "date-created": {
-        "type": "text",
-        "label": "Date Created",
-        "default": "",
-        "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
-        "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
-      },
-      "description": {
-        "type": "textarea",
-        "name": "description",
-        "label": "Description",
-        "default": "",
-        "cols": 20,
-        "rows": 5
-      },
-      "keywords": {
-        "type": "text",
-        "label": "Keywords",
-        "default": [],
-        "description": "Please enter your comma-separated keywords here."
-      },
-      "language": {
-        "type": "select",
-        "search": true,
-        "native": false,
-        "label": "Language",
-        "inputType": "search",
-        "autocomplete": "off",
-        "items": "/static/deposit-forms/data/iso639-2b.json",
-        "labelProp": "label",
-        "valueProp": "value",
-        "columns": {
-          "container": 12
-        },
-        "default": "eng"
-      },
-      "resource_type": {
-        "type": "select",
-        "search": true,
-        "native": false,
-        "label": "Resource Type",
-        "inputType": "search",
-        "autocomplete": "off",
-        "items": [
-          "",
-          "text",
-          "cartographic",
-          "notated music",
-          "sound recording-musical",
-          "sound recording-nonmusical",
-          "sound recording",
-          "still image",
-          "moving image",
-          "three dimensional object",
-          "software, multimedia",
-          "mixed material"
-        ],
-        "columns": {
-          "container": 12
-        },
-        "default": "text"
-      }
-    }
+  "title": {
+    "type": "text",
+    "label": "Title",
+    "addClass": "required",
+    "rules": [
+      "required"
+    ]
+  },
+  "date_created": {
+    "type": "text",
+    "label": "Date Created",
+    "default": "",
+    "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
+    "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
+  },
+  "description": {
+    "type": "textarea",
+    "name": "description",
+    "label": "Description",
+    "default": "",
+    "cols": 20,
+    "rows": 5
+  },
+  "keywords": {
+    "type": "text",
+    "label": "Keywords",
+    "default": [],
+    "description": "Please enter your comma-separated keywords here."
+  },
+  "language": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Language",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": "/static/deposit-forms/data/iso639-2b.json",
+    "labelProp": "label",
+    "valueProp": "value",
+    "columns": {
+      "container": 12
+    },
+    "default": "eng"
+  },
+  "resource_type": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Resource Type",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "",
+      "text",
+      "cartographic",
+      "notated music",
+      "sound recording-musical",
+      "sound recording-nonmusical",
+      "sound recording",
+      "still image",
+      "moving image",
+      "three dimensional object",
+      "software, multimedia",
+      "mixed material"
+    ],
+    "columns": {
+      "container": 12
+    },
+    "default": "text"
   },
   "filter_divider_1": {
     "type": "static",
@@ -143,7 +138,7 @@
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "corporate-creator": {
+  "corporate_creator": {
     "type": "list",
     "label": "",
     "object":  {
@@ -171,12 +166,12 @@
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
   },
-  "subject-info-topical": {
+  "subject_info_topical": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject-topical": {
+        "subject_topical": {
           "type": "text",
           "label": "Subject (Topical)",
           "default": "",
@@ -199,12 +194,12 @@
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
   },
-  "subject-personal-name": {
+  "subject_personal_name": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject-personal-name": {
+        "subject_personal_name": {
           "type": "text",
           "label": "Subject (Name) - Personal",
           "default": "",
@@ -227,12 +222,12 @@
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "subject-info-corporate-name": {
+  "subject_info_corporate_name": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject-corporate-name": {
+        "subject_corporate_name": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
           "default": "",
@@ -255,12 +250,12 @@
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
   },
-  "subject-info-geographic": {
+  "subject_info_geographic": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject-geographic": {
+        "subject_geographic": {
           "type": "text",
           "label": "Subject (Geographic)",
           "default": "",
