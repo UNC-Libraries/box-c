@@ -47,10 +47,17 @@
     "rows": 5
   },
   "keywords": {
-    "type": "text",
-    "label": "Keywords",
-    "default": [],
-    "description": "Please enter your comma-separated keywords here."
+    "type": "list",
+    "label": "",
+    "object": {
+      "schema": {
+        "keyword": {
+          "type": "text",
+          "label": "Keyword",
+          "default": ""
+        }
+      }
+    }
   },
   "language": {
     "type": "select",
