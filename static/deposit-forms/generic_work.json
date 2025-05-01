@@ -6,19 +6,19 @@
     "bottom": "1",
     "addClass": "has-text-centered"
   },
-  "p_1": {
+  "p1": {
     "type": "static",
     "tag": "p",
     "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
     "addClass": "has-text-centered"
   },
-  "p_2": {
+  "p2": {
     "type": "static",
     "tag": "p",
     "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
     "addClass": "has-text-centered"
   },
-  "h2_1": {
+  "h21": {
     "type": "static",
     "tag": "h2",
     "content": "Item information"
@@ -31,7 +31,7 @@
       "required"
     ]
   },
-  "date_created": {
+  "dateCreated": {
     "type": "text",
     "label": "Date Created",
     "default": "",
@@ -67,7 +67,7 @@
     },
     "default": "eng"
   },
-  "resource_type": {
+  "resourceType": {
     "type": "select",
     "search": true,
     "native": false,
@@ -93,52 +93,60 @@
     },
     "default": "text"
   },
-  "filter_divider_1": {
+  "filterDivider1": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_3": {
+  "h23": {
     "type": "static",
     "tag": "h2",
     "content": "Creator Information (Personal name)"
   },
-  "fname": {
-    "type": "text",
-    "label": "First Name",
-    "default": ""
+  "creatorInfo": {
+    "type": "list",
+    "label": "",
+    "object": {
+      "schema": {
+        "fname": {
+          "type": "text",
+          "label": "First Name",
+          "default": ""
+        },
+        "lname": {
+          "type": "text",
+          "label": "Last Name",
+          "default": ""
+        },
+        "termsAddress": {
+          "type": "text",
+          "label": "Terms of Address",
+          "default": "",
+          "placeholder": "Ex. Jr., Sr."
+        },
+        "dates": {
+          "type": "text",
+          "label": "Life Dates",
+          "default": "",
+          "placeholder": "Ex. 1954-2001"
+        }
+      }
+    }
   },
-  "lname": {
-    "type": "text",
-    "label": "Last Name",
-    "default": ""
-  },
-  "terms-address": {
-    "type": "text",
-    "label": "Terms of Address",
-    "default": "",
-    "placeholder": "Ex. Jr., Sr."
-  },
-  "dates": {
-    "type": "text",
-    "label": "Life Dates",
-    "default": "",
-    "placeholder": "Ex. 1954-2001"
-  },
-  "filter_divider_2": {
+  "filterDivider2": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_4": {
+  "h24": {
     "type": "static",
     "tag": "h2",
     "content": "Creator Information (Corporate name)"
   },
-  "p_3": {
+  "p3": {
     "type": "static",
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "corporate_creator": {
+  "corporateCreator": {
     "type": "list",
     "label": "",
     "object":  {
@@ -152,26 +160,26 @@
       }
     }
   },
-  "filter_divider_3": {
+  "filterDivider3": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_5": {
+  "h25": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Topical"
   },
-  "p_4": {
+  "p4": {
     "type": "static",
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
   },
-  "subject_topical": {
+  "subjectTopical": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_topical": {
+        "subjectTopical": {
           "type": "text",
           "label": "Subject (Topical)",
           "default": "",
@@ -180,26 +188,26 @@
       }
     }
   },
-  "filter_divider_4": {
+  "filterDivider4": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_6": {
+  "h26": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Personal Names"
   },
-  "p_5": {
+  "p5": {
     "type": "static",
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
   },
-  "subject_personal": {
+  "subjectPersonal": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_personal": {
+        "subjectPersonal": {
           "type": "text",
           "label": "Subject (Name) - Personal",
           "default": "",
@@ -208,26 +216,26 @@
       }
     }
   },
-  "filter_divider_5": {
+  "filterDivider5": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_7": {
+  "h27": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Corporate Names"
   },
-  "p_6": {
+  "p6": {
     "type": "static",
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "subject_corporate": {
+  "subjectCorporate": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_corporate": {
+        "subjectCorporate": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
           "default": "",
@@ -236,26 +244,26 @@
       }
     }
   },
-  "filter_divider_6": {
+  "filterDivider6": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_8": {
+  "h28": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Geographic"
   },
-  "p_7": {
+  "p7": {
     "type": "static",
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
   },
-  "subject_geographic": {
+  "subjectGeographic": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_geographic": {
+        "subjectGeographic": {
           "type": "text",
           "label": "Subject (Geographic)",
           "default": "",
@@ -264,7 +272,7 @@
       }
     }
   },
-  "filter_divider_7": {
+  "filterDivider7": {
     "type": "static",
     "tag": "hr"
   },
@@ -279,7 +287,7 @@
       "required"
     ]
   },
-  "filter_divider_8": {
+  "filterDivider8": {
     "type": "static",
     "tag": "hr"
   },

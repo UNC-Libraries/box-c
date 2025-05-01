@@ -6,24 +6,24 @@
     "bottom": "1",
     "addClass": "has-text-centered"
   },
-  "p_1": {
+  "p1": {
     "type": "static",
     "tag": "p",
     "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
     "addClass": "has-text-centered"
   },
-  "p_2": {
+  "p2": {
     "type": "static",
     "tag": "p",
     "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
     "addClass": "has-text-centered"
   },
-  "h2_1": {
+  "h21": {
     "type": "static",
     "tag": "h2",
     "content": "Issue information"
   },
-  "date_of_issue": {
+  "dateOfIssue": {
     "type": "text",
     "label": "Date of issue",
     "placeholder": "Ex. 2004, 1995/6",
@@ -39,11 +39,11 @@
     "label": "Number",
     "default": ""
   },
-  "filter_divider_1": {
+  "filterDivider1": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_2": {
+  "h22": {
     "type": "static",
     "tag": "h2",
     "content": "Publication Information"
@@ -56,18 +56,18 @@
       "required"
     ]
   },
-  "alternate_title": {
+  "alternateTitle": {
     "type": "text",
     "label": "Alternate Title",
     "description": "Please enter any alternate or variant forms of the title.",
     "default": ""
   },
-  "preceding_title": {
+  "precedingTitle": {
     "type": "text",
     "label": "Preceding Title",
     "default": ""
   },
-  "succeeding_title": {
+  "succeedingTitle": {
     "type": "text",
     "label": "Succeeding Title",
     "default": ""
@@ -93,7 +93,7 @@
       "container": 12
     }
   },
-  "resource_type": {
+  "resourceType": {
     "type": "select",
     "search": true,
     "native": false,
@@ -114,7 +114,7 @@
     "label": "Publisher",
     "default": ""
   },
-  "place_of_publication": {
+  "placeOfPublication": {
     "type": "text",
     "label": "Place of Publication",
     "default": ""
@@ -185,30 +185,30 @@
     },
     "default": "eng"
   },
-  "related_url": {
+  "relatedUrl": {
     "type": "text", "label": "Related URL",
     "default": ""
   },
-  "filter_divider_2": {
+  "filterDivider2": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_3": {
+  "h23": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Topical"
   },
-  "p_3": {
+  "p3": {
     "type": "static",
     "tag": "p",
     "content": "Please enter topical subject headings here, including subdivisions as applicable."
   },
-  "subject_topical": {
+  "subjectTopical": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_topical": {
+        "subjectTopical": {
           "type": "text",
           "label": "Subject (Topical)",
           "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century",
@@ -217,26 +217,26 @@
       }
     }
   },
-  "filter_divider_3": {
+  "filterDivider3": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_4": {
+  "h24": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Personal Names"
   },
-  "p_4": {
+  "p4": {
     "type": "static",
     "tag": "p",
     "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
   },
-  "subject_personal": {
+  "subjectPersonal": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_personal": {
+        "subjectPersonal": {
           "type": "text",
           "label": "Subject (Name) - Personal",
           "placeholder": "Ex. David, King of Israel--Art",
@@ -245,26 +245,26 @@
       }
     }
   },
-  "filter_divider_4": {
+  "filterDivider4": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_5": {
+  "h25": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Corporate Names"
   },
-  "p_5": {
+  "p5": {
     "type": "static",
     "tag": "p",
     "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
   },
-  "subject_corporate": {
+  "subjectCorporate": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_corporate": {
+        "subjectCorporate": {
           "type": "text",
           "label": "Subject (Name) - Corporate",
           "placeholder": "Ex. Mt. Olive Pickle Company--History",
@@ -273,26 +273,26 @@
       }
     }
   },
-  "filter_divider_5": {
+  "filterDivider5": {
     "type": "static",
     "tag": "hr"
   },
-  "h2_6": {
+  "h26": {
     "type": "static",
     "tag": "h2",
     "content": "Subject Information - Geographic"
   },
-  "p_6": {
+  "p6": {
     "type": "static",
     "tag": "p",
     "content": "Please enter place names used as subjects here, including subdivisions as applicable."
   },
-  "subject_geographic": {
+  "subjectGeographic": {
     "type": "list",
     "label": "",
     "object":  {
       "schema": {
-        "subject_geographic": {
+        "subjectGeographic": {
           "type": "text",
           "label": "Subject (Geographic)",
           "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals",
@@ -301,7 +301,7 @@
       }
     }
   },
-  "filter_divider_6": {
+  "filterDivider6": {
     "type": "static",
     "tag": "hr"
   },
@@ -316,7 +316,7 @@
       "required"
     ]
   },
-  "filter_divider_7": {
+  "filterDivider7": {
     "type": "static",
     "tag": "hr"
   },
