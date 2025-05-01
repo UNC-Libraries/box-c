@@ -31,10 +31,10 @@ public class WorkFormData {
 
     private List<CreatorInfo> creatorInfo;
     private List<CorporateCreator> corporateCreator;
-    private List<SubjectTopical> subjectTopical;
-    private List<SubjectPersonal> subjectPersonal;
-    private List<SubjectCorporate> subjectCorporate;
-    private List<SubjectGeographic> subjectGeographic;
+    private List<SubjectTopicalEntry> subjectTopical;
+    private List<SubjectPersonalEntry> subjectPersonal;
+    private List<SubjectCorporateEntry> subjectCorporate;
+    private List<SubjectGeographicEntry> subjectGeographic;
     private List<FileInfo> file;
 
     // Default constructor required for Jackson
@@ -210,35 +210,35 @@ public class WorkFormData {
         this.corporateCreator = corporateCreator;
     }
 
-    public List<SubjectTopical> getSubjectTopical() {
+    public List<SubjectTopicalEntry> getSubjectTopical() {
         return subjectTopical;
     }
 
-    public void setSubjectTopical(List<SubjectTopical> subjectTopical) {
+    public void setSubjectTopical(List<SubjectTopicalEntry> subjectTopical) {
         this.subjectTopical = subjectTopical;
     }
 
-    public List<SubjectPersonal> getSubjectPersonal() {
+    public List<SubjectPersonalEntry> getSubjectPersonal() {
         return subjectPersonal;
     }
 
-    public void setSubjectPersonal(List<SubjectPersonal> subjectPersonal) {
+    public void setSubjectPersonal(List<SubjectPersonalEntry> subjectPersonal) {
         this.subjectPersonal = subjectPersonal;
     }
 
-    public List<SubjectCorporate> getSubjectCorporate() {
+    public List<SubjectCorporateEntry> getSubjectCorporate() {
         return subjectCorporate;
     }
 
-    public void setSubjectCorporate(List<SubjectCorporate> subjectCorporate) {
+    public void setSubjectCorporate(List<SubjectCorporateEntry> subjectCorporate) {
         this.subjectCorporate = subjectCorporate;
     }
 
-    public List<SubjectGeographic> getSubjectGeographic() {
+    public List<SubjectGeographicEntry> getSubjectGeographic() {
         return subjectGeographic;
     }
 
-    public void setSubjectGeographic(List<SubjectGeographic> subjectGeographic) {
+    public void setSubjectGeographic(List<SubjectGeographicEntry> subjectGeographic) {
         this.subjectGeographic = subjectGeographic;
     }
 
@@ -314,11 +314,8 @@ public class WorkFormData {
         }
     }
 
-    public static class SubjectTopical {
+    public static class SubjectTopicalEntry {
         private String subjectTopical;
-
-        public SubjectTopical() {
-        }
 
         public String getSubjectTopical() {
             return subjectTopical;
@@ -329,7 +326,7 @@ public class WorkFormData {
         }
     }
 
-    public static class SubjectPersonal {
+    public static class SubjectPersonalEntry {
         private String subjectPersonal;
 
         public String getSubjectPersonal() {
@@ -341,7 +338,7 @@ public class WorkFormData {
         }
     }
 
-    public static class SubjectCorporate {
+    public static class SubjectCorporateEntry {
         private String subjectCorporate;
 
         public String getSubjectCorporate() {
@@ -353,7 +350,7 @@ public class WorkFormData {
         }
     }
 
-    public static class SubjectGeographic {
+    public static class SubjectGeographicEntry {
         private String subjectGeographic;
 
         public String getSubjectGeographic() {

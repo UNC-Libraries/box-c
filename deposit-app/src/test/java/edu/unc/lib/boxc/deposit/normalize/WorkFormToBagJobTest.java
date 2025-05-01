@@ -2,13 +2,18 @@ package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -18,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,12 +84,72 @@ public class WorkFormToBagJobTest extends AbstractNormalizationJobTest {
         Resource originalResc = DepositModelHelpers.getDatastream(fileResource);
         assertEquals(dataFilePath.toUri().toString(),
                 originalResc.getProperty(CdrDeposit.stagingLocation).getLiteral().getString());
+
+        // Ensure MODS exists and was populated for the work object
+        var workPid = PIDs.get(workBag.getURI());
+        var modsPath = depositDirectoryManager.getModsPath(workPid, false);
+        assertTrue(Files.exists(modsPath));
+        assertTrue(Files.size(modsPath) > 0);
     }
 
-    private Path createStagedFile(String filename) throws Exception {
+    @Test
+    public void testWithGenericMinimalWithMissingFile() throws Exception {
+        var dataPath = depositDirectoryManager.getDataDir().resolve("formData.json");
+        Files.copy(Paths.get("src/test/resources/form_submissions/generic_minimal.json"), dataPath);
+
+        depositStatus.put(RedisWorkerConstants.DepositField.sourceUri.name(), dataPath.toUri().toString());
+
+        var e = assertThrows(JobFailedException.class, () -> job.run());
+        assertTrue(e.getMessage().contains("Failed to move staged file to deposit data directory"));
+    }
+
+    @Test
+    public void testWithNoTitle() throws Exception {
+        var dataPath = depositDirectoryManager.getDataDir().resolve("formData.json");
+        var formData = new WorkFormData();
+        formData.setTitle("");
+        var files = new WorkFormData.FileInfo();
+        files.setTmp("test.json");
+        files.setOriginalName("test.json");
+        formData.setFile(Collections.singletonList(files));
+        ObjectMapper mapper = new ObjectMapper();
+        Files.writeString(dataPath, mapper.writeValueAsString(formData));
+
+        depositStatus.put(RedisWorkerConstants.DepositField.sourceUri.name(), dataPath.toUri().toString());
+
+        var e = assertThrows(JobFailedException.class, () -> job.run());
+        assertTrue(e.getMessage().contains("Form data is missing title"));
+    }
+
+    @Test
+    public void testWithNoFiles() throws Exception {
+        var dataPath = depositDirectoryManager.getDataDir().resolve("formData.json");
+        var formData = new WorkFormData();
+        formData.setTitle("Test title");
+        formData.setFile(Collections.emptyList());
+        ObjectMapper mapper = new ObjectMapper();
+        Files.writeString(dataPath, mapper.writeValueAsString(formData));
+
+        depositStatus.put(RedisWorkerConstants.DepositField.sourceUri.name(), dataPath.toUri().toString());
+
+        var e = assertThrows(JobFailedException.class, () -> job.run());
+        assertTrue(e.getMessage().contains("Form data is missing files"));
+    }
+
+    @Test
+    public void testWithInvalidJson() throws Exception {
+        var dataPath = depositDirectoryManager.getDataDir().resolve("formData.json");
+        Files.writeString(dataPath, "{ what in the world is this }");
+
+        depositStatus.put(RedisWorkerConstants.DepositField.sourceUri.name(), dataPath.toUri().toString());
+
+        var e = assertThrows(JobFailedException.class, () -> job.run());
+        assertTrue(e.getMessage().contains("Failed to deserialize form JSON"));
+    }
+
+    private void createStagedFile(String filename) throws Exception {
         var stagedFile = uploadStagingPath.resolve(filename);
         Files.createDirectories(stagedFile.getParent());
         Files.createFile(stagedFile);
-        return stagedFile;
     }
 }

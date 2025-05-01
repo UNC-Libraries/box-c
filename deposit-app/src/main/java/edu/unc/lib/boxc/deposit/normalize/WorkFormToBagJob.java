@@ -55,6 +55,7 @@ public class WorkFormToBagJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
+        log.debug("Normalizing work form data for deposit {}", getDepositPID());
         Model depModel = getReadOnlyModel();
         // Cache all the changes for committing at the end
         Model model = ModelFactory.createDefaultModel().add(depModel);
@@ -69,8 +70,10 @@ public class WorkFormToBagJob extends AbstractDepositJob {
 
         // Move staged files into deposit
         gatherFiles(formData);
+        interruptJobIfStopped();
         // Transform form structure into RDF bag
         var workPid = populateDepositModel(model, formData);
+        interruptJobIfStopped();
         // Transform descriptive form data into MODS
         populateDescription(workPid, formData);
 
@@ -79,6 +82,7 @@ public class WorkFormToBagJob extends AbstractDepositJob {
 
     private void populateDescription(PID workPid, WorkFormData workFormData) {
         try {
+            log.debug("Transforming work form data into MODS for {}", workPid);
             var modsDoc = modsTransformer.transform(workFormData);
             var modsPath = depositDirectoryManager.getModsPath(workPid, true);
             var modsString = xmlOutputter.outputString(modsDoc);
@@ -91,14 +95,12 @@ public class WorkFormToBagJob extends AbstractDepositJob {
     private void gatherFiles(WorkFormData workFormData) {
         try {
             for (var file : workFormData.getFile()) {
+                log.debug("Moving file {} to deposit directory", file);
                 Path storedPath = uploadStagingPath.resolve(file.getTmp());
-                if (Files.notExists(storedPath)) {
-                    throw buildFailJob("File " + file.getTmp() + " does not exist in staging location", "");
-                }
                 Files.move(storedPath, getDataDirPathForFile(file));
             }
         } catch (IOException e) {
-            throw buildFailJob(e, "Failed to move file to deposit data directory");
+            throw buildFailJob(e, "Failed to move staged file to deposit data directory");
         }
     }
 
@@ -107,6 +109,7 @@ public class WorkFormToBagJob extends AbstractDepositJob {
     }
 
     private PID populateDepositModel(Model model, WorkFormData formData) {
+        log.debug("Populating deposit model with work form data for {}", getDepositPID());
         Bag depositBag = model.createBag(getDepositPID().getRepositoryPath());
         Bag workBag = null;
         // Create work object
