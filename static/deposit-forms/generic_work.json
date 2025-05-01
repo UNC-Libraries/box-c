@@ -298,17 +298,6 @@
     "type": "static",
     "tag": "hr"
   },
-  "depositorEmail": {
-    "type": "text",
-    "inputType": "email",
-    "addClass": "required",
-    "label": "Depositor's Email Address",
-    "rules": [
-      "required",
-      "max:255",
-      "email"
-    ]
-  },
   "submit": {
     "button-label": "Submit Deposit",
     "secondary": true,
