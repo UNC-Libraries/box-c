@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Data from a Work Form deposit submission
+ *
  * @author bbpennel
  */
 public class WorkFormData {

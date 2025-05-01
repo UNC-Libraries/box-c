@@ -32,6 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
+ * Normalization job that transforms a work form JSON into a bag for deposit.
+ * Generates a MODS file from the form data and moves files from the configured staging location.
+ *
  * @author bbpennel
  */
 public class WorkFormToBagJob extends AbstractDepositJob {

@@ -13,6 +13,8 @@ import java.io.StringWriter;
 import java.util.HashMap;
 
 /**
+ * Transforms work form JSON into MODS XML using a FreeMarker template.
+ *
  * @author bbpennel
  */
 public class WorkFormModsTransformer {
