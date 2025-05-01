@@ -1,0 +1,60 @@
+{
+  "title": "Generic Maximal",
+  "dateCreated": "2020-05-01",
+  "description": "Test abstract",
+  "keywords": [{"keyword":"Testing"}, {"keyword":"Working"}],
+  "language": "eng",
+  "resourceType": "text",
+  "creatorInfo": [
+    {
+      "fname": "Ben",
+      "lname": "Pen",
+      "termsAddress": "Jr",
+      "dates": "1900-2000"
+    },
+    {
+      "fname": "Glen",
+      "lname": "Hen",
+      "termsAddress": "",
+      "dates": ""
+    }
+  ],
+  "corporateCreator": [
+    {
+      "name": "Corporate Overlord"
+    }
+  ],
+  "subjectTopical": [
+    {
+      "subjectTopical": "Testing subject"
+    }
+  ],
+  "subjectPersonal": [
+    {
+      "subjectPersonal": "Testing Name"
+    }
+  ],
+  "subjectCorporate": [
+    {
+      "subjectCorporate": "Testing Corporate"
+    }
+  ],
+  "subjectGeographic": [
+    {
+      "subjectGeographic": "Testing geographic"
+    },
+    {
+      "subjectGeographic": "North Carolina"
+    }
+  ],
+  "file": [
+    {
+      "originalName": "test.json",
+      "tmp": "ingest-8941977395312670694.tmp"
+    },
+    {
+      "originalName": "thumb2.png",
+      "tmp": "ingest-4723818102415995169.tmp"
+    }
+  ]
+}

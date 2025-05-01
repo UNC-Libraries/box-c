@@ -1,44 +1,47 @@
 {
-  "title": "test work",
-  "date_created": "",
+  "title": "generic test",
+  "dateCreated": "",
   "description": "hello world",
   "keywords": [],
   "language": "eng",
-  "resource_type": "text",
-  "fname": "",
-  "lname": "",
-  "terms_address": "",
-  "dates": "",
-  "corporate_creator": [
+  "resourceType": "text",
+  "creatorInfo": [
+    {
+      "fname": "",
+      "lname": "",
+      "termsAddress": "",
+      "dates": ""
+    }
+  ],
+  "corporateCreator": [
     {
       "name": ""
     }
   ],
-  "subject_info_topical": [
+  "subjectTopical": [
     {
-      "subject_topical": ""
+      "subjectTopical": ""
     }
   ],
-  "subject_personal_name": [
+  "subjectPersonal": [
     {
-      "subject_personal_name": ""
+      "subjectPersonal": ""
     }
   ],
-  "subject_info_corporate_name": [
+  "subjectCorporate": [
     {
-      "subject_corporate_name": ""
+      "subjectCorporate": ""
     }
   ],
-  "subject_info_geographic": [
+  "subjectGeographic": [
     {
-      "subject_geographic": ""
+      "subjectGeographic": ""
     }
   ],
   "file": [
     {
-      "original_name": "test.json",
-      "tmp": "ingest_1187021924102481924.tmp"
+      "originalName": "test.json",
+      "tmp": "ingest-5277341109740044922.tmp"
     }
-  ],
-  "depositor_email": "b@example.com"
+  ]
 }

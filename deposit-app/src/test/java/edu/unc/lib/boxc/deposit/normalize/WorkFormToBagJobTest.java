@@ -59,8 +59,8 @@ public class WorkFormToBagJobTest extends AbstractNormalizationJobTest {
         var dataPath = depositDirectoryManager.getDataDir().resolve("formData.json");
         Files.copy(Paths.get("src/test/resources/form_submissions/generic_minimal.json"), dataPath);
 
-        var stagedPath = createStagedFile("ingest_1187021924102481924.tmp");
-        var dataFilePath = depositDirectoryManager.getDataDir().resolve("ingest_1187021924102481924.tmp");
+        createStagedFile("ingest-5277341109740044922.tmp");
+        var dataFilePath = depositDirectoryManager.getDataDir().resolve("ingest-5277341109740044922.tmp");
 
         depositStatus.put(RedisWorkerConstants.DepositField.sourceUri.name(), dataPath.toUri().toString());
 

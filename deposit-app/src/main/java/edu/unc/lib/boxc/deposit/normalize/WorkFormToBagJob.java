@@ -132,7 +132,7 @@ public class WorkFormToBagJob extends AbstractDepositJob {
 
     private WorkFormData deserializeFormJson(Path formJsonPath) {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
         try (var formStream = Files.newInputStream(formJsonPath)) {
             return mapper.readValue(formStream, WorkFormData.class);
         } catch (IOException e) {

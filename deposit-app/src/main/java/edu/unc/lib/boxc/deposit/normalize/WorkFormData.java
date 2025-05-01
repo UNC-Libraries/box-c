@@ -12,29 +12,40 @@ public class WorkFormData {
     private String title;
     private String dateCreated;
     private String description;
-    private List<String> keywords;
+    private List<Keywords> keywords;
     private String language;
     private String resourceType;
-    private String fname;
-    private String lname;
-    private String termsAddress;
-    private String dates;
+    // Continuing resource fields
+    private String dateOfIssue;
+    private String volume;
+    private String number;
+    private String alternateTitle;
+    private String precedingTitle;
+    private String succeedingTitle;
+    private String genre;
+    private String publisher;
+    private String placeOfPublication;
+    private String issuance;
+    private String frequency;
+    private String relatedUrl;
+
+    private List<CreatorInfo> creatorInfo;
     private List<CorporateCreator> corporateCreator;
-    private List<SubjectTopical> subjectInfoTopical;
-    private List<SubjectPersonalName> subjectPersonalName;
-    private List<SubjectCorporateName> subjectInfoCorporateName;
-    private List<SubjectGeographic> subjectInfoGeographic;
+    private List<SubjectTopical> subjectTopical;
+    private List<SubjectPersonal> subjectPersonal;
+    private List<SubjectCorporate> subjectCorporate;
+    private List<SubjectGeographic> subjectGeographic;
     private List<FileInfo> file;
-    private String depositorEmail;
 
     // Default constructor required for Jackson
     public WorkFormData() {
         this.keywords = new ArrayList<>();
+        this.creatorInfo = new ArrayList<>();
         this.corporateCreator = new ArrayList<>();
-        this.subjectInfoTopical = new ArrayList<>();
-        this.subjectPersonalName = new ArrayList<>();
-        this.subjectInfoCorporateName = new ArrayList<>();
-        this.subjectInfoGeographic = new ArrayList<>();
+        this.subjectTopical = new ArrayList<>();
+        this.subjectPersonal = new ArrayList<>();
+        this.subjectCorporate = new ArrayList<>();
+        this.subjectGeographic = new ArrayList<>();
         this.file = new ArrayList<>();
     }
 
@@ -63,11 +74,11 @@ public class WorkFormData {
         this.description = description;
     }
 
-    public List<String> getKeywords() {
+    public List<Keywords> getKeywords() {
         return keywords;
     }
 
-    public void setKeywords(List<String> keywords) {
+    public void setKeywords(List<Keywords> keywords) {
         this.keywords = keywords;
     }
 
@@ -87,36 +98,108 @@ public class WorkFormData {
         this.resourceType = resourceType;
     }
 
-    public String getFname() {
-        return fname;
+    public List<CreatorInfo> getCreatorInfo() {
+        return creatorInfo;
     }
 
-    public void setFname(String fname) {
-        this.fname = fname;
+    public void setCreatorInfo(List<CreatorInfo> creatorInfo) {
+        this.creatorInfo = creatorInfo;
     }
 
-    public String getLname() {
-        return lname;
+    public String getDateOfIssue() {
+        return dateOfIssue;
     }
 
-    public void setLname(String lname) {
-        this.lname = lname;
+    public void setDateOfIssue(String dateOfIssue) {
+        this.dateOfIssue = dateOfIssue;
     }
 
-    public String getTermsAddress() {
-        return termsAddress;
+    public String getVolume() {
+        return volume;
     }
 
-    public void setTermsAddress(String termsAddress) {
-        this.termsAddress = termsAddress;
+    public void setVolume(String volume) {
+        this.volume = volume;
     }
 
-    public String getDates() {
-        return dates;
+    public String getNumber() {
+        return number;
     }
 
-    public void setDates(String dates) {
-        this.dates = dates;
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getAlternateTitle() {
+        return alternateTitle;
+    }
+
+    public void setAlternateTitle(String alternateTitle) {
+        this.alternateTitle = alternateTitle;
+    }
+
+    public String getPrecedingTitle() {
+        return precedingTitle;
+    }
+
+    public void setPrecedingTitle(String precedingTitle) {
+        this.precedingTitle = precedingTitle;
+    }
+
+    public String getSucceedingTitle() {
+        return succeedingTitle;
+    }
+
+    public void setSucceedingTitle(String succeedingTitle) {
+        this.succeedingTitle = succeedingTitle;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public String getPlaceOfPublication() {
+        return placeOfPublication;
+    }
+
+    public void setPlaceOfPublication(String placeOfPublication) {
+        this.placeOfPublication = placeOfPublication;
+    }
+
+    public String getIssuance() {
+        return issuance;
+    }
+
+    public void setIssuance(String issuance) {
+        this.issuance = issuance;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
+    }
+
+    public String getRelatedUrl() {
+        return relatedUrl;
+    }
+
+    public void setRelatedUrl(String relatedUrl) {
+        this.relatedUrl = relatedUrl;
     }
 
     public List<CorporateCreator> getCorporateCreator() {
@@ -127,36 +210,36 @@ public class WorkFormData {
         this.corporateCreator = corporateCreator;
     }
 
-    public List<SubjectTopical> getSubjectInfoTopical() {
-        return subjectInfoTopical;
+    public List<SubjectTopical> getSubjectTopical() {
+        return subjectTopical;
     }
 
-    public void setSubjectInfoTopical(List<SubjectTopical> subjectInfoTopical) {
-        this.subjectInfoTopical = subjectInfoTopical;
+    public void setSubjectTopical(List<SubjectTopical> subjectTopical) {
+        this.subjectTopical = subjectTopical;
     }
 
-    public List<SubjectPersonalName> getSubjectPersonalName() {
-        return subjectPersonalName;
+    public List<SubjectPersonal> getSubjectPersonal() {
+        return subjectPersonal;
     }
 
-    public void setSubjectPersonalName(List<SubjectPersonalName> subjectPersonalName) {
-        this.subjectPersonalName = subjectPersonalName;
+    public void setSubjectPersonal(List<SubjectPersonal> subjectPersonal) {
+        this.subjectPersonal = subjectPersonal;
     }
 
-    public List<SubjectCorporateName> getSubjectInfoCorporateName() {
-        return subjectInfoCorporateName;
+    public List<SubjectCorporate> getSubjectCorporate() {
+        return subjectCorporate;
     }
 
-    public void setSubjectInfoCorporateName(List<SubjectCorporateName> subjectInfoCorporateName) {
-        this.subjectInfoCorporateName = subjectInfoCorporateName;
+    public void setSubjectCorporate(List<SubjectCorporate> subjectCorporate) {
+        this.subjectCorporate = subjectCorporate;
     }
 
-    public List<SubjectGeographic> getSubjectInfoGeographic() {
-        return subjectInfoGeographic;
+    public List<SubjectGeographic> getSubjectGeographic() {
+        return subjectGeographic;
     }
 
-    public void setSubjectInfoGeographic(List<SubjectGeographic> subjectInfoGeographic) {
-        this.subjectInfoGeographic = subjectInfoGeographic;
+    public void setSubjectGeographic(List<SubjectGeographic> subjectGeographic) {
+        this.subjectGeographic = subjectGeographic;
     }
 
     public List<FileInfo> getFile() {
@@ -168,18 +251,47 @@ public class WorkFormData {
         this.file = file;
     }
 
-    public String getDepositorEmail() {
-        return depositorEmail;
+    public static class CreatorInfo {
+        private String fname;
+        private String lname;
+        private String termsAddress;
+        private String dates;
+
+        public String getFname() {
+            return fname;
+        }
+
+        public void setFname(String fname) {
+            this.fname = fname;
+        }
+
+        public String getLname() {
+            return lname;
+        }
+
+        public void setLname(String lname) {
+            this.lname = lname;
+        }
+
+        public String getTermsAddress() {
+            return termsAddress;
+        }
+
+        public void setTermsAddress(String termsAddress) {
+            this.termsAddress = termsAddress;
+        }
+
+        public String getDates() {
+            return dates;
+        }
+
+        public void setDates(String dates) {
+            this.dates = dates;
+        }
     }
 
-    public void setDepositorEmail(String depositorEmail) {
-        this.depositorEmail = depositorEmail;
-    }
     public static class CorporateCreator {
         private String name;
-
-        public CorporateCreator() {
-        }
 
         public String getName() {
             return name;
@@ -187,6 +299,18 @@ public class WorkFormData {
 
         public void setName(String name) {
             this.name = name;
+        }
+    }
+
+    public static class Keywords {
+        private String keyword;
+
+        public String getKeyword() {
+            return keyword;
+        }
+
+        public void setKeyword(String keyword) {
+            this.keyword = keyword;
         }
     }
 
@@ -205,41 +329,32 @@ public class WorkFormData {
         }
     }
 
-    public static class SubjectPersonalName {
-        private String subjectPersonalName;
+    public static class SubjectPersonal {
+        private String subjectPersonal;
 
-        public SubjectPersonalName() {
+        public String getSubjectPersonal() {
+            return subjectPersonal;
         }
 
-        public String getSubjectPersonalName() {
-            return subjectPersonalName;
-        }
-
-        public void setSubjectPersonalName(String subjectPersonalName) {
-            this.subjectPersonalName = subjectPersonalName;
+        public void setSubjectPersonal(String subjectPersonal) {
+            this.subjectPersonal = subjectPersonal;
         }
     }
 
-    public static class SubjectCorporateName {
-        private String subjectCorporateName;
+    public static class SubjectCorporate {
+        private String subjectCorporate;
 
-        public SubjectCorporateName() {
+        public String getSubjectCorporate() {
+            return subjectCorporate;
         }
 
-        public String getSubjectCorporateName() {
-            return subjectCorporateName;
-        }
-
-        public void setSubjectCorporateName(String subjectCorporateName) {
-            this.subjectCorporateName = subjectCorporateName;
+        public void setSubjectCorporate(String subjectCorporate) {
+            this.subjectCorporate = subjectCorporate;
         }
     }
 
     public static class SubjectGeographic {
         private String subjectGeographic;
-
-        public SubjectGeographic() {
-        }
 
         public String getSubjectGeographic() {
             return subjectGeographic;
@@ -253,9 +368,6 @@ public class WorkFormData {
     public static class FileInfo {
         private String originalName;
         private String tmp;
-
-        public FileInfo() {
-        }
 
         public String getOriginalName() {
             return originalName;

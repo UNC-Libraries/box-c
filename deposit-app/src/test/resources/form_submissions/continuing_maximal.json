@@ -1,0 +1,47 @@
+{
+  "dateOfIssue": "2020",
+  "volume": "5",
+  "number": "6",
+  "title": "Maximal Publication",
+  "alternateTitle": "Lots of fields",
+  "precedingTitle": "Preceding pub",
+  "succeedingTitle": "Succeeding pub",
+  "genre": "Periodicals",
+  "resourceType": "text",
+  "publisher": "Boxc",
+  "placeOfPublication": "Chapel hill",
+  "issuance": "multipart monograph",
+  "frequency": "Continuously updated",
+  "language": "eng",
+  "relatedUrl": "https://example.com",
+  "subjectTopical": [
+    {
+      "subjectTopical": "Topic subj"
+    }
+  ],
+  "subjectPersonal": [
+    {
+      "subjectPersonal": "Personal subj"
+    }
+  ],
+  "subjectCorporate": [
+    {
+      "subjectCorporate": "Corporate subj"
+    }
+  ],
+  "subjectGeographic": [
+    {
+      "subjectGeographic": "Geo subj"
+    }
+  ],
+  "file": [
+    {
+      "originalName": "test.json",
+      "tmp": "ingest-8745960508407148257.tmp"
+    },
+    {
+      "originalName": "pyvenv.cfg",
+      "tmp": "ingest-3578267152904301061.tmp"
+    }
+  ]
+}

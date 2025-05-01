@@ -1,44 +1,43 @@
 {
-  "date_of_issue": "",
+  "dateOfIssue": "",
   "volume": "",
   "number": "",
-  "title": "Test publication",
-  "alternate_title": "",
-  "preceding_title": "",
-  "succeeding_title": "",
+  "title": "test publication",
+  "alternateTitle": "",
+  "precedingTitle": "",
+  "succeedingTitle": "",
   "genre": null,
-  "resource_type": null,
+  "resourceType": null,
   "publisher": "",
-  "place_of_publication": "",
+  "placeOfPublication": "",
   "issuance": "continuing",
   "frequency": null,
   "language": "eng",
-  "related_url": "",
-  "subject_topical": [
+  "relatedUrl": "",
+  "subjectTopical": [
     {
-      "subject_topical": ""
+      "subjectTopical": ""
     }
   ],
-  "subject_personal": [
+  "subjectPersonal": [
     {
-      "subject_personal": ""
+      "subjectPersonal": ""
     }
   ],
-  "subject_corporate": [
+  "subjectCorporate": [
     {
-      "subject_corporate": ""
+      "subjectCorporate": ""
     }
   ],
-  "subject_geographic": [
+  "subjectGeographic": [
     {
-      "subject_geographic": ""
+      "subjectGeographic": ""
     }
   ],
   "file": [
     {
       "originalName": "test.json",
-      "tmp": "ingest-5377669890231254282.tmp"
+      "tmp": "ingest-10861526686260870997.tmp"
     }
-  ],
-  "depositorEmail": "b@example.com"
+  ]
 }
