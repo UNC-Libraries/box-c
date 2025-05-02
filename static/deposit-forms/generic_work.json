@@ -288,11 +288,16 @@
     "label": "File(s)",
     "drop": true,
     "sort": true,
-    "description": "No more than 1.5gb total for all files",
+    "description": "No files larger than 2GB",
     "addClass": "required",
     "rules": [
       "required"
-    ]
+    ],
+    "file": {
+      "rules": [
+        "max:2000000"
+      ]
+    }
   },
   "filterDivider8": {
     "type": "static",
