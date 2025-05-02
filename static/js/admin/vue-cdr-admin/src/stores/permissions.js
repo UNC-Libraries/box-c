@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 
-export const usePermissionsStore = defineStore({
-    id: 'permissions',
+export const usePermissionsStore = defineStore('permissions', {
     state: () => ({
         actionHandler: {},
         alertHandler: {},
