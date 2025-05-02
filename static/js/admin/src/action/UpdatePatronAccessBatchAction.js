@@ -31,7 +31,7 @@ define('UpdatePatronAccessBatchAction', [ 'jquery', 'AbstractBatchAction'], func
                 type: null
             });
         }
-        perms_editor_store.setShowModal(true);
+        perms_editor_store.setShowPermissionsModal(true);
 
         AbstractBatchAction.prototype.execute.call(this);
     }
