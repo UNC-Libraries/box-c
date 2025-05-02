@@ -70,7 +70,7 @@ export default {
             this.schema = {};
         },
 
-        closeMenuKeys(event) {
+        closeModalKeys(event) {
             if (event.code === 'Escape') {
                 this.closeModal();
             }
@@ -118,11 +118,11 @@ export default {
     },
 
     mounted() {
-        window.addEventListener('keyup', this.closeModal);
+        window.addEventListener('keyup', this.closeModalKeys);
     },
 
     beforeUnmount() {
-        window.removeEventListener('keyup', this.closeModal);
+        window.removeEventListener('keyup', this.closeModalKeys);
     }
 }
 </script>
