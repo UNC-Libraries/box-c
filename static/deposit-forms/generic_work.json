@@ -9,7 +9,7 @@
   "p1": {
     "type": "static",
     "tag": "p",
-    "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
+    "content": "Use this form to submit items to the Digital Collections Repository",
     "addClass": "has-text-centered"
   },
   "p2": {
