@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import ModalPermissionsEditor from '@/components/permissions-editor/modalPermissionsEditor.vue';
+import modalPermissionsEditor from '@/components/permissions-editor/modalPermissionsEditor.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
 
@@ -17,7 +17,7 @@ let wrapper, store;
 
 describe('modalPermissionsEditor.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(ModalPermissionsEditor,
+        wrapper = shallowMount(modalPermissionsEditor,
             {
                 global: {
                     plugins: [createTestingPinia({

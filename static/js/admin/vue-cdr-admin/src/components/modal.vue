@@ -7,7 +7,7 @@
 
 <script>
 import modalDepositForms from "@/components/forms-app/modalDepositForms.vue";
-import modalPermissionsEditor from "@/components/permissions-editor/ModalPermissionsEditor.vue";
+import modalPermissionsEditor from "@/components/permissions-editor/modalPermissionsEditor.vue";
 import {mapState} from 'pinia';
 import {useFormsStore} from '@/stores/forms';
 
