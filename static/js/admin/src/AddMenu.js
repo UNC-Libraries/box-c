@@ -1,5 +1,5 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateWorkObjectForm', 'AddFileForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
-		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateWorkObjectForm, AddFileForm, ImportMetadataXMLForm, IngestFromSourceForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'AddFileForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm, AddFileForm, ImportMetadataXMLForm, IngestFromSourceForm) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
