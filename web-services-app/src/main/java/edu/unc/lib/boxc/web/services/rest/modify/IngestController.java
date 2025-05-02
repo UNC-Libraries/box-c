@@ -111,8 +111,6 @@ public class IngestController {
         Path stagedPath = Files.createTempFile(uploadStagingPath, "ingest-", ".tmp");
         log.info("Staging file {} from form {} to {}", ingestFile.getOriginalFilename(), formKey, stagedPath);
         Files.copy(ingestFile.getInputStream(), stagedPath, StandardCopyOption.REPLACE_EXISTING);
-        // Trigger automatic cleanup of temp file if the JVM exits
-        stagedPath.toFile().deleteOnExit();
 
         Map<String, Object> result = new HashMap<>();
         result.put("tmp", stagedPath.getFileName().toString());

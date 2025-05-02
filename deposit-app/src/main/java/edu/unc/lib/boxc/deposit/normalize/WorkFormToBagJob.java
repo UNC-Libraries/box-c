@@ -100,6 +100,10 @@ public class WorkFormToBagJob extends AbstractDepositJob {
             for (var file : workFormData.getFile()) {
                 log.debug("Moving file {} to deposit directory", file);
                 Path storedPath = uploadStagingPath.resolve(file.getTmp());
+                // If the file has already been moved, skip it
+                if (!Files.exists(storedPath) && Files.exists(getDataDirPathForFile(file))) {
+                    continue;
+                }
                 Files.move(storedPath, getDataDirPathForFile(file));
             }
         } catch (IOException e) {
