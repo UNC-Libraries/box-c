@@ -39,6 +39,15 @@ public class WorkFormModsTransformerTest {
         var langTermEl = modsEl.getChild("language", MODS_V3_NS).getChild("languageTerm", MODS_V3_NS);
         assertEquals("iso639-2b", langTermEl.getAttribute("authority").getValue());
         assertEquals("eng", langTermEl.getText());
+
+        // Notes
+        var noteEls = modsEl.getChildren("note", MODS_V3_NS);
+        assertEquals(1, noteEls.size());
+        var description = noteEls.get(0);
+        assertEquals("Description", description.getAttributeValue("displayLabel"));
+        assertEquals("hello world", description.getText());
+
+        assertEquals(4, modsEl.getChildren().size());
     }
 
     @Test
@@ -129,14 +138,18 @@ public class WorkFormModsTransformerTest {
         assertEquals("Testing geographic", subjectEls.get(3).getChild("geographic", MODS_V3_NS).getText());
         assertEquals("North Carolina", subjectEls.get(4).getChild("geographic", MODS_V3_NS).getText());
 
-        // Keywords note
-        var keywordNotes = modsEl.getChildren("note", MODS_V3_NS);
-        assertEquals(1, keywordNotes.size());
-        var keywordEl = keywordNotes.get(0);
+        // Notes
+        var noteEls = modsEl.getChildren("note", MODS_V3_NS);
+        assertEquals(2, noteEls.size());
+        var description = noteEls.get(0);
+        assertEquals("Description", description.getAttributeValue("displayLabel"));
+        assertEquals("Test abstract", description.getText());
+
+        var keywordEl = noteEls.get(1);
         assertEquals("Keywords", keywordEl.getAttributeValue("displayLabel"));
         assertEquals("Testing; Working", keywordEl.getText());
 
-        assertEquals(13, modsEl.getChildren().size());
+        assertEquals(14, modsEl.getChildren().size());
     }
 
     @Test
@@ -230,6 +243,62 @@ public class WorkFormModsTransformerTest {
         assertEquals("Geo subj", subjectEls.get(3).getChild("geographic", MODS_V3_NS).getText());
 
         assertEquals(14, modsEl.getChildren().size());
+    }
+
+    @Test
+    public void testTransformGenericWithXmlCharacters() throws Exception {
+        var formData = deserializeFormJson("src/test/resources/form_submissions/generic_with_xml_chars.json");
+        var modsDoc = transformer.transform(formData);
+        var modsEl = modsDoc.getRootElement();
+
+        // Test title
+        var title = modsEl.getChild("titleInfo", MODS_V3_NS).getChild("title", MODS_V3_NS).getValue();
+        assertEquals("generic test & characters", title);
+
+        // Test language
+        var langTermEl = modsEl.getChild("language", MODS_V3_NS).getChild("languageTerm", MODS_V3_NS);
+        assertEquals("iso639-2b", langTermEl.getAttribute("authority").getValue());
+        assertEquals("eng", langTermEl.getText());
+
+        // Test resource type
+        var resourceTypeEl = modsEl.getChild("typeOfResource", MODS_V3_NS);
+        assertEquals("text", resourceTypeEl.getText());
+
+        // Test creators (personal)
+        var nameEls = modsEl.getChildren("name", MODS_V3_NS);
+
+        // First creator
+        var creator1 = nameEls.get(0);
+        assertEquals("personal", creator1.getAttributeValue("type"));
+        var nameParts1 = creator1.getChildren("namePart", MODS_V3_NS);
+        assertEquals("given", nameParts1.get(0).getAttributeValue("type"));
+        assertEquals("Bo'xc", nameParts1.get(0).getText());
+        assertEquals("family", nameParts1.get(1).getAttributeValue("type"));
+        assertEquals("Tim>e", nameParts1.get(1).getText());
+
+        assertEquals(1, nameEls.size());
+
+        // Test subjects
+        var subjectEls = modsEl.getChildren("subject", MODS_V3_NS);
+        assertEquals(1, subjectEls.size()); // 1 topical + 1 personal + 1 corporate + 2 geographic
+
+        // Corporate name subject
+        var corpSubject = subjectEls.get(0);
+        assertEquals("Test & characters' Inc.", corpSubject.getChild("name", MODS_V3_NS)
+                .getChild("namePart", MODS_V3_NS).getText());
+
+        // Keywords note
+        var noteEls = modsEl.getChildren("note", MODS_V3_NS);
+        assertEquals(2, noteEls.size());
+        var description = noteEls.get(0);
+        assertEquals("Description", description.getAttributeValue("displayLabel"));
+        assertEquals("hello> <world \"this is a test\" with xml chars'", description.getText());
+
+        var keywordEl = noteEls.get(1);
+        assertEquals("Keywords", keywordEl.getAttributeValue("displayLabel"));
+        assertEquals("<xml>; te$t", keywordEl.getText());
+
+        assertEquals(7, modsEl.getChildren().size());
     }
 
     private WorkFormData deserializeFormJson(String jsonLocation) throws Exception {

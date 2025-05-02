@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
+import freemarker.core.XMLOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -25,6 +26,7 @@ public class WorkFormModsTransformer {
         cfg.setClassForTemplateLoading(this.getClass(), "/freemark_templates");
         cfg.setDefaultEncoding("UTF-8");
         cfg.setWhitespaceStripping(true);  // Strip excessive whitespace
+        cfg.setOutputFormat(XMLOutputFormat.INSTANCE);
         template = cfg.getTemplate("work_form_mods.ftl");
     }
 

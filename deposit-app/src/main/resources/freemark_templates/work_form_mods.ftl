@@ -32,6 +32,10 @@
         </relatedItem>
     </#if>
 
+    <#if data.description?has_content>
+        <note displayLabel="Description">${data.description}</note>
+    </#if>
+
     <#if data.creatorInfo?has_content>
         <#list data.creatorInfo as creator>
             <#if creator.fname?has_content || creator.lname?has_content>
