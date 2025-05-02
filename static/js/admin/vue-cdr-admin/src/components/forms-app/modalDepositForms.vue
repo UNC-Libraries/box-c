@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import get from 'axios';
 import {mapActions, mapState} from 'pinia';
 import {useFormsStore} from '@/stores/forms';
 
@@ -49,21 +50,30 @@ export default {
     },
 
     methods: {
-        ...mapActions(useFormsStore, ['setAlertHandler', 'setShowFormsModal']),
+        ...mapActions(useFormsStore, ['setAlertHandler', 'setContainerId', 'setShowFormsModal']),
 
         async getSchema() {
             if (this.form !== '') {
-                await fetch(`/static/deposit-forms/${this.form}.json`)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.schema = data;
-                    });
+                get(`/static/deposit-forms/${this.form}.json`)
+                    .then((response) => {
+                        this.schema = response.data;
+                    }).catch(function (error) {
+                    console.log(error);
+                });
             }
         },
 
         closeModal() {
             this.setShowFormsModal(false);
+            this.setContainerId('');
             this.form = '';
+            this.schema = {};
+        },
+
+        closeMenuKeys(event) {
+            if (event.code === 'Escape') {
+                this.closeModal();
+            }
         },
 
         /**
@@ -98,13 +108,21 @@ export default {
         // axios response
         handleResponse(response, form$) {
             if (response.status === 200) {
-                this.form = '';
+                this.closeModal();
                 this.alertHandler.alertHandler('success', 'Form submitted successfully.');
             } else {
                 this.alertHandler.alertHandler('error', 'There was an error submitting the form.');
                 console.log(response)
             }
         }
+    },
+
+    mounted() {
+        window.addEventListener('keyup', this.closeModal);
+    },
+
+    beforeUnmount() {
+        window.removeEventListener('keyup', this.closeModal);
     }
 }
 </script>
