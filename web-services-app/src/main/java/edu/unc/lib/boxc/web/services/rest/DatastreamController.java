@@ -40,7 +40,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
@@ -102,15 +101,15 @@ public class DatastreamController {
 
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        var range = request.getHeader(RANGE);
 
         if (isDerivative(datastream)) {
-            derivativeContentService.streamData(pid, datastream, principals, false, response);
+            derivativeContentService.streamData(pid, datastream, principals, false, range, response);
         } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
             fedoraContentService.streamEventLog(pid, principals, download, response);
         } else {
             accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                     pid, principals, getPermissionForDatastream(datastream));
-            var range = request.getHeader(RANGE);
             fedoraContentService.streamData(pid, datastream, download, response, range);
             if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
                 recordDownloadEvent(pid, datastream, principals, request);

@@ -58,6 +58,6 @@ public class GetFacetsController extends AbstractSearchController {
         model.addAttribute("searchState", searchRequest.getSearchState());
         model.addAttribute("queryMethod", "search");
         model.addAttribute("selectedContainer", resultResponse.getSelectedContainer());
-        return "/jsp/util/facetList";
+        return "util/facetList";
     }
 }

@@ -40,7 +40,6 @@
         <property name="max" value="120"/>
     </module>
     
-    <!-- License Header module disabled in favor of license-maven-plugin -->
     <module name="TreeWalker">
         
         <!-- Checks for redundant import statements -->

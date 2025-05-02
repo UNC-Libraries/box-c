@@ -19,10 +19,10 @@
 <s:eval var="currentAbsoluteUrl" scope="request" expression="T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, currentRelativeUrl)"/>
 <c:choose>
 	<c:when test="${template =='json'}">
-		<c:import url="/jsp/template/jsonTemplate.jsp" />
+		<c:import url="template/jsonTemplate.jsp" />
 	</c:when>
 	<c:when test="${template =='ajax'}">
-		<c:import url="/jsp/template/ajaxTemplate.jsp" />
+		<c:import url="template/ajaxTemplate.jsp" />
 	</c:when>
 	<c:otherwise>
 		<c:import url="template/default.jsp" />
