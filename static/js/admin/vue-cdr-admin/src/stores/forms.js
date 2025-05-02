@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 
 export const useFormsStore = defineStore( 'forms',{
     state: () => ({
-        alertHandler: {},
+        alertHandler: {
+            alertHandler: () => {}
+        },
         containerId: '',
         showFormsModal: false
     }),
