@@ -51,6 +51,9 @@ public class CLIUtil {
 
             return List.of(outputConsumer.getContent(), errorConsumer.getContent());
         } catch (InterruptedException | IOException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new CommandException("Command failed to execute", command, "", e);
         }
     }
