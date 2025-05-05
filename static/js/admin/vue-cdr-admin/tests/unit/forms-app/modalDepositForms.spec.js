@@ -58,15 +58,51 @@ describe('modalDepositForms.vue', () => {
         expect(vueForm).toHaveBeenCalled();
     });
 
-  /*  it("submits the form", async () => {
-        await wrapper.find('#submit').trigger('click');
+    it("submits the form", async () => {
+        const mockForm$ = {
+            requestData: {
+                dateOfIssue: "",
+                volume: "",
+                number: "",
+                title: "Best",
+                alternateTitle: "",
+                precedingTitle: "",
+                succeedingTitle: "",
+                genre: null,
+                resourceType: null,
+                publisher: "",
+                placeOfPublication: "",
+                issuance: "continuing",
+                frequency: null,
+                language: "eng",
+                relatedUrl: "",
+                subjectTopical: [{"subjectTopical": ""}],
+                subjectPersonal: [{"subjectPersonal": ""}],
+                subjectCorporate: [{"subjectCorporate": ""}],
+                subjectGeographic: [{"subjectGeographic": ""}],
+                file: [{"originalName": "rss.rss", tmp: "ingest-2973926476938447097.tmp"}]
+        },
+            $vueform: {
+                services: {
+                    axios: {
+                        post: jest.fn(),
+                        CancelToken: {
+                            source: () => ({
+                                token: 'mock-token'
+                            })
+                        }
+                    }
+                }
+            }
+        };
+       let axios_submit = jest.spyOn(mockForm$.$vueform.services.axios, 'post').mockImplementation(() =>
+            Promise.resolve({ status: 200, data: {} })
+        );
+        expect(store.showFormsModal).toEqual(false);
         await store.setShowFormsModal(true);
-        await wrapper.find('.bulma-select select').setValue('continuing_resource_item');
-
-        expect(wrapper.find('.bulma-modal').classes('bulma-is-active')).toBe(true);
-        expect(wrapper.vm.form).toEqual('continuing_resource_item');
-        expect(vueForm).toHaveBeenCalled();
-    });*/
+        await wrapper.vm.submitForm(jest.fn(), mockForm$);
+        expect(axios_submit).toHaveBeenCalled();
+    });
 
     it("closes the modal on a successful form submission", async () => {
         await store.setShowFormsModal(true);
