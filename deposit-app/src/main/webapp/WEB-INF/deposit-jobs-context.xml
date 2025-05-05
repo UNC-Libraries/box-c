@@ -167,6 +167,17 @@
     <bean id="NormalizeFileObjectsJob" class="edu.unc.lib.boxc.deposit.normalize.NormalizeFileObjectsJob"
         scope="prototype">
     </bean>
+
+    <bean id="workFormModsTransform" class="edu.unc.lib.boxc.deposit.normalize.WorkFormModsTransformer">
+    </bean>
+
+    <bean id="uploadStagingPath" factory-method="get" class="java.nio.file.Paths">
+        <constructor-arg value="file://${ingest.upload.staging.path}" />
+    </bean>
+
+    <bean id="WorkFormToBagJob" class="edu.unc.lib.boxc.deposit.normalize.WorkFormToBagJob"
+          scope="prototype">
+    </bean>
     
     <bean id="aclValidator" class="edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator">
     </bean>

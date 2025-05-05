@@ -9,7 +9,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
@@ -17,18 +20,32 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.common.test.TestHelpers;
+import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.web.common.auth.AccessLevel;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -43,6 +60,7 @@ import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
 import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.persist.api.PackagingType;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -50,49 +68,85 @@ import redis.clients.jedis.JedisPool;
  * @author bbpennel
  *
  */
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/redis-server-context.xml"),
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/ingest-it-servlet.xml")
-})
-public class IngestControllerIT extends AbstractAPIIT {
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration("/spring-test/redis-server-context.xml")
+public class IngestControllerIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
 
     @TempDir
     public Path tmpFolder;
     private File depositsDir;
+    private Path stagingPath;
 
     private PID destPid;
 
-    @Autowired
     private CDRMETSDepositHandler metsHandler;
-    @Autowired
     private SimpleObjectDepositHandler simpleHandler;
+    private DepositSubmissionService depositSubmissionService;
     @Autowired
     private JedisPool jedisPool;
-    @Autowired
     private DepositStatusFactory depositStatusFactory;
+    private RepositoryPIDMinter pidMinter;
+    @Mock
+    private AccessControlService aclService;
+    @Mock
+    private AccessLevel accessLevel;
+    @InjectMocks
+    private IngestController controller;
+    private AutoCloseable closeable;
+    private MockMvc mvc;
 
     @BeforeEach
     public void setup() throws Exception {
-        destPid = makePid();
+        closeable = openMocks(this);
+        pidMinter = new RepositoryPIDMinter();
+        destPid = pidMinter.mintContentPid();
 
         depositsDir = tmpFolder.resolve("deposits").toFile();
         Files.createDirectory(tmpFolder.resolve("deposits"));
+        stagingPath = tmpFolder.resolve("staging");
+        Files.createDirectory(stagingPath);
+
+        depositStatusFactory = new DepositStatusFactory();
+        depositStatusFactory.setJedisPool(jedisPool);
+
+        metsHandler = new CDRMETSDepositHandler();
+        metsHandler.setPidMinter(pidMinter);
+        metsHandler.setDepositStatusFactory(depositStatusFactory);
         metsHandler.setDepositsDirectory(depositsDir);
+        simpleHandler = new SimpleObjectDepositHandler();
         simpleHandler.setDepositsDirectory(depositsDir);
+        simpleHandler.setDepositStatusFactory(depositStatusFactory);
+        simpleHandler.setPidMinter(pidMinter);
+
+        depositSubmissionService = new DepositSubmissionService();
+        depositSubmissionService.setAclService(aclService);
+        Map<PackagingType, DepositHandler> handlerMap = Map.of(
+                PackagingType.METS_CDR, metsHandler,
+                PackagingType.SIMPLE_OBJECT, simpleHandler
+        );
+        depositSubmissionService.setPackageHandlers(handlerMap);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl("admins");
 
         GroupsThreadStore.storeUsername(DEPOSITOR);
         GroupsThreadStore.storeGroups(testPrincipals);
         GroupsThreadStore.storeEmail(DEPOSITOR_EMAIL);
+
+        TestHelpers.setField(controller, "uploadStagingPath", stagingPath);
+        TestHelpers.setField(controller, "depositService", depositSubmissionService);
+
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
     }
 
     @AfterEach
     public void teardownLocal() throws Exception {
         jedisPool.getResource().flushAll();
+        closeable.close();
+        GroupsThreadStore.clearStore();
     }
 
     @Test
@@ -232,5 +286,91 @@ public class IngestControllerIT extends AbstractAPIIT {
 
     private InputStream getTestMETSInputStream() {
         return this.getClass().getResourceAsStream("/cdr_mets_package.xml");
+    }
+
+    @Test
+    public void testStageAndRemoveFile() throws Exception {
+        String filename = "test.txt";
+        String mimetype = "text/plain";
+        String fileContent = "some text";
+
+        when(accessLevel.getHighestRole()).thenReturn(UserRole.canIngest);
+        MockMultipartFile depositFile = new MockMultipartFile("file", filename, mimetype, fileContent.getBytes());
+
+        MvcResult result = mvc.perform(multipart("/edit/ingest/stageFile")
+                        .file(depositFile)
+                        .param("formKey", "")
+                        .param("path", "")
+                        .sessionAttr("accessLevel", accessLevel))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        var stagedTmp = (String) respMap.get("tmp");
+        var stagedPath = stagingPath.resolve(stagedTmp);
+        assertTrue(stagedPath.startsWith(stagingPath));
+        assertTrue(Files.exists(stagedPath), "Staged file does not exist");
+        assertEquals(filename, respMap.get("originalName"));
+
+        try (Stream<Path> pathStream = Files.list(stagingPath)) {
+            assertEquals(1, pathStream.count(), "Staging directory should only have one file");
+        }
+
+        String removeBody = "{\"file\": \"" + stagedTmp + "\", \"formKey\": \"testform\", \"path\": \"\"}";
+        mvc.perform(post("/edit/ingest/removeStagedFile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(removeBody)
+                        .sessionAttr("accessLevel", accessLevel))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        try (Stream<Path> pathStream = Files.list(stagingPath)) {
+            assertEquals(0, pathStream.count(), "Staging directory must now be empty");
+        }
+    }
+
+    @Test
+    public void testStageInsufficientPermissions() throws Exception {
+        String filename = "test.txt";
+        String mimetype = "text/plain";
+        String fileContent = "some text";
+
+        MockMultipartFile depositFile = new MockMultipartFile("file", filename, mimetype, fileContent.getBytes());
+
+        when(accessLevel.getHighestRole()).thenReturn(UserRole.canAccess);
+
+        mvc.perform(multipart("/edit/ingest/stageFile")
+                        .file(depositFile)
+                        .param("formKey", "")
+                        .param("path", "")
+                        .sessionAttr("accessLevel", accessLevel))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testRemoveStagedInsufficientPermissions() throws Exception {
+        when(accessLevel.getHighestRole()).thenReturn(UserRole.canAccess);
+
+        String removeBody = "{\"file\": \"test_file\", \"formKey\": \"testform\", \"path\": \"\"}";
+        mvc.perform(post("/edit/ingest/removeStagedFile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(removeBody)
+                        .sessionAttr("accessLevel", accessLevel))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testRemoveStagedInvalidPath() throws Exception {
+        when(accessLevel.getHighestRole()).thenReturn(UserRole.canIngest);
+
+        String removeBody = "{\"file\": \"../test_file\", \"formKey\": \"testform\", \"path\": \"\"}";
+        mvc.perform(post("/edit/ingest/removeStagedFile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(removeBody)
+                        .sessionAttr("accessLevel", accessLevel))
+                .andExpect(status().isBadRequest())
+                .andReturn();
     }
 }

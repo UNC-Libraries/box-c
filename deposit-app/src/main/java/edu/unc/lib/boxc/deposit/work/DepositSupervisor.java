@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import edu.unc.lib.boxc.deposit.normalize.WorkFormToBagJob;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -718,7 +719,7 @@ public class DepositSupervisor implements WorkerListener {
             ValidateFileAvailabilityJob.class, VirusScanJob.class, FixityCheckJob.class,
             ExtractTechnicalMetadataJob.class, AssignStorageLocationsJob.class, TransferBinariesToStorageJob.class,
             StaffOnlyPermissionJob.class, IngestDepositRecordJob.class, IngestContentObjectsJob.class,
-            CleanupDepositJob.class)
+            CleanupDepositJob.class, WorkFormToBagJob.class)
             .stream().map(Class::getName).collect(Collectors.toSet());
 
     protected Job getNextJob(String depositUUID, Map<String, String> status, List<String> successfulJobs)
@@ -758,6 +759,8 @@ public class DepositSupervisor implements WorkerListener {
             conversionClass = BagIt2N3BagJob.class;
         } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
             conversionClass = DirectoryToBagJob.class;
+        } else if (packagingType.equals(PackagingType.WORK_FORM_DEPOSIT.getUri())) {
+            conversionClass = WorkFormToBagJob.class;
         }
         if (conversionClass == null) {
             String msg = MessageFormat.format("Cannot convert deposit package to N3 BagIt."

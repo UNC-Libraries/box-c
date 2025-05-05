@@ -167,7 +167,7 @@ public class CDRMETSDepositHandlerTest {
 
     private void verifyDepositFields(PID depositPid, Map<String, String> status) {
         assertEquals(depositPid.getId(), status.get(DepositField.uuid.name()));
-        assertNotNull("Deposit submission time must be set", status.get(DepositField.submitTime.name()));
+        assertNotNull(status.get(DepositField.submitTime.name()), "Deposit submission time must be set");
         assertEquals(FILENAME, status.get(DepositField.fileName.name()));
         Path sourcePath = Paths.get(depositsDir.getAbsolutePath(), depositPid.getId(), "data", FILENAME);
         assertEquals(sourcePath.toUri().toString(), status.get(DepositField.sourceUri.name()));

@@ -1,0 +1,47 @@
+{
+  "title": "generic test & characters",
+  "dateCreated": "",
+  "description": "hello> <world \"this is a test\" with xml chars'",
+  "keywords": [{"keyword":"<xml>"}, {"keyword":"te$t"}],
+  "language": "eng",
+  "resourceType": "text",
+  "creatorInfo": [
+    {
+      "fname": "Bo'xc",
+      "lname": "Tim>e",
+      "termsAddress": "",
+      "dates": ""
+    }
+  ],
+  "corporateCreator": [
+    {
+      "name": ""
+    }
+  ],
+  "subjectTopical": [
+    {
+      "subjectTopical": ""
+    }
+  ],
+  "subjectPersonal": [
+    {
+      "subjectPersonal": ""
+    }
+  ],
+  "subjectCorporate": [
+    {
+      "subjectCorporate": "Test & characters' Inc."
+    }
+  ],
+  "subjectGeographic": [
+    {
+      "subjectGeographic": ""
+    }
+  ],
+  "file": [
+    {
+      "originalName": "test.json",
+      "tmp": "ingest-5277341109740044922.tmp"
+    }
+  ]
+}

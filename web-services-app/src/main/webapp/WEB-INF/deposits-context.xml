@@ -8,7 +8,12 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-    
+
+
+    <bean id="uploadStagingPath" factory-method="get" class="java.nio.file.Paths">
+        <constructor-arg value="file://${ingest.upload.staging.path}" />
+    </bean>
+
     <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl"
             init-method="init">
         <property name="contentPathFactory" ref="contentPathFactory" />
@@ -40,6 +45,7 @@
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
         <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).WORK_FORM_DEPOSIT}" value-ref="simpleObjectDepositHandler" />
     </util:map>
     
     <bean id="depositsDirectory" class="java.io.File">

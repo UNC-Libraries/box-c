@@ -1,0 +1,47 @@
+{
+  "title": "generic test",
+  "dateCreated": "",
+  "description": "hello world",
+  "keywords": [],
+  "language": "eng",
+  "resourceType": "text",
+  "creatorInfo": [
+    {
+      "fname": "",
+      "lname": "",
+      "termsAddress": "",
+      "dates": ""
+    }
+  ],
+  "corporateCreator": [
+    {
+      "name": ""
+    }
+  ],
+  "subjectTopical": [
+    {
+      "subjectTopical": ""
+    }
+  ],
+  "subjectPersonal": [
+    {
+      "subjectPersonal": ""
+    }
+  ],
+  "subjectCorporate": [
+    {
+      "subjectCorporate": ""
+    }
+  ],
+  "subjectGeographic": [
+    {
+      "subjectGeographic": ""
+    }
+  ],
+  "file": [
+    {
+      "originalName": "test.json",
+      "tmp": "ingest-5277341109740044922.tmp"
+    }
+  ]
+}

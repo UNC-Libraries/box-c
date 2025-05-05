@@ -121,7 +121,7 @@ public class FileServerDepositHandlerTest {
     private void verifyDepositFields(PID depositPid, PackagingType packageType,
             Map<String, String> status) {
         assertEquals(depositPid.getId(), status.get(DepositField.uuid.name()));
-        assertNotNull("Deposit submission time must be set", status.get(DepositField.submitTime.name()));
+        assertNotNull(status.get(DepositField.submitTime.name()), "Deposit submission time must be set");
         assertEquals(packageType.getUri(), status.get(DepositField.packagingType.name()));
         assertEquals(DEPOSIT_METHOD, status.get(DepositField.depositMethod.name()));
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
