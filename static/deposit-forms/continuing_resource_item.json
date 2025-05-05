@@ -310,7 +310,7 @@
     "label": "File(s)",
     "drop": true,
     "sort": true,
-    "description": "No files larger than 1.5gb",
+    "description": "No files larger than 2gb",
     "addClass": "required",
     "rules": [
       "required"
