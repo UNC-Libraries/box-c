@@ -142,12 +142,6 @@
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-parsers-standard-package</artifactId>
         <version>${tika.version}</version>
-        <exclusions>
-            <exclusion>
-                <groupId>xerces</groupId>
-                <artifactId>xercesImpl</artifactId>
-            </exclusion>
-        </exclusions>
     </dependency>
 
     <dependency>

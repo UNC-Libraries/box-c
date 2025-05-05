@@ -1,7 +1,10 @@
 package edu.unc.lib.boxc.deposit.validate;
 
+import com.apicatalog.jsonld.StringUtils;
 import com.google.common.base.CharMatcher;
+import edu.unc.lib.boxc.common.errors.CommandException;
 import edu.unc.lib.boxc.common.http.MimetypeHelpers;
+import edu.unc.lib.boxc.common.util.CLIUtil;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
@@ -77,6 +80,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
     private static final String FITS_EXAMINE_PATH = "examine";
     private static final String MIMETYPE_ATTR = "mimetype";
+    private static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
 
     private CloseableHttpClient httpClient;
 
@@ -181,7 +185,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         });
     }
 
-    private class ExtractTechnicalMetadataResult {
+    private static class ExtractTechnicalMetadataResult {
         private PID objPid;
         private PID originalPid;
         private boolean hasProvidedMimetype;
@@ -343,7 +347,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     /**
      * Creates a symlink to the provided stagedUri, where the symlink is sanitized of problematic characters
      * and uses the label as the filename to ensure the original file extension is present, if available.
-     * @param objPid
      * @param stagedUriString
      * @param label
      * @return
@@ -441,24 +444,25 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     }
 
     private Document extractUsingCLI(PID objPid, Path targetPath) {
+        String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath.toString() };
         String stdout = null;
+        String stderr = null;
         try {
-            String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath.toString() };
-            Process process = Runtime.getRuntime().exec(command);
-            int exitCode = process.waitFor();
-            stdout = IOUtils.toString(process.getInputStream(), UTF_8);
-            if (exitCode != 0) {
-                String stderr = IOUtils.toString(process.getErrorStream(), UTF_8);
-                failJob(null, "Failed to generate report for {0}, using command:\n{1}\n"
-                        + "Script returned {3} with output:\n{4} {5}",
-                        objPid, Arrays.toString(command), process.exitValue(), stdout, stderr);
+            var joinedCommand = String.join(" ", command);
+            log.debug("FITS CLI command: {}", joinedCommand);
+            var outcome = CLIUtil.executeCommand(List.of(command), FITS_CLI_TIMEOUT_SECONDS);
+            stdout = outcome.get(0);
+            stderr = outcome.get(1);
+            if (!StringUtils.isBlank(stderr)) {
+                log.warn("FITS CLI command \"{}\" error output: {}", joinedCommand, stderr);
             }
+            log.debug("FITS CLI command returned: {}", stdout);
             return createSAXBuilder().build(new ByteArrayInputStream(stdout.getBytes(UTF_8)));
-        } catch (IOException | JDOMException | InterruptedException e) {
+        } catch (IOException | JDOMException | CommandException e) {
             failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
-                    targetPath, objPid.getId(), stdout);
+                    targetPath, objPid.getId(), stdout + stderr);
+            return null;
         }
-        return null;
     }
 
     /**
