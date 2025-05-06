@@ -7,6 +7,10 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Sets the ArchivesSpace Ref ID tag for WorkObjects
+ * @author snluong
+ */
 public class SetAspaceRefIdFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetAspaceRefIdFilter.class);
 

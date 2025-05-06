@@ -6,6 +6,10 @@ import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
+/**
+ * A namespace for ArchivesSpace related properties
+ * @author snluong
+ */
 public class CdrAspace {
     private CdrAspace() {
     }

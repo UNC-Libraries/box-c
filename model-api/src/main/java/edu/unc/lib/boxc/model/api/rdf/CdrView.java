@@ -7,6 +7,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
+ * A namespace for view behavior related properties
  * @author snluong
  */
 public class CdrView {
