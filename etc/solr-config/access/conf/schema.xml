@@ -138,6 +138,8 @@
       fq=ancestorPath:1,test,*&f.ancestorPath.facet.prefix=2,
     -->
     <field name="ancestorPath" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- ArchivesSpace Ref ID -->
+    <field name="aspaceRefId" type="string" indexed="true" stored="true"/>
     <!-- Combined citation field -->
     <field name="citation" type="string" indexed="false" stored="true"/>
     <!-- Archival Collection number -->
