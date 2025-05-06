@@ -1,5 +1,5 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateWorkObjectForm', 'AddFileForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
-		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateWorkObjectForm, AddFileForm, ImportMetadataXMLForm, IngestFromSourceForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'AddFileForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm, AddFileForm, ImportMetadataXMLForm, IngestFromSourceForm) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
@@ -26,7 +26,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			}
 			
 			if (folderOrCollection) {
-				items["addWork"] = { name : "Add Work" };
+				items["addWork"] = { name : "Add Work", className: 'add-dcr-work' };
 			}
 			
 			if (this.container.type === "Work") {
@@ -102,9 +102,9 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 								}).open(self.container.id);
 								break;
 							case "addWork" :
-								new CreateWorkObjectForm({
-									alertHandler : self.options.alertHandler
-								}).open(self.container.id);
+								forms_app_store.setShowFormsModal(true);
+								forms_app_store.setContainerId(self.container.id);
+								forms_app_store.setAlertHandler(self.options.alertHandler);
 								break;
 							case "addFile" :
 								new AddFileForm({

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import modalEditor from '@/components/permissions-editor/modalEditor.vue';
+import modalPermissionsEditor from '@/components/permissions-editor/modalPermissionsEditor.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
 
@@ -15,9 +15,9 @@ const metadata = {
 };
 let wrapper, store;
 
-describe('modalEditor.vue', () => {
+describe('modalPermissionsEditor.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(modalEditor,
+        wrapper = shallowMount(modalPermissionsEditor,
             {
                 global: {
                     plugins: [createTestingPinia({
@@ -38,7 +38,7 @@ describe('modalEditor.vue', () => {
     });
 
     it("displays a record title when triggered from admin interface", async () => {
-        await store.setShowModal(true);
+        await store.setShowPermissionsModal(true);
         await store.setMetadata(metadata);
 
         const record = wrapper.find('h3');

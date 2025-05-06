@@ -119,7 +119,7 @@
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
     import { mapState, mapStores } from 'pinia';
-    import {usePermissionsStore} from "../../stores/permissions";
+    import {usePermissionsStore} from "@/stores/permissions";
 
     export default {
         name: 'staffRoles',

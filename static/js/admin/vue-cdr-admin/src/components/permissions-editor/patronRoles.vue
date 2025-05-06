@@ -100,7 +100,7 @@
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '../../stores/permissions';
+    import { usePermissionsStore } from '@/stores/permissions';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';

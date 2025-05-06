@@ -373,7 +373,7 @@ describe('staffRoles.vue', () => {
     it("updates the data store to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
         moxios.wait(() => {
             wrapper.find('#is-canceling').trigger('click');
-            expect(store.showModal).toEqual(false);
+            expect(store.showPermissionsModal).toEqual(false);
             done();
         });
     });

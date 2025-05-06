@@ -1,0 +1,334 @@
+{
+  "h1": {
+    "type": "static",
+    "tag": "h1",
+    "content": "Continuing resource item",
+    "bottom": "1",
+    "addClass": "has-text-centered"
+  },
+  "p1": {
+    "type": "static",
+    "tag": "p",
+    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
+    "addClass": "has-text-centered"
+  },
+  "p2": {
+    "type": "static",
+    "tag": "p",
+    "content": "Use this form to submit an issue of a continuing resource to the Digital Collections Repository.",
+    "addClass": "has-text-centered"
+  },
+  "h21": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Issue information"
+  },
+  "dateOfIssue": {
+    "type": "text",
+    "label": "Date of issue",
+    "placeholder": "Ex. 2004, 1995/6",
+    "default": ""
+  },
+  "volume": {
+    "type": "text",
+    "label": "Volume",
+    "default": ""
+  },
+  "number": {
+    "type": "text",
+    "label": "Number",
+    "default": ""
+  },
+  "filterDivider1": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h22": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Publication Information"
+  },
+  "title": {
+    "type": "text",
+    "label": "Title",
+    "addClass": "required",
+    "rules": [
+      "required"
+    ]
+  },
+  "alternateTitle": {
+    "type": "text",
+    "label": "Alternate Title",
+    "description": "Please enter any alternate or variant forms of the title.",
+    "default": ""
+  },
+  "precedingTitle": {
+    "type": "text",
+    "label": "Preceding Title",
+    "default": ""
+  },
+  "succeedingTitle": {
+    "type": "text",
+    "label": "Succeeding Title",
+    "default": ""
+  },
+  "genre": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Genre",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "",
+      "Almanacs",
+      "Annual reports",
+      "Newsletters",
+      "Newspapers",
+      "Periodicals",
+      "Posters",
+      "Yearbooks"
+    ],
+    "columns": {
+      "container": 12
+    }
+  },
+  "resourceType": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Resource Type",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "",
+      "text",
+      "still image"
+    ],
+    "columns": {
+      "container": 12
+    }
+  },
+  "publisher": {
+    "type": "text",
+    "label": "Publisher",
+    "default": ""
+  },
+  "placeOfPublication": {
+    "type": "text",
+    "label": "Place of Publication",
+    "default": ""
+  },
+  "issuance": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Issuance",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "",
+      "monographic",
+      "single unit",
+      "multipart monograph",
+      "continuing",
+      "serial",
+      "integrating resource"
+    ],
+    "columns": {
+      "container": 12
+    },
+    "default": "continuing"
+  },
+  "frequency": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Frequency",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "Continuously updated",
+      "Daily",
+      "Semiweekly",
+      "Three times a week",
+      "Weekly",
+      "Biweekly",
+      "Three times a month",
+      "Semimonthly",
+      "Monthly",
+      "Bimonthly",
+      "Quarterly",
+      "Three times a year",
+      "Semiannual",
+      "Annual",
+      "Biennial",
+      "Triennial",
+      "Completely irregular"
+    ],
+    "columns": {
+      "container": 12
+    }
+  },
+  "language": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Language",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": "/static/deposit-forms/data/iso639-2b.json",
+    "labelProp": "label",
+    "valueProp": "value",
+    "columns": {
+      "container": 12
+    },
+    "default": "eng"
+  },
+  "relatedUrl": {
+    "type": "text", "label": "Related URL",
+    "default": ""
+  },
+  "filterDivider2": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h23": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Topical"
+  },
+  "p3": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter topical subject headings here, including subdivisions as applicable."
+  },
+  "subjectTopical": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectTopical": {
+          "type": "text",
+          "label": "Subject (Topical)",
+          "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century",
+          "default": ""
+        }
+      }
+    }
+  },
+  "filterDivider3": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h24": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Personal Names"
+  },
+  "p4": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectPersonal": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectPersonal": {
+          "type": "text",
+          "label": "Subject (Name) - Personal",
+          "placeholder": "Ex. David, King of Israel--Art",
+          "default": ""
+        }
+      }
+    }
+  },
+  "filterDivider4": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h25": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Corporate Names"
+  },
+  "p5": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectCorporate": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectCorporate": {
+          "type": "text",
+          "label": "Subject (Name) - Corporate",
+          "placeholder": "Ex. Mt. Olive Pickle Company--History",
+          "default": ""
+        }
+      }
+    }
+  },
+  "filterDivider5": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h26": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Geographic"
+  },
+  "p6": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter place names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectGeographic": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectGeographic": {
+          "type": "text",
+          "label": "Subject (Geographic)",
+          "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals",
+          "default": ""
+        }
+      }
+    }
+  },
+  "filterDivider6": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "file": {
+    "type": "multifile",
+    "label": "File(s)",
+    "drop": true,
+    "sort": true,
+    "description": "No files larger than 2gb",
+    "addClass": "required",
+    "rules": [
+      "required"
+    ],
+    "file": {
+      "rules": [
+        "max:2000000"
+      ]
+    }
+  },
+  "filterDivider7": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "submit": {
+    "button-label": "Submit Deposit",
+    "secondary": true,
+    "type": "button",
+    "submits": true
+  }
+}

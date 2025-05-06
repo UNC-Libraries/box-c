@@ -1,7 +1,7 @@
 <template ref="permsEditor">
     <div id="modal-permissions-editor">
         <div class="meta-modal">
-            <div v-if="showModal">
+            <div v-if="showPermissionsModal">
                 <transition name="modal">
                     <div class="modal-mask">
                         <div class="modal-wrapper">
@@ -44,10 +44,10 @@
     import patronRoles from '@/components/permissions-editor/patronRoles.vue';
     import staffRoles from "@/components/permissions-editor/staffRoles.vue";
     import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '../../stores/permissions';
+    import { usePermissionsStore } from '@/stores/permissions';
 
     export default {
-        name: 'modalEditor',
+        name: 'modalPermissionsEditor',
         components: {patronRoles, staffRoles},
 
         computed: {
@@ -59,7 +59,7 @@
                 permissionType: state => state.permissionType,
                 resultObject: state => state.resultObject,
                 resultObjects: state => state.resultObjects,
-                showModal: state => state.showModal
+                showPermissionsModal: state => state.showPermissionsModal
             }),
 
             iconType() {
@@ -84,7 +84,7 @@
         },
 
         methods: {
-            ...mapActions(usePermissionsStore, ['setCheckForUnsavedChanges', 'setShowModal']),
+            ...mapActions(usePermissionsStore, ['setCheckForUnsavedChanges', 'setShowPermissionsModal']),
 
             closeModalCheck() {
                 this.setCheckForUnsavedChanges(true);
@@ -95,7 +95,7 @@
             },
 
             closeModal() {
-                this.setShowModal(false);
+                this.setShowPermissionsModal(false);
             }
         }
     }

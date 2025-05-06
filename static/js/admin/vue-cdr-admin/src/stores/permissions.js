@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 
-export const usePermissionsStore = defineStore({
-    id: 'permissions',
+export const usePermissionsStore = defineStore('permissions', {
     state: () => ({
         actionHandler: {},
         alertHandler: {},
@@ -14,7 +13,7 @@ export const usePermissionsStore = defineStore({
         permissionType: '',
         resultObject: {},
         resultObjects: [],
-        showModal: false,
+        showPermissionsModal: false,
         staffRole: {}
     }),
     actions: {
@@ -42,8 +41,8 @@ export const usePermissionsStore = defineStore({
         setResultObjects(resultObjects) {
             this.resultObjects = resultObjects;
         },
-        setShowModal(showModal) {
-            this.showModal = showModal;
+        setShowPermissionsModal(showPermissionsModal) {
+            this.showPermissionsModal = showPermissionsModal;
         },
         setStaffRole (staffRole) {
             this.staffRole = staffRole;

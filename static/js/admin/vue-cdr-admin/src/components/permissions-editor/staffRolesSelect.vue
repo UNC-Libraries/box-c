@@ -8,7 +8,7 @@
 
 <script>
     import { mapActions } from 'pinia';
-    import { usePermissionsStore } from '../../stores/permissions';
+    import { usePermissionsStore } from '@/stores/permissions';
     import staffRoleList from "../../mixins/staffRoleList";
 
     export default {

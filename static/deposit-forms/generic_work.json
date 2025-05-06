@@ -1,0 +1,312 @@
+{
+  "h1": {
+    "type": "static",
+    "tag": "h1",
+    "content": "Generic work",
+    "bottom": "1",
+    "addClass": "has-text-centered"
+  },
+  "p1": {
+    "type": "static",
+    "tag": "p",
+    "content": "Use this form to submit items to the Digital Collections Repository",
+    "addClass": "has-text-centered"
+  },
+  "p2": {
+    "type": "static",
+    "tag": "p",
+    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
+    "addClass": "has-text-centered"
+  },
+  "h21": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Item information"
+  },
+  "title": {
+    "type": "text",
+    "label": "Title",
+    "addClass": "required",
+    "rules": [
+      "required"
+    ]
+  },
+  "dateCreated": {
+    "type": "text",
+    "label": "Date Created",
+    "default": "",
+    "placeholder": "YYYY, YYYY-MM, YYYY-MM-DD",
+    "description": "Please enter the date your item was created in one of the following formats: YYYY, YYYY-MM, YYYY-MM-DD"
+  },
+  "description": {
+    "type": "textarea",
+    "name": "description",
+    "label": "Description",
+    "default": "",
+    "cols": 20,
+    "rows": 5
+  },
+  "keywords": {
+    "type": "list",
+    "label": "",
+    "object": {
+      "schema": {
+        "keyword": {
+          "type": "text",
+          "label": "Keyword",
+          "default": ""
+        }
+      }
+    }
+  },
+  "language": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Language",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": "/static/deposit-forms/data/iso639-2b.json",
+    "labelProp": "label",
+    "valueProp": "value",
+    "columns": {
+      "container": 12
+    },
+    "default": "eng"
+  },
+  "resourceType": {
+    "type": "select",
+    "search": true,
+    "native": false,
+    "label": "Resource Type",
+    "inputType": "search",
+    "autocomplete": "off",
+    "items": [
+      "",
+      "text",
+      "cartographic",
+      "notated music",
+      "sound recording-musical",
+      "sound recording-nonmusical",
+      "sound recording",
+      "still image",
+      "moving image",
+      "three dimensional object",
+      "software, multimedia",
+      "mixed material"
+    ],
+    "columns": {
+      "container": 12
+    },
+    "default": "text"
+  },
+  "filterDivider1": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h23": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Creator Information (Personal name)"
+  },
+  "creatorInfo": {
+    "type": "list",
+    "label": "",
+    "object": {
+      "schema": {
+        "fname": {
+          "type": "text",
+          "label": "First Name",
+          "default": ""
+        },
+        "lname": {
+          "type": "text",
+          "label": "Last Name",
+          "default": ""
+        },
+        "termsAddress": {
+          "type": "text",
+          "label": "Terms of Address",
+          "default": "",
+          "placeholder": "Ex. Jr., Sr."
+        },
+        "dates": {
+          "type": "text",
+          "label": "Life Dates",
+          "default": "",
+          "placeholder": "Ex. 1954-2001"
+        }
+      }
+    }
+  },
+  "filterDivider2": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h24": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Creator Information (Corporate name)"
+  },
+  "p3": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
+  },
+  "corporateCreator": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "name": {
+          "type": "text",
+          "label": "Name",
+          "default": "",
+          "placeholder": "Cecil G. Sheps Center for Health Services Research"
+        }
+      }
+    }
+  },
+  "filterDivider3": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h25": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Topical"
+  },
+  "p4": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter topical subject headings here, including subdivisions as applicable."
+  },
+  "subjectTopical": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectTopical": {
+          "type": "text",
+          "label": "Subject (Topical)",
+          "default": "",
+          "placeholder": "Ex. Children--North Carolina--Economic conditions--21st century"
+        }
+      }
+    }
+  },
+  "filterDivider4": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h26": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Personal Names"
+  },
+  "p5": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter personal names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectPersonal": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectPersonal": {
+          "type": "text",
+          "label": "Subject (Name) - Personal",
+          "default": "",
+          "placeholder": "Ex. David, King of Israel--Art"
+        }
+      }
+    }
+  },
+  "filterDivider5": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h27": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Corporate Names"
+  },
+  "p6": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter corporate names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectCorporate": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectCorporate": {
+          "type": "text",
+          "label": "Subject (Name) - Corporate",
+          "default": "",
+          "placeholder": "Ex. Mt. Olive Pickle Company--History"
+        }
+      }
+    }
+  },
+  "filterDivider6": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "h28": {
+    "type": "static",
+    "tag": "h2",
+    "content": "Subject Information - Geographic"
+  },
+  "p7": {
+    "type": "static",
+    "tag": "p",
+    "content": "Please enter place names used as subjects here, including subdivisions as applicable."
+  },
+  "subjectGeographic": {
+    "type": "list",
+    "label": "",
+    "object":  {
+      "schema": {
+        "subjectGeographic": {
+          "type": "text",
+          "label": "Subject (Geographic)",
+          "default": "",
+          "placeholder": "Ex. Chatham County (N.C.)--History--Periodicals"
+        }
+      }
+    }
+  },
+  "filterDivider7": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "file": {
+    "type": "multifile",
+    "label": "File(s)",
+    "drop": true,
+    "sort": true,
+    "description": "No files larger than 2GB",
+    "addClass": "required",
+    "rules": [
+      "required"
+    ],
+    "file": {
+      "rules": [
+        "max:2000000"
+      ]
+    }
+  },
+  "filterDivider8": {
+    "type": "static",
+    "tag": "hr"
+  },
+  "submit": {
+    "button-label": "Submit Deposit",
+    "secondary": true,
+    "type": "button",
+    "submits": true
+  }
+}
