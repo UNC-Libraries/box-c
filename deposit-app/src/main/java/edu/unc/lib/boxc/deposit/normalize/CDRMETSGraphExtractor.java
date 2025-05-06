@@ -48,7 +48,6 @@ public class CDRMETSGraphExtractor {
         containerTypes.put("Collection", URI.create(Cdr.Collection.getURI()));
         containerTypes.put("Aggregate Work", URI.create(Cdr.Work.getURI()));
         containerTypes.put("Work", URI.create(Cdr.Work.getURI()));
-        containerTypes.put("SWORD Object", URI.create(Cdr.Work.getURI()));
     }
 
     private PID depositId = null;

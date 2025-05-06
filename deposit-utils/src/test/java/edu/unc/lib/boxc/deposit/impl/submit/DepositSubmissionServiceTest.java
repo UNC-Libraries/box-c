@@ -103,7 +103,7 @@ public class DepositSubmissionServiceTest {
         Assertions.assertThrows(UnsupportedPackagingTypeException.class, () -> {
             DepositData deposit = new DepositData(FILEPATH.toUri(),
                     MIMETYPE,
-                    PackagingType.ATOM,
+                    PackagingType.METS_CDR,
                     DEPOSIT_METHOD,
                     depositingAgent);
 

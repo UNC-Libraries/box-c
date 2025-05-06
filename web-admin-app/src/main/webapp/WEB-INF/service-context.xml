@@ -48,21 +48,6 @@
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg value="${admin.base.url}" />
     </bean>
-
-    <bean id="swordUrl" class="java.lang.String">
-        <constructor-arg
-            value="${services.base.url}sword/" />
-    </bean>
-    
-    <bean id="swordUsername" class="java.lang.String">
-        <constructor-arg
-            value="${sword.username}" />
-    </bean>
-    
-    <bean id="swordPassword" class="java.lang.String">
-        <constructor-arg
-            value="${sword.password}" />
-    </bean>
     
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
         destroy-method="shutdown">
