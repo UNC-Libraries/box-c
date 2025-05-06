@@ -34,7 +34,7 @@
     </bean>
 
     <!-- Utils -->
-    
+
     <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
         <property name="accessControlService" ref="aclService" />
     </bean>
@@ -47,10 +47,6 @@
     
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg value="${admin.base.url}" />
-    </bean>
-    
-    <bean id="formsBaseUrl" class="java.lang.String">
-        <constructor-arg value="${forms.base.url}" />
     </bean>
     
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"

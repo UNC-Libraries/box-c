@@ -48,11 +48,7 @@
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg value="${admin.base.url}" />
     </bean>
-    
-    <bean id="formsBaseUrl" class="java.lang.String">
-        <constructor-arg value="${forms.base.url}" />
-    </bean>
-    
+
     <bean id="swordUrl" class="java.lang.String">
         <constructor-arg
             value="${services.base.url}sword/" />
