@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
@@ -359,5 +360,16 @@ public class SetContentStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_PAGED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS));
+    }
+
+    @Test
+    public void testManagedAspaceWork() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(resc.hasProperty(CdrAspace.refId)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.MANAGED_ASPACE_WORK));
     }
 }
