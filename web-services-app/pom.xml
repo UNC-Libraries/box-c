@@ -197,6 +197,10 @@
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
         </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+        </dependency>
         <!-- integration testing -->
         <dependency>
             <groupId>org.apache.solr</groupId>
