@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
@@ -545,8 +546,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             identifiers.add(identifierBuilder.toString());
             idb.getKeyword().add(idValue);
+
+            var displayLabel = identifierEl.getAttributeValue("displayLabel");
+            if (Objects.equals(displayLabel, "HookID")) {
+                idb.setHookId(idValue);
+            }
         }
-        if (identifiers.size() > 0) {
+        if (!identifiers.isEmpty()) {
             idb.setIdentifier(identifiers);
         } else {
             idb.setIdentifier(null);

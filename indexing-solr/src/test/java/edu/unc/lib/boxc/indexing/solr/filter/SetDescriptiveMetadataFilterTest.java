@@ -135,6 +135,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals("Abstract text", idb.getAbstractText());
 
         assertEquals("40148", idb.getCollectionId());
+        assertEquals("image0625rb", idb.getHookId());
 
         assertTrue(idb.getSubject().contains("Test resource"));
         assertTrue(idb.getSubject().contains("Test resource two"));
