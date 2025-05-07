@@ -30,6 +30,7 @@
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
+                <ref bean="setAspaceRefIdFilter" />
             </list>
         </property>
     </bean>
@@ -317,6 +318,9 @@
     </bean>
 
     <bean id="setStreamingPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingPropertiesFilter">
+    </bean>
+
+    <bean id="setAspaceRefIdFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAspaceRefIdFilter">
     </bean>
 
     <!-- Ingest Actions -->

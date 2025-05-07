@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ABSTRACT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ADMIN_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_IDS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.ASPACE_REF_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
@@ -566,6 +567,15 @@ public class IndexDocumentBean {
     @Field
     public void setStreamingUrl(String streamingUrl) {
         fields.put(STREAMING_URL.getSolrField(), streamingUrl);
+    }
+
+    public String getAspaceRefId() {
+        return (String) fields.get(ASPACE_REF_ID.getSolrField());
+    }
+
+    @Field
+    public String setAspaceRefId(String aspaceRefId) {
+        return (String) fields.put(ASPACE_REF_ID.getSolrField(), aspaceRefId);
     }
 
     /**

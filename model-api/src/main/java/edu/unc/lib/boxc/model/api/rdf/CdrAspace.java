@@ -7,26 +7,29 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
- * A namespace for view behavior related properties
+ * A namespace for ArchivesSpace related properties
  * @author snluong
  */
-public class CdrView {
-    private CdrView() {
+public class CdrAspace {
+    private CdrAspace() {
     }
 
     /** The namespace of the vocabulary as a string */
-    public static final String NS = "http://cdr.unc.edu/definitions/view#";
+    public static final String NS = "http://cdr.unc.edu/definitions/aspace#";
 
     /** The namespace of the vocabulary as a string
      *  @see #NS */
     public static String getURI() {
-        return NS; }
+        return NS;
+    }
 
     /** The namespace of the vocabulary as a resource */
     public static final Resource NAMESPACE = createResource( NS );
 
-    /** Used to define the IIIFv3 view "behavior" property for works.
-     * Valid values: https://iiif.io/api/presentation/3.0/#behavior */
-    public static final Property viewBehavior = createProperty(
-            "http://cdr.unc.edu/definitions/view#behavior");
+    /**
+     * Property which holds the ArchivesSpace Ref ID
+     */
+    public static final Property refId = createProperty(
+            "http://cdr.unc.edu/definitions/aspace#refId"
+    );
 }

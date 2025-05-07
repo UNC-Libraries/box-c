@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
@@ -117,6 +118,10 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             }
         } else {
             status.add(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS);
+        }
+
+        if (resource.hasProperty(CdrAspace.refId)) {
+            status.add(FacetConstants.MANAGED_ASPACE_WORK);
         }
     }
 

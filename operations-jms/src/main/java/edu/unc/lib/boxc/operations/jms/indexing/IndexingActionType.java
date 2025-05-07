@@ -52,6 +52,7 @@ public enum IndexingActionType {
     UPDATE_MEMBER_ORDER_PARENT("Update Member Order Parent", "Update a container after its order changed"),
     UPDATE_VIEW_BEHAVIOR("Update View Behavior", "Update the view behavior for a work"),
     UPDATE_STREAMING_PROPERTIES("Update Streaming URL", "Update the streaming URL for a file"),
+    ADD_ASPACE_REF_ID("Add Aspace Ref Id", "Update the Aspace Ref ID for a work"),
     UNKNOWN("Unknown action", "Unknown action");
 
     private final String label;
