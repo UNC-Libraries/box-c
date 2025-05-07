@@ -33,7 +33,7 @@ public class Cdr {
     public static final Property collectionShowView = createProperty(
             "http://cdr.unc.edu/definitions/model#collectionShowView" );
 
-    /** Method by which this deposit was submitted, such as "sword" or "CDR web form". */
+    /** Method by which this deposit was submitted, see the DepositMethod enum. */
     public static final Property depositMethod = createProperty(
             "http://cdr.unc.edu/definitions/model#depositMethod" );
 

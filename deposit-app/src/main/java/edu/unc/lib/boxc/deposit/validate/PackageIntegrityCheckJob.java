@@ -20,7 +20,7 @@ import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
 public class PackageIntegrityCheckJob extends AbstractDepositJob {
 
     /**
-     * Verifies the integrity of the deposit file received from SWORD.
+     * Verifies the integrity of the deposit file received
      * @param uuid
      * @param depositUUID
      */

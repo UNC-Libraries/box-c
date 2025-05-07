@@ -15,23 +15,8 @@
             /WEB-INF/access-fedora-context.xml
             /WEB-INF/solr-search-context.xml
             /WEB-INF/deposits-context.xml
-            /WEB-INF/sword-context.xml
         </param-value>
     </context-param>
-    
-     <servlet>
-        <servlet-name>sword</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>/WEB-INF/sword-servlet.xml</param-value>
-        </init-param>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>sword</servlet-name>
-        <url-pattern>/sword/*</url-pattern>
-    </servlet-mapping>
     
     <servlet>
         <servlet-name>rest</servlet-name>
@@ -78,35 +63,6 @@
         <url-pattern>/api/acl/*</url-pattern>
     </filter-mapping>
     
-    <filter>
-        <filter-name>SwordHeaderRewriteFilter</filter-name>
-        <filter-class>edu.unc.lib.boxc.web.sword.filters.SwordHeaderRewriteFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>SwordHeaderRewriteFilter</filter-name>
-        <url-pattern>/sword/*</url-pattern>
-    </filter-mapping>
-    
-    <filter>
-        <filter-name>depositorAccessControlFilter</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>depositorAccessControlFilter</filter-name>
-        <url-pattern>/sword/*</url-pattern>
-    </filter-mapping>
-
-    <!-- SWORD basic authentication configuration -->
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>SWORD Server</web-resource-name>
-            <url-pattern>/sword/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>sword-depositor</role-name>
-        </auth-constraint>
-    </security-constraint>
-    
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Forwarding API</web-resource-name>
@@ -121,10 +77,6 @@
         <auth-method>BASIC</auth-method>
         <realm-name>ServicesRealm</realm-name>
     </login-config>
-    
-    <security-role>
-        <role-name>sword-depositor</role-name>
-    </security-role>
     
     <security-role>
         <role-name>group-forwarding</role-name>

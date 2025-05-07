@@ -92,8 +92,7 @@
         <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
         <guava.version>32.1.3-jre</guava.version>
-        <sword2-server.version>1.0</sword2-server.version>
-        
+
         <httpclient.version>4.5.14</httpclient.version>
         <commons-compress.version>1.27.1</commons-compress.version>
         <commons-codec.version>1.18.0</commons-codec.version>
@@ -109,7 +108,6 @@
 
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.13</logback.version>
-        <reload4j.version>1.2.26</reload4j.version>
 
         <iiif-apis.version>0.3.11</iiif-apis.version>
         
@@ -175,7 +173,6 @@
         <module>web-admin-app</module>
         <module>web-common</module>
         <module>web-services-app</module>
-        <module>web-sword</module>
         <module>integration</module>
         <module>jp24u</module>
     </modules>
@@ -577,11 +574,6 @@
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>web-sword</artifactId>
-                <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib</groupId>
@@ -1037,12 +1029,6 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
-            </dependency>
-            <!-- drop in replacement for log4j 1.x dependencies, with main security issues resolved -->
-            <dependency>
-                <groupId>ch.qos.reload4j</groupId>
-                <artifactId>reload4j</artifactId>
-                <version>${reload4j.version}</version>
             </dependency>
             <!-- Activemq -->
             <dependency>

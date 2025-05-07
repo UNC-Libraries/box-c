@@ -12,7 +12,6 @@ public enum PackagingType {
     METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
     SIMPLE_OBJECT("http://cdr.unc.edu/model/Simple"),
     SIMPLE_ZIP("http://purl.org/net/sword/terms/SimpleZip"),
-    ATOM("http://purl.org/net/sword/terms/Atom"),
     BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3"),
     BAGIT("http://purl.org/net/sword/package/BagIt"),
     DIRECTORY("http://cdr.unc.edu/DirectoryIngest"),
