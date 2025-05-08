@@ -39,6 +39,7 @@ public enum SearchFieldKey {
     FULL_TEXT("fullText", "fullText", "Full Text"),
     EXHIBIT("exhibit", "exhibit", "Exhibit"),
     GENRE("genre", "genre", "Genre"),
+    HOOK_ID("hookId", "hookId", "ArchivesSpace Hook ID"),
     ID("id", "id", "ID"),
     IDENTIFIER("identifier", "identifier", "Identifier"),
     IDENTIFIER_SORT("identifierSort", "identifierSort", "Identifier Sort"),

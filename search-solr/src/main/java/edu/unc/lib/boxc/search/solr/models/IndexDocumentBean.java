@@ -20,6 +20,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.EXHIBIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE_TOTAL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_TEXT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.HOOK_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER_SORT;
@@ -574,8 +575,17 @@ public class IndexDocumentBean {
     }
 
     @Field
-    public String setAspaceRefId(String aspaceRefId) {
-        return (String) fields.put(ASPACE_REF_ID.getSolrField(), aspaceRefId);
+    public void setAspaceRefId(String aspaceRefId) {
+        fields.put(ASPACE_REF_ID.getSolrField(), aspaceRefId);
+    }
+
+    public String getHookId() {
+        return (String) fields.get(HOOK_ID.getSolrField());
+    }
+
+    @Field
+    public void setHookId(String hookId) {
+        fields.put(HOOK_ID.getSolrField(), hookId);
     }
 
     /**
