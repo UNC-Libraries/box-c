@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
@@ -74,6 +75,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
     protected static final String VIEWER_PID = "viewerPid";
     protected static final String VIEWER_TYPE = "viewerType";
+    protected static final String FIRST_CHILD_ORG_FILE_INFO = "firstChildFileInfo";
     protected static final String STREAMING_URL = "streamingUrl";
     protected static final String STREAMING_TYPE = "streamingType";
     protected static final String AV_MIMETYPE_REGEX = "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")";
@@ -218,6 +220,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             var viewerProperties = getViewerProperties(briefObject, principals);
             recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
             recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));
+            recordProperties.put(FIRST_CHILD_ORG_FILE_INFO, viewerProperties.get(FIRST_CHILD_ORG_FILE_INFO));
             recordProperties.put(STREAMING_URL, viewerProperties.get(STREAMING_URL));
             recordProperties.put(STREAMING_TYPE, viewerProperties.get(STREAMING_TYPE));
 
@@ -259,11 +262,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType;
         String viewerPid ;
+        String firstChildOriginalFileInfo = null;
         ContentObjectRecord workStreamingContent = null;
 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
         if (imageViewerNeeded) {
-            return makeViewerProperties("clover", null, null, null);
+            return makeViewerProperties("clover", null, null, null, null);
         }
 
         boolean hasStreamingContent = briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING);
@@ -281,6 +285,25 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             viewerType = "clover";
         } else {
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+
+            if (viewerPid == null && ResourceType.Work.nameEquals(briefObject.getResourceType())
+                    && briefObject.getCountMap().get("child") == 1) {
+
+                var firstChildBriefObj = accessCopiesService.getFirstMatchingChild(briefObject,
+                        List.of("application/pdf"), principals);
+
+                if (firstChildBriefObj != null) {
+                    viewerPid = accessCopiesService.getDatastreamPid(firstChildBriefObj, principals, PDF_MIMETYPE_REGEX);
+
+                    if (viewerPid != null) {
+                        var childOriginalFile = firstChildBriefObj.getDatastreamObject(ORIGINAL_FILE.getId());
+                        if (childOriginalFile != null) {
+                            firstChildOriginalFileInfo = childOriginalFile.toString();
+                        }
+                    }
+                }
+            }
+
             viewerType = viewerPid != null ? "pdf" : null;
         }
 
@@ -288,23 +311,26 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         if (noAccessToViewChildObject(viewerPid, briefObject, principals)) {
             viewerPid = null;
             viewerType = null;
+            firstChildOriginalFileInfo = null;
         }
 
-        return makeViewerProperties(viewerType, viewerPid, null, null);
+        return makeViewerProperties(viewerType, viewerPid, firstChildOriginalFileInfo, null, null);
     }
 
     private Map<String, Object> makeStreamingProperties(ContentObjectRecord briefObject) {
         return makeViewerProperties("streaming",
                 null,
+                null,
                 briefObject.getStreamingUrl(),
                 briefObject.getStreamingType());
     }
 
-    private Map<String, Object> makeViewerProperties(String viewType, String viewerPid,
+    private Map<String, Object> makeViewerProperties(String viewType, String viewerPid, String firstChildOriginalFileInfo,
                                                      String streamingUrl, String streamingType) {
         var viewerProperties = new HashMap<String, Object>();
         viewerProperties.put(VIEWER_TYPE, viewType);
         viewerProperties.put(VIEWER_PID, viewerPid);
+        viewerProperties.put(FIRST_CHILD_ORG_FILE_INFO, firstChildOriginalFileInfo);
         viewerProperties.put(STREAMING_URL, streamingUrl);
         viewerProperties.put(STREAMING_TYPE, streamingType);
         return viewerProperties;
