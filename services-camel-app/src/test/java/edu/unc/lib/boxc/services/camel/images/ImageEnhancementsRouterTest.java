@@ -12,6 +12,8 @@ import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -26,6 +28,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrTempPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
@@ -34,6 +37,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,6 +73,9 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @BeanInject(value = "imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
+
+    @BeanInject(value = "pdfImageProcessor")
+    private PdfImageProcessor pdfImageProcessor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -191,6 +198,32 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor).needsRun(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testAccessCopyRoutePdfBinary() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+
+        createContext(accessCopyRoute);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+        headers.put(CdrBinaryMimeType, "application/pdf");
+        headers.put(CdrBinaryPath, "src/test/resources/boxy.pdf");
+
+        // Mock pdf processor needs to change mimetype to tiff
+        doAnswer(invocationOnMock -> {
+            Exchange exchange = (Exchange) invocationOnMock.getArguments()[0];
+            var message = exchange.getIn();
+            message.setHeader(CdrBinaryMimeType, "image/tiff");
+            return null;
+        }).when(pdfImageProcessor).process(any(Exchange.class));
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(pdfImageProcessor).process(any(Exchange.class));
+        verify(jp2Processor).process(any(Exchange.class));
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {

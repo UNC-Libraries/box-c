@@ -217,6 +217,10 @@
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
+    <bean id="pdfImageProcessor" class="edu.unc.lib.boxc.services.camel.images.PdfImageProcessor">
+        <property name="outputPath" value="${services.tempDirectory}" />
+    </bean>
+
     <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />

@@ -7,6 +7,9 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 /**
@@ -46,6 +49,19 @@ public class ImageDerivativeProcessor implements Processor {
 
         log.debug("Object {} with type {} is permitted for image derivatives", binPath, mimetype);
         return true;
+    }
+
+    public void cleanupTempImage(Exchange exchange) throws Exception {
+        final Message in = exchange.getIn();
+        Boolean tempCleanup = (Boolean) in.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup);
+        if (tempCleanup != null && tempCleanup) {
+            String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrImagePath);
+            Path binPathObj = Paths.get(binPath);
+            if (Files.exists(binPathObj)) {
+                log.debug("Cleaning up temp binary file {}", binPath);
+                Files.deleteIfExists(binPathObj);
+            }
+        }
     }
 
     @Override
