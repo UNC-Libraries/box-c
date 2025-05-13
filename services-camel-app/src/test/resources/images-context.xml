@@ -29,6 +29,9 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.PdfImageProcessor" />
     </bean>
 
+    <bean id="imageDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor">
+    </bean>
+
     <camel:camelContext id="CdrServiceEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
     </camel:camelContext>

@@ -40,6 +40,7 @@ public class ImageDerivativeProcessorTest {
         when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryPath)).thenReturn("path/to/binary");
 
         processor = new ImageDerivativeProcessor();
+        processor.setTempBasePath(tmpFolder.toString());
     }
 
     @AfterEach
@@ -115,12 +116,45 @@ public class ImageDerivativeProcessorTest {
         assertTrue(Files.exists(path));
         when(messageIn.getHeader(eq(CdrFcrepoHeaders.CdrImagePath)))
                 .thenReturn(path.toString());
+        // No cleanup should happen when the header is not set
         processor.cleanupTempImage(exchange);
         assertTrue(Files.exists(path));
 
+        // No cleanup should happen when the header is set to false
         when(messageIn.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup)).thenReturn(false);
         processor.cleanupTempImage(exchange);
         assertTrue(Files.exists(path));
+    }
+
+    @Test
+    public void cleanupTempFileOutsideTempTest() throws Exception {
+        var realTempPath = tmpFolder.resolve("scratch");
+        Files.createDirectories(realTempPath);
+        var otherTempPath = tmpFolder.resolve("other_temp");
+        Files.createDirectories(otherTempPath);
+        processor.setTempBasePath(realTempPath.toString());
+
+        var path = otherTempPath.resolve("tmp_image.tif");
+        Files.createFile(path);
+        assertTrue(Files.exists(path));
+        when(messageIn.getHeader(eq(CdrFcrepoHeaders.CdrImagePath)))
+                .thenReturn(path.toString());
+        when(messageIn.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup)).thenReturn(true);
+        processor.cleanupTempImage(exchange);
+        // File should not be cleaned up if it is outside the temp path, even with cleanup enabled
+        assertTrue(Files.exists(path));
+    }
+
+    @Test
+    public void cleanupTempFileDoesNotExistTest() throws Exception {
+        var path = tmpFolder.resolve("tmp_image.tif");
+
+        assertFalse(Files.exists(path));
+        when(messageIn.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup)).thenReturn(true);
+        when(messageIn.getHeader(eq(CdrFcrepoHeaders.CdrImagePath)))
+                .thenReturn(path.toString());
+        processor.cleanupTempImage(exchange);
+        assertFalse(Files.exists(path));
     }
 
     @Test

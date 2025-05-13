@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import JP2ImageConverter.errors.CommandException;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -37,6 +36,9 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "pdfImageProcessor")
     private PdfImageProcessor pdfImageProcessor;
 
+    @BeanInject(value = "imageDerivativeProcessor")
+    private ImageDerivativeProcessor imageDerivativeProcessor;
+
     private UuidGenerator uuidGenerator;
 
     /**
@@ -44,8 +46,6 @@ public class ImageEnhancementsRouter extends RouteBuilder {
      */
     @Override
     public void configure() throws Exception {
-        ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
-
         uuidGenerator = new DefaultUuidGenerator();
 
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
@@ -61,15 +61,17 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
             .startupOrder(20)
-            .log(LoggingLevel.DEBUG, log, "Access copy triggered")
+            .log(LoggingLevel.DEBUG, log, "Access copy triggered ${headers[CdrMimeType]} for ${headers[CdrBinaryPath]}")
             .filter().method(addAccessCopyProcessor, "needsRun")
                 .choice()
                     .when().method(PdfImageProcessor.class, "isPdfFile")
-                        .log(LoggingLevel.INFO, log, "Binary is a PDF, generating image of first page")
+                        .log(LoggingLevel.DEBUG, log, "Binary is a PDF, generating image of first page")
                         .bean(pdfImageProcessor)
+                    .when().method(ImageDerivativeProcessor.class, "allowedImageType")
+                        .log(LoggingLevel.DEBUG, log, "Binary is an image")
+                        .bean(imageDerivativeProcessor)
                 .end()
-                .filter().method(imageDerivProcessor, "allowedImageType")
-                    .bean(imageDerivProcessor)
+                .filter(simple("${headers[CdrImagePath]} != null"))
                     .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
                     // Generate an random identifier to avoid derivative collisions
                     .setBody(exchange -> uuidGenerator.generateUuid())
@@ -86,7 +88,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                     .endDoTry()
                     .doFinally()
                         .bean(addAccessCopyProcessor, "cleanupTempFile")
-                        .bean(imageDerivProcessor, "cleanupTempImage")
+                        .bean(imageDerivativeProcessor, "cleanupTempImage")
                     .end()
                 .end()
             .end();

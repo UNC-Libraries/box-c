@@ -26,6 +26,8 @@ public class ImageDerivativeProcessor implements Processor {
     private static final Pattern DISALLOWED_PATTERN =
             Pattern.compile(".*(vnd\\.fpx|x-icon|x-raw-panasonic|vnd\\.microsoft\\.icon).*");
 
+    private String tempBasePath;
+
     /**
      * Returns true if the subject of the exchange is a binary which
      * is eligible for having image derivatives generated from it.
@@ -60,12 +62,19 @@ public class ImageDerivativeProcessor implements Processor {
     public void cleanupTempImage(Exchange exchange) throws IOException {
         final Message in = exchange.getIn();
         Boolean tempCleanup = (Boolean) in.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup);
+        log.debug("Temp cleanup is set to {}", tempCleanup);
         if (tempCleanup != null && tempCleanup) {
             String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrImagePath);
             Path binPathObj = Paths.get(binPath);
-            if (Files.exists(binPathObj)) {
+            if (!Files.exists(binPathObj)) {
+                log.info("Image path {} does not exist, skipping cleanup", binPath);
+                return;
+            }
+            if (binPathObj.startsWith(Paths.get(tempBasePath))) {
                 log.debug("Cleaning up temp binary file {}", binPath);
                 Files.deleteIfExists(binPathObj);
+            } else {
+                log.error("Image path {} is not a temp file, skipping cleanup", binPath);
             }
         }
     }
@@ -78,5 +87,9 @@ public class ImageDerivativeProcessor implements Processor {
         String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryPath);
         log.debug("Keeping existing image path as {} for type {}", binPath, mimetype);
         in.setHeader(CdrFcrepoHeaders.CdrImagePath, binPath);
+    }
+
+    public void setTempBasePath(String tempBasePath) {
+        this.tempBasePath = tempBasePath;
     }
 }
