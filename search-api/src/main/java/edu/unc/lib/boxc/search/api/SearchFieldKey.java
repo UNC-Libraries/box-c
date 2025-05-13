@@ -42,6 +42,7 @@ public enum SearchFieldKey {
     HOOK_ID("hookId", "hookId", "ArchivesSpace Hook ID"),
     ID("id", "id", "ID"),
     IDENTIFIER("identifier", "identifier", "Identifier"),
+    IDENTIFIER_INDEX("identifierIndex", "identifierIndex", "Identifier Index"),
     IDENTIFIER_SORT("identifierSort", "identifierSort", "Identifier Sort"),
     KEYWORD("keyword", "keyword", "Keyword"),
     LANGUAGE("language", "language", "Language"),

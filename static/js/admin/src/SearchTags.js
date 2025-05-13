@@ -3,7 +3,8 @@ define('SearchTags', ['jquery'], function($) {
         { key: 'anywhere', display_value: 'anywhere' },
         { key: 'titleIndex', display_value: 'title' },
         { key: 'contributorIndex', display_value: 'contributor' },
-        { key: 'subjectIndex', display_value: 'subject' }
+        { key: 'subjectIndex', display_value: 'subject' },
+        { key: 'identifierIndex', display_value: 'identifier'}
     ];
 
     class SearchTags {
