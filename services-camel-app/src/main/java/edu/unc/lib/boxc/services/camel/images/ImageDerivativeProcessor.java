@@ -7,6 +7,7 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,7 +52,12 @@ public class ImageDerivativeProcessor implements Processor {
         return true;
     }
 
-    public void cleanupTempImage(Exchange exchange) throws Exception {
+    /**
+     * Cleans up the temporary image file created for the binary
+     * @param exchange
+     * @throws IOException
+     */
+    public void cleanupTempImage(Exchange exchange) throws IOException {
         final Message in = exchange.getIn();
         Boolean tempCleanup = (Boolean) in.getHeader(CdrFcrepoHeaders.CdrImagePathCleanup);
         if (tempCleanup != null && tempCleanup) {
