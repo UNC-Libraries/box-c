@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.bulkUpdateDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.changePatronAccess;
 import static edu.unc.lib.boxc.auth.api.Permission.createCollection;
 import static edu.unc.lib.boxc.auth.api.Permission.destroy;
+import static edu.unc.lib.boxc.auth.api.Permission.editAspaceProperties;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
 import static edu.unc.lib.boxc.auth.api.Permission.editViewSettings;
@@ -59,7 +60,7 @@ public enum UserRole {
     canProcess("canProcess", true, canDescribe,
             move, orderMembers, markForDeletion, changePatronAccess),
     canManage("canManage", true, canProcess,
-            ingest, editResourceType, createCollection),
+            ingest, editResourceType, createCollection, editAspaceProperties),
     unitOwner("unitOwner", true, canManage,
             markForDeletionUnit, destroy, assignStaffRoles),
     // Admin role receives all permissions

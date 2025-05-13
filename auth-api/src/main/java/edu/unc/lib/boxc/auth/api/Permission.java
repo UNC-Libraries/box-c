@@ -26,6 +26,7 @@ public enum Permission {
     createAdminUnit,
     changePatronAccess,
     assignStaffRoles,
+    editAspaceProperties,
     editResourceType,
     editViewSettings,
     runEnhancements,
