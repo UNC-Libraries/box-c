@@ -57,8 +57,8 @@ public class QueryFilterFactory {
      * @param fileTypes mimetypes
      * @return new QueryFilter instance with the provided file types
      */
-    public static QueryFilter createIIIFv3ViewableFilter(List<String> fileTypes) {
-        return new IIIFv3ViewableFilter(fileTypes);
+    public static QueryFilter createIIIFv3ViewableFilter() {
+        return new IIIFv3ViewableFilter();
     }
 
     /**
