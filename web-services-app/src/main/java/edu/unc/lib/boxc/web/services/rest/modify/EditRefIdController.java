@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.services.rest;
+package edu.unc.lib.boxc.web.services.rest.modify;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class RefIdController {
-    private static final Logger log = LoggerFactory.getLogger(RefIdController.class);
+public class EditRefIdController {
+    private static final Logger log = LoggerFactory.getLogger(EditRefIdController.class);
 
     @Autowired
     RefIdService service;
