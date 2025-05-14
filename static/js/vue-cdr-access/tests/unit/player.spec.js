@@ -143,9 +143,13 @@ describe('player.vue', () => {
         expect(wrapper.findComponent({ name: 'clover' }).exists()).toBe(true);
     });
 
-    it("displays an iframe viewer for pdfs", async () => {
+    it("displays a viewer for pdfs", async () => {
         let updated_record = cloneDeep(record);
         updated_record.viewerType = 'pdf';
+        updated_record.briefObject.datastream = [
+            "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
+            "original_file|application/pdf|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||"
+        ]
         updated_record.briefObject.groupRoleMap = {
             everyone: 'canViewOriginals'
         }
@@ -153,6 +157,40 @@ describe('player.vue', () => {
             recordData: updated_record
         });
         expect(wrapper.findComponent(VPdfViewer).exists()).toBe(true);
+    });
+
+    it("displays a pdf viewer for works with no viewable files if it has one child and its original file is a pdf", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'pdf';
+        updated_record.firstChildFileInfo = "original_file|application/pdf|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||";
+        updated_record.briefObject.type = "Work";
+        updated_record.briefObject.counts = { child: 1 }
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.findComponent(VPdfViewer).exists()).toBe(true);
+    });
+
+    it("does not display a pdf viewer for works with no viewable files and no viewable child works", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.type = "Work";
+        updated_record.briefObject.counts = { child: 1 }
+        updated_record.briefObject.datastream = [
+            "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||"
+        ]
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewOriginals'
+        }
+        /* These two fields aren't actually returned if there are no viewable PDF files. Added here for test clarity */
+        updated_record.viewerType = undefined;
+        updated_record.firstChildFileInfo = undefined;
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.findComponent(VPdfViewer).exists()).toBe(false);
     });
 
     it("does not display viewer for pdfs larger than the max allowed size", async () => {
