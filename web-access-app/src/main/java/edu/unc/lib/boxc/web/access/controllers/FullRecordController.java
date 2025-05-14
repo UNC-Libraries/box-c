@@ -319,9 +319,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         var viewerProperties = new HashMap<String, String>();
-        viewerProperties.put("viewerPid", viewerPid);
-        viewerProperties.put("viewerType", viewerPid != null ? "pdf" : null);
-        viewerProperties.put("firstChildOriginalFileInfo", firstChildOriginalFileInfo);
+        viewerProperties.put(VIEWER_PID, viewerPid);
+        viewerProperties.put(VIEWER_TYPE, viewerPid != null ? "pdf" : null);
+        viewerProperties.put(FIRST_CHILD_ORG_FILE_INFO, firstChildOriginalFileInfo);
 
         return viewerProperties;
     }
