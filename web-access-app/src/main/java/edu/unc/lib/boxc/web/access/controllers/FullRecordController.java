@@ -263,20 +263,16 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         String viewerType;
         String viewerPid ;
         String firstChildOriginalFileInfo = null;
-        ContentObjectRecord workStreamingContent = null;
 
-        boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-        if (imageViewerNeeded) {
+        // Check for viewable images
+        if (accessCopiesService.hasViewableFiles(briefObject, principals)) {
             return makeViewerProperties("clover", null, null, null, null);
         }
 
-        boolean hasStreamingContent = briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING);
-        if (!hasStreamingContent) {
-            workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
-        }
-
-        if (hasStreamingContent || workStreamingContent != null) {
-            return makeStreamingProperties((workStreamingContent != null) ? workStreamingContent : briefObject);
+        // Check for streaming content
+        var streamingContent = getStreamingContent(briefObject, principals);
+        if (streamingContent != null) {
+            return streamingContent;
         }
 
         viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AV_MIMETYPE_REGEX);
@@ -284,27 +280,10 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         if (viewerPid != null) {
             viewerType = "clover";
         } else {
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-
-            if (viewerPid == null && ResourceType.Work.nameEquals(briefObject.getResourceType())
-                    && briefObject.getCountMap().get("child") == 1) {
-
-                var firstChildBriefObj = accessCopiesService.getFirstMatchingChild(briefObject,
-                        List.of("application/pdf"), principals);
-
-                if (firstChildBriefObj != null) {
-                    viewerPid = accessCopiesService.getDatastreamPid(firstChildBriefObj, principals, PDF_MIMETYPE_REGEX);
-
-                    if (viewerPid != null) {
-                        var childOriginalFile = firstChildBriefObj.getDatastreamObject(ORIGINAL_FILE.getId());
-                        if (childOriginalFile != null) {
-                            firstChildOriginalFileInfo = childOriginalFile.toString();
-                        }
-                    }
-                }
-            }
-
-            viewerType = viewerPid != null ? "pdf" : null;
+            var pdfContent = getPdfContent(briefObject, principals);
+            viewerPid = pdfContent.get(VIEWER_PID);
+            viewerType = pdfContent.get(VIEWER_TYPE);
+            firstChildOriginalFileInfo = pdfContent.get(FIRST_CHILD_ORG_FILE_INFO);
         }
 
         // When the viewer object is not the current object, check if the user has access to view the viewer object
@@ -315,6 +294,51 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         return makeViewerProperties(viewerType, viewerPid, firstChildOriginalFileInfo, null, null);
+    }
+
+    private Map<String, String> getPdfContent(ContentObjectRecord briefObject, AccessGroupSet principals) {
+        String firstChildOriginalFileInfo = null;
+        var viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+
+        if (viewerPid == null && ResourceType.Work.nameEquals(briefObject.getResourceType())
+                && briefObject.getCountMap().get("child") == 1) {
+
+            var firstChildBriefObj = accessCopiesService.getFirstMatchingChild(briefObject,
+                    List.of("application/pdf"), principals);
+
+            if (firstChildBriefObj != null) {
+                viewerPid = accessCopiesService.getDatastreamPid(firstChildBriefObj, principals, PDF_MIMETYPE_REGEX);
+
+                if (viewerPid != null) {
+                    var childOriginalFile = firstChildBriefObj.getDatastreamObject(ORIGINAL_FILE.getId());
+                    if (childOriginalFile != null) {
+                        firstChildOriginalFileInfo = childOriginalFile.toString();
+                    }
+                }
+            }
+        }
+
+        var viewerProperties = new HashMap<String, String>();
+        viewerProperties.put("viewerPid", viewerPid);
+        viewerProperties.put("viewerType", viewerPid != null ? "pdf" : null);
+        viewerProperties.put("firstChildOriginalFileInfo", firstChildOriginalFileInfo);
+
+        return viewerProperties;
+    }
+
+    private Map<String, Object> getStreamingContent(ContentObjectRecord briefObject, AccessGroupSet principals) {
+        ContentObjectRecord workStreamingContent = null;
+        boolean hasStreamingContent = briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING);
+
+        if (!hasStreamingContent) {
+            workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
+        }
+
+        if (hasStreamingContent || workStreamingContent != null) {
+            return makeStreamingProperties((workStreamingContent != null) ? workStreamingContent : briefObject);
+        }
+
+        return null;
     }
 
     private Map<String, Object> makeStreamingProperties(ContentObjectRecord briefObject) {
