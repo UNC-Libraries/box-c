@@ -300,7 +300,11 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         Long viewerFileSize = null;
         var viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
 
-        if (viewerPid == null && ResourceType.Work.nameEquals(briefObject.getResourceType())
+        ContentObjectRecord viewedObject = null;
+        if (viewerPid != null) {
+            // Object directly has PDF info (either a file or a work with primary object), so use it's own data
+            viewedObject = briefObject;
+        } else if (ResourceType.Work.nameEquals(briefObject.getResourceType())
                 && briefObject.getFileFormatType().stream().anyMatch(format -> format.matches(PDF_MIMETYPE_REGEX))) {
 
             var firstChildBriefObj = accessCopiesService.getFirstMatchingChild(briefObject,
@@ -308,11 +312,14 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
             if (firstChildBriefObj != null) {
                 viewerPid = firstChildBriefObj.getId();
-
-                var childOriginalFile = firstChildBriefObj.getDatastreamObject(ORIGINAL_FILE.getId());
-                if (childOriginalFile != null) {
-                    viewerFileSize = childOriginalFile.getFilesize();
-                }
+                viewedObject = firstChildBriefObj;
+            }
+        }
+        // Get the filesize of the object being viewed
+        if (viewedObject != null) {
+            var originalFile = viewedObject.getDatastreamObject(ORIGINAL_FILE.getId());
+            if (originalFile != null) {
+                viewerFileSize = originalFile.getFilesize();
             }
         }
 
