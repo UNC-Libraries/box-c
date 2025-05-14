@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.web.access.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
@@ -53,11 +52,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -150,6 +147,56 @@ public class FullRecordControllerTest {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(PID_1, respMap.get(VIEWER_PID));
         assertEquals("pdf", respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
+        assertEquals(100, respMap.get("totalDownloadSize"));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithNoViewableFileAndChildWorkPdf() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+
+        when(childBriefObject.getId()).thenReturn(PID_2);
+        Map<String, Long> childCount = new HashMap<>();
+        childCount.put("child", 1L);
+        when(briefObject.getCountMap()).thenReturn(childCount);
+        when(accessCopiesService.getFirstMatchingChild(any(), any(), any())).thenReturn(childBriefObject);
+        when(accessCopiesService.getDatastreamPid(any(), any(), eq(PDF_MIMETYPE_REGEX))).thenReturn(PID_2);
+        when(aclService.hasAccess(eq(PIDs.get(PID_2)), any(), eq(Permission.viewOriginal))).thenReturn(true);
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(PID_2, respMap.get(VIEWER_PID));
+        assertEquals("pdf", respMap.get(VIEWER_TYPE));
+        assertNull(respMap.get(STREAMING_TYPE));
+        assertNull(respMap.get(STREAMING_URL));
+        assertEquals(100, respMap.get("totalDownloadSize"));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithNoViewableFileAndMultipleChildworks() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getParentCollection()).thenReturn(PID_PARENT_COLL);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject);
+        Map<String, Long> childCount = new HashMap<>();
+        childCount.put("child", 2L);
+        when(briefObject.getCountMap()).thenReturn(childCount);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get(VIEWER_PID));
+        assertNull(respMap.get(VIEWER_TYPE));
         assertNull(respMap.get(STREAMING_TYPE));
         assertNull(respMap.get(STREAMING_URL));
         assertEquals(100, respMap.get("totalDownloadSize"));

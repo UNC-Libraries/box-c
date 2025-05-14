@@ -42,10 +42,12 @@ export default {
 
     computed: {
         pdfFileAcceptableForDisplay() {
-            const original_file = this.recordData.briefObject.datastream.find(file => file.startsWith('original_file'));
-            if (original_file === undefined) {
+            let original_file = this.recordData.briefObject.datastream.find(file => file.startsWith('original_file'));
+            if (original_file  === undefined && this.recordData.firstChildFileInfo === undefined) {
                 return false;
             }
+            original_file = original_file ?? this.recordData.firstChildFileInfo;
+
             const file_info = original_file.split('|');
             const file_size = file_info[4];
             // Disable viewer if the file exceeds 200mb in size
