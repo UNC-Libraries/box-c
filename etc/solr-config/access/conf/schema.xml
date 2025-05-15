@@ -281,7 +281,7 @@
   <copyField source="contributor" dest="contributorIndex"/>
   <copyField source="creator" dest="contributorIndex"/>
 
-  <copyField source="aspaceRefId" dest="identifierIndex"/>
+  <copyField source="identifier" dest="identifierIndex"/>
 
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="title" dest="keywordIndex"/>
