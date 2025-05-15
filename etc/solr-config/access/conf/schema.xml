@@ -236,6 +236,7 @@
     <!-- Index fields -->
     <!-- Specific field indexes -->
     <field name="contributorIndex" type="text_ns" indexed="true" stored="false" multiValued="true"/>
+    <field name="identifierIndex" type="text" indexed="true" stored="false" multiValued="true"/>
     <!-- Index for most fields, except full text -->
     <field name="keywordIndex" type="text" indexed="true" stored="false" multiValued="true"/>
     <!-- Default, primary search field, includes everything from keyword index, plus full text -->
@@ -279,6 +280,8 @@
   <copyField source="otherSubject" dest="subjectIndex"/>
   <copyField source="contributor" dest="contributorIndex"/>
   <copyField source="creator" dest="contributorIndex"/>
+
+  <copyField source="identifier" dest="identifierIndex"/>
 
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="title" dest="keywordIndex"/>

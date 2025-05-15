@@ -61,9 +61,9 @@ public class SolrSearchService extends AbstractQueryService {
     protected FacetFieldUtil facetFieldUtil;
 
     protected static final String DEFAULT_RELEVANCY_BOOSTS =
-            "titleIndex^50 subjectIndex^10 contributorIndex^30 text^1 keywordIndex^2";
+            "titleIndex^50 subjectIndex^10 contributorIndex^30 text^1 keywordIndex^2 identifierIndex^2";
     protected static final String DEFAULT_SEARCHABLE_FIELDS =
-            "text,titleIndex,contributorIndex,subjectIndex,keywordIndex";
+            "text,titleIndex,contributorIndex,subjectIndex,keywordIndex,identifierIndex";
 
     public SolrSearchService() {
     }
