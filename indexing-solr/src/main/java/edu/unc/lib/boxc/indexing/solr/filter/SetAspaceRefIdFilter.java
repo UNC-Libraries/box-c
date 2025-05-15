@@ -33,7 +33,7 @@ public class SetAspaceRefIdFilter implements IndexDocumentFilter {
                 resource.getProperty(CdrAspace.refId).getString() : null;
 
         List<String> identifiers = new ArrayList<>();
-        if (!doc.getIdentifier().isEmpty()) {
+        if (!doc.getIdentifier().isEmpty() && doc.getIdentifier() != null) {
             identifiers = doc.getIdentifier();
         }
         identifiers.add("aspaceRefId|" + refId);
