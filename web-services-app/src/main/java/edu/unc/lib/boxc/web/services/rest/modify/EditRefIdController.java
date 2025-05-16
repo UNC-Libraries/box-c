@@ -57,4 +57,8 @@ public class EditRefIdController {
         request.setAgent(agent);
         return request;
     }
+
+    public void setService(RefIdService service) {
+        this.service = service;
+    }
 }

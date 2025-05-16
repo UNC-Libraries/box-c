@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 
 /**
@@ -14,6 +15,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 public class RefIdService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectFactory repositoryObjectFactory;
 
     public void updateRefId(RefIdRequest request) {
         var pidString = request.getPidString();
@@ -28,8 +30,7 @@ public class RefIdService {
                     + " cannot be assigned an Aspace Ref ID.");
         }
 
-        var resource = repoObj.getResource();
-        resource.addProperty(CdrAspace.refId, request.getRefId());
+        repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
     }
 
     public void setAclService(AccessControlService aclService) {
@@ -38,5 +39,9 @@ public class RefIdService {
 
     public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+        this.repositoryObjectFactory = repositoryObjectFactory;
     }
 }

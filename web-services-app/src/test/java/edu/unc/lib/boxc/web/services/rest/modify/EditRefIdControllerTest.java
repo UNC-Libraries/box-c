@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
@@ -24,10 +25,11 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class EditRefIdIT {
+public class EditRefIdControllerTest {
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
     private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
+    private RefIdService service;
     @InjectMocks
     private EditRefIdController controller;
     @Mock
@@ -44,6 +46,10 @@ public class EditRefIdIT {
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
+        service = new RefIdService();
+        service.setAclService(accessControlService);
+        service.setRepoObjLoader(repositoryObjectLoader);
+        controller.setService(service);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
