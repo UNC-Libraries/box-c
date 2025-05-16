@@ -11,12 +11,17 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +31,9 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrTempPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
@@ -34,6 +41,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,9 +78,32 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @BeanInject(value = "imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
+    @BeanInject(value = "imageDerivativeProcessor")
+    private ImageDerivativeProcessor imageDerivativeProcessor;
+
+    @BeanInject(value = "pdfImageProcessor")
+    private PdfImageProcessor pdfImageProcessor;
+
+    @TempDir
+    public Path tmpFolder;
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
+    }
+
+    public void initDependencies() throws Exception {
+        imageDerivativeProcessor.setTempBasePath(tmpFolder.toString());
+        // Fake the header setting in the pdf processor
+        doAnswer((Answer<Void>) invocation -> {
+            Exchange exchange = (Exchange) invocation.getArguments()[0];
+            var message = exchange.getIn();
+            message.setHeader(CdrImagePath, message.getHeader(CdrBinaryPath, String.class));
+            message.setHeader(CdrBinaryMimeType, "image/tiff");
+            message.setHeader(CdrImagePathCleanup, true);
+            return null;
+        }).when(pdfImageProcessor).process(any(Exchange.class));
+
     }
 
     @AfterEach
@@ -82,6 +113,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteNoForceNoFileExists() throws Exception {
+        initDependencies();
+
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
@@ -97,6 +130,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteForceNoFileExists() throws Exception {
+        initDependencies();
+
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
@@ -111,6 +146,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteNoForceFileExists() throws Exception {
+        initDependencies();
+
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".jp2");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
@@ -129,6 +166,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteForceFileExists() throws Exception {
+        initDependencies();
+
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".jp2");
@@ -147,6 +186,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRejection() throws Exception {
+        initDependencies();
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
@@ -164,6 +204,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyDisallowedImageType() throws Exception {
+        initDependencies();
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
@@ -179,6 +220,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyIconFile() throws Exception {
+        initDependencies();
         createContext(accessCopyRoute);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
@@ -191,6 +233,25 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(jp2Processor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor).needsRun(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testAccessCopyRoutePdfBinary() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+
+        initDependencies();
+        createContext(accessCopyRoute);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+        headers.put(CdrBinaryMimeType, "application/pdf");
+        headers.put(CdrBinaryPath, "src/test/resources/boxy.pdf");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(pdfImageProcessor).process(any(Exchange.class));
+        verify(jp2Processor).process(any(Exchange.class));
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {
@@ -213,7 +274,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Binary.getURI());
         headers.put(CdrTempPath, derivTmpPath);
-        headers.put(CdrImagePath, fileName);
+        headers.put(CdrBinaryPath, fileName);
         headers.put(CdrBinaryMimeType, "image/png");
         headers.put("force", force);
 

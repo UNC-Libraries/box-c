@@ -110,6 +110,8 @@
         <logback.version>1.2.13</logback.version>
 
         <iiif-apis.version>0.3.11</iiif-apis.version>
+
+        <pdfbox.version>3.0.5</pdfbox.version>
         
         <jdom.version>2.0.6.1</jdom.version>
         <jaxen.version>1.2.0</jaxen.version>
@@ -604,7 +606,13 @@
                 <artifactId>iiif-apis</artifactId>
                 <version>${iiif-apis.version}</version>
             </dependency>
-            
+
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>javax.annotation</groupId>
                 <artifactId>javax.annotation-api</artifactId>

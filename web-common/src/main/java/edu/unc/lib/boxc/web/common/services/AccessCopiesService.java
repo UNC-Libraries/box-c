@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.common.services;
 
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
+
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
@@ -24,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Service to check for or list resources with access copies
@@ -81,7 +81,8 @@ public class AccessCopiesService {
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType) &&
-                (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null ||
+                ((briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null
+                    && briefObj.getFileFormatType().stream().noneMatch(s -> s.matches(PDF_MIMETYPE_REGEX))) ||
                     briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null)) {
                 return true;
         }
@@ -187,8 +188,7 @@ public class AccessCopiesService {
 
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
         if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
-                || contentObjectRecord.getFileFormatCategory() == null
-                || !contentObjectRecord.getFileFormatCategory().contains(IMAGE_CONTENT_TYPE)) {
+                || !hasContentSupportingThumbnails(contentObjectRecord)) {
             log.debug("Record {} is not applicable for a thumbnail", contentObjectRecord.getId());
             return null;
         }
@@ -212,6 +212,14 @@ public class AccessCopiesService {
             log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
             return null;
         }
+    }
+
+    private boolean hasContentSupportingThumbnails(ContentObjectRecord contentObjectRecord) {
+        if (contentObjectRecord.getFileFormatCategory() == null || contentObjectRecord.getFileFormatType() == null) {
+            return false;
+        }
+        return contentObjectRecord.getFileFormatCategory().contains(IMAGE_CONTENT_TYPE)
+                || contentObjectRecord.getFileFormatType().contains(APPLICATION_PDF_VALUE);
     }
 
     public void populateThumbnailInfo(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
@@ -247,9 +255,6 @@ public class AccessCopiesService {
     }
 
     private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
-        // Search for child objects with jp2 or audio datastreams with user can access
-        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
-                DatastreamType.AUDIO_ACCESS_COPY));
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
             searchState.setPermissionLimits(Arrays.asList(Permission.viewAccessCopies));
@@ -259,7 +264,7 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, datastreams));
+        searchState.addFilter(QueryFilterFactory.createIIIFv3ViewableFilter());
 
         var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest);
