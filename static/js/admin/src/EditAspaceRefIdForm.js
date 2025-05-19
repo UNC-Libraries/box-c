@@ -5,7 +5,7 @@ define('EditAspaceRefIdForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
         var defaultOptions = {
             title: 'Edit Aspace Ref Id',
             createFormTemplate: editAspaceRefIdForm,
-            submitMethod: 'PUT'
+            submitMethod: 'POST'
         };
 
         function EditAspaceRefIdForm(options) {
