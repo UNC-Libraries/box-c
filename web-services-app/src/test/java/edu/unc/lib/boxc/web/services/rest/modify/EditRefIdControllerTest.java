@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -19,7 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,6 +76,19 @@ public class EditRefIdControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("aspaceRefId", refId))
                 .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void testEditRefIdNoAccess() throws Exception {
+        var refId = "2817ec3c77e5ea9846d5c070d58d402b";
+        var pid = PIDs.get(WORK_ID);
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.editAspaceProperties));
+        mockMvc.perform(post("/edit/aspace/updateRefId/{pid}", WORK_ID)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("aspaceRefId", refId))
+                .andExpect(status().isForbidden())
                 .andReturn();
     }
 }
