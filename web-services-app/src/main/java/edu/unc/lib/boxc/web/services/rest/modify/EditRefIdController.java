@@ -29,7 +29,7 @@ public class EditRefIdController {
     @Autowired
     RefIdService service;
 
-    @PostMapping(value ="/edit/aspace/updateRefId/{pid}")
+    @PostMapping(value = "/edit/aspace/updateRefId/{pid}")
     @ResponseBody
     public ResponseEntity<Object> updateAspaceRefId(@PathVariable("pid") String pid, @RequestParam("aspaceRefId") String refId) {
         Map<String, Object> result = new HashMap<>();

@@ -63,20 +63,20 @@ public class RefIdServiceTest {
 
     @Test
     public void testNoPermission() {
+        var request = buildRequest();
+        doThrow(new AccessRestrictionException("Access Denied")).when(aclService)
+                .assertHasAccess(any(), eq(pid), any(), eq(Permission.editAspaceProperties));
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
-            var request = buildRequest();
-            doThrow(new AccessRestrictionException("Access Denied")).when(aclService)
-                    .assertHasAccess(any(), eq(pid), any(), eq(Permission.editAspaceProperties));
             service.updateRefId(request);
         });
     }
 
     @Test
     public void testNotAWork() {
+        var fileObject = mock(FileObject.class);
+        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
+        var request = buildRequest();
         Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
-            var fileObject = mock(FileObject.class);
-            when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
-            var request = buildRequest();
             service.updateRefId(request);
         });
     }
