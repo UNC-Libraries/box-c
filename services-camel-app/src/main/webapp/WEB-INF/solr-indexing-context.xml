@@ -169,10 +169,14 @@
         </property>
     </bean>
 
-    <bean id="solrAspaceRefIdUpdatePipeline">
+    <bean id="solrAspaceRefIdUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setAspaceRefIdFilter" />
+                <ref bean="setContentStatusFilter" />
             </list>
         </property>
     </bean>
