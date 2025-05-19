@@ -514,6 +514,12 @@
         <property name="basePath" value="${data.dir}/zip/"/>
         <property name="fileLimit" value="100" />
     </bean>
+
+    <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
+        <property name="aclService" ref="aclService"/>
+        <property name="repoObjLoader" ref="repositoryObjectLoader"/>
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory"/>
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
