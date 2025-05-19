@@ -519,6 +519,7 @@
         <property name="aclService" ref="aclService"/>
         <property name="repoObjLoader" ref="repositoryObjectLoader"/>
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory"/>
+        <property name="indexingMessageSender" ref="solrIndexingMessageSender"/>
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

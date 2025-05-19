@@ -13,6 +13,8 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +45,8 @@ public class RefIdServiceTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
 
     @BeforeEach
     void setUp() {
@@ -51,6 +55,7 @@ public class RefIdServiceTest {
         service.setRepoObjLoader(repositoryObjectLoader);
         service.setAclService(aclService);
         service.setRepositoryObjectFactory(repositoryObjectFactory);
+        service.setIndexingMessageSender(indexingMessageSender);
         pid = TestHelper.makePid();
         pidString = pid.getId();
         when(agent.getPrincipals()).thenReturn(accessGroupSet);
@@ -85,11 +90,15 @@ public class RefIdServiceTest {
     public void testUpdateRefId() {
         var workObject = mock(WorkObject.class);
         var request = buildRequest();
+        var username = "number one user";
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(agent.getUsername()).thenReturn(username);
 
         service.updateRefId(request);
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
     }
 
     private RefIdRequest buildRequest() {

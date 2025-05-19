@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * API controller for editing the ArchivesSpace Ref ID associated with a WorkObject.
+ */
 @Controller
 public class EditRefIdController {
     private static final Logger log = LoggerFactory.getLogger(EditRefIdController.class);
