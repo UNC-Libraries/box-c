@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
@@ -45,6 +46,8 @@ public class EditRefIdControllerTest {
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
+    private IndexingMessageSender indexingMessageSender;
+    @Mock
     private WorkObject workObject;
     @Mock
     private Resource resource;
@@ -58,6 +61,7 @@ public class EditRefIdControllerTest {
         service.setAclService(accessControlService);
         service.setRepoObjLoader(repositoryObjectLoader);
         service.setRepositoryObjectFactory(repositoryObjectFactory);
+        service.setIndexingMessageSender(indexingMessageSender);
         controller.setService(service);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
