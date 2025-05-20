@@ -283,6 +283,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getAspaceRefId() {
+        return this.representative.getAspaceRefId();
+    }
+
+    @Override
     public List<String> getLanguage() {
         return this.representative.getLanguage();
     }

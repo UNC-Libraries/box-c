@@ -26,7 +26,7 @@ public class AbstractSearchController extends AbstractSolrSearchController {
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.CREATOR.name(),
             SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
-            SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ASPACE_REF_ID.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.VERSION.name(),SearchFieldKey.ROLE_GROUP.name(),
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(), SearchFieldKey.STREAMING_TYPE.name(),

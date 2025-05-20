@@ -138,6 +138,8 @@ public interface ContentObjectRecord {
 
     String getCollectionId();
 
+    String getAspaceRefId();
+
     /**
      * @return ID of the object holding the thumbnail for this object, if one is present. Otherwise, null.
      */
