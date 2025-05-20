@@ -176,6 +176,10 @@ public class SerializationUtil {
             result.put("identifier", metadata.getIdentifier());
         }
 
+        if (metadata.getAspaceRefId() != null) {
+            result.put("aspaceRefId", metadata.getAspaceRefId());
+        }
+
         if (metadata.getAncestorPathFacet() != null) {
             result.put("ancestorPath", cutoffFacetToMap(metadata.getAncestorPathFacet()));
         }
