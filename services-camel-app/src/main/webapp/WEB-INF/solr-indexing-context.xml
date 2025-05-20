@@ -169,6 +169,18 @@
         </property>
     </bean>
 
+    <bean id="solrAspaceRefIdUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setAspaceRefIdFilter" />
+                <ref bean="setContentStatusFilter" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="solrUpdateDriver"
         class="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver"
         init-method="init">
@@ -528,11 +540,20 @@
         <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
+
+    <bean id="addAspaceRefIdAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrAspaceRefIdUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
+    </bean>
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
         value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
+        <entry key="ADD_ASPACE_REF_ID" value-ref="addAspaceRefIdAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
         <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />
