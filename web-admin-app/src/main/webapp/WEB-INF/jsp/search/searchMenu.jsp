@@ -13,6 +13,7 @@
 							<option value="titleIndex">Title</option>
 							<option value="contributorIndex">Contributor</option>
 							<option value="subjectIndex">Subject</option>
+							<option value="identifierIndex">Identifier</option>
 						</select>
 					</div>
 					<c:if test="${not empty resultResponse.selectedContainer}">

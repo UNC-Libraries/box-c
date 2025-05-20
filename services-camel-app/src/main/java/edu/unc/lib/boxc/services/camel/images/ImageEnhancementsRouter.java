@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import JP2ImageConverter.errors.CommandException;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -34,6 +33,12 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "jp2Processor")
     private Jp2Processor jp2Processor;
 
+    @BeanInject(value = "pdfImageProcessor")
+    private PdfImageProcessor pdfImageProcessor;
+
+    @BeanInject(value = "imageDerivativeProcessor")
+    private ImageDerivativeProcessor imageDerivativeProcessor;
+
     private UuidGenerator uuidGenerator;
 
     /**
@@ -41,8 +46,6 @@ public class ImageEnhancementsRouter extends RouteBuilder {
      */
     @Override
     public void configure() throws Exception {
-        ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
-
         uuidGenerator = new DefaultUuidGenerator();
 
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
@@ -58,26 +61,36 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
             .startupOrder(20)
-            .log(LoggingLevel.DEBUG, log, "Access copy triggered")
+            .log(LoggingLevel.DEBUG, log, "Access copy triggered ${headers[CdrMimeType]} for ${headers[CdrBinaryPath]}")
             .filter().method(addAccessCopyProcessor, "needsRun")
-            .filter().method(imageDerivProcessor, "allowedImageType")
-                .bean(imageDerivProcessor)
-                .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
-                // Generate an random identifier to avoid derivative collisions
-                .setBody(exchange -> uuidGenerator.generateUuid())
-                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
-                .doTry()
-                    .bean(jp2Processor)
-                    .bean(addAccessCopyProcessor)
-                    // Process cache invalidation asynchronously with a limited number of threads
-                    .threads(CACHE_INVALIDATE_THREADS)
-                        // Limit the max number of requests per second
-                        .throttle(CACHE_INVALIDATE_REQUESTS_PER_SEC)
-                        .bean(imageCacheInvalidationProcessor)
+                .choice()
+                    .when().method(PdfImageProcessor.class, "isPdfFile")
+                        .log(LoggingLevel.DEBUG, log, "Binary is a PDF, generating image of first page")
+                        .bean(pdfImageProcessor)
+                    .when().method(ImageDerivativeProcessor.class, "allowedImageType")
+                        .log(LoggingLevel.DEBUG, log, "Binary is an image")
+                        .bean(imageDerivativeProcessor)
+                .end()
+                .filter(simple("${headers[CdrImagePath]} != null"))
+                    .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
+                    // Generate an random identifier to avoid derivative collisions
+                    .setBody(exchange -> uuidGenerator.generateUuid())
+                    .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
+                    .doTry()
+                        .bean(jp2Processor)
+                        .bean(addAccessCopyProcessor)
+                        // Process cache invalidation asynchronously with a limited number of threads
+                        .threads(CACHE_INVALIDATE_THREADS)
+                            // Limit the max number of requests per second
+                            .throttle(CACHE_INVALIDATE_REQUESTS_PER_SEC)
+                            .bean(imageCacheInvalidationProcessor)
+                        .end()
+                    .endDoTry()
+                    .doFinally()
+                        .bean(addAccessCopyProcessor, "cleanupTempFile")
+                        .bean(imageDerivativeProcessor, "cleanupTempImage")
                     .end()
-                .endDoTry()
-                .doFinally()
-                    .bean(addAccessCopyProcessor, "cleanupTempFile")
-                .end();
+                .end()
+            .end();
     }
 }

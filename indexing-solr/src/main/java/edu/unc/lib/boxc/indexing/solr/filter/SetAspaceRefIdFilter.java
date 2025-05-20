@@ -7,6 +7,9 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Sets the ArchivesSpace Ref ID tag for WorkObjects
  * @author snluong
@@ -29,6 +32,13 @@ public class SetAspaceRefIdFilter implements IndexDocumentFilter {
         var refId = resource.hasProperty(CdrAspace.refId) ?
                 resource.getProperty(CdrAspace.refId).getString() : null;
 
+        List<String> identifiers = new ArrayList<>();
+        if (doc.getIdentifier() != null && !doc.getIdentifier().isEmpty()) {
+            identifiers = doc.getIdentifier();
+        }
+        identifiers.add("aspaceRefId|" + refId);
+
         doc.setAspaceRefId(refId);
+        doc.setIdentifier(identifiers);
     }
 }

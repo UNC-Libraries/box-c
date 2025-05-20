@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.filters.HasPopulatedFieldFilter;
+import edu.unc.lib.boxc.search.solr.filters.IIIFv3ViewableFilter;
 import edu.unc.lib.boxc.search.solr.filters.MultipleDirectlyOwnedDatastreamsFilter;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
@@ -148,8 +149,9 @@ public class AccessCopiesServiceTest  {
         var mdObject = new ContentObjectSolrRecord();
         mdObject.setResourceType(resourceType.name());
         mdObject.setId(UUID.randomUUID().toString());
-        List<String> datastreams = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        List<String> datastreams = List.of(
+                ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|",
+                JP2_ACCESS_COPY.getId() + "|image/jp2|file.jp2|jp2||||1200x1200");
         mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
         mdObject.setFileFormatType(Collections.singletonList("application/pdf"));
         mdObject.setDatastream(datastreams);
@@ -160,8 +162,9 @@ public class AccessCopiesServiceTest  {
         var mdObject = new ContentObjectSolrRecord();
         mdObject.setResourceType(resourceType.name());
         mdObject.setId(UUID.randomUUID().toString());
-        List<String> datastreams = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|application/x-pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        List<String> datastreams = List.of(
+                ORIGINAL_FILE.getId() + "|application/x-pdf|file.pdf|pdf|766|urn:sha1:checksum|",
+                JP2_ACCESS_COPY.getId() + "|image/jp2|file.jp2|jp2||||1200x1200");
         mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
         mdObject.setFileFormatType(Collections.singletonList("application/x-pdf"));
         mdObject.setDatastream(datastreams);
@@ -387,11 +390,13 @@ public class AccessCopiesServiceTest  {
                 "Expected request to be filtered by datastream " + expectedType.name());
     }
 
-    private void assertRequestedDatastreamFilters(Set<DatastreamType> expectedTypeSet) {
+    private void assertRequestedIiifV3Filters() {
         var searchState = searchRequestCaptor.getValue().getSearchState();
-        var queryFilter = (MultipleDirectlyOwnedDatastreamsFilter) searchState.getFilters().get(0);
-        assertEquals(expectedTypeSet, queryFilter.getDatastreamTypes(),
-                "Expected request to be filtered by datastreams " + expectedTypeSet);
+        var queryFilter = (IIIFv3ViewableFilter) searchState.getFilters().get(0);
+        assertEquals("((fileFormatType:video/mp4 OR fileFormatType:video/mpeg" +
+                        " OR fileFormatType:video/quicktime OR fileFormatType:video/mp4 OR fileFormatType:audio/mpeg)" +
+                        " OR (datastream:jp2|*) OR (datastream:audio|*)) AND !fileFormatType:\"application/pdf\"",
+                queryFilter.toFilterString());
     }
 
     private void assertHasPopulatedFieldFilter(SearchFieldKey expectedKey) {
@@ -461,9 +466,23 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
-        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
-                DatastreamType.AUDIO_ACCESS_COPY));
-        assertRequestedDatastreamFilters(datastreams);
+        assertRequestedIiifV3Filters();
+    }
+
+    @Test
+    public void hasViewableFilesPdfFileTest() {
+        var mdObjectImg = createPdfObject(ResourceType.File);
+        hasPermissions(mdObjectImg, true);
+
+        assertFalse(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
+    }
+
+    @Test
+    public void hasViewableFilesPdfXFileTest() {
+        var mdObjectImg = createXPdfObject(ResourceType.File);
+        hasPermissions(mdObjectImg, true);
+
+        assertFalse(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
     }
 
     @Test

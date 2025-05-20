@@ -32,6 +32,14 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.Jp2Processor" />
     </bean>
 
+    <bean id="pdfImageProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.PdfImageProcessor" />
+    </bean>
+
+    <bean id="imageDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor" />
+    </bean>
+
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>

@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,8 +62,6 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), VIDEO_MPEG.toString(),
-            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -363,7 +360,7 @@ public class IiifV3ManifestService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(QueryFilterFactory.createIIIFv3ViewableFilter(FILE_TYPES));
+        searchState.addFilter(QueryFilterFactory.createIIIFv3ViewableFilter());
 
         var searchRequest = new SearchRequest(searchState, principals);
         var resp = solrSearchService.getSearchResults(searchRequest);

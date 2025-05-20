@@ -17,7 +17,10 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -51,8 +55,13 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
@@ -93,6 +102,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private UpdateDescriptionService updateDescriptionService;
 
+    private ImageDerivativeProcessor imageDerivativeProcessor;
+
+    private PdfImageProcessor pdfImageProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -120,6 +133,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
         addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor", AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
+        imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
+        pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
 
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
@@ -134,6 +149,22 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         File audioScriptFile = new File("target/convertAudio.sh");
         FileUtils.writeStringToFile(audioScriptFile, "exit 0", "utf-8");
         audioScriptFile.deleteOnExit();
+
+        doAnswer((Answer<Void>) invocation -> {
+            Exchange exchange = (Exchange) invocation.getArguments()[0];
+            var message = exchange.getIn();
+            message.setHeader(CdrImagePath, message.getHeader(CdrBinaryPath, String.class));
+            message.setHeader(CdrBinaryMimeType, "image/tiff");
+            message.setHeader(CdrImagePathCleanup, true);
+            return null;
+        }).when(pdfImageProcessor).process(any(Exchange.class));
+
+        doAnswer((Answer<Void>) invocation -> {
+            Exchange exchange = (Exchange) invocation.getArguments()[0];
+            var message = exchange.getIn();
+            message.setHeader(CdrImagePath, message.getHeader(CdrBinaryPath, String.class));
+            return null;
+        }).when(imageDerivativeProcessor).process(any(Exchange.class));
     }
 
     @AfterEach
@@ -318,6 +349,29 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testPdfFile() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "application/pdf", null, null);
+
+        // Separate exchanges when multicasting
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(12)
+                .create();
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(pdfImageProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 

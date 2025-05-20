@@ -28,6 +28,9 @@ public abstract class CdrFcrepoHeaders {
     // File path for a temp file
     public static final String CdrTempPath = "CdrTempPath";
 
+    // Flag indicating that the CdrImagePath is a temporary file and should be cleaned up
+    public static final String CdrImagePathCleanup = "CdrImagePathIsTemp";
+
     public static final String CdrUpdateAction = "CdrUpdateAction";
 
     public static final String CdrEnhancementSet = "CdrEnhancementSet";
