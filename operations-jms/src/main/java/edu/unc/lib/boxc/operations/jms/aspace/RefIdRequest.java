@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.aspace;
+package edu.unc.lib.boxc.operations.jms.aspace;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;

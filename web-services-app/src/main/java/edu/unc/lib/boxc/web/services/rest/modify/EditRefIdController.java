@@ -6,7 +6,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.operations.impl.aspace.RefIdRequest;
+import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
