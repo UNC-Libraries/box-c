@@ -192,7 +192,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
-		if (metadata.type === 'Work' && $.inArray('editDescription', metadata.permissions) != -1) {
+		if (metadata.type === 'Work' && $.inArray('editAspaceProperties', metadata.permissions) != -1) {
 			items["editAspaceRefId"] = {name : 'Update Aspace Ref ID'};
 		}
 

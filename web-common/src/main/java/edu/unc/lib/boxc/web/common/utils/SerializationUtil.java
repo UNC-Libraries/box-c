@@ -177,7 +177,7 @@ public class SerializationUtil {
         }
 
         if (metadata.getAspaceRefId() != null) {
-            result.put("aspaceRefId", metadata.getAspaceRefId());
+            result.put(SearchFieldKey.ASPACE_REF_ID.getUrlParam(), metadata.getAspaceRefId());
         }
 
         if (metadata.getAncestorPathFacet() != null) {
