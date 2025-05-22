@@ -294,7 +294,7 @@ public class IngestControllerIT {
         String mimetype = "text/plain";
         String fileContent = "some text";
 
-        when(accessLevel.getHighestRole()).thenReturn(UserRole.canIngest);
+        when(accessLevel.isViewAdmin()).thenReturn(true);
         MockMultipartFile depositFile = new MockMultipartFile("file", filename, mimetype, fileContent.getBytes());
 
         MvcResult result = mvc.perform(multipart("/edit/ingest/stageFile")
@@ -337,7 +337,7 @@ public class IngestControllerIT {
 
         MockMultipartFile depositFile = new MockMultipartFile("file", filename, mimetype, fileContent.getBytes());
 
-        when(accessLevel.getHighestRole()).thenReturn(UserRole.canAccess);
+        when(accessLevel.isViewAdmin()).thenReturn(false);
 
         mvc.perform(multipart("/edit/ingest/stageFile")
                         .file(depositFile)
@@ -350,7 +350,7 @@ public class IngestControllerIT {
 
     @Test
     public void testRemoveStagedInsufficientPermissions() throws Exception {
-        when(accessLevel.getHighestRole()).thenReturn(UserRole.canAccess);
+        when(accessLevel.isViewAdmin()).thenReturn(false);
 
         String removeBody = "{\"file\": \"test_file\", \"formKey\": \"testform\", \"path\": \"\"}";
         mvc.perform(post("/edit/ingest/removeStagedFile")
@@ -363,7 +363,7 @@ public class IngestControllerIT {
 
     @Test
     public void testRemoveStagedInvalidPath() throws Exception {
-        when(accessLevel.getHighestRole()).thenReturn(UserRole.canIngest);
+        when(accessLevel.isViewAdmin()).thenReturn(true);
 
         String removeBody = "{\"file\": \"../test_file\", \"formKey\": \"testform\", \"path\": \"\"}";
         mvc.perform(post("/edit/ingest/removeStagedFile")
