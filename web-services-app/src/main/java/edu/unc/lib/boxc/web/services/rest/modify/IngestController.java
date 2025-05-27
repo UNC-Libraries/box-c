@@ -103,7 +103,6 @@ public class IngestController {
                                      @RequestParam(value = "path", required = false) String filePath,
                                      @RequestParam("file") MultipartFile ingestFile,
                                      @SessionAttribute("accessLevel") AccessLevel accessLevel) throws IOException {
-        log.error("highest roll {} {}", accessLevel.getHighestRole(), accessLevel.getUsername());
         // Since this is not depositing to a specific destination, we check that the user staff permissions anywhere.
         if (!accessLevel.isViewAdmin()) {
             throw new AccessRestrictionException("Insufficient permissions to stage file");
