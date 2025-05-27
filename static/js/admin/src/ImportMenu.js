@@ -1,5 +1,5 @@
-define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderForm', 'ImportMetadataXMLForm', 'qtip'],
-    function($, ui, _, ImportMemberOrderForm, ImportMetadataXMLForm) {
+define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderForm', 'ImportMetadataXMLForm', 'BulkImportRefIdsForm', 'qtip'],
+    function($, ui, _, ImportMemberOrderForm, ImportMetadataXMLForm, BulkImportRefIdsForm) {
 
         function ImportMenu(options) {
             this.options = $.extend({}, options);
@@ -14,6 +14,11 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
             if (this.container !== undefined && $.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
                 items["importMemberOrder"] = {name : "Member Order"};
                 items["importMetadata"] = {name : "Bulk MODS"};
+            }
+
+            if (this.container !== undefined && (this.container.type === 'AdminUnit' || this.container.type === 'Collection' || this.container.type === 'Folder')
+                && $.inArray('editAspaceProperties', this.container.permissions) !== -1) {
+                items["importRefIds"] = {name : "Bulk Ref Ids"};
             }
 
             return items;
@@ -62,6 +67,11 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
                                     break;
                                 case "importMetadata" :
                                     new ImportMetadataXMLForm({
+                                        alertHandler : self.options.alertHandler
+                                    }).open();
+                                    break;
+                                case "importRefIds" :
+                                    new BulkImportRefIdsForm({
                                         alertHandler : self.options.alertHandler
                                     }).open();
                                     break;
