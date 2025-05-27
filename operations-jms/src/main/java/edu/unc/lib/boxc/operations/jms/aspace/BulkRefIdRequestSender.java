@@ -17,10 +17,9 @@ public class BulkRefIdRequestSender extends MessageSender {
      * @param request
      * @throws IOException
      */
-    public void sendToQueue(RefIdRequest request) throws IOException {
+    public void sendToQueue(BulkRefIdRequest request) throws IOException {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
-        log.info("Job to update Aspace Ref ID has been queued for {} with Work {}",
-                request.getAgent().getUsername(), request.getPidString());
+        log.info("Job to import Aspace Ref IDs has been queued for {}", request.getAgent().getUsername());
     }
 }

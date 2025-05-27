@@ -6,8 +6,11 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
+import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
+import edu.unc.lib.boxc.web.services.utils.CsvUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +21,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +37,8 @@ public class EditRefIdController {
 
     @Autowired
     RefIdService service;
+    @Autowired
+    BulkRefIdRequestSender sender;
 
     @PostMapping(value = "/edit/aspace/updateRefId/{pid}")
     @ResponseBody
@@ -53,11 +61,37 @@ public class EditRefIdController {
         }
     }
 
+    @PostMapping(value = "/edit/aspace/updateRefIds/")
+    public ResponseEntity<Object> importRefIds(@RequestParam("file") MultipartFile csvFile) {
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
+        Path csvPath = null;
+        try {
+            csvPath = CsvUtil.storeCsvToTemp(csvFile, "refId");
+            var request = buildBulkRequest(agent, csvPath);
+            sender.sendToQueue(request);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Error importing ref ID CSV for {}", agent.getUsername(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            CsvUtil.cleanupCsv(csvPath);
+        }
+    }
+
     private RefIdRequest buildRequest(String refId, String pidString, AgentPrincipals agent) {
         var request = new RefIdRequest();
         request.setRefId(refId);
         request.setPidString(pidString);
         request.setAgent(agent);
+        return request;
+    }
+
+    private BulkRefIdRequest buildBulkRequest(AgentPrincipals agent, Path csvPath) throws IOException {
+        var headers = new String[] {"workId", "refId"};
+        var map = CsvUtil.convertCsvToMap(headers, csvPath);
+        var request = new BulkRefIdRequest();
+        request.setAgent(agent);
+        request.setRefIdMap(map);
         return request;
     }
 
