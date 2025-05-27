@@ -103,8 +103,8 @@ public class IngestController {
                                      @RequestParam(value = "path", required = false) String filePath,
                                      @RequestParam("file") MultipartFile ingestFile,
                                      @SessionAttribute("accessLevel") AccessLevel accessLevel) throws IOException {
-        // Since this is not depositing to a specific destination, we check that the user has ingest anywhere.
-        if (!accessLevel.getHighestRole().getPermissions().contains(Permission.ingest)) {
+        // Since this is not depositing to a specific destination, we check that the user staff permissions anywhere.
+        if (!accessLevel.isViewAdmin()) {
             throw new AccessRestrictionException("Insufficient permissions to stage file");
         }
 
@@ -123,7 +123,7 @@ public class IngestController {
     public ResponseEntity<Object> removeStagedFile(@RequestBody RemoveUploadedFileRequest request,
                                                    @SessionAttribute("accessLevel") AccessLevel accessLevel)
             throws IOException{
-        if (!accessLevel.getHighestRole().getPermissions().contains(Permission.ingest)) {
+        if (!accessLevel.isViewAdmin()) {
             throw new AccessRestrictionException("Insufficient permissions to remove staged file");
         }
         String tempFileName = request.getFile();
