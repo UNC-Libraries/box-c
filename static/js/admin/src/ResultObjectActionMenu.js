@@ -2,7 +2,7 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
 		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm',
 		'EditAltTextForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
 
 	var defaultOptions = {
 		selector : undefined,
