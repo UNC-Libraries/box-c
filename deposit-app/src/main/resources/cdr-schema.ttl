@@ -9,6 +9,7 @@
 @prefix pcdm:  <http://pcdm.org/models#> .
 @prefix cdr:  <http://cdr.unc.edu/definitions/model#> .
 @prefix cdr-acl:  <http://cdr.unc.edu/definitions/acl#> .
+@prefix cdr-aspace: <http://cdr.unc.edu/definitions/aspace#> .
 
 ###### Content Object Classes ###### 
 cdr:FileObject a rdfs:Class ;
