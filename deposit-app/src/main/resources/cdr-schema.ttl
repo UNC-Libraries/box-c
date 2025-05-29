@@ -185,3 +185,10 @@ cdr-acl:unitOwner a rdfs:Property ;
     rdfs:domain cdr:AdminUnit ;
     rdfs:range xsd:string ;
     rdfs:comment "User granted ownership of an administrative unit. Has all access and administrative permissions, as well as permission to permanently destroy objects, create collections, and assign staff permissions. Applies to cdr:AdminUnit objects." .
+
+###### Aspace Properties ######
+cdr-aspace:refId a rdfs:Property ;
+    rdfs:label "Aspace Ref Id" ;
+    rdfs:domain cdr:Work ;
+    rdfs:range xsd:string ;
+    rdfs:comment "ArchivesSpace Ref Id. Applies to cdr:Work objects."

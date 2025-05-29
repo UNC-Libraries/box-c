@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
 import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
 import org.apache.http.HttpStatus;
@@ -792,6 +793,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
         if (dResc.hasProperty(Cdr.streamingType)) {
             aResc.addProperty(Cdr.streamingType, dResc.getProperty(Cdr.streamingType).getString());
+        }
+        if (dResc.hasProperty(CdrAspace.refId)) {
+            aResc.addProperty(CdrAspace.refId, dResc.getProperty(CdrAspace.refId).getString());
         }
     }
 
