@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
@@ -107,6 +108,9 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
         // Validate member order property
         validateMemberOrder(model);
+
+        // Validate ref id property
+        validateAspaceRefId(model);
     }
 
     private void validatePrimaryObjects(Model model) {
@@ -256,6 +260,19 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         if (!url.startsWith(STREAMREAPER_PREFIX_URL) ||
                 (!streamingType.equals(STREAMING_TYPE_SOUND) && !streamingType.equals(STREAMING_TYPE_VIDEO))) {
             failJob(null, "Invalid streaming properties on FileObject {0}", resource.getURI());
+        }
+    }
+
+    private void validateAspaceRefId(Model model) {
+        StmtIterator iterator = model.listStatements((Resource) null, CdrAspace.refId, (RDFNode) null);
+
+        while (iterator.hasNext()) {
+            Statement statement = iterator.next();
+
+            Resource subj = statement.getSubject();
+            if (!subj.hasProperty(RDF.type, Cdr.Work)) {
+                failJob(null, "Ref id property only valid on Work Objects", subj.getURI());
+            }
         }
     }
 

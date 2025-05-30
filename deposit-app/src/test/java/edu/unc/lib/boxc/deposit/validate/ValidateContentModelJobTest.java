@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -558,6 +559,43 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             doNothing().doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
 
             depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void workValidAspaceRefIdTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+        objBag.addProperty(CdrAspace.refId, "2817ec3c77e5ea9846d5c070d58d402b");
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResource = model.getResource(childPid.getRepositoryPath());
+        childResource.addProperty(RDF.type, Cdr.FileObject);
+        Resource origResource = DepositModelHelpers.addDatastream(childResource);
+        origResource.addLiteral(CdrDeposit.stagingLocation, "path");
+        objBag.add(childResource);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void folderInvalidAspaceRefIdTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID folderPid = makePid(CONTENT_BASE);
+            Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+            folderBag.addProperty(RDF.type, Cdr.Folder);
+            folderBag.addProperty(CdrAspace.refId, "2817ec3c77e5ea9846d5c070d58d402b");
+
+            depBag.add(folderBag);
 
             job.closeModel();
 

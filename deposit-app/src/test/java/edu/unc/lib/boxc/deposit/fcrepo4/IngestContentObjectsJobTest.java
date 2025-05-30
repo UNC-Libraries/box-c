@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
 import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
 import org.apache.commons.io.FileUtils;
@@ -877,6 +878,28 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
         assertTrue(workAipResc.hasProperty(Cdr.memberOrder), "Work object did not contain member order");
+    }
+
+    @Test
+    public void ingestWorkWithAspaceRefIds() throws Exception {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+        workBag.addProperty(CdrAspace.refId, "2817ec3c77e5ea9846d5c070d58d402b");
+
+        job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
+                .thenReturn(mockFileObj);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
+
+        Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
+        assertTrue(workAipResc.hasProperty(CdrAspace.refId));
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
