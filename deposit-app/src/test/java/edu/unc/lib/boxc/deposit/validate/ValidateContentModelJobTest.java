@@ -588,10 +588,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void fileInvalidAspaceRefIdTest() {
-        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
-            doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
-
+    public void folderInvalidAspaceRefIdTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
             PID folderPid = makePid(CONTENT_BASE);
             Bag folderBag = model.createBag(folderPid.getRepositoryPath());
             folderBag.addProperty(RDF.type, Cdr.Folder);
