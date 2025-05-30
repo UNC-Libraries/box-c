@@ -3,11 +3,14 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
+import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -26,11 +29,13 @@ public class EditRefIdIT extends AbstractAPIIT {
     private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String REF_ID = "2817ec3c77e5ea9846d5c070d58d402b";
     private AutoCloseable closeable;
-
     @TempDir
     public Path tmpFolder;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private BulkRefIdRequestSender sender;
+
     @InjectMocks
     private EditRefIdController controller;
 

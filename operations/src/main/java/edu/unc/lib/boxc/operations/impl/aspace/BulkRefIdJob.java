@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.operations.impl.aspace;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import org.slf4j.Logger;
@@ -17,7 +19,13 @@ public class BulkRefIdJob implements Runnable {
             refIdRequest.setPidString(pidString);
             refIdRequest.setAgent(request.getAgent());
             refIdRequest.setRefId(refId);
-            service.updateRefId(refIdRequest);
+            try {
+                service.updateRefId(refIdRequest);
+            } catch (AccessRestrictionException e) {
+                log.error("No permission to update ref ID for work {} with error {}", pidString, e);
+            } catch (InvalidOperationForObjectType e) {
+                log.error("Unable to update ref ID for object {} with error {}", pidString, e);
+            }
         });
     }
 

@@ -11,8 +11,8 @@ public class BulkRefIdRequestSerializationHelper {
     private static final ObjectReader REQUEST_READER;
     static {
         ObjectMapper mapper = new ObjectMapper();
-        REQUEST_WRITER = mapper.writerFor(RefIdRequest.class);
-        REQUEST_READER = mapper.readerFor(RefIdRequest.class);
+        REQUEST_WRITER = mapper.writerFor(BulkRefIdRequest.class);
+        REQUEST_READER = mapper.readerFor(BulkRefIdRequest.class);
     }
 
     private BulkRefIdRequestSerializationHelper() {
@@ -24,7 +24,7 @@ public class BulkRefIdRequestSerializationHelper {
      * @return
      * @throws IOException
      */
-    public static String toJson(RefIdRequest request) throws IOException {
+    public static String toJson(BulkRefIdRequest request) throws IOException {
         return REQUEST_WRITER.writeValueAsString(request);
     }
 
@@ -34,7 +34,7 @@ public class BulkRefIdRequestSerializationHelper {
      * @return
      * @throws IOException
      */
-    public static RefIdRequest toRequest(String json) throws IOException {
+    public static BulkRefIdRequest toRequest(String json) throws IOException {
         return REQUEST_READER.readValue(json);
     }
 }

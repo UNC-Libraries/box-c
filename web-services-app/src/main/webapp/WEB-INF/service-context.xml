@@ -521,6 +521,16 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory"/>
         <property name="indexingMessageSender" ref="solrIndexingMessageSender"/>
     </bean>
+
+    <bean id="bulkRefIdRequestSender" class="edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender">
+        <property name="jmsTemplate" ref="bulkRefIdRequestJmsTemplate"/>
+    </bean>
+
+    <bean id="bulkRefIdRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.bulk.refid.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
