@@ -13,6 +13,8 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.csv.CSVFormat;
@@ -34,7 +36,6 @@ import static java.util.Arrays.asList;
  *
  * @author krwong
  */
-//TODO: add ref_id support
 public class ExportDominoMetadataService {
     private static final Logger log = LoggerFactory.getLogger(ExportDominoMetadataService.class);
 
@@ -53,7 +54,7 @@ public class ExportDominoMetadataService {
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
 
     private static final List<String> METADATA_FIELDS = asList(SearchFieldKey.ID.name(),
-            SearchFieldKey.TITLE.name());
+            SearchFieldKey.TITLE.name(), SearchFieldKey.ASPACE_REF_ID.name());
 
     private static final List<ResourceType> ALLOWED_TYPES = Arrays.asList(ResourceType.ContentRoot,
             ResourceType.AdminUnit, ResourceType.Collection, ResourceType.Folder);
@@ -104,7 +105,7 @@ public class ExportDominoMetadataService {
         log.debug("Printing record for {}", object.getId());
 
         printer.print(object.getId());
-        printer.print(REF_ID_NAME);
+        printer.print(object.getAspaceRefId());
         printer.print(object.getTitle());
         printer.println();
     }
@@ -117,7 +118,9 @@ public class ExportDominoMetadataService {
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
         CutoffFacet selectedPath = parentRec.getPath();
         searchState.addFacet(selectedPath);
-        searchState.setResourceTypes(asList(Work.name()));
+        // Limit results to only works that have ref ids
+        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.ASPACE_REF_ID));
+        searchState.setResourceTypes(List.of(Work.name()));
         searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
