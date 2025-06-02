@@ -1,0 +1,192 @@
+package edu.unc.lib.boxc.operations.impl.metadata;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+/**
+ * @author bbpennel
+ */
+@WireMockTest
+public class PushDominoMetadataServiceTest {
+
+    private PushDominoMetadataService service;
+
+    @Mock
+    private ExportDominoMetadataService exportService;
+
+    @Mock
+    private EmailHandler emailHandler;
+
+    private PoolingHttpClientConnectionManager connectionManager;
+
+    @TempDir
+    Path tempDir;
+
+    private Path configPath;
+    private Path testCsvPath;
+    private String lastRunTimestamp;
+    private String adminEmail = "admin@example.com";
+
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    public void setup(WireMockRuntimeInfo wireMockInfo) throws IOException {
+        closeable = openMocks(this);
+
+        // Create connection manager that allows 1 connection
+        connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(1);
+        connectionManager.setDefaultMaxPerRoute(1);
+
+        // Create test CSV file
+        testCsvPath = tempDir.resolve("test_export.csv");
+        Files.writeString(testCsvPath, "uuid,ref_id,title\ntest1,ref1,Work 1\ntest2,ref2,Work 2");
+
+        // Create initial config file with a timestamp
+        lastRunTimestamp = ZonedDateTime.now(ZoneOffset.UTC).minusDays(7)
+                .format(DateTimeFormatter.ISO_INSTANT);
+        configPath = tempDir.resolve("domino_config.json");
+        var config = new PushDominoMetadataService.DominoPushConfig();
+        config.setLastNewObjectsRunTimestamp(lastRunTimestamp);
+
+        // Set up the service
+        service = new PushDominoMetadataService();
+        service.setExportDominoMetadataService(exportService);
+        service.setEmailHandler(emailHandler);
+        service.setConnectionManager(connectionManager);
+        service.setRunConfigPath(configPath.toString());
+        service.setAdminEmailAddress(adminEmail);
+        service.setDominoUrl(wireMockInfo.getHttpBaseUrl());
+        service.setDominoUsername("testuser");
+        service.setDominoPassword("testpass");
+
+        service.persistConfig(config);
+
+        // Set up export service to return our test CSV
+        when(exportService.exportCsv(any(), isNull(), eq(lastRunTimestamp), anyString()))
+                .thenReturn(testCsvPath);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        connectionManager.shutdown();
+        closeable.close();
+        WireMock.reset();
+    }
+
+    @Test
+    public void testPushNewDigitalObjectsSuccess() throws IOException {
+        // Setup WireMock stub for successful request
+        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
+                .withQueryParam("source", equalTo("dcr"))
+                .withQueryParam("delete", equalTo("none"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("Success")));
+
+        // Execute the push
+        service.pushNewDigitalObjects();
+
+        // Verify the request was made
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/manage.*")));
+
+        // Verify the config was updated
+        var updatedConfig = service.loadConfig();
+        assertTrue(updatedConfig.getLastNewObjectsRunTimestamp().compareTo(lastRunTimestamp) > 0,
+                "Last run timestamp should be updated");
+
+        // Verify no email was sent (since there was no error)
+        verify(emailHandler, never()).sendEmail(anyString(), anyString(), anyString(), anyString(), any());
+
+        // Verify CSV file was cleaned up
+        assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+    }
+
+    @Test
+    public void testPushNewDigitalObjectsServerError() throws IOException {
+        // Setup WireMock stub for server error
+        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withBody("Internal Server Error")));
+
+        service.pushNewDigitalObjects();
+
+        // Verify the config was NOT updated
+        var updatedConfig = service.loadConfig();
+        assertEquals(lastRunTimestamp, updatedConfig.getLastNewObjectsRunTimestamp(),
+                "Last run timestamp should not be updated after error");
+
+        assertErrorEmailSent();
+
+        assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+    }
+
+    @Test
+    public void testExportServiceFailure() throws IOException {
+        // Setup export service to throw exception
+        doThrow(new IOException("Export failed"))
+                .when(exportService).exportCsv(any(), isNull(), anyString(), anyString());
+
+        service.pushNewDigitalObjects();
+
+        // Verify the config was NOT updated
+        var updatedConfig = service.loadConfig();
+        assertEquals(lastRunTimestamp, updatedConfig.getLastNewObjectsRunTimestamp(),
+                "Last run timestamp should not be updated after error");
+
+        assertErrorEmailSent();
+    }
+
+    @Test
+    public void testInvalidConfigFile() throws IOException {
+        // Corrupt the config file
+        Files.writeString(configPath, "{ invalid json }");
+
+        var error = assertThrows(RepositoryException.class, () -> service.pushNewDigitalObjects());
+        assertTrue(error.getMessage().contains("Failed to read Domino push config"),
+                "Message did not contain expected text, was: " + error.getMessage());
+    }
+
+    private void assertErrorEmailSent() {
+        verify(emailHandler).sendEmail(
+                eq(adminEmail),
+                eq("Error pushing new digital objects to Domino"),
+                anyString(),
+                isNull(),
+                isNull());
+        }
+}
