@@ -68,6 +68,7 @@ public class ExportDominoMetadataService {
     public Path exportCsv(List<PID> pids, AgentPrincipals agent, String startDate, String endDate) throws IOException {
         var csvPath = Files.createTempFile("metadata", ".csv");
         var completedExport = false;
+        var exportedRecordCount = 0;
 
         try (CSVPrinter printer = createCsvPrinter(csvPath)) {
             for (PID pid : pids) {
@@ -76,7 +77,14 @@ public class ExportDominoMetadataService {
                 var parentRec = getRecord(pid, agent);
                 assertParentRecordValid(pid, parentRec);
 
-                printRecords(printer, getRecords(parentRec, agent, startDate, endDate));
+                var childRecords = getRecords(parentRec, agent, startDate, endDate);
+                exportedRecordCount += childRecords.size();
+                printRecords(printer, childRecords);
+            }
+            if (exportedRecordCount == 0) {
+                throw new NoRecordsExportedException("No records exported for pids: " + pids);
+            } else {
+                log.info("Exported {} records for domino to {}", exportedRecordCount, csvPath);
             }
             completedExport = true;
         } finally {
@@ -152,5 +160,11 @@ public class ExportDominoMetadataService {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
+    }
+
+    public static class NoRecordsExportedException extends RuntimeException {
+        public NoRecordsExportedException(String message) {
+            super(message);
+        }
     }
 }

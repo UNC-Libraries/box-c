@@ -67,11 +67,15 @@ public class PushDominoMetadataService {
         var endDate = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
         Path csvPath = null;
         try {
-            // Export the new objects to a CSV file
-            csvPath = exportNewObjectsCsv(config, endDate);
+            try {
+                // Export the new objects to a CSV file
+                csvPath = exportNewObjectsCsv(config, endDate);
 
-            // Upload the CSV file to Domino
-            pushToDomino(csvPath);
+                // Upload the CSV file to Domino
+                pushToDomino(csvPath);
+            } catch (ExportDominoMetadataService.NoRecordsExportedException e) {
+                LOG.debug("Skipping push to Domino, no new digital objects found since last run");
+            }
 
             // Update the last run timestamp in the config and persist it
             config.setLastNewObjectsRunTimestamp(endDate);
@@ -151,6 +155,7 @@ public class PushDominoMetadataService {
         }
     }
 
+    // Synchronized method to ensure thread safety when writing the config
     protected synchronized void persistConfig(DominoPushConfig config) {
         try {
             Path configPath = Path.of(runConfigPath);

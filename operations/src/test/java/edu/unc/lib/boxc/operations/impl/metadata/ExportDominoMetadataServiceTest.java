@@ -142,9 +142,8 @@ public class ExportDominoMetadataServiceTest {
         mockParentResults(collectionRecord);
         when(solrSearchService.getSearchResults(any())).thenReturn(searchResultResponse);
 
-        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
-        var csvRecords = parseCsv(ExportDominoMetadataService.CSV_HEADERS, resultPath);
-        assertNumberOfEntries(0, csvRecords);
+        assertThrows(ExportDominoMetadataService.NoRecordsExportedException.class,
+                () -> csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*"));
     }
 
     @Test

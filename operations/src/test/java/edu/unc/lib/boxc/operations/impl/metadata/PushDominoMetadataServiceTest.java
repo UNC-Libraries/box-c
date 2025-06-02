@@ -129,7 +129,7 @@ public class PushDominoMetadataServiceTest {
                 "Last run timestamp should be updated");
 
         // Verify no email was sent (since there was no error)
-        verify(emailHandler, never()).sendEmail(anyString(), anyString(), anyString(), anyString(), any());
+        assertNoEmailSent();
 
         // Verify CSV file was cleaned up
         assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
@@ -172,6 +172,22 @@ public class PushDominoMetadataServiceTest {
     }
 
     @Test
+    public void testExportNoNewRecords() throws IOException {
+        // Setup export service to throw exception
+        doThrow(new ExportDominoMetadataService.NoRecordsExportedException("Nothing new"))
+                .when(exportService).exportCsv(any(), isNull(), anyString(), anyString());
+
+        service.pushNewDigitalObjects();
+
+        // Verify the config was updated even though no records were exported
+        var updatedConfig = service.loadConfig();
+        assertTrue(updatedConfig.getLastNewObjectsRunTimestamp().compareTo(lastRunTimestamp) > 0,
+                "Last run timestamp should be updated");
+
+        assertNoEmailSent();
+    }
+
+    @Test
     public void testInvalidConfigFile() throws IOException {
         // Corrupt the config file
         Files.writeString(configPath, "{ invalid json }");
@@ -188,5 +204,9 @@ public class PushDominoMetadataServiceTest {
                 anyString(),
                 isNull(),
                 isNull());
-        }
+    }
+
+    private void assertNoEmailSent() {
+        verify(emailHandler, never()).sendEmail(anyString(), anyString(), anyString(), anyString(), any());
+    }
 }
