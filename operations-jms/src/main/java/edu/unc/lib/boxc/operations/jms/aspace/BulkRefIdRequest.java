@@ -10,6 +10,7 @@ public class BulkRefIdRequest {
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
     private Map<String, String> refIdMap;
+    private String email;
 
     public AgentPrincipals getAgent() {
         return agent;
@@ -25,5 +26,13 @@ public class BulkRefIdRequest {
 
     public void setRefIdMap(Map<String, String> refIdMap) {
         this.refIdMap = refIdMap;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

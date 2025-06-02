@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.order;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
+import edu.unc.lib.boxc.services.camel.util.NotificationUtil;
 
 import java.util.List;
 
@@ -18,22 +19,11 @@ public class OrderNotificationBuilder {
      */
     public String construct(MultiParentOrderRequest request, List<PID> successes, List<String> errors) {
         var parentCount = request.getParentToOrdered().keySet().size();
-        var successCount = successes.size();
         var emailBody = "Here are the results of your bulk SetOrderUpdate request.\n";
 
         emailBody += "Number of parent objects requested: " + parentCount + "\n";
-        emailBody += "Number successfully updated: " + successCount + "\n";
+        emailBody += NotificationUtil.getNotificationBody(successes, errors);
 
-        StringBuilder emailErrors;
-        if (errors.isEmpty()) {
-            emailErrors = new StringBuilder("There were no errors.");
-        } else {
-            emailErrors = new StringBuilder("There were the following errors:\n");
-            for (String error : errors) {
-                emailErrors.append("-- ").append(error).append("\n");
-            }
-        }
-        emailBody += emailErrors.toString();
         return emailBody;
     }
 }
