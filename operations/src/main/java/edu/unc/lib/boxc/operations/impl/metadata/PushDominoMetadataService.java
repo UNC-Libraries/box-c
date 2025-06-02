@@ -3,6 +3,9 @@ package edu.unc.lib.boxc.operations.impl.metadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
@@ -38,6 +41,7 @@ import java.util.List;
 @EnableScheduling
 public class PushDominoMetadataService {
     private static final Logger LOG = LoggerFactory.getLogger(PushDominoMetadataService.class);
+    public static final String AGENT_NAME = "PushDominoMetadataAgent";
 
     private ExportDominoMetadataService exportDominoMetadataService;
     private String dominoUrl;
@@ -45,6 +49,8 @@ public class PushDominoMetadataService {
     private String dominoPassword;
     private String runConfigPath;
     private String adminEmailAddress;
+    private AccessGroupSet accessGroups;
+    private AgentPrincipals agentPrincipals;
     private EmailHandler emailHandler;
     private HttpClientConnectionManager connectionManager;
     private CloseableHttpClient httpClient;
@@ -105,7 +111,7 @@ public class PushDominoMetadataService {
         var pidList = List.of(RepositoryPaths.getContentRootPid());
         var lastRunTimestamp = config.getLastNewObjectsRunTimestamp();
         try {
-            return exportDominoMetadataService.exportCsv(pidList, null, lastRunTimestamp, endDate);
+            return exportDominoMetadataService.exportCsv(pidList, agentPrincipals, lastRunTimestamp, endDate);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -201,8 +207,9 @@ public class PushDominoMetadataService {
         this.adminEmailAddress = adminEmailAddress;
     }
 
-    public void setHttpClient(CloseableHttpClient httpClient) {
-        this.httpClient = httpClient;
+    public void setAccessGroups(AccessGroupSet accessGroups) {
+        this.accessGroups = accessGroups;
+        this.agentPrincipals = new AgentPrincipalsImpl(AGENT_NAME, accessGroups);
     }
 
     public void setEmailHandler(EmailHandler emailHandler) {
@@ -210,7 +217,7 @@ public class PushDominoMetadataService {
     }
 
     public static class DominoPushConfig {
-        private String lastNewObjectsRunTimestamp;
+        private String lastNewObjectsRunTimestamp = "1970-01-01T00:00:00Z"; // Default to epoch start
 
         public String getLastNewObjectsRunTimestamp() {
             return lastNewObjectsRunTimestamp;

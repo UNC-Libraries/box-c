@@ -1,25 +1,5 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -36,6 +16,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author bbpennel
  */
@@ -49,6 +50,8 @@ public class PushDominoMetadataServiceTest {
 
     @Mock
     private EmailHandler emailHandler;
+
+    private AccessGroupSet accessGroups;
 
     private PoolingHttpClientConnectionManager connectionManager;
 
@@ -82,6 +85,7 @@ public class PushDominoMetadataServiceTest {
         var config = new PushDominoMetadataService.DominoPushConfig();
         config.setLastNewObjectsRunTimestamp(lastRunTimestamp);
 
+        accessGroups = new AccessGroupSetImpl("test_group");
         // Set up the service
         service = new PushDominoMetadataService();
         service.setExportDominoMetadataService(exportService);
@@ -92,11 +96,12 @@ public class PushDominoMetadataServiceTest {
         service.setDominoUrl(wireMockInfo.getHttpBaseUrl());
         service.setDominoUsername("testuser");
         service.setDominoPassword("testpass");
+        service.setAccessGroups(accessGroups);
 
         service.persistConfig(config);
 
         // Set up export service to return our test CSV
-        when(exportService.exportCsv(any(), isNull(), eq(lastRunTimestamp), anyString()))
+        when(exportService.exportCsv(any(), any(), eq(lastRunTimestamp), anyString()))
                 .thenReturn(testCsvPath);
     }
 
@@ -175,7 +180,7 @@ public class PushDominoMetadataServiceTest {
     public void testExportNoNewRecords() throws IOException {
         // Setup export service to throw exception
         doThrow(new ExportDominoMetadataService.NoRecordsExportedException("Nothing new"))
-                .when(exportService).exportCsv(any(), isNull(), anyString(), anyString());
+                .when(exportService).exportCsv(any(), any(), anyString(), anyString());
 
         service.pushNewDigitalObjects();
 
@@ -195,6 +200,35 @@ public class PushDominoMetadataServiceTest {
         var error = assertThrows(RepositoryException.class, () -> service.pushNewDigitalObjects());
         assertTrue(error.getMessage().contains("Failed to read Domino push config"),
                 "Message did not contain expected text, was: " + error.getMessage());
+    }
+
+    @Test
+    public void testEmptyConfigFile() throws IOException {
+        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
+                .withQueryParam("source", equalTo("dcr"))
+                .withQueryParam("delete", equalTo("none"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("Success")));
+
+        // Config file starts empty
+        Files.writeString(configPath, "{ }");
+
+        when(exportService.exportCsv(any(), any(), eq("1970-01-01T00:00:00Z"), anyString()))
+                .thenReturn(testCsvPath);
+
+        service.pushNewDigitalObjects();
+
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/manage.*")));
+
+        // The config file should now exist and have a last run timestamp
+        assertTrue(Files.exists(configPath));
+        var updatedConfig = service.loadConfig();
+        assertTrue(updatedConfig.getLastNewObjectsRunTimestamp().compareTo(lastRunTimestamp) > 0,
+                "Last run timestamp should be updated");
+
+        // Verify no email was sent (since there was no error)
+        assertNoEmailSent();
     }
 
     private void assertErrorEmailSent() {

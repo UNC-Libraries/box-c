@@ -479,6 +479,7 @@
         <property name="dominoPassword" value="${domino.server.password}" />
         <property name="runConfigPath" value="${domino.runConfig.path}" />
         <property name="exportDominoMetadataService" ref="exportDominoMetadataService" />
+        <property name="accessGroups" ref="accessGroups" />
     </bean>
     
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.boxc.services.camel.binaryCleanup.BinaryCleanupProcessor">
