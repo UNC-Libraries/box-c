@@ -49,7 +49,6 @@ public class PushDominoMetadataService {
     private String dominoPassword;
     private String runConfigPath;
     private String adminEmailAddress;
-    private AccessGroupSet accessGroups;
     private AgentPrincipals agentPrincipals;
     private EmailHandler emailHandler;
     private HttpClientConnectionManager connectionManager;
@@ -73,14 +72,14 @@ public class PushDominoMetadataService {
         var endDate = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
         Path csvPath = null;
         try {
-            try {
-                // Export the new objects to a CSV file
-                csvPath = exportNewObjectsCsv(config, endDate);
+            // Export the new objects to a CSV file
+            csvPath = exportNewObjectsCsv(config, endDate);
 
+            if (csvPath == null) {
+                LOG.debug("No new digital objects found since last run, skipping push to Domino");
+            } else {
                 // Upload the CSV file to Domino
                 pushToDomino(csvPath);
-            } catch (ExportDominoMetadataService.NoRecordsExportedException e) {
-                LOG.debug("Skipping push to Domino, no new digital objects found since last run");
             }
 
             // Update the last run timestamp in the config and persist it
@@ -112,8 +111,10 @@ public class PushDominoMetadataService {
         var lastRunTimestamp = config.getLastNewObjectsRunTimestamp();
         try {
             return exportDominoMetadataService.exportCsv(pidList, agentPrincipals, lastRunTimestamp, endDate);
+        } catch (ExportDominoMetadataService.NoRecordsExportedException e) {
+            return null;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RepositoryException(e);
         }
     }
 
@@ -208,7 +209,6 @@ public class PushDominoMetadataService {
     }
 
     public void setAccessGroups(AccessGroupSet accessGroups) {
-        this.accessGroups = accessGroups;
         this.agentPrincipals = new AgentPrincipalsImpl(AGENT_NAME, accessGroups);
     }
 
