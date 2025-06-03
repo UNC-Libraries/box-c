@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class BulkRefIdRequestSender extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(BulkRefIdRequestSender.class);
-    private static final ObjectWriter MAPPER = new ObjectMapper().writerFor(RefIdRequest.class);
+    private static final ObjectWriter MAPPER = new ObjectMapper().writerFor(BulkRefIdRequest.class);
 
     /**
      * Send a RefIdRequest to the configured JMS queue
