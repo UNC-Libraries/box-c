@@ -35,6 +35,7 @@ public abstract class AbstractQueryService {
             SearchFieldKey.ALT_TEXT.name(),
             SearchFieldKey.ANCESTOR_IDS.name(),
             SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.ASPACE_REF_ID.name(),
             SearchFieldKey.CITATION.name(),
             SearchFieldKey.COLLECTION_ID.name(),
             SearchFieldKey.CONTENT_STATUS.name(),

@@ -1,8 +1,8 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm',
+		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm',
 		'EditAltTextForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -192,6 +192,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
+		if (metadata.type === 'Work' && $.inArray('editAspaceProperties', metadata.permissions) != -1) {
+			items["editAspaceRefId"] = {name : 'Update Aspace Ref ID'};
+		}
+
 		if ((metadata.type === 'Collection' || isAdminUnit) && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editThumbnail"] = {name : 'Edit Display Thumbnail'};
 		}
@@ -377,6 +381,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "editTitle" :
 						self.editTitle(resultObject);
+						break;
+					case "editAspaceRefId":
+						self.editAspaceRefId(resultObject);
 						break;
 					case "editAltText" :
 						self.editAltText(resultObject);
@@ -605,6 +612,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			actionHandler : this.actionHandler
 		});
 		editTitleForm.open(resultObject);
+	};
+
+	ResultObjectActionMenu.prototype.editAspaceRefId = function(resultObject) {
+		var editAspaceRefIdForm = new EditAspaceRefIdForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editAspaceRefIdForm.open(resultObject);
 	};
 
 	ResultObjectActionMenu.prototype.editAltText = function(resultObject) {
