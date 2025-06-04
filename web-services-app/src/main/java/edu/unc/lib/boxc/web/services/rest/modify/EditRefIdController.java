@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -34,6 +35,7 @@ import java.util.Map;
 @Controller
 public class EditRefIdController {
     private static final Logger log = LoggerFactory.getLogger(EditRefIdController.class);
+    public static final String[] CSV_HEADERS = new String[] {"workId", "refId"};
 
     @Autowired
     RefIdService service;
@@ -87,11 +89,11 @@ public class EditRefIdController {
     }
 
     private BulkRefIdRequest buildBulkRequest(AgentPrincipals agent, Path csvPath) throws IOException {
-        var headers = new String[] {"workId", "refId"};
-        var map = CsvUtil.convertCsvToMap(headers, csvPath);
+        var map = CsvUtil.convertCsvToMap(CSV_HEADERS, csvPath);
         var request = new BulkRefIdRequest();
         request.setAgent(agent);
         request.setRefIdMap(map);
+        request.setEmail(GroupsThreadStore.getEmail());
         return request;
     }
 
