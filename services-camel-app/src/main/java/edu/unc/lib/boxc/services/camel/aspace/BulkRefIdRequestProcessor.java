@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BulkRefIdRequestProcessor implements Processor {
-    private static final Logger log = LoggerFactory.getLogger(BulkRefIdRequestProcessor.class);
     private RefIdService refIdService;
     private BulkRefIdJob job;
 
