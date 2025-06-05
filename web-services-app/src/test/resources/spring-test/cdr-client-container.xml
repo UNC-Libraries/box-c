@@ -129,6 +129,13 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
         <property name="modsValidator" ref="modsValidator" />
     </bean>
+
+    <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
+        <property name="aclService" ref="aclService" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+    </bean>
     
     <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="org.springframework.jms.core.JmsTemplate" />

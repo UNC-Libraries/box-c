@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer;
+import edu.unc.lib.boxc.web.services.utils.CsvUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,17 +79,7 @@ public class MemberOrderController {
             log.error("Error exporting CSV for {}", agent.getUsername(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
-            cleanupCsv(csvPath);
-        }
-    }
-
-    private void cleanupCsv(Path csvPath) {
-        if (csvPath != null) {
-            try {
-                Files.deleteIfExists(csvPath);
-            } catch (IOException e) {
-                log.warn("Failed to cleanup CSV file: " + e.getMessage());
-            }
+            CsvUtil.cleanupCsv(csvPath);
         }
     }
 
@@ -99,11 +90,11 @@ public class MemberOrderController {
     }
 
     @RequestMapping(value = "import/csv", method = RequestMethod.POST)
-    public ResponseEntity<Object> exportCsv(@RequestParam("file") MultipartFile csvFile) {
+    public ResponseEntity<Object> importCsv(@RequestParam("file") MultipartFile csvFile) {
         var agent = AgentPrincipalsImpl.createFromThread();
         Path csvPath = null;
         try {
-            csvPath = storeCsvToTemp(csvFile);
+            csvPath = CsvUtil.storeCsvToTemp(csvFile, "order");
             var orderRequest = memberOrderCsvTransformer.toRequest(csvPath);
             orderRequest.setAgent(agent);
             orderRequest.setEmail(GroupsThreadStore.getEmail());
@@ -114,16 +105,10 @@ public class MemberOrderController {
             result.put("timestamp", System.currentTimeMillis());
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (IOException e) {
-            log.error("Error exporting CSV for {}", agent.getUsername(), e);
+            log.error("Error importing CSV for {}", agent.getUsername(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
-            cleanupCsv(csvPath);
+            CsvUtil.cleanupCsv(csvPath);
         }
-    }
-
-    private Path storeCsvToTemp(MultipartFile csvFile) throws IOException {
-        File importFile = createTempFile("import_order", ".xml");
-        copyInputStreamToFile(csvFile.getInputStream(), importFile);
-        return importFile.toPath();
     }
 }

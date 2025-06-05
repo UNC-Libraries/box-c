@@ -2,15 +2,23 @@ package edu.unc.lib.boxc.services.camel;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
 
+import java.io.File;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -38,5 +46,15 @@ public class TestHelper {
         });
 
         context.start();
+    }
+
+    public static void assertEmailSent(EmailHandler emailHandler, String email) {
+        verify(emailHandler, times(1)).sendEmail(
+                eq(email), any(), eq("Hi there"), isNull(String.class), isNull(File.class)
+        );
+    }
+
+    public static void assertEmailNotSent(EmailHandler emailHandler) {
+        verify(emailHandler, never()).sendEmail(any(), any(), any(), any(), any());
     }
 }
