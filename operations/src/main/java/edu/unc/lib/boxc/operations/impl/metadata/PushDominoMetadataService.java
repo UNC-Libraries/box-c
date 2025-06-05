@@ -26,6 +26,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneOffset;
@@ -66,6 +68,7 @@ public class PushDominoMetadataService {
      */
     @Scheduled(cron = "${domino.push.schedule}")
     public void pushNewDigitalObjects() {
+        LOG.debug("Running scheduled push of new digital objects to Domino");
         // Load previous run config
         var config = loadConfig();
 
@@ -121,6 +124,7 @@ public class PushDominoMetadataService {
     private void pushToDomino(Path csvPath) {
         var client = getHttpClient();
         String requestUrl = URIUtil.join(dominoUrl, "manage?source=dcr&delete=none");
+        LOG.info("Pushing new digital objects to Domino at {}", requestUrl);
         var postMethod = new HttpPost(requestUrl);
         try {
             InputStreamEntity bodyEntity = new InputStreamEntity(Files.newInputStream(csvPath));
@@ -131,7 +135,11 @@ public class PushDominoMetadataService {
                 }
             }
         } catch (IOException e) {
+            LOG.error("Error reading response from Domino at {}", requestUrl, e);
             throw new RepositoryException("Error reading response from Domino at " + requestUrl, e);
+        } catch (Exception e) {
+            LOG.error("Error communicating with Domino at {}", requestUrl, e);
+            throw e;
         } finally {
             postMethod.releaseConnection();
         }
@@ -156,6 +164,10 @@ public class PushDominoMetadataService {
     protected DominoPushConfig loadConfig() {
         Path configPath = Path.of(runConfigPath);
         try {
+            if (Files.size(configPath) == 0) {
+                LOG.warn("Domino push config file is empty, initializing with default values");
+                return new DominoPushConfig();
+            }
             return configReader.readValue(configPath.toFile(), DominoPushConfig.class);
         } catch (IOException e) {
             throw new RepositoryException("Failed to read Domino push config from " + runConfigPath, e);
@@ -173,10 +185,15 @@ public class PushDominoMetadataService {
     }
 
     private void sendNotificationToAdmin(Exception e) {
-        LOG.error("Sending notification to admin at {} about error: {}", adminEmailAddress, e.getMessage());
+        LOG.warn("Sending notification to admin at {}", adminEmailAddress);
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        String exceptionAsString = sw.toString();
+
         emailHandler.sendEmail(adminEmailAddress,
                 "Error pushing new digital objects to Domino",
-                "An error occurred while pushing digital objects to Domino: \n" + e.getMessage(),
+                "An error occurred while pushing digital objects to Domino: \n"
+                        + exceptionAsString,
                 null, null);
     }
 
