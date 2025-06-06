@@ -42,6 +42,8 @@ import java.time.format.DateTimeFormatter;
  */
 @WireMockTest
 public class PushDominoMetadataServiceTest {
+    private static final String AUTH_TOKEN = "testauthtoken";
+    private static final String DOM_SUB_PATH = "repositories/2/digital_object_manager";
 
     private PushDominoMetadataService service;
 
@@ -94,6 +96,7 @@ public class PushDominoMetadataServiceTest {
         service.setRunConfigPath(configPath.toString());
         service.setAdminEmailAddress(adminEmail);
         service.setDominoUrl(wireMockInfo.getHttpBaseUrl());
+        service.setDominoManagerSubpath(DOM_SUB_PATH);
         service.setDominoUsername("testuser");
         service.setDominoPassword("testpass");
         service.setAccessGroups(accessGroups);
@@ -114,19 +117,15 @@ public class PushDominoMetadataServiceTest {
 
     @Test
     public void testPushNewDigitalObjectsSuccess() throws IOException {
-        // Setup WireMock stub for successful request
-        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
-                .withQueryParam("source", equalTo("dcr"))
-                .withQueryParam("delete", equalTo("none"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody("Success")));
+        stubSuccessfulLogin();
+        stubSuccessfulPush();
 
         // Execute the push
         service.pushNewDigitalObjects();
 
         // Verify the request was made
-        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/manage.*")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/users/testuser/login")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*")));
 
         // Verify the config was updated
         var updatedConfig = service.loadConfig();
@@ -141,7 +140,27 @@ public class PushDominoMetadataServiceTest {
     }
 
     @Test
+    public void testPushNewDigitalObjectsAuthServerError() throws IOException {
+        stubFor(WireMock.post(WireMock.urlPathMatching("/users/testuser/login"))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withBody("Internal Server Error")));
+
+        service.pushNewDigitalObjects();
+
+        // Verify the config was NOT updated
+        var updatedConfig = service.loadConfig();
+        assertEquals(lastRunTimestamp, updatedConfig.getLastNewObjectsRunTimestamp(),
+                "Last run timestamp should not be updated after error");
+
+        assertErrorEmailSent();
+
+        assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+    }
+
+    @Test
     public void testPushNewDigitalObjectsServerError() throws IOException {
+        stubSuccessfulLogin();
         // Setup WireMock stub for server error
         stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
                 .willReturn(aResponse()
@@ -162,6 +181,7 @@ public class PushDominoMetadataServiceTest {
 
     @Test
     public void testExportServiceFailure() throws IOException {
+        stubSuccessfulLogin();
         // Setup export service to throw exception
         doThrow(new IOException("Export failed"))
                 .when(exportService).exportCsv(any(), isNull(), anyString(), anyString());
@@ -178,6 +198,7 @@ public class PushDominoMetadataServiceTest {
 
     @Test
     public void testExportNoNewRecords() throws IOException {
+        stubSuccessfulLogin();
         // Setup export service to throw exception
         doThrow(new ExportDominoMetadataService.NoRecordsExportedException("Nothing new"))
                 .when(exportService).exportCsv(any(), any(), anyString(), anyString());
@@ -204,22 +225,18 @@ public class PushDominoMetadataServiceTest {
 
     @Test
     public void testEmptyConfigFile() throws IOException {
-        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
-                .withQueryParam("source", equalTo("dcr"))
-                .withQueryParam("delete", equalTo("none"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody("Success")));
+        stubSuccessfulLogin();
+        stubSuccessfulPush();
 
-        // Config file starts empty
-        Files.writeString(configPath, "{ }");
+        // Overwrite config file to be empty
+        Files.writeString(configPath, "");
 
         when(exportService.exportCsv(any(), any(), eq("1970-01-01T00:00:00Z"), anyString()))
                 .thenReturn(testCsvPath);
 
         service.pushNewDigitalObjects();
 
-        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/manage.*")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*")));
 
         // The config file should now exist and have a last run timestamp
         assertTrue(Files.exists(configPath));
@@ -242,5 +259,21 @@ public class PushDominoMetadataServiceTest {
 
     private void assertNoEmailSent() {
         verify(emailHandler, never()).sendEmail(anyString(), anyString(), anyString(), anyString(), any());
+    }
+
+    private void stubSuccessfulLogin() {
+        stubFor(WireMock.post(WireMock.urlPathMatching("/users/testuser/login"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("{ \"session\": \"" + AUTH_TOKEN + "\" }")));
+    }
+
+    private void stubSuccessfulPush() {
+        stubFor(WireMock.post(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*"))
+                .withQueryParam("source", equalTo("dcr"))
+                .withQueryParam("delete", equalTo("none"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("Success")));
     }
 }

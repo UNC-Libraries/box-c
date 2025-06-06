@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -10,15 +11,18 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -33,7 +37,9 @@ import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service that pushes metadata for new digital objects to the Domino system.
@@ -47,6 +53,7 @@ public class PushDominoMetadataService {
 
     private ExportDominoMetadataService exportDominoMetadataService;
     private String dominoUrl;
+    private String dominoManagerSubpath;
     private String dominoUsername;
     private String dominoPassword;
     private String runConfigPath;
@@ -57,10 +64,12 @@ public class PushDominoMetadataService {
     private CloseableHttpClient httpClient;
     private ObjectWriter configWriter;
     private ObjectReader configReader;
+    private ObjectReader authReader;
 
     public PushDominoMetadataService() {
         configWriter = new ObjectMapper().writerFor(DominoPushConfig.class);
         configReader = new ObjectMapper().readerFor(DominoPushConfig.class);
+        authReader = new ObjectMapper().readerFor(new TypeReference<HashMap<String, Object>>() {});
     }
 
     /**
@@ -121,11 +130,42 @@ public class PushDominoMetadataService {
         }
     }
 
-    private void pushToDomino(Path csvPath) {
+    private String getAspaceAuthToken() {
         var client = getHttpClient();
-        String requestUrl = URIUtil.join(dominoUrl, "manage?source=dcr&delete=none");
+        String requestUrl = URIUtil.join(dominoUrl, "users", dominoUsername, "login");
+        var postMethod = new HttpPost(requestUrl);
+        // Set form parameters for authentication
+        List<NameValuePair> params = List.of(new BasicNameValuePair("password", dominoPassword));
+
+        LOG.info("Retrieving Aspace auth token from {}", requestUrl);
+        try {
+            postMethod.setEntity(new UrlEncodedFormEntity(params));
+            try (var response = client.execute(postMethod)) {
+                if (response.getStatusLine().getStatusCode() >= 300) {
+                    throw new RepositoryException("Failed to authenticate with Aspace as URL " + requestUrl
+                            + ": " + response.getStatusLine());
+                }
+                try (var body = response.getEntity().getContent()) {
+                    var bodyMap = authReader.readValue(body, Map.class);
+                    return (String) bodyMap.get("session");
+                }
+            }
+        } catch (IOException e) {
+            LOG.error("Error reading response from Aspace authentication at {}", requestUrl, e);
+            throw new RepositoryException("Error reading response from Aspace authentication at " + requestUrl, e);
+        } finally {
+            postMethod.releaseConnection();
+        }
+    }
+
+    private void pushToDomino(Path csvPath) {
+        var authToken = getAspaceAuthToken();
+        var client = getHttpClient();
+        String requestUrl = URIUtil.join(dominoUrl, dominoManagerSubpath, "manage?source=dcr&delete=none");
         LOG.info("Pushing new digital objects to Domino at {}", requestUrl);
         var postMethod = new HttpPost(requestUrl);
+        postMethod.setHeader("X-ArchivesSpace-Session", authToken);
+        postMethod.setHeader("Content-Type", "text/csv");
         try {
             InputStreamEntity bodyEntity = new InputStreamEntity(Files.newInputStream(csvPath));
             postMethod.setEntity(bodyEntity);
@@ -203,6 +243,10 @@ public class PushDominoMetadataService {
 
     public void setDominoUrl(String dominoUrl) {
         this.dominoUrl = dominoUrl;
+    }
+
+    public void setDominoManagerSubpath(String dominoManagerSubpath) {
+        this.dominoManagerSubpath = dominoManagerSubpath;
     }
 
     public void setDominoUsername(String dominoUsername) {
