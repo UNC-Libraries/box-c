@@ -34,11 +34,12 @@ public class PdfImageProcessor implements Processor {
 
         InputStream inputStream = null;
         PDDocument document = null;
+        RandomAccessReadBuffer randomAccessReadBuffer = null;
 
         try {
             inputStream = Files.newInputStream(Paths.get(binPath));
 
-            RandomAccessReadBuffer randomAccessReadBuffer = new RandomAccessReadBuffer(inputStream);
+            randomAccessReadBuffer = new RandomAccessReadBuffer(inputStream);
 
             document = Loader.loadPDF(randomAccessReadBuffer);
             document.setResourceCache(null); // Reduce memory usage
@@ -58,6 +59,9 @@ public class PdfImageProcessor implements Processor {
             }
             if (inputStream != null) {
                 inputStream.close();
+            }
+            if (randomAccessReadBuffer != null) {
+                randomAccessReadBuffer.close();
             }
         }
     }
