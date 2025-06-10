@@ -148,6 +148,8 @@ public class PushDominoMetadataServiceTest {
 
         service.pushNewDigitalObjects();
 
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/users/testuser/login")));
+
         // Verify the config was NOT updated
         var updatedConfig = service.loadConfig();
         assertEquals(lastRunTimestamp, updatedConfig.getLastNewObjectsRunTimestamp(),
@@ -162,12 +164,15 @@ public class PushDominoMetadataServiceTest {
     public void testPushNewDigitalObjectsServerError() throws IOException {
         stubSuccessfulLogin();
         // Setup WireMock stub for server error
-        stubFor(WireMock.post(WireMock.urlPathMatching("/manage.*"))
+        stubFor(WireMock.post(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*"))
                 .willReturn(aResponse()
                         .withStatus(500)
                         .withBody("Internal Server Error")));
 
         service.pushNewDigitalObjects();
+
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/users/testuser/login")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*")));
 
         // Verify the config was NOT updated
         var updatedConfig = service.loadConfig();
@@ -176,7 +181,33 @@ public class PushDominoMetadataServiceTest {
 
         assertErrorEmailSent();
 
-        assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+        assertTrue(Files.notExists(testCsvPath));
+    }
+
+    @Test
+    public void testPushNewDigitalObjectsBadRequest() throws IOException {
+        stubSuccessfulLogin();
+        // Setup WireMock stub for server error
+        stubFor(WireMock.post(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*"))
+                .willReturn(aResponse()
+                        .withStatus(400)
+                        .withBody("There were issues with the input")));
+
+        service.pushNewDigitalObjects();
+
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/users/testuser/login")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*")));
+
+        // Verify the config was updated
+        var updatedConfig = service.loadConfig();
+        assertTrue(updatedConfig.getLastNewObjectsRunTimestamp().compareTo(lastRunTimestamp) > 0,
+                "Last run timestamp should be updated");
+
+        assertErrorEmailSent("An error occurred while pushing digital objects to Domino:\n" +
+                "Bad request to push new digital objects to Domino, some updates were rejected: " +
+                "HTTP/1.1 400 Bad Request\nThere were issues with the input");
+
+        assertTrue(Files.notExists(testCsvPath));
     }
 
     @Test
@@ -249,10 +280,14 @@ public class PushDominoMetadataServiceTest {
     }
 
     private void assertErrorEmailSent() {
+        assertErrorEmailSent(null);
+    }
+
+    private void assertErrorEmailSent(String message) {
         verify(emailHandler).sendEmail(
                 eq(adminEmail),
                 eq("Error pushing new digital objects to Domino"),
-                anyString(),
+                message == null ? anyString() : eq(message),
                 isNull(),
                 isNull());
     }

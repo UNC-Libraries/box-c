@@ -129,7 +129,7 @@ public class ExportDominoMetadataService {
         // Limit results to only works that have ref ids
         searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.ASPACE_REF_ID));
         searchState.setResourceTypes(List.of(Work.name()));
-        searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED.name(), new RangePair(startDate, endDate));
+        searchState.getRangeFields().put(SearchFieldKey.DATE_UPDATED.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
         var searchRequest = new SearchRequest(searchState, agent.getPrincipals());

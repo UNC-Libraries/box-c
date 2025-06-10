@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneOffset;
@@ -100,7 +102,7 @@ public class PushDominoMetadataService {
         } catch (Exception e) {
             LOG.error("Error pushing new digital objects to Domino", e);
             // Send notification of failure to admin email address if there was an error
-            sendNotificationToAdmin(e);
+            sendNotificationToAdmin(convertExceptionToString(e));
         } finally {
             // Cleanup the CSV file
             cleanupCsv(csvPath);
@@ -170,7 +172,13 @@ public class PushDominoMetadataService {
             InputStreamEntity bodyEntity = new InputStreamEntity(Files.newInputStream(csvPath));
             postMethod.setEntity(bodyEntity);
             try (var response = client.execute(postMethod)) {
-                if (response.getStatusLine().getStatusCode() >= 300) {
+                if (response.getStatusLine().getStatusCode() == 400) {
+                    var responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+                    var errorMessage = "Bad request to push new digital objects to Domino, some updates were rejected: "
+                            + response.getStatusLine() + "\n" + responseBody;
+                    LOG.warn(errorMessage);
+                    sendNotificationToAdmin(errorMessage);
+                } else if (response.getStatusLine().getStatusCode() >= 300) {
                     throw new RepositoryException("Unexpected response from Domino: " + response.getStatusLine());
                 }
             }
@@ -224,16 +232,19 @@ public class PushDominoMetadataService {
         }
     }
 
-    private void sendNotificationToAdmin(Exception e) {
-        LOG.warn("Sending notification to admin at {}", adminEmailAddress);
+    private String convertExceptionToString(Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
-        String exceptionAsString = sw.toString();
+        return sw.toString();
+    }
+
+    private void sendNotificationToAdmin(String errorBody) {
+        LOG.warn("Sending notification to admin at {}", adminEmailAddress);
 
         emailHandler.sendEmail(adminEmailAddress,
                 "Error pushing new digital objects to Domino",
-                "An error occurred while pushing digital objects to Domino: \n"
-                        + exceptionAsString,
+                "An error occurred while pushing digital objects to Domino:\n"
+                        + errorBody,
                 null, null);
     }
 

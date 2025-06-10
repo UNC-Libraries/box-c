@@ -1,12 +1,24 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -16,13 +28,11 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.jena.sparql.function.library.date;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,19 +49,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author krwong
@@ -109,7 +106,7 @@ public class ExportDominoMetadataServiceTest {
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
         var searchState = searchRequest.getValue().getSearchState();
-        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED.name()));
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
         var refIdFilter = searchState.getFilters().get(0);
         assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":*", refIdFilter.toFilterString());
         assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
@@ -163,9 +160,9 @@ public class ExportDominoMetadataServiceTest {
         var collectionRecord1 = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
                 "Collection", new Date());
         var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1);
-        Date dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXX").parse("2019-00-00T00:00:00Z");
+        Date dateUpdated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXX").parse("2019-00-00T00:00:00Z");
         var collectionRecord2 = makeRecord(COLLECTION_UUID2, ADMIN_UNIT_UUID, ResourceType.Collection,
-                "Collection", dateCreated);
+                "Collection", dateUpdated);
 
         mockParentResults(collectionRecord1, collectionRecord2);
         mockChildrenResults(workRecord1);
@@ -179,11 +176,11 @@ public class ExportDominoMetadataServiceTest {
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
         var searchState = searchRequest.getValue().getSearchState();
-        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED.name()));
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
         var refIdFilter = searchState.getFilters().get(0);
         assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":*", refIdFilter.toFilterString());
         assertEquals("2020-00-00T00:00:00Z,*", searchState.getRangeFields()
-                .get(SearchFieldKey.DATE_CREATED.name()).getParameterValue());
+                .get(SearchFieldKey.DATE_UPDATED.name()).getParameterValue());
     }
 
     private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
@@ -232,21 +229,21 @@ public class ExportDominoMetadataServiceTest {
     }
 
     private ContentObjectRecord makeWorkRecord(String uuid, String title, String refId) {
-        Date dateCreated = new Date();
-        var rec = (ContentObjectSolrRecord) makeRecord(uuid, COLLECTION_UUID, ResourceType.Work, title, dateCreated);
+        Date dateUpdated = new Date();
+        var rec = (ContentObjectSolrRecord) makeRecord(uuid, COLLECTION_UUID, ResourceType.Work, title, dateUpdated);
         rec.setAspaceRefId(refId);
         return rec;
     }
 
     private ContentObjectRecord makeRecord(String uuid, String parentUuid, ResourceType resourceType, String title,
-                                           Date dateCreated) {
+                                           Date dateUpdated) {
         var rec = new ContentObjectSolrRecord();
         rec.setId(uuid);
         rec.setAncestorPath(makeAncestorPath(parentUuid));
         rec.setResourceType(resourceType.name());
         rec.setTitle(title);
         rec.setRoleGroup(Arrays.asList("patron|public", "canViewOriginals|everyone"));
-        rec.setDateCreated(dateCreated);
+        rec.setDateUpdated(dateUpdated);
         return rec;
     }
 
