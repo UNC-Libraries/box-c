@@ -66,12 +66,13 @@ public class OrderNotificationServiceTest {
 
     @Test
     public void sendResultsSendsEmail() {
-        when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn("Hi there");
+        var emailBody = "Hi there";
+        when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn(emailBody);
         request.setEmail(EMAIL);
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
         orderNotificationService.sendResults(request, successes, errors);
-        TestHelper.assertEmailSent(emailHandler, EMAIL);
+        TestHelper.assertEmailSent(emailHandler, EMAIL, emailBody);
     }
     @Test
     public void doNotSendResultsEmailIfNoEmailAddress() {

@@ -4,6 +4,9 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 
 import java.util.List;
 
+/**
+ * Utility for notification services
+ */
 public class NotificationUtil {
     private NotificationUtil() {
     }

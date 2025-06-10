@@ -6,6 +6,11 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 import java.util.Map;
 
+/**
+ * Request object for updating ArchivesSpace ref IDs in bulk
+ *
+ * @author snluong
+ */
 public class BulkRefIdRequest {
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;

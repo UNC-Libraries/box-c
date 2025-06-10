@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BulkRefIdRequestSerializationHelperTest {
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    private final PID pid = PIDs.get(UUID.randomUUID().toString());
 
     @Test
     public void testHelperSuccess() throws IOException {

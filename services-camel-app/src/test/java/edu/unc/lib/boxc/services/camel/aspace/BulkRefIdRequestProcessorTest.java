@@ -15,20 +15,22 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class BulkRefIdRequestProcessorTest {
+    private static final String WORK_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private AutoCloseable closeable;
     private BulkRefIdRequestProcessor processor;
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Mock
     private RefIdService service;
     @Mock
-    private BulkRefIdJob job;
-    @Mock
+    private BulkRefIdNotificationService bulkRefIdNotificationService;
     private Map<String, String> map;
 
     @BeforeEach
@@ -36,7 +38,10 @@ public class BulkRefIdRequestProcessorTest {
         closeable = openMocks(this);
         processor = new BulkRefIdRequestProcessor();
         processor.setRefIdService(service);
-        processor.setJob(job);
+        processor.setBulkRefIdNotificationService(bulkRefIdNotificationService);
+        map = new HashMap<>();
+        map.put(WORK_UUID, "ref ID 1");
+
     }
 
     @AfterEach
@@ -49,7 +54,8 @@ public class BulkRefIdRequestProcessorTest {
         var exchange = createRequestExchange();
         processor.process(exchange);
 
-        verify(job).run();
+        verify(service).updateRefId(any());
+        verify(bulkRefIdNotificationService).sendResults(any(), any(), any());
     }
 
     private Exchange createRequestExchange() throws IOException {

@@ -6,6 +6,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.io.IOException;
 
+/**
+ * Helper methods for serializing and deserializing Bulk Ref ID requests
+ *
+ * @author snluong
+ */
 public class BulkRefIdRequestSerializationHelper {
     private static final ObjectWriter REQUEST_WRITER;
     private static final ObjectReader REQUEST_READER;

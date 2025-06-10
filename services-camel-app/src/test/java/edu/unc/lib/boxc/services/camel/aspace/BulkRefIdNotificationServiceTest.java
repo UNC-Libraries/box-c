@@ -48,12 +48,13 @@ public class BulkRefIdNotificationServiceTest {
 
     @Test
     public void sendResultsSendsEmail() {
-        when(builder.construct(any(), any(), any())).thenReturn("Hi there");
+        var emailBody = "Bulk ref ID email";
+        when(builder.construct(any(), any(), any())).thenReturn(emailBody);
         request.setEmail(EMAIL);
         var successes = Arrays.asList(PIDs.get(WORK1_UUID), PIDs.get(WORK2_UUID));
         var errors = Arrays.asList("First error", "Another error oh no");
         service.sendResults(request, successes, errors);
-        TestHelper.assertEmailSent(emailHandler, EMAIL);
+        TestHelper.assertEmailSent(emailHandler, EMAIL, emailBody);
     }
 
     @Test

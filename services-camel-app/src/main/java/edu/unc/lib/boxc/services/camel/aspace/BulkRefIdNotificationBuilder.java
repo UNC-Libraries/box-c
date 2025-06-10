@@ -6,6 +6,10 @@ import edu.unc.lib.boxc.services.camel.util.NotificationUtil;
 
 import java.util.List;
 
+/**
+ * Builds the email body for BulkRefIdNotificationService
+ * @author snluong
+ */
 public class BulkRefIdNotificationBuilder {
 
     public String construct(BulkRefIdRequest request, List<PID> successes, List<String> errors) {

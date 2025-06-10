@@ -6,13 +6,18 @@ import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
 
 import java.util.List;
 
+/**
+ * Service which sends user notifications about the outcome of bulk ArchivesSpace ref ID requests
+ *
+ * @author snluong
+ */
 public class BulkRefIdNotificationService {
     private EmailHandler emailHandler;
     private BulkRefIdNotificationBuilder builder;
 
     public void sendResults(BulkRefIdRequest request, List<PID> successes, List<String> errors) {
         if (request.getEmail() == null) {
-            return;
+            throw new IllegalArgumentException("An email must be provided for a Bulk Ref ID notification");
         }
 
         var emailBody = builder.construct(request, successes, errors);

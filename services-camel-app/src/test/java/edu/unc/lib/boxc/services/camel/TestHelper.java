@@ -48,9 +48,9 @@ public class TestHelper {
         context.start();
     }
 
-    public static void assertEmailSent(EmailHandler emailHandler, String email) {
+    public static void assertEmailSent(EmailHandler emailHandler, String email, String expectedBody) {
         verify(emailHandler, times(1)).sendEmail(
-                eq(email), any(), eq("Hi there"), isNull(String.class), isNull(File.class)
+                eq(email), any(), eq(expectedBody), isNull(String.class), isNull(File.class)
         );
     }
 
