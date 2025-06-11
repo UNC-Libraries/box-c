@@ -65,13 +65,17 @@ public class EditRefIdController {
 
     @PostMapping(value = "/edit/aspace/updateRefIds/")
     public ResponseEntity<Object> importRefIds(@RequestParam("file") MultipartFile csvFile) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "editAspaceRefIDs");
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         Path csvPath = null;
         try {
             csvPath = CsvUtil.storeCsvToTemp(csvFile, "refId");
             var request = buildBulkRequest(agent, csvPath);
             sender.sendToQueue(request);
-            return new ResponseEntity<>(HttpStatus.OK);
+            result.put("status", "Bulk update of Aspace ref IDs complete");
+            result.put("timestamp", System.currentTimeMillis());
+            return new ResponseEntity<>(result,HttpStatus.OK);
         } catch (IOException e) {
             log.error("Error importing ref ID CSV for {}", agent.getUsername(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
