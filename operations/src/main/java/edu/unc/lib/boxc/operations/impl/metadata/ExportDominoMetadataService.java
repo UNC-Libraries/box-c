@@ -13,6 +13,8 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.csv.CSVFormat;
@@ -34,7 +36,6 @@ import static java.util.Arrays.asList;
  *
  * @author krwong
  */
-//TODO: add ref_id support
 public class ExportDominoMetadataService {
     private static final Logger log = LoggerFactory.getLogger(ExportDominoMetadataService.class);
 
@@ -53,7 +54,7 @@ public class ExportDominoMetadataService {
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
 
     private static final List<String> METADATA_FIELDS = asList(SearchFieldKey.ID.name(),
-            SearchFieldKey.TITLE.name());
+            SearchFieldKey.TITLE.name(), SearchFieldKey.ASPACE_REF_ID.name());
 
     private static final List<ResourceType> ALLOWED_TYPES = Arrays.asList(ResourceType.ContentRoot,
             ResourceType.AdminUnit, ResourceType.Collection, ResourceType.Folder);
@@ -67,6 +68,7 @@ public class ExportDominoMetadataService {
     public Path exportCsv(List<PID> pids, AgentPrincipals agent, String startDate, String endDate) throws IOException {
         var csvPath = Files.createTempFile("metadata", ".csv");
         var completedExport = false;
+        var exportedRecordCount = 0;
 
         try (CSVPrinter printer = createCsvPrinter(csvPath)) {
             for (PID pid : pids) {
@@ -75,7 +77,14 @@ public class ExportDominoMetadataService {
                 var parentRec = getRecord(pid, agent);
                 assertParentRecordValid(pid, parentRec);
 
-                printRecords(printer, getRecords(parentRec, agent, startDate, endDate));
+                var childRecords = getRecords(parentRec, agent, startDate, endDate);
+                exportedRecordCount += childRecords.size();
+                printRecords(printer, childRecords);
+            }
+            if (exportedRecordCount == 0) {
+                throw new NoRecordsExportedException("No records exported for pids: " + pids);
+            } else {
+                log.info("Exported {} records for domino to {}", exportedRecordCount, csvPath);
             }
             completedExport = true;
         } finally {
@@ -104,7 +113,7 @@ public class ExportDominoMetadataService {
         log.debug("Printing record for {}", object.getId());
 
         printer.print(object.getId());
-        printer.print(REF_ID_NAME);
+        printer.print(object.getAspaceRefId());
         printer.print(object.getTitle());
         printer.println();
     }
@@ -117,8 +126,10 @@ public class ExportDominoMetadataService {
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
         CutoffFacet selectedPath = parentRec.getPath();
         searchState.addFacet(selectedPath);
-        searchState.setResourceTypes(asList(Work.name()));
-        searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED.name(), new RangePair(startDate, endDate));
+        // Limit results to only works that have ref ids
+        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.ASPACE_REF_ID));
+        searchState.setResourceTypes(List.of(Work.name()));
+        searchState.getRangeFields().put(SearchFieldKey.DATE_UPDATED.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
         var searchRequest = new SearchRequest(searchState, agent.getPrincipals());
@@ -149,5 +160,11 @@ public class ExportDominoMetadataService {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
+    }
+
+    public static class NoRecordsExportedException extends RuntimeException {
+        public NoRecordsExportedException(String message) {
+            super(message);
+        }
     }
 }

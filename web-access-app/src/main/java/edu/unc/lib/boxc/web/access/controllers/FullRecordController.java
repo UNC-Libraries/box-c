@@ -302,9 +302,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         ContentObjectRecord viewedObject = null;
         if (viewerPid != null) {
-            // Object directly has PDF info (either a file or a work with primary object), so use it's own data
+            // Object directly has PDF info (either a file or a work with primary object), so use its own data
             viewedObject = briefObject;
-        } else if (ResourceType.Work.nameEquals(briefObject.getResourceType())
+        } else if (ResourceType.Work.nameEquals(briefObject.getResourceType()) && briefObject.getFileFormatType() != null
                 && briefObject.getFileFormatType().stream().anyMatch(format -> format.matches(PDF_MIMETYPE_REGEX))) {
 
             var firstChildBriefObj = accessCopiesService.getFirstMatchingChild(briefObject,

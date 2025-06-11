@@ -341,10 +341,19 @@
         <constructor-arg value="${repository.from.email}" />
     </bean>
 
+    <bean id="adminAddress" class="java.lang.String">
+        <constructor-arg value="${administrator.email}" />
+    </bean>
+
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${smtp.host:localhost}" />
         <property name="port" value="${smtp.port:25}" />
         <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+    <bean id="emailHandler" class="edu.unc.lib.boxc.operations.impl.utils.EmailHandler">
+        <property name="fromAddress" ref="fromAddress" />
+        <property name="mailSender" ref="mailSender" />
     </bean>
 
     <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
@@ -513,6 +522,29 @@
         <property name="repoObjLoader" ref="repositoryObjectLoader"/>
         <property name="basePath" value="${data.dir}/zip/"/>
         <property name="fileLimit" value="100" />
+    </bean>
+
+    <bean id="exportDominoMetadataService" class="edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService">
+        <property name="aclService" ref="aclService" />
+        <property name="solrSearchService" ref="queryLayer" />
+    </bean>
+
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
+        <value>${access.group.admin}</value>
+    </util:set>
+
+    <!-- Service operates via spring scheduling -->
+    <bean id="pushDominoMetadataService" class="edu.unc.lib.boxc.operations.impl.metadata.PushDominoMetadataService">
+        <property name="adminEmailAddress" ref="adminAddress" />
+        <property name="emailHandler" ref="emailHandler" />
+        <property name="connectionManager" ref="httpClientConnectionManager" />
+        <property name="dominoUrl" value="${domino.server.url}" />
+        <property name="dominoManagerSubpath" value="${domino.server.managerSubpath}" />
+        <property name="dominoUsername" value="${domino.server.username}" />
+        <property name="dominoPassword" value="${domino.server.password}" />
+        <property name="runConfigPath" value="${domino.runConfig.path}" />
+        <property name="exportDominoMetadataService" ref="exportDominoMetadataService" />
+        <property name="accessGroups" ref="accessGroups" />
     </bean>
 
     <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
