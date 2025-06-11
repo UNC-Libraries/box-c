@@ -73,7 +73,7 @@ public class EditRefIdController {
             csvPath = CsvUtil.storeCsvToTemp(csvFile, "refId");
             var request = buildBulkRequest(agent, csvPath);
             sender.sendToQueue(request);
-            result.put("status", "Bulk update of Aspace ref IDs complete");
+            result.put("status", "Bulk update of Aspace ref IDs submitted");
             result.put("timestamp", System.currentTimeMillis());
             return new ResponseEntity<>(result,HttpStatus.OK);
         } catch (IOException e) {
