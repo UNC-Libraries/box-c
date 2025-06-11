@@ -561,6 +561,26 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
 
+    <bean id="bulkRefIdRequestProcessor" class="edu.unc.lib.boxc.services.camel.aspace.BulkRefIdRequestProcessor">
+        <property name="bulkRefIdNotificationService" ref="bulkRefIdNotificationService" />
+        <property name="refIdService" ref="refIdService" />
+    </bean>
+
+    <bean id="bulkRefIdNotificationService" class="edu.unc.lib.boxc.services.camel.aspace.BulkRefIdNotificationService">
+        <property name="emailHandler" ref="emailHandler" />
+        <property name="builder" ref="bulkRefIdNotificationBuilder" />
+    </bean>
+
+    <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
+        <property name="aclService" ref="aclService" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+    </bean>
+
+    <bean id="bulkRefIdNotificationBuilder" class="edu.unc.lib.boxc.services.camel.aspace.BulkRefIdNotificationBuilder">
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="boxcCamelContext">
