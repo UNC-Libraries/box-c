@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,27 +66,19 @@ public class OrderNotificationServiceTest {
 
     @Test
     public void sendResultsSendsEmail() {
-        when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn("Hi there");
+        var emailBody = "Hi there";
+        when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn(emailBody);
         request.setEmail(EMAIL);
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
         orderNotificationService.sendResults(request, successes, errors);
-        assertEmailSent();
+        TestHelper.assertEmailSent(emailHandler, EMAIL, emailBody);
     }
     @Test
     public void doNotSendResultsEmailIfNoEmailAddress() {
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
         orderNotificationService.sendResults(request, successes, errors);
-        assertEmailNotSent();
-    }
-
-    private void assertEmailSent() {
-        verify(emailHandler, times(1)).sendEmail(
-                eq(EMAIL), any(), eq("Hi there"), isNull(String.class), isNull(File.class));
-    }
-
-    private void assertEmailNotSent() {
-        verify(emailHandler, never()).sendEmail(any(), any(), any(), any(), any());
+        TestHelper.assertEmailNotSent(emailHandler);
     }
 }

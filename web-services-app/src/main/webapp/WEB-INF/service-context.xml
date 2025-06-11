@@ -524,13 +524,6 @@
         <property name="fileLimit" value="100" />
     </bean>
 
-    <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
-        <property name="aclService" ref="aclService"/>
-        <property name="repoObjLoader" ref="repositoryObjectLoader"/>
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory"/>
-        <property name="indexingMessageSender" ref="solrIndexingMessageSender"/>
-    </bean>
-
     <bean id="exportDominoMetadataService" class="edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService">
         <property name="aclService" ref="aclService" />
         <property name="solrSearchService" ref="queryLayer" />
@@ -552,6 +545,23 @@
         <property name="runConfigPath" value="${domino.runConfig.path}" />
         <property name="exportDominoMetadataService" ref="exportDominoMetadataService" />
         <property name="accessGroups" ref="accessGroups" />
+    </bean>
+
+    <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
+        <property name="aclService" ref="aclService"/>
+        <property name="repoObjLoader" ref="repositoryObjectLoader"/>
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory"/>
+        <property name="indexingMessageSender" ref="solrIndexingMessageSender"/>
+    </bean>
+
+    <bean id="bulkRefIdRequestSender" class="edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender">
+        <property name="jmsTemplate" ref="bulkRefIdRequestJmsTemplate"/>
+    </bean>
+
+    <bean id="bulkRefIdRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.bulk.refid.stream}" />
+        <property name="pubSubDomain" value="false" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
