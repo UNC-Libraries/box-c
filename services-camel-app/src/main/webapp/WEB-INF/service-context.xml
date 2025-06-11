@@ -454,6 +454,7 @@
         <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
     </bean>
 
+    <!-- Service operates via spring scheduling -->
     <bean id="expireEmbargoService" class="edu.unc.lib.boxc.operations.impl.acl.ExpireEmbargoService">
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="transactionManager" ref="transactionManager" />
