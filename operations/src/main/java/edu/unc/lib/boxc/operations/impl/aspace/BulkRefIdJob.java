@@ -43,8 +43,11 @@ public class BulkRefIdJob implements Runnable {
                 log.error("No permission to update ref ID for work {} with error {}", pidString, e);
                 errors.add("No permission to update ref ID for work " + pidString + " with error: " + e.getMessage());
             } catch (InvalidOperationForObjectType e) {
+                log.error("Unable to update ref ID for non-work object {} with error {}", pidString, e);
+                errors.add("Unable to update ref ID for non-work object " + pidString + " with error: " + e.getMessage());
+            } catch (Exception e) {
                 log.error("Unable to update ref ID for object {} with error {}", pidString, e);
-                errors.add("Unable to update ref ID for work " + pidString + " with error: " + e.getMessage());
+                errors.add("Unable to update ref ID for object " + pidString + " with error: " + e.getMessage());
             }
         });
     }
