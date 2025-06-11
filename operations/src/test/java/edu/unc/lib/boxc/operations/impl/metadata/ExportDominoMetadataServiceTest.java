@@ -156,7 +156,7 @@ public class ExportDominoMetadataServiceTest {
     }
 
     @Test
-    public void filterForRecordsCreatedAfterStartDate() throws Exception {
+    public void filterForRecordsUpdatedAfterStartDate() throws Exception {
         var collectionRecord1 = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
                 "Collection", new Date());
         var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1);
