@@ -112,6 +112,7 @@
         <iiif-apis.version>0.3.11</iiif-apis.version>
 
         <pdfbox.version>3.0.5</pdfbox.version>
+        <jai-imageio-jpeg2000.version>1.4.0</jai-imageio-jpeg2000.version>
         
         <jdom.version>2.0.6.1</jdom.version>
         <jaxen.version>1.2.0</jaxen.version>
@@ -611,6 +612,12 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
+            </dependency>
+            <!-- Required so that PDFbox can handle embedded jp2s -->
+            <dependency>
+                <groupId>com.github.jai-imageio</groupId>
+                <artifactId>jai-imageio-jpeg2000</artifactId>
+                <version>${jai-imageio-jpeg2000.version}</version>
             </dependency>
 
             <dependency>
