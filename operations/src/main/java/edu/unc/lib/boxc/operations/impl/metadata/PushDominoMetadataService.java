@@ -76,13 +76,9 @@ public class PushDominoMetadataService {
     }
 
     @PreDestroy
-    public void shutdown() {
+    public void shutdown() throws IOException {
         if (httpClient != null) {
-            try {
-                httpClient.close();
-            } catch (IOException e) {
-                LOG.error("Error closing HTTP client", e);
-            }
+            httpClient.close();
         }
     }
 

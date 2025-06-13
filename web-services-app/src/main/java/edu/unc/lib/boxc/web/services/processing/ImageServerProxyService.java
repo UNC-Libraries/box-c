@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.getImageServerEncodedId;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,20 +15,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
-import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.getImageServerEncodedId;
-
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.
@@ -51,12 +47,8 @@ public class ImageServerProxyService {
     }
 
     @PreDestroy
-    public void shutdown() {
-        try {
-            httpClient.close();
-        } catch (IOException e) {
-            LOG.error("Error closing HTTP client", e);
-        }
+    public void shutdown() throws IOException {
+        httpClient.close();
     }
 
     /**

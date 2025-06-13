@@ -79,6 +79,7 @@ public class ImageServerV2ServiceTest {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        service.shutdown();
     }
 
     @Test

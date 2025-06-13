@@ -22,6 +22,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.jena.sparql.function.library.uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -73,12 +74,8 @@ public class ImageServerV2Service {
     }
 
     @PreDestroy
-    public void shutdown() {
-        try {
-            httpClient.close();
-        } catch (IOException e) {
-            LOG.error("Error closing HTTP client", e);
-        }
+    public void shutdown() throws IOException {
+        httpClient.close();
     }
 
     public void getMetadata(String simplepid, OutputStream outStream, HttpServletResponse response) {
