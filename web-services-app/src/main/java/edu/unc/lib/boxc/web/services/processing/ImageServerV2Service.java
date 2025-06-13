@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
@@ -69,6 +70,15 @@ public class ImageServerV2Service {
                 .setConnectionManager(httpClientConnectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        try {
+            httpClient.close();
+        } catch (IOException e) {
+            LOG.error("Error closing HTTP client", e);
+        }
     }
 
     public void getMetadata(String simplepid, OutputStream outStream, HttpServletResponse response) {

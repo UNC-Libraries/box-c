@@ -14,6 +14,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ import java.io.InputStream;
 import java.net.URL;
 
 import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.getImageServerEncodedId;
+
+import javax.annotation.PreDestroy;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.
@@ -44,6 +48,15 @@ public class ImageServerProxyService {
                 .setConnectionManager(manager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        try {
+            httpClient.close();
+        } catch (IOException e) {
+            LOG.error("Error closing HTTP client", e);
+        }
     }
 
     /**
@@ -79,20 +92,19 @@ public class ImageServerProxyService {
      * @param quality quality of image
      * @param format format like png or jpg
      */
-    public ResponseEntity<InputStreamResource> streamJP2(String id, String region, String size, String rotation,
-                                                         String quality, String format) throws IOException {
+    public ResponseEntity<Resource> streamJP2(String id, String region, String size, String rotation,
+                                              String quality, String format) throws IOException {
 
         String path = URIUtil.join(getImageServerProxyBasePath(), getImageServerEncodedId(id),
                 region, size, rotation, quality);
         path += "." + format;
 
-        InputStream input = new URL(path).openStream();
-        InputStreamResource resource = new InputStreamResource(input);
+        UrlResource urlResource = new UrlResource(path);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                 .contentType(MediaType.IMAGE_JPEG)
-                .body(resource);
+                .body(urlResource);
     }
 
     public void setImageServerProxyBasePath(String fullPath) {

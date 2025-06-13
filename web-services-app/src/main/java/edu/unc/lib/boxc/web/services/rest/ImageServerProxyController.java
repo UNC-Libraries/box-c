@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -43,10 +44,11 @@ public class ImageServerProxyController {
      */
     @CrossOrigin
     @GetMapping("/iiif/v3/{id}/{region}/{size}/{rotation}/{qualityFormat:.+}")
-    public ResponseEntity<InputStreamResource> getRegion(@PathVariable("id") String id,
-                          @PathVariable("region") String region,
-                          @PathVariable("size") String size, @PathVariable("rotation") String rotation,
-                          @PathVariable("qualityFormat") String qualityFormat) {
+    public ResponseEntity<Resource> getRegion(@PathVariable("id") String id,
+                                              @PathVariable("region") String region,
+                                              @PathVariable("size") String size,
+                                              @PathVariable("rotation") String rotation,
+                                              @PathVariable("qualityFormat") String qualityFormat) {
 
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
