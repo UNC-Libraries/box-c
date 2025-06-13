@@ -30,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -72,6 +73,13 @@ public class PushDominoMetadataService {
         configWriter = new ObjectMapper().writerFor(DominoPushConfig.class);
         configReader = new ObjectMapper().readerFor(DominoPushConfig.class);
         authReader = new ObjectMapper().readerFor(new TypeReference<HashMap<String, Object>>() {});
+    }
+
+    @PreDestroy
+    public void shutdown() throws IOException {
+        if (httpClient != null) {
+            httpClient.close();
+        }
     }
 
     /**
@@ -168,8 +176,8 @@ public class PushDominoMetadataService {
         var postMethod = new HttpPost(requestUrl);
         postMethod.setHeader("X-ArchivesSpace-Session", authToken);
         postMethod.setHeader("Content-Type", "text/csv");
-        try {
-            InputStreamEntity bodyEntity = new InputStreamEntity(Files.newInputStream(csvPath));
+        try (var csvInputStream = Files.newInputStream(csvPath)) {
+            InputStreamEntity bodyEntity = new InputStreamEntity(csvInputStream);
             postMethod.setEntity(bodyEntity);
             try (var response = client.execute(postMethod)) {
                 if (response.getStatusLine().getStatusCode() == 400) {

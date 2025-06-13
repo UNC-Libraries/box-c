@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
@@ -21,6 +22,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.jena.sparql.function.library.uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -69,6 +71,11 @@ public class ImageServerV2Service {
                 .setConnectionManager(httpClientConnectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+    }
+
+    @PreDestroy
+    public void shutdown() throws IOException {
+        httpClient.close();
     }
 
     public void getMetadata(String simplepid, OutputStream outStream, HttpServletResponse response) {
