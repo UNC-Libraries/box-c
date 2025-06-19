@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.assertNumberOfEntries;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -239,10 +240,6 @@ public class MemberOrderCsvExporterTest {
             return;
         }
         fail("No entry found for uuid " + uuid);
-    }
-
-    private void assertNumberOfEntries(int expected, List<CSVRecord> csvParser) throws IOException {
-        assertEquals(expected, csvParser.size());
     }
 
     private List<PID> asPidList(String... ids) {
