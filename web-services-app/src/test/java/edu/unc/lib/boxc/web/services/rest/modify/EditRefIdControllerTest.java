@@ -39,7 +39,7 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
-import static edu.unc.lib.boxc.web.services.rest.modify.EditRefIdController.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,7 +66,7 @@ public class EditRefIdControllerTest {
     private AgentPrincipals agent;
     private AutoCloseable closeable;
     @InjectMocks
-    private EditRefIdController controller;
+    private AspaceRefIdController controller;
     @Mock
     private AccessControlService accessControlService;
     @Mock
