@@ -67,6 +67,7 @@ public class ImageServerProxyControllerTest {
 
     @AfterEach
     void closeService() throws Exception {
+        imageServerProxyService.shutdown();
         closeable.close();
         connectionManager.shutdown();
     }

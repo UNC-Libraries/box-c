@@ -110,6 +110,7 @@ public class PushDominoMetadataServiceTest {
 
     @AfterEach
     public void tearDown() throws Exception {
+        service.shutdown();
         connectionManager.shutdown();
         closeable.close();
         WireMock.reset();

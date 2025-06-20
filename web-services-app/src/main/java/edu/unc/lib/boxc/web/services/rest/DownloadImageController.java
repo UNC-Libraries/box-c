@@ -1,20 +1,22 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
-import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Objects;
-
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 /**
  * Controller for handling requests to download access copy image
@@ -44,9 +44,9 @@ public class DownloadImageController {
     private AnalyticsTrackerUtil analyticsTracker;
 
     @RequestMapping("/downloadImage/{pid}/{size}")
-    public ResponseEntity<InputStreamResource> getImage(@PathVariable("pid") String pidString,
-                                                        @PathVariable("size") String size,
-                                                        HttpServletRequest request) {
+    public ResponseEntity<Resource> getImage(@PathVariable("pid") String pidString,
+                                             @PathVariable("size") String size,
+                                             HttpServletRequest request) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();

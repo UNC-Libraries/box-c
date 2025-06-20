@@ -1,28 +1,27 @@
 
 package edu.unc.lib.boxc.web.services.processing;
 
+import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
+
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
 
 /**
  * Service to process access copy image downloads
@@ -41,7 +40,7 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamThumbnail(ContentObjectRecord contentObjectRecord, String size)
+    public ResponseEntity<Resource> streamThumbnail(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
         var contentDispositionHeader = "inline;";
         var url = "";
@@ -65,7 +64,7 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamDownload(ContentObjectRecord contentObjectRecord, String size)
+    public ResponseEntity<Resource> streamDownload(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
         String filename = getDownloadFilename(contentObjectRecord, size);
         var contentDispositionHeader = "attachment; filename=" + filename;
@@ -83,14 +82,13 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    private ResponseEntity<InputStreamResource> streamImage(String url, String contentDispositionHeader, MediaType contentType) throws IOException {
-        InputStream input = new URL(url).openStream();
-        InputStreamResource resource = new InputStreamResource(input);
+    private ResponseEntity<Resource> streamImage(String url, String contentDispositionHeader, MediaType contentType) throws IOException {
+        UrlResource urlResource = new UrlResource(url);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDispositionHeader)
                 .contentType(contentType)
-                .body(resource);
+                .body(urlResource);
     }
 
     /**
