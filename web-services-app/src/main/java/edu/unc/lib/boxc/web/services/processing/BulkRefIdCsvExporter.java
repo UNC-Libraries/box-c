@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -24,10 +25,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.cleanupCsv;
-import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createNewCsvPrinter;
 import static java.util.Arrays.asList;
 
 public class BulkRefIdCsvExporter {
@@ -47,11 +49,11 @@ public class BulkRefIdCsvExporter {
         var csvPath = Files.createTempFile("bulk_ref_ids_" + pid.getId(), ".csv");
         var completedExport = false;
 
-        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
+        try (var csvPrinter = createNewCsvPrinter(CSV_HEADERS, csvPath)) {
             aclService.assertHasAccess("Insufficient permissions to export Aspace Ref IDs for " + pid.getId(),
                     pid, agent.getPrincipals(), Permission.editAspaceProperties);
             var parentRecord = getRecord(pid, agent);
-            if (parentRecord instanceof WorkObject) {
+            if (Objects.equals(parentRecord.getResourceType(), Work.name())) {
                 printRecord(csvPrinter, parentRecord);
             } else {
                 var childRecords = getRecords(parentRecord, agent);

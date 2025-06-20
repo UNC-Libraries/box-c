@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +22,11 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.assertNumberOfEntries;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.makeEmptyResponse;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.makeResultResponse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class BulkRefIdCsvExporterTest {
@@ -63,17 +67,24 @@ public class BulkRefIdCsvExporterTest {
         var workRecord = makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
                 "Work Title 1", REF1_ID, "Hook ID 1");
 
+        mockSingleRecordResults(workRecord);
+
         var resultPath = exporter.export(PIDs.get(WORK1_UUID), agent);
         var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        assertNumberOfEntries(1, csvRecords);
     }
 
     @Test
-    public void exportWorkObjectNoRefId() throws IOException {
-        var workRecord = makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
-                "Work Title 1", null, "Hook ID 1");
+    public void exportParentWithNoRefIdChildren() throws IOException {
+        var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.AdminUnit,
+                "Collection 1", null, null);
 
-        var resultPath = exporter.export(PIDs.get(WORK1_UUID), agent);
+        mockSingleRecordResults(collectionRecord);
+        when(solrSearchService.getSearchResults(any())).thenReturn(makeEmptyResponse());
+
+        var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
         var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        assertNumberOfEntries(0, csvRecords);
     }
 
     @Test
@@ -86,8 +97,12 @@ public class BulkRefIdCsvExporterTest {
                 "Work Title 2", REF2_ID, "Hook ID 2");
 
 
+        mockSingleRecordResults(collectionRecord);
+        mockSearchResults(workRecord1, workRecord2);
+
         var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
         var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        assertNumberOfEntries(2, csvRecords);
     }
 
     @Test
@@ -119,5 +134,13 @@ public class BulkRefIdCsvExporterTest {
 
     private List<String> makeAncestorPath(String parentUuid) {
         return Arrays.asList("1,collections", "2," + ADMIN_UNIT_UUID, "3," + COLLECTION_UUID, "4," + parentUuid);
+    }
+
+    private void mockSingleRecordResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
+        when(solrSearchService.getObjectById(any())).thenReturn(parentRec, parentRecs);
+    }
+
+    private void mockSearchResults(ContentObjectRecord... results) {
+        when(solrSearchService.getSearchResults(any())).thenReturn(makeResultResponse(results));
     }
 }
