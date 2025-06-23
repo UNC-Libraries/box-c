@@ -35,7 +35,11 @@ import static java.util.Arrays.asList;
 public class BulkRefIdCsvExporter {
     private static final Logger log = LoggerFactory.getLogger(BulkRefIdCsvExporter.class);
     private static final int DEFAULT_PAGE_SIZE = 10000;
-    public static final String[] CSV_HEADERS = new String[] {"pid", "refId", "hookId", "title"};
+    public static final String PID_HEADER = "pid";
+    public static final String REF_ID_HEADER = "refId";
+    public static final String HOOK_ID_HEADER = "hookId";
+    public static final String TITLE_HEADER = "title";
+    public static final String[] CSV_HEADERS = new String[] {PID_HEADER, REF_ID_HEADER, HOOK_ID_HEADER, TITLE_HEADER};
     private static final List<String> PARENT_REQUEST_FIELDS = asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.ASPACE_REF_ID.name(), SearchFieldKey.HOOK_ID.name());

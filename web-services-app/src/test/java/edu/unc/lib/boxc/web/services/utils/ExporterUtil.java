@@ -33,4 +33,12 @@ public class ExporterUtil {
         resp.setResultCount(0);
         return resp;
     }
+
+    public static void mockSingleRecordResults(SolrSearchService solrSearchService, ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
+        when(solrSearchService.getObjectById(any())).thenReturn(parentRec, parentRecs);
+    }
+
+    public static void mockSearchResults(SolrSearchService solrSearchService, ContentObjectRecord... results) {
+        when(solrSearchService.getSearchResults(any())).thenReturn(makeResultResponse(results));
+    }
 }
