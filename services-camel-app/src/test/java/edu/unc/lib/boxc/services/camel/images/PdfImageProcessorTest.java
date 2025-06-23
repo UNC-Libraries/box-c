@@ -76,9 +76,10 @@ public class PdfImageProcessorTest {
         message.setHeader(CdrBinaryPath, "nonexistent.pdf");
         message.setHeader(CdrBinaryMimeType, "application/pdf");
 
-        // No exception should be thrown
+        // An IOException is thrown internally, but we are demonstrating that it does not bubble up
         processor.process(exchange);
 
+        // Since it failed to generate an image from the PDF no image path should be set, so camel will skip further processing
         assertNull(message.getHeader(CdrImagePath), "CdrImagePath should not be set when exception occurs");
         assertNull(message.getHeader(CdrImagePathCleanup));
         assertEquals("application/pdf", message.getHeader(CdrBinaryMimeType));
