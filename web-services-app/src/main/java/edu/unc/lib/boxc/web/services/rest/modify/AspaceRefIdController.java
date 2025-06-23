@@ -8,16 +8,20 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
-import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
 import edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter;
 import edu.unc.lib.boxc.web.services.utils.CsvUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,9 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +42,7 @@ import java.util.Map;
 @Controller
 public class AspaceRefIdController {
     private static final Logger log = LoggerFactory.getLogger(AspaceRefIdController.class);
-    public static final String[] CSV_HEADERS = new String[] {"workId", "refId"};
+    public static final String[] IMPORT_CSV_HEADERS = new String[] {"workId", "refId"};
 
     @Autowired
     RefIdService service;
@@ -78,7 +80,7 @@ public class AspaceRefIdController {
         Path csvPath = null;
         try {
             csvPath = CsvUtil.storeCsvToTemp(csvFile, "refId");
-            var request = buildBulkRequest(agent, csvPath);
+            var request = buildBulkImportRequest(agent, csvPath);
             sender.sendToQueue(request);
             result.put("status", "Bulk update of Aspace ref IDs submitted");
             result.put("timestamp", System.currentTimeMillis());
@@ -92,28 +94,23 @@ public class AspaceRefIdController {
     }
 
     @GetMapping(value = "/edit/aspace/exportRefIds/{pid}")
-    public ResponseEntity<Object> export(@PathVariable("pid") String pid, HttpServletResponse response) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("action", "export aspace ref IDs");
+    public ResponseEntity<Resource> export(@PathVariable("pid") String pid) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
         try {
             var csvPath = exporter.export(PIDs.get(pid), agent);
-            String filename = "exportRefIds.csv";
-            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-            response.addHeader("Content-Type", "text/csv");
-            Files.copy(csvPath, response.getOutputStream());
-        } catch (AccessRestrictionException e) {
-            result.put("error", "User does not have access");
-            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            result.put("error", "Failed to begin export of Aspace Ref IDs: " + e.getMessage());
-            log.error("Failed to begin export of Aspace Ref IDs",  e);
-            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            UrlResource urlResource = new UrlResource(String.valueOf(csvPath));
 
-        result.put("timestamp", System.currentTimeMillis());
-        return new ResponseEntity<>(result, HttpStatus.OK);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment")
+                    .contentType(MediaType.valueOf("text/csv"))
+                    .body(urlResource);
+        } catch (AccessRestrictionException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            log.error("Failed to begin export of Aspace Ref IDs",  e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private RefIdRequest buildRequest(String refId, String pidString, AgentPrincipals agent) {
@@ -124,8 +121,8 @@ public class AspaceRefIdController {
         return request;
     }
 
-    private BulkRefIdRequest buildBulkRequest(AgentPrincipals agent, Path csvPath) throws IOException {
-        var map = CsvUtil.convertCsvToMap(CSV_HEADERS, csvPath);
+    private BulkRefIdRequest buildBulkImportRequest(AgentPrincipals agent, Path csvPath) throws IOException {
+        var map = CsvUtil.convertCsvToMap(IMPORT_CSV_HEADERS, csvPath);
         var request = new BulkRefIdRequest();
         request.setAgent(agent);
         request.setRefIdMap(map);

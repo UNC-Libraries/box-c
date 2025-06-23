@@ -39,7 +39,7 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
-import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.IMPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,7 +52,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class EditRefIdControllerTest {
+public class AspaceRefIdControllerTest {
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
     private static final String WORK1_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
@@ -170,7 +170,7 @@ public class EditRefIdControllerTest {
     }
 
     private void createCsv() throws IOException {
-        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
+        try (var csvPrinter = createCsvPrinter(IMPORT_CSV_HEADERS, csvPath)) {
             csvPrinter.printRecord(WORK1_ID, REF1_ID);
             csvPrinter.printRecord(WORK2_ID, REF2_ID);
         }
