@@ -1,5 +1,11 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.isDerivative;
+import static org.apache.http.HttpHeaders.RANGE;
+
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -23,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -41,12 +47,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.isDerivative;
-import static org.apache.http.HttpHeaders.RANGE;
 
 /**
  *
@@ -126,15 +126,15 @@ public class DatastreamController {
     }
 
     @RequestMapping("/thumb/{pid}")
-    public ResponseEntity<InputStreamResource> getThumbnailSmall(@PathVariable("pid") String pid,
+    public ResponseEntity<Resource> getThumbnailSmall(@PathVariable("pid") String pid,
             @RequestParam(value = "size", defaultValue = SMALL) String size) {
 
         return getThumbnail(pid, size);
     }
 
     @RequestMapping("/thumb/{pid}/{size}")
-    public ResponseEntity<InputStreamResource> getThumbnail(@PathVariable("pid") String pidString,
-                                                            @PathVariable("size") String size) {
+    public ResponseEntity<Resource> getThumbnail(@PathVariable("pid") String pidString,
+                                                 @PathVariable("size") String size) {
 
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
