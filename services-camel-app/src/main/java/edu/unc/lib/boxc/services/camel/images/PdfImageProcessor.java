@@ -12,9 +12,12 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,12 +28,14 @@ import java.nio.file.Paths;
  * @author bbpennel
  */
 public class PdfImageProcessor implements Processor {
+    private static final Logger log = LoggerFactory.getLogger(PdfImageProcessor.class);
     private String outputPath;
 
     @Override
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
         String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryPath);
+        log.debug("Processing PDF binary at path: {}", binPath);
 
         InputStream inputStream = null;
         PDDocument document = null;
@@ -53,6 +58,9 @@ public class PdfImageProcessor implements Processor {
             in.setHeader(CdrImagePath, outputImagePath.toString());
             in.setHeader(CdrBinaryMimeType, "image/tiff");
             in.setHeader(CdrImagePathCleanup, true);
+        } catch (IOException e) {
+            log.warn("Failed to process PDF binary at path {}: {}", binPath, e.getMessage());
+            log.debug("Stack trace:", e);
         } finally {
             if (document != null) {
                 document.close();

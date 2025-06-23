@@ -6,6 +6,8 @@ import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.camel.Exchange;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,6 +68,21 @@ public class PdfImageProcessorTest {
         var outputFile = Paths.get(outputPath);
         assertTrue(Files.exists(outputFile), "Generated TIFF file should exist");
         assertTrue(Files.size(outputFile) > 0, "Generated TIFF file should not be empty");
+    }
+
+    @Test
+    public void testLoadThrowsIOException() throws Exception {
+        // Set a non-existent PDF path
+        message.setHeader(CdrBinaryPath, "nonexistent.pdf");
+        message.setHeader(CdrBinaryMimeType, "application/pdf");
+
+        // An IOException is thrown internally, but we are demonstrating that it does not bubble up
+        processor.process(exchange);
+
+        // Since it failed to generate an image from the PDF no image path should be set, so camel will skip further processing
+        assertNull(message.getHeader(CdrImagePath), "CdrImagePath should not be set when exception occurs");
+        assertNull(message.getHeader(CdrImagePathCleanup));
+        assertEquals("application/pdf", message.getHeader(CdrBinaryMimeType));
     }
 
     @Test
