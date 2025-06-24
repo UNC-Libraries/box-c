@@ -5,9 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,5 +47,15 @@ public class MvcTestHelpers {
         var response = new SearchResultResponse();
         response.setResultList(new ArrayList<>(records));
         return response;
+    }
+
+    public static List<CSVRecord> parseCsvResponse(MockHttpServletResponse response) throws Exception {
+        List<CSVRecord> csvList = new ArrayList<>();
+
+        var format = CSVFormat.DEFAULT.builder().setSkipHeaderRecord(true).get();
+        var parser = CSVParser.parse(new StringReader(response.getContentAsString()), format);
+        parser.forEach(csvList::add);
+
+        return csvList;
     }
 }

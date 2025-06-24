@@ -99,10 +99,11 @@ public class AspaceRefIdController {
 
         try {
             var csvPath = exporter.export(PIDs.get(pid), agent);
-            UrlResource urlResource = new UrlResource(String.valueOf(csvPath));
+            UrlResource urlResource = new UrlResource(csvPath.toUri());
+            var filename = "export_ref_ids_" + pid + ".csv";
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                     .contentType(MediaType.valueOf("text/csv"))
                     .body(urlResource);
         } catch (AccessRestrictionException e) {

@@ -71,6 +71,7 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
 import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
+import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.parseCsvResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -874,15 +875,15 @@ public class ExportCsvIT extends AbstractAPIIT {
                 null, false, "Authenticated", "", "", getUrl(workId), workId);
     }
 
-    private List<CSVRecord> parseCsvResponse(MockHttpServletResponse response) throws Exception {
-        List<CSVRecord> csvList = new ArrayList<>();
-
-        CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .parse(new StringReader(response.getContentAsString()))
-                .forEach(csvList::add);
-        return csvList;
-    }
+//    private List<CSVRecord> parseCsvResponse(MockHttpServletResponse response) throws Exception {
+//        List<CSVRecord> csvList = new ArrayList<>();
+//
+//        CSVFormat.DEFAULT
+//                .withFirstRecordAsHeader()
+//                .parse(new StringReader(response.getContentAsString()))
+//                .forEach(csvList::add);
+//        return csvList;
+//    }
 
     private String getUrl(String id) {
         return "http://example.com/record/" + id;

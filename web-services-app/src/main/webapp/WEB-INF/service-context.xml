@@ -563,6 +563,11 @@
         <property name="defaultDestinationName" value="${cdr.bulk.refid.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
+
+    <bean id="bulkRefIdCsvExporter" class="edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter">
+        <property name="aclService" ref="aclService" />
+        <property name="solrSearchService" ref="queryLayer" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
