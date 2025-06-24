@@ -30,6 +30,10 @@ import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.assertNumberOfEntries;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.makeResultResponse;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.mockSearchResults;
+import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.mockSingleRecordResults;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -207,19 +211,13 @@ public class MemberOrderCsvExporterTest {
     }
 
     private void mockChildrenResults(ContentObjectRecord... results) {
-        when(solrSearchService.getSearchResults(any())).thenReturn(makeResultResponse(results));
+        mockSearchResults(solrSearchService, results);
     }
 
-    private SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
-        var resp = new SearchResultResponse();
-        resp.setResultList(Arrays.asList(results));
-        resp.setResultCount(results.length);
-        return resp;
-    }
 
     // Calls to get parent record will return the provided records, in order
     private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
-        when(solrSearchService.getObjectById(any())).thenReturn(parentRec, parentRecs);
+        mockSingleRecordResults(solrSearchService, parentRec, parentRecs);
     }
 
     private void assertContainsEntry(List<CSVRecord> csvRecords, String uuid, String parentUuid,
@@ -239,10 +237,6 @@ public class MemberOrderCsvExporterTest {
             return;
         }
         fail("No entry found for uuid " + uuid);
-    }
-
-    private void assertNumberOfEntries(int expected, List<CSVRecord> csvParser) throws IOException {
-        assertEquals(expected, csvParser.size());
     }
 
     private List<PID> asPidList(String... ids) {
