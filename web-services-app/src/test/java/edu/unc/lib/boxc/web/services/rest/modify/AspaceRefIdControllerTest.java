@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
@@ -15,6 +16,8 @@ import edu.unc.lib.boxc.operations.impl.aspace.RefIdService;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter;
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +31,7 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -39,6 +43,7 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.IMPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,6 +54,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,6 +68,7 @@ public class AspaceRefIdControllerTest {
     private RefIdService service;
     private MockMvc mockMvc;
     private Path csvPath;
+    private Path csvExportPath;
     private String email;
     private AgentPrincipals agent;
     private AutoCloseable closeable;
@@ -75,6 +82,8 @@ public class AspaceRefIdControllerTest {
     private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
     private IndexingMessageSender indexingMessageSender;
+    @Mock
+    private BulkRefIdCsvExporter exporter;
     @Mock
     private WorkObject workObject;
     @Mock
@@ -101,6 +110,7 @@ public class AspaceRefIdControllerTest {
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
         csvPath = tmpFolder.resolve("bulkRefId");
+        csvExportPath = tmpFolder.resolve("export");
         agent = getAgentPrincipals();
         email = getEmail();
         when(repositoryObjectLoader.getRepositoryObject(eq(PIDs.get(WORK1_ID)))).thenReturn(workObject);
@@ -141,7 +151,7 @@ public class AspaceRefIdControllerTest {
         map.put(WORK1_ID, REF1_ID);
         map.put(WORK2_ID, REF2_ID);
 
-        createCsv();
+        createImportCsv();
         var file = mockCsvRequestBody();
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/aspace/updateRefIds/")
@@ -158,7 +168,7 @@ public class AspaceRefIdControllerTest {
 
     @Test
     public void importRefIdsError() throws Exception {
-        createCsv();
+        createImportCsv();
         var file = mockCsvRequestBody();
 
         doThrow(IOException.class).when(sender).sendToQueue(any());
@@ -169,10 +179,47 @@ public class AspaceRefIdControllerTest {
                 .andReturn();
     }
 
-    private void createCsv() throws IOException {
+    @Test
+    public void exportRefIdsSuccess() throws Exception {
+        createExportCsv();
+        when(exporter.export(any(), any())).thenReturn(csvExportPath);
+
+        MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var respMap = MvcTestHelpers.getMapFromResponse(result);
+        assertEquals("import member order", respMap.get("action"));
+    }
+
+    @Test
+    public void exportRefIdsNoPermission() throws Exception {
+        doThrow(new AccessRestrictionException()).when(exporter).export(any(), any());
+
+        mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void exportRefIdsError() throws Exception {
+        doThrow(new RepositoryException("Failed export")).when(exporter).export(any(), any());
+
+        mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
+    }
+
+    private void createImportCsv() throws IOException {
         try (var csvPrinter = createCsvPrinter(IMPORT_CSV_HEADERS, csvPath)) {
             csvPrinter.printRecord(WORK1_ID, REF1_ID);
             csvPrinter.printRecord(WORK2_ID, REF2_ID);
+        }
+    }
+
+    private void createExportCsv() throws IOException {
+        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvExportPath)) {
+            csvPrinter.printRecord(WORK1_ID, REF1_ID, "Hook ID 1", "Work Title 1");
         }
     }
 
