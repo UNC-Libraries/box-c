@@ -55,9 +55,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <javax.annotation.version>1.3.2</javax.annotation.version>
-        <javax.jaxb.api.version>2.4.0-b180830.0359</javax.jaxb.api.version>
-        <javax.jaxb.impl.version>2.4.0-b180830.0438</javax.jaxb.impl.version>
-        <javax.jaxb-core.version>2.3.0.1</javax.jaxb-core.version>
+        <javax.jaxb.impl.version>2.3.9</javax.jaxb.impl.version>
         <jakarta.xml.bind.version>3.0.1</jakarta.xml.bind.version>
         <glassfish-jaxb.version>3.0.2</glassfish-jaxb.version>
         <javax.activation.version>1.2.0</javax.activation.version>
@@ -625,25 +623,13 @@
                 <artifactId>javax.annotation-api</artifactId>
                 <version>${javax.annotation.version}</version>
             </dependency>
-            <!-- old jaxb versions for integration tests with fedora 5.x, can remove once on fedora 6 -->
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${javax.jaxb.api.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-core</artifactId>
-                <version>${javax.jaxb-core.version}</version>
-                <scope>test</scope>
-            </dependency>
+            <!-- for fcrepo-camel to update to version without vulnerability -->
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-impl</artifactId>
                 <version>${javax.jaxb.impl.version}</version>
-                <scope>test</scope>
             </dependency>
+            <!-- activation jars for fcrepo-camel, may be able to remove for later versions -->
             <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>javax.activation-api</artifactId>
