@@ -19,6 +19,10 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                 items["exportCSV"] = {name : "Bulk CSV"};
             }
 
+            if (this.getRefIdTargetIds() !== '') {
+                items["exportRefIds"] = {name: "Bulk Ref Ids"};
+            }
+
             return items;
         };
 
@@ -27,6 +31,12 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                 return $.inArray("viewHidden", d.metadata.permissions) !== -1 && d.metadata.type === "Work"
             }).map(d => d.metadata.id);
             return ids.join(',');
+        }
+
+        ExportMenu.prototype.getRefIdTargetIds = function() {
+            let target = this.getTargets()[0];
+            return (target.metadata.type === 'AdminUnit' || target.metadata.type === 'Collection' || target.metadata.type === 'Folder')
+                    && $.inArray('editAspaceProperties', target.metadata.permissions);
         }
 
         ExportMenu.prototype.getTargetIdsAsString = function() {
@@ -93,6 +103,14 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
                                         url : `api/exportTree/csv?ids=${self.getTargetIdsAsString()}`,
+                                        application: "services"
+                                    });
+                                    sessionStorage.removeItem('exportTargets');
+                                    break;
+                                case "exportRefIds" :
+                                    self.options.actionHandler.addEvent({
+                                        action : 'ChangeLocation',
+                                        url : `api/edit/aspace/exportRefIds/${self.getTargets()[0].metadata.id}`,
                                         application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
