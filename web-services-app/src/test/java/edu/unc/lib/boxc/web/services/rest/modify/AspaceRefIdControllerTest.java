@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,11 +41,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.HOOK_ID_HEADER;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.PID_HEADER;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.REF_ID_HEADER;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.TITLE_HEADER;
+import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.parseCsvResponse;
 import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.IMPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,6 +73,8 @@ public class AspaceRefIdControllerTest {
     private static final String WORK2_ID = "ba70a1ee-fa7c-437f-a979-cc8b16599652";
     private static final String REF1_ID = "2817ec3c77e5ea9846d5c070d58d402b";
     private static final String REF2_ID = "1651ewt75rgs1517g4re2rte16874se";
+    private static final String HOOK_ID = "Hook ID 1";
+    private static final String TITLE = "Title 1";
     private RefIdService service;
     private MockMvc mockMvc;
     private Path csvPath;
@@ -188,8 +198,15 @@ public class AspaceRefIdControllerTest {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        var respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals("import member order", respMap.get("action"));
+        MockHttpServletResponse response = result.getResponse();
+        List<CSVRecord> csvList = parseCsvResponse(response, CSV_HEADERS);
+
+        assertEquals(1, csvList.size(), "Unexpected number of results");
+        var csvRecord = csvList.get(0);
+        assertEquals(WORK1_ID, csvRecord.get(PID_HEADER));
+        assertEquals(REF1_ID, csvRecord.get(REF_ID_HEADER));
+        assertEquals(HOOK_ID, csvRecord.get(HOOK_ID_HEADER));
+        assertEquals(TITLE, csvRecord.get(TITLE_HEADER));
     }
 
     @Test
@@ -219,7 +236,7 @@ public class AspaceRefIdControllerTest {
 
     private void createExportCsv() throws IOException {
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvExportPath)) {
-            csvPrinter.printRecord(WORK1_ID, REF1_ID, "Hook ID 1", "Work Title 1");
+            csvPrinter.printRecord(WORK1_ID, REF1_ID, HOOK_ID, TITLE);
         }
     }
 

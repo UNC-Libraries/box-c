@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
 
 /**
  * @author bbpennel
@@ -49,10 +50,15 @@ public class MvcTestHelpers {
         return response;
     }
 
-    public static List<CSVRecord> parseCsvResponse(MockHttpServletResponse response) throws Exception {
+    public static List<CSVRecord> parseCsvResponse(MockHttpServletResponse response, String[] headers) throws Exception {
         List<CSVRecord> csvList = new ArrayList<>();
 
-        var format = CSVFormat.DEFAULT.builder().setSkipHeaderRecord(true).get();
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setHeader(headers)
+                .setSkipHeaderRecord(true)
+                .get();
+
+//        var format = CSVFormat.DEFAULT.withFirstRecordAsHeader();
         var parser = CSVParser.parse(new StringReader(response.getContentAsString()), format);
         parser.forEach(csvList::add);
 
