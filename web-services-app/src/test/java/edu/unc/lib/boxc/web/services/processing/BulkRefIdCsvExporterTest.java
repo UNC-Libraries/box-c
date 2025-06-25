@@ -23,17 +23,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.EXPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.HOOK_ID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.PID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.REF_ID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.TITLE_HEADER;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
-import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.assertNumberOfEntries;
-import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.makeEmptyResponse;
-import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.makeResultResponse;
-import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.mockSearchResults;
-import static edu.unc.lib.boxc.web.services.utils.ExporterUtil.mockSingleRecordResults;
+import static edu.unc.lib.boxc.web.services.utils.ExporterTestUtil.assertNumberOfEntries;
+import static edu.unc.lib.boxc.web.services.utils.ExporterTestUtil.makeEmptyResponse;
+import static edu.unc.lib.boxc.web.services.utils.ExporterTestUtil.mockSearchResults;
+import static edu.unc.lib.boxc.web.services.utils.ExporterTestUtil.mockSingleRecordResults;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -85,7 +84,7 @@ public class BulkRefIdCsvExporterTest {
         mockSingleRecordResults(solrSearchService, workRecord);
 
         var resultPath = exporter.export(workPid, agent);
-        var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(1, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
     }
@@ -99,7 +98,7 @@ public class BulkRefIdCsvExporterTest {
         when(solrSearchService.getSearchResults(any())).thenReturn(makeEmptyResponse());
 
         var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
-        var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(0, csvRecords);
     }
 
@@ -117,7 +116,7 @@ public class BulkRefIdCsvExporterTest {
         mockSearchResults(solrSearchService, workRecord1, workRecord2);
 
         var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
-        var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(2, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
         assertContainsEntry(csvRecords, WORK2_UUID, REF2_ID, "Hook ID 2", "Work Title 2");
@@ -136,7 +135,7 @@ public class BulkRefIdCsvExporterTest {
         mockSearchResults(solrSearchService, workRecord1, workRecord2);
 
         var resultPath = exporter.export(PIDs.get(ADMIN_UNIT_UUID), agent);
-        var csvRecords = parseCsv(CSV_HEADERS, resultPath);
+        var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries( 2, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
         assertContainsEntry(csvRecords, WORK2_UUID, REF2_ID, "", "Work Title 2");

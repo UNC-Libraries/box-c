@@ -13,9 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class ExporterUtil {
-
-
+/**
+ * Util class for Exporter tests
+ * assertion methods and mocking search results
+ *
+ * @author snluong
+ */
+public class ExporterTestUtil {
     public static void assertNumberOfEntries(int expected, List<CSVRecord> csvParser) throws IOException {
         assertEquals(expected, csvParser.size());
     }

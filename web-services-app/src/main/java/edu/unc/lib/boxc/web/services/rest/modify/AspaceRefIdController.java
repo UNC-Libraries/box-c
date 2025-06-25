@@ -94,13 +94,15 @@ public class AspaceRefIdController {
     }
 
     @GetMapping(value = "/edit/aspace/exportRefIds/{pid}")
-    public ResponseEntity<Resource> export(@PathVariable("pid") String pid) {
+    public ResponseEntity<Resource> export(@PathVariable("pid") String pidString) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
+        var pid = PIDs.get(pidString);
 
         try {
-            var csvPath = exporter.export(PIDs.get(pid), agent);
+            var csvPath = exporter.export(pid, agent);
             UrlResource urlResource = new UrlResource(csvPath.toUri());
-            var filename = "export_ref_ids_" + pid + ".csv";
+            // get proper format for pid string
+            var filename = "export_ref_ids_" + pid.getId() + ".csv";
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)

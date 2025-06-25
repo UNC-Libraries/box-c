@@ -17,7 +17,6 @@ import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequest;
 import edu.unc.lib.boxc.operations.jms.aspace.BulkRefIdRequestSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter;
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.jena.rdf.model.Resource;
@@ -46,7 +45,7 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
-import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.EXPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.HOOK_ID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.PID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.REF_ID_HEADER;
@@ -119,8 +118,8 @@ public class AspaceRefIdControllerTest {
                 .build();
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
-        csvPath = tmpFolder.resolve("bulkRefId");
-        csvExportPath = tmpFolder.resolve("export");
+        csvPath = tmpFolder.resolve("bulkRefIdImport");
+        csvExportPath = tmpFolder.resolve("bulkRefIdExport");
         agent = getAgentPrincipals();
         email = getEmail();
         when(repositoryObjectLoader.getRepositoryObject(eq(PIDs.get(WORK1_ID)))).thenReturn(workObject);
@@ -162,7 +161,26 @@ public class AspaceRefIdControllerTest {
         map.put(WORK2_ID, REF2_ID);
 
         createImportCsv();
-        var file = mockCsvRequestBody();
+        var file = mockCsvRequestBody(csvPath);
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/aspace/updateRefIds/")
+                        .file(file))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        verify(sender).sendToQueue(requestCaptor.capture());
+        var request = requestCaptor.getValue();
+        assertEquals(map, request.getRefIdMap());
+        assertEquals(agent, request.getAgent());
+        assertEquals(email, request.getEmail());
+    }
+
+    @Test
+    public void importRefIdsSuccessWithExportCsv() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put(WORK1_ID, REF1_ID);
+        createExportCsv();
+        var file = mockCsvRequestBody(csvExportPath);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/aspace/updateRefIds/")
                         .file(file))
@@ -179,7 +197,7 @@ public class AspaceRefIdControllerTest {
     @Test
     public void importRefIdsError() throws Exception {
         createImportCsv();
-        var file = mockCsvRequestBody();
+        var file = mockCsvRequestBody(csvPath);
 
         doThrow(IOException.class).when(sender).sendToQueue(any());
 
@@ -199,7 +217,7 @@ public class AspaceRefIdControllerTest {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        List<CSVRecord> csvList = parseCsvResponse(response, CSV_HEADERS);
+        List<CSVRecord> csvList = parseCsvResponse(response, EXPORT_CSV_HEADERS);
 
         assertEquals(1, csvList.size(), "Unexpected number of results");
         var csvRecord = csvList.get(0);
@@ -235,12 +253,12 @@ public class AspaceRefIdControllerTest {
     }
 
     private void createExportCsv() throws IOException {
-        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvExportPath)) {
+        try (var csvPrinter = createCsvPrinter(EXPORT_CSV_HEADERS, csvExportPath)) {
             csvPrinter.printRecord(WORK1_ID, REF1_ID, HOOK_ID, TITLE);
         }
     }
 
-    private MockMultipartFile mockCsvRequestBody() throws Exception {
+    private MockMultipartFile mockCsvRequestBody(Path csvPath) throws Exception {
         var inputStream = Files.newInputStream(csvPath);
         return new MockMultipartFile("file", inputStream);
     }
