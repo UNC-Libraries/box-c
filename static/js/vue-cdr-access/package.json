@@ -40,7 +40,6 @@
         "@intlify/vue-i18n-loader": "^5.0.1",
         "@pinia/testing": "0.1.6",
         "@testing-library/jest-dom": "^6.5.0",
-        "@unhead/addons": "^1.8.9",
         "@vitejs/plugin-vue": "^5.2.3",
         "@vue/compiler-sfc": "^3.5.13",
         "@vue/test-utils": "2.4.6",
