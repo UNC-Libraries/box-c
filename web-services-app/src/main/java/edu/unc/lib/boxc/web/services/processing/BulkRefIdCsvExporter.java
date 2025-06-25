@@ -28,6 +28,8 @@ import java.util.Objects;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.cleanupCsv;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createNewCsvPrinter;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.PID_HEADER;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.REF_ID_HEADER;
 import static java.util.Arrays.asList;
 
 /**
@@ -36,8 +38,6 @@ import static java.util.Arrays.asList;
 public class BulkRefIdCsvExporter {
     private static final Logger log = LoggerFactory.getLogger(BulkRefIdCsvExporter.class);
     private static final int DEFAULT_PAGE_SIZE = 10000;
-    public static final String PID_HEADER = "workId";
-    public static final String REF_ID_HEADER = "refId";
     public static final String HOOK_ID_HEADER = "hookId";
     public static final String TITLE_HEADER = "title";
     public static final String[] EXPORT_CSV_HEADERS = new String[] {PID_HEADER, REF_ID_HEADER, HOOK_ID_HEADER, TITLE_HEADER};

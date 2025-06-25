@@ -50,16 +50,11 @@ public class MvcTestHelpers {
     }
 
     public static List<CSVRecord> parseCsvResponse(MockHttpServletResponse response, String[] headers) throws Exception {
-        List<CSVRecord> csvList = new ArrayList<>();
-
         CSVFormat format = CSVFormat.DEFAULT.builder()
                 .setHeader(headers)
                 .setSkipHeaderRecord(true)
                 .get();
 
-        var parser = CSVParser.parse(new StringReader(response.getContentAsString()), format);
-        parser.forEach(csvList::add);
-
-        return csvList;
+          return CSVParser.parse(new StringReader(response.getContentAsString()), format).getRecords();
     }
 }

@@ -27,16 +27,19 @@ import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
  */
 public class CsvUtil {
     private static final Logger log = LoggerFactory.getLogger(CsvUtil.class);
+    public static final String PID_HEADER = "workId";
+    public static final String REF_ID_HEADER = "refId";
     private CsvUtil(){
     }
 
     public static List<CSVRecord> parseCsv(String[] headers, Path csvPath) throws IOException {
         Reader reader = Files.newBufferedReader(csvPath);
-        return new CSVParser(reader, CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .withHeader(headers)
-                .withTrim())
-                .getRecords();
+
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setHeader(headers)
+                .setSkipHeaderRecord(true)
+                .get();
+        return CSVParser.parse(reader, format).getRecords();
     }
 
     /**
@@ -99,7 +102,7 @@ public class CsvUtil {
         Map<String, String> result = new HashMap<>();
         var csvRows = parseCsv(headers, csvPath);
         for (CSVRecord row : csvRows) {
-            result.put(row.get("workId"), row.get("refId"));
+            result.put(row.get(PID_HEADER), row.get(REF_ID_HEADER));
         }
         return result;
     }

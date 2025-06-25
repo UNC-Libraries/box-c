@@ -47,8 +47,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getEmail;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.EXPORT_CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.HOOK_ID_HEADER;
-import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.PID_HEADER;
-import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.REF_ID_HEADER;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.PID_HEADER;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.REF_ID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter.TITLE_HEADER;
 import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.parseCsvResponse;
 import static edu.unc.lib.boxc.web.services.rest.modify.AspaceRefIdController.IMPORT_CSV_HEADERS;
