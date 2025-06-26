@@ -90,7 +90,7 @@ public class BulkRefIdCsvExporterTest {
     }
 
     @Test
-    public void exportParentWithNoRefIdChildren() throws IOException {
+    public void exportParentWithWorkChildren() throws IOException {
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.AdminUnit,
                 "Collection 1", null, null);
 
@@ -103,7 +103,7 @@ public class BulkRefIdCsvExporterTest {
     }
 
     @Test
-    public void exportMultipleWorkObjectsUnderCollection() throws IOException {
+    public void exportWorkObjectsUnderCollection() throws IOException {
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.AdminUnit,
                 "Collection 1", null, null);
         var workRecord1 = makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
@@ -123,13 +123,13 @@ public class BulkRefIdCsvExporterTest {
     }
 
     @Test
-    public void exportWorkObjectsUnderAdminUnit() throws IOException {
+    public void exportWorkObjectsSomeWithoutRefIds() throws IOException {
         var adminUnitRecord = makeRecord(ADMIN_UNIT_UUID, CHILD1_UUID, ResourceType.AdminUnit,
                 "AdminUnit 1", null, null);
         var workRecord1 = makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
                 "Work Title 1", REF1_ID, "Hook ID 1");
         var workRecord2 = makeRecord(WORK2_UUID, COLLECTION_UUID, ResourceType.Work,
-                "Work Title 2", REF2_ID, null);
+                "Work Title 2", "", null);
 
         mockSingleRecordResults(solrSearchService, adminUnitRecord);
         mockSearchResults(solrSearchService, workRecord1, workRecord2);
@@ -138,7 +138,7 @@ public class BulkRefIdCsvExporterTest {
         var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries( 2, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
-        assertContainsEntry(csvRecords, WORK2_UUID, REF2_ID, "", "Work Title 2");
+        assertContainsEntry(csvRecords, WORK2_UUID, "", "", "Work Title 2");
     }
 
     @Test

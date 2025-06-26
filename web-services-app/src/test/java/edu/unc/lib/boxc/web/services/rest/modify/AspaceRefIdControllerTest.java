@@ -179,7 +179,7 @@ public class AspaceRefIdControllerTest {
     public void importRefIdsSuccessWithExportCsv() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put(WORK1_ID, REF1_ID);
-        createExportCsv();
+        createExportCsv(false);
         var file = mockCsvRequestBody(csvExportPath);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/aspace/updateRefIds/")
@@ -209,7 +209,7 @@ public class AspaceRefIdControllerTest {
 
     @Test
     public void exportRefIdsSuccess() throws Exception {
-        createExportCsv();
+        createExportCsv(true);
         when(exporter.export(any(), any())).thenReturn(csvExportPath);
 
         MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
@@ -219,12 +219,19 @@ public class AspaceRefIdControllerTest {
         MockHttpServletResponse response = result.getResponse();
         List<CSVRecord> csvList = parseCsvResponse(response, EXPORT_CSV_HEADERS);
 
-        assertEquals(1, csvList.size(), "Unexpected number of results");
-        var csvRecord = csvList.get(0);
-        assertEquals(WORK1_ID, csvRecord.get(PID_HEADER));
-        assertEquals(REF1_ID, csvRecord.get(REF_ID_HEADER));
-        assertEquals(HOOK_ID, csvRecord.get(HOOK_ID_HEADER));
-        assertEquals(TITLE, csvRecord.get(TITLE_HEADER));
+        assertEquals(2, csvList.size(), "Unexpected number of results");
+        var csvRecord1 = csvList.get(0);
+        assertEquals(WORK1_ID, csvRecord1.get(PID_HEADER));
+        assertEquals(REF1_ID, csvRecord1.get(REF_ID_HEADER));
+        assertEquals(HOOK_ID, csvRecord1.get(HOOK_ID_HEADER));
+        assertEquals(TITLE, csvRecord1.get(TITLE_HEADER));
+
+        var csvRecord2 = csvList.get(1);
+        assertEquals(WORK2_ID, csvRecord2.get(PID_HEADER));
+        assertEquals("", csvRecord2.get(REF_ID_HEADER));
+        assertEquals("", csvRecord2.get(HOOK_ID_HEADER));
+        assertEquals("No Ref ID here", csvRecord2.get(TITLE_HEADER));
+
     }
 
     @Test
@@ -252,9 +259,14 @@ public class AspaceRefIdControllerTest {
         }
     }
 
-    private void createExportCsv() throws IOException {
+    private void createExportCsv(boolean forExportOnly) throws IOException {
         try (var csvPrinter = createCsvPrinter(EXPORT_CSV_HEADERS, csvExportPath)) {
             csvPrinter.printRecord(WORK1_ID, REF1_ID, HOOK_ID, TITLE);
+            if (forExportOnly) {
+                // TODO BXC-4982
+                // this is temporary only until we account for imports not updating to blank Ref IDs
+                csvPrinter.printRecord(WORK2_ID, "", "", "No Ref ID here");
+            }
         }
     }
 

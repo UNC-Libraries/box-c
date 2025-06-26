@@ -86,8 +86,6 @@ public class BulkRefIdCsvExporter {
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
         CutoffFacet selectedPath = parentRec.getPath();
         searchState.addFacet(selectedPath);
-        // Limit results to only works that have ref ids
-        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.ASPACE_REF_ID));
         searchState.setResourceTypes(List.of(Work.name()));
         searchState.setSortType("default");
         searchState.setResultFields(WORK_FIELDS);
