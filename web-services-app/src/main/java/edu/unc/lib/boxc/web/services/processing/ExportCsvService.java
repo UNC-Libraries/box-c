@@ -79,7 +79,7 @@ public class ExportCsvService {
     public static final String PARENT_WORK_URL = "Parent Work URL";
     public static final String PARENT_WORK_TITLE = "Parent Work Title";
 
-    private static final String[] CSV_HEADERS = new String[] {
+    public static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, ACCESS_SURROGATE_HEADER, NUM_CHILDREN_HEADER,
