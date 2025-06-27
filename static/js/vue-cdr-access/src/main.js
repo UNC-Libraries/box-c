@@ -1,6 +1,6 @@
 import { createApp, h } from 'vue'
 import { createI18n } from 'vue-i18n'
-import { createHead, VueHeadMixin } from "@vueuse/head"
+import { createHead, VueHeadMixin } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'

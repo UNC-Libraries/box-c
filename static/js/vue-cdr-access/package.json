@@ -10,8 +10,8 @@
     },
     "dependencies": {
         "@samvera/clover-iiif": "^2.14.0",
+        "@unhead/vue": "^2.0.11",
         "@vue-pdf-viewer/viewer": "^2.3.0",
-        "@vueuse/head": "^2.0.0",
         "axios": "^1.8.4",
         "canvas": "^2.11.2",
         "datatables.net": "^2.1.8",
@@ -40,7 +40,6 @@
         "@intlify/vue-i18n-loader": "^5.0.1",
         "@pinia/testing": "0.1.6",
         "@testing-library/jest-dom": "^6.5.0",
-        "@unhead/addons": "^1.8.9",
         "@vitejs/plugin-vue": "^5.2.3",
         "@vue/compiler-sfc": "^3.5.13",
         "@vue/test-utils": "2.4.6",
