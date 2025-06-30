@@ -108,7 +108,7 @@ public class ExportDominoMetadataServiceTest {
         var searchState = searchRequest.getValue().getSearchState();
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
         var refIdFilter = searchState.getFilters().get(0);
-        assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":*", refIdFilter.toFilterString());
+        assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
         assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
     }
     
@@ -178,7 +178,7 @@ public class ExportDominoMetadataServiceTest {
         var searchState = searchRequest.getValue().getSearchState();
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
         var refIdFilter = searchState.getFilters().get(0);
-        assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":*", refIdFilter.toFilterString());
+        assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
         assertEquals("2020-00-00T00:00:00Z,*", searchState.getRangeFields()
                 .get(SearchFieldKey.DATE_UPDATED.name()).getParameterValue());
     }

@@ -56,6 +56,7 @@ public class QueryFilterFactoryTest {
     public void hasPopulatedFieldFilterTest() {
         var filter = QueryFilterFactory.createFilter(SearchFieldKey.STREAMING_TYPE);
         assertInstanceOf(HasPopulatedFieldFilter.class, filter);
+        assertEquals("streamingType:[\"\" TO *]", filter.toFilterString());
     }
 
     @Test
