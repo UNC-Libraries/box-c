@@ -189,10 +189,6 @@
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
-    <bean id="VocabularyEnforcementJob" class="edu.unc.lib.boxc.deposit.normalize.VocabularyEnforcementJob"
-        scope="prototype">
-    </bean>
-    
     <bean id="clamClient" class="fi.solita.clamav.ClamAVClient">
         <constructor-arg type="java.lang.String" value="${clamd.host:localhost}" index="0" />
         <constructor-arg type="int" value="${clamd.port:3310}" index="1" />
