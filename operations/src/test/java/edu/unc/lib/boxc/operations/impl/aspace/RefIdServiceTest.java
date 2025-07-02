@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -69,7 +70,7 @@ public class RefIdServiceTest {
 
     @Test
     public void testNoPermission() {
-        var request = buildRequest();
+        var request = buildRequest(REF_ID);
         doThrow(new AccessRestrictionException("Access Denied")).when(aclService)
                 .assertHasAccess(any(), eq(pid), any(), eq(Permission.editAspaceProperties));
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
@@ -81,16 +82,58 @@ public class RefIdServiceTest {
     public void testNotAWork() {
         var fileObject = mock(FileObject.class);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
-        var request = buildRequest();
+        var request = buildRequest(REF_ID);
         Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
             service.updateRefId(request);
         });
     }
 
+//    @Test
+//    public void testUpdateCurrentRefIdWithIdenticalRefId() {
+//        var workObject = mock(WorkObject.class);
+//        var request = buildRequest();
+//        var username = "number one user";
+//        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+//        when(agent.getUsername()).thenReturn(username);
+//          service.updateRefId(request);
+//        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+//                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+//        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
+//                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
+//    }
     @Test
-    public void testUpdateRefId() {
+    public void testUpdateCurrentRefIdWithBlankRefId() {
         var workObject = mock(WorkObject.class);
-        var request = buildRequest();
+        var request = buildRequest("");
+        var username = "number one user";
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(agent.getUsername()).thenReturn(username);
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
+        // indexing action should be removing the aspace ref ID
+//        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+//                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
+    }
+    @Test
+    public void testUpdateNonExistentRefIdWithBlankRefId() {
+        var workObject = mock(WorkObject.class);
+        var request = buildRequest("");
+        var username = "number one user";
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(agent.getUsername()).thenReturn(username);
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
+    @Test
+    public void testUpdateRefIdSuccess() {
+        var workObject = mock(WorkObject.class);
+        var request = buildRequest(REF_ID);
         var username = "number one user";
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
         when(agent.getUsername()).thenReturn(username);
@@ -99,14 +142,14 @@ public class RefIdServiceTest {
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
-                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
 
-    private RefIdRequest buildRequest() {
+    private RefIdRequest buildRequest(String refId) {
         var request = new RefIdRequest();
         request.setPidString(pidString);
         request.setAgent(agent);
-        request.setRefId(REF_ID);
+        request.setRefId(refId);
         return request;
     }
 }

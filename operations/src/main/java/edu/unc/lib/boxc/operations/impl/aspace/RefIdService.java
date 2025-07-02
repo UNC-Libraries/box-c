@@ -36,7 +36,7 @@ public class RefIdService {
         }
 
         repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
-        indexingMessageSender.sendIndexingOperation(agent.getUsername(), workPid, IndexingActionType.ADD_ASPACE_REF_ID);
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), workPid, IndexingActionType.UPDATE_ASPACE_REF_ID);
     }
 
     public void setAclService(AccessControlService aclService) {
