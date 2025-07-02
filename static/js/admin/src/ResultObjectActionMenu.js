@@ -232,6 +232,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			if (metadata.type === 'Work') {
 				items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
 			}
+
+			if (metadata.type !== 'Work') {
+				items['export']['items']["exportBulkRefIds"] = {name: "Export Bulk Ref IDs"};
+			}
 		}
 
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
@@ -486,6 +490,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "api/edit/memberOrder/export/csv?ids=" + metadata.id,
+							application: "services"
+						});
+						break;
+					case "exportBulkRefIds" :
+						self.actionHandler.addEvent({
+							action : 'ChangeLocation',
+							url : `api/edit/aspace/exportRefIds/${metadata.id}`,
 							application: "services"
 						});
 						break;
