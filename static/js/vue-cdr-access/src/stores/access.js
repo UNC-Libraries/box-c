@@ -8,7 +8,9 @@ export const useAccessStore = defineStore({
     state: () => ({
         isLoggedIn: false,
         possibleFacetFields: POSSIBLE_FACET_FIELDS.slice(),
+        uncIP: false,
         username: '',
+        validToken: false,
         viewAdmin: false
     }),
     actions: {
@@ -21,8 +23,14 @@ export const useAccessStore = defineStore({
         setIsLoggedIn () {
             this.isLoggedIn = this.username !== undefined && this.username !== '';
         },
+        setUncIP (uncIP) {
+            this.uncIP = uncIP;
+        },
         setUsername (username) {
             this.username = username || '';
+        },
+        setValidToken (token) {
+            this.validToken = token;
         },
         setViewAdmin (viewAdmin) {
             this.viewAdmin = viewAdmin === 'true';

@@ -78,6 +78,12 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
             }
         }
 
+        boolean uncIPAddress = session.getAttribute("uncIPAddress") != null;
+        response.setHeader("unc-ip-address", String.valueOf(uncIPAddress));
+
+        boolean validCfTurnstileToken = session.getAttribute("validCfTurnstileToken") != null;
+        response.setHeader("valid-turnstile-token", String.valueOf(validCfTurnstileToken));
+
         boolean canViewAdmin = accessLevel != null && accessLevel.isViewAdmin();
         response.setHeader("can-view-admin", String.valueOf(canViewAdmin));
         // Add the admin_access group for the current user

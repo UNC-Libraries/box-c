@@ -7,6 +7,7 @@ import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import aboutRepository from "@/components/aboutRepository.vue";
+import cfTurnstile from "@/components/cfTurnstile.vue";
 import { useAccessStore } from './stores/access';
 
 const UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
@@ -39,7 +40,7 @@ const router = createRouter({
     {
       path: `/search/:id(${UUID_REGEX})?`,
       name: 'searchRecords',
-      component: searchWrapper
+      component: searchWrapper,
     },
     {
       path: '/collections',
@@ -57,6 +58,11 @@ const router = createRouter({
       component: aboutRepository
     },
     {
+      path: '/turnstile',
+      name: 'turnstile',
+      component: cfTurnstile
+    },
+    {
       // https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
       path: '/:pathMatch(.*)*',
       name: 'notFound',
@@ -65,16 +71,26 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   const store = useAccessStore();
 
-  axios.head('/api/userInformation').then((response) => {
+  try {
+    const response = await axios.head('/api/userInformation');
+
     store.setUsername(response.headers['username']);
     store.setIsLoggedIn();
     store.setViewAdmin(response.headers['can-view-admin']);
-  }).catch(error => {
+    store.setUncIP(response.headers['unc-ip-address'] === 'true');
+    store.setValidToken(response.headers['valid-turnstile-token'] === 'true');
+
+    // Issue a challenge if a user needs a challenge
+    if (window.turnstileEnabled && to.name === 'searchRecords' &&
+        !store.isLoggedIn && !store.uncIP && !store.validToken) {
+      return { path: '/turnstile', replace: true };
+    }
+  } catch (error) {
     console.log(error);
-  });
+  }
 });
 
 export default router
