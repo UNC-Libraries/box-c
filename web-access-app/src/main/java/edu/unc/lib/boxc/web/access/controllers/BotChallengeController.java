@@ -38,13 +38,6 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
         String ipAddress = request.getRemoteAddr();
-
-        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)) {
-            Map<String, Boolean> resp = new HashMap<>();
-            resp.put("success", true);
-            return SerializationUtil.objectToJSON(resp);
-        }
-
         return turnstileVerification(ipAddress, token, session);
     }
 
@@ -67,10 +60,10 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(turnstileResponse.body());
             if (jsonNode.get("success").asBoolean()) {
-                session.setAttribute("validCfTurnstileToken", true);
                 session.setAttribute("turnstileTokenExpiresIn", expiresIn());
-                session.setAttribute("userIPAddress", ipAddress);
             }
+            session.setAttribute("validCfTurnstileToken", jsonNode.get("success").asBoolean());
+            session.setAttribute("userIPAddress", ipAddress);
 
             return turnstileResponse.body();
         } catch (IOException | InterruptedException e) {
@@ -84,8 +77,12 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     }
 
     private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (ipAddress.equals("127.0.0.1") || ipAddress.equals("0:0:0:0:0:0:0:1")) {
+        if (ipAddress.equals("127.0.0.1")) {
             return true;
+        }
+
+        if (ipAddress.equals("0:0:0:0:0:0:0:1")) {
+            return false;
         }
 
         var uncAddresses = List.of(
