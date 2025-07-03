@@ -23,7 +23,6 @@ import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 public class RepositoryPaths {
 
     private static String policiesBase;
-    private static String vocabulariesBase;
     private static String depositRecordBase;
     private static PID depositRecordRootPid;
     private static String contentBase;
@@ -113,10 +112,6 @@ public class RepositoryPaths {
 
     public static String getPoliciesBase() {
         return policiesBase;
-    }
-
-    public static String getVocabulariesBase() {
-        return vocabulariesBase;
     }
 
     /**

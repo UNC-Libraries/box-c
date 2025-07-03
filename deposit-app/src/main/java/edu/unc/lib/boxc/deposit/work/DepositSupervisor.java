@@ -52,7 +52,6 @@ import edu.unc.lib.boxc.deposit.normalize.NormalizeFileObjectsJob;
 import edu.unc.lib.boxc.deposit.normalize.PreconstructedDepositJob;
 import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.boxc.deposit.normalize.UnpackDepositJob;
-import edu.unc.lib.boxc.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob;
 import edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.boxc.deposit.validate.FixityCheckJob;
@@ -714,7 +713,7 @@ public class DepositSupervisor implements WorkerListener {
     private static Set<String> VALID_DEPOSIT_JOBS = Arrays.asList(PackageIntegrityCheckJob.class,
             UnpackDepositJob.class, PreconstructedDepositJob.class, CDRMETS2N3BagJob.class,
             Simple2N3BagJob.class, BagIt2N3BagJob.class,
-            DirectoryToBagJob.class, NormalizeFileObjectsJob.class, VocabularyEnforcementJob.class,
+            DirectoryToBagJob.class, NormalizeFileObjectsJob.class,
             ValidateDestinationJob.class, ValidateContentModelJob.class, ValidateDescriptionJob.class,
             ValidateFileAvailabilityJob.class, VirusScanJob.class, FixityCheckJob.class,
             ExtractTechnicalMetadataJob.class, AssignStorageLocationsJob.class, TransferBinariesToStorageJob.class,
@@ -785,12 +784,6 @@ public class DepositSupervisor implements WorkerListener {
         if (!successfulJobs.contains(ValidateContentModelJob.class.getName())) {
             return makeJob(ValidateContentModelJob.class, depositUUID);
         }
-
-        // Perform vocabulary enforcement for package types that include metadata
-//        if (packagingType.equals(PackagingType.METS_CDR.getUri())
-//                && !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
-//            return makeJob(VocabularyEnforcementJob.class, depositUUID);
-//        }
 
         // MODS validation
         File bagPath = new File(depositsDirectory, depositUUID);

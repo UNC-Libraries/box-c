@@ -3,14 +3,12 @@ package edu.unc.lib.boxc.web.admin.controllers;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,8 +20,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
-import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
@@ -38,9 +34,6 @@ import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 public class MODSController extends AbstractSolrSearchController {
     private Map<String, String> namespaces;
 
-    @Autowired
-    private VocabularyHelperManager vocabularies;
-
     @PostConstruct
     public void init() {
         namespaces = new HashMap<>();
@@ -50,8 +43,7 @@ public class MODSController extends AbstractSolrSearchController {
     /**
      * Forwards user to the MODS editor page with the
      *
-     * @param idPrefix
-     * @param id
+     * @param pid
      * @param model
      * @param request
      * @return
@@ -90,29 +82,6 @@ public class MODSController extends AbstractSolrSearchController {
         }
 
         results.put("resultObject", resultObject);
-
-        // Structure vocabulary info into a map usable by the editor
-        Map<String, Object> vocabConfigs = new HashMap<>();
-        // xpath selectors for each vocabulary
-        Map<String, String> selectors = new HashMap<>();
-        // map of vocabulary names to their term values
-        Map<String, Object> perVocabConfigs = new HashMap<>();
-        Set<VocabularyHelper> helpers = vocabularies.getHelpers(PIDs.get(pid));
-        if (helpers != null) {
-            for (VocabularyHelper helper : helpers) {
-                Map<String, Object> vocabConfig = new HashMap<>();
-                vocabConfig.put("values", helper.getVocabularyTerms());
-                perVocabConfigs.put(helper.getVocabularyURI(), vocabConfig);
-                if (helper.getSelector() != null) {
-                    selectors.put(helper.getSelector(), helper.getVocabularyURI());
-                }
-            }
-        }
-        vocabConfigs.put("xpathSelectors", selectors);
-        vocabConfigs.put("vocabularies", perVocabConfigs);
-        vocabConfigs.put("xpathNamespaces", namespaces);
-
-        results.put("vocabularyConfigs", vocabConfigs);
 
         return results;
     }
