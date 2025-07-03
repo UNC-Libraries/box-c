@@ -16,6 +16,8 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +43,10 @@ public class RefIdServiceTest {
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet accessGroupSet;
+    @Mock
+    private Resource resource;
+    @Mock
+    private Statement statement;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -88,19 +94,24 @@ public class RefIdServiceTest {
         });
     }
 
-//    @Test
-//    public void testUpdateCurrentRefIdWithIdenticalRefId() {
-//        var workObject = mock(WorkObject.class);
-//        var request = buildRequest();
-//        var username = "number one user";
-//        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-//        when(agent.getUsername()).thenReturn(username);
-//          service.updateRefId(request);
-//        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
-//                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
-//        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
-//                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
-//    }
+    @Test
+    public void testUpdateCurrentRefIdWithIdenticalRefId() {
+        var workObject = mock(WorkObject.class);
+        var request = buildRequest(REF_ID);
+        var username = "number one user";
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(statement);
+        when(statement.getString()).thenReturn(REF_ID);
+        when(agent.getUsername()).thenReturn(username);
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
     @Test
     public void testUpdateCurrentRefIdWithBlankRefId() {
         var workObject = mock(WorkObject.class);
@@ -108,12 +119,14 @@ public class RefIdServiceTest {
         var username = "number one user";
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
         when(agent.getUsername()).thenReturn(username);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(statement);
+        when(statement.getString()).thenReturn("REF ID HERE");
 
         service.updateRefId(request);
         verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
-        // indexing action should be removing the aspace ref ID
-//        verify(indexingMessageSender).sendIndexingOperation(eq(username),
-//                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
     @Test
     public void testUpdateNonExistentRefIdWithBlankRefId() {
@@ -122,6 +135,8 @@ public class RefIdServiceTest {
         var username = "number one user";
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
         when(agent.getUsername()).thenReturn(username);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(null);
 
         service.updateRefId(request);
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
@@ -137,6 +152,8 @@ public class RefIdServiceTest {
         var username = "number one user";
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
         when(agent.getUsername()).thenReturn(username);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(null);
 
         service.updateRefId(request);
         verify(repositoryObjectFactory).createExclusiveRelationship(
