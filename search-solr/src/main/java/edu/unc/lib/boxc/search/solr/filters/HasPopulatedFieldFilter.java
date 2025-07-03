@@ -17,7 +17,7 @@ public class HasPopulatedFieldFilter implements QueryFilter {
 
     @Override
     public String toFilterString() {
-        return getFieldKey().getSolrField() + ":*";
+        return getFieldKey().getSolrField() + ":[\"\" TO *]";
     }
 
     @Override
