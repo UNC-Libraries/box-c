@@ -19,6 +19,10 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                 items["exportCSV"] = {name : "Bulk CSV"};
             }
 
+            if (this.canDownloadRefIds()) {
+                items["exportRefIds"] = {name: "Bulk Ref Ids"};
+            }
+
             return items;
         };
 
@@ -32,6 +36,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
         ExportMenu.prototype.getTargetIdsAsString = function() {
             let targets = this.getTargets();
             return targets.map(d => d.metadata.id).join(',');
+        }
+
+        ExportMenu.prototype.canDownloadRefIds = function() {
+            let target = this.getTargets()[0];
+            return target.metadata.type !== 'File' && $.inArray('editAspaceProperties', target.metadata.permissions);
         }
 
         ExportMenu.prototype.canEditDescription = function() {
@@ -93,6 +102,14 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
                                         url : `api/exportTree/csv?ids=${self.getTargetIdsAsString()}`,
+                                        application: "services"
+                                    });
+                                    sessionStorage.removeItem('exportTargets');
+                                    break;
+                                case "exportRefIds" :
+                                    self.options.actionHandler.addEvent({
+                                        action : 'ChangeLocation',
+                                        url : `api/edit/aspace/exportRefIds/${self.getTargets()[0].metadata.id}`,
                                         application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
