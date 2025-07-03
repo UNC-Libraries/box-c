@@ -40,8 +40,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
 
         ExportMenu.prototype.canDownloadRefIds = function() {
             let target = this.getTargets()[0];
-            return (target.metadata.type === 'AdminUnit' || target.metadata.type === 'Collection' || target.metadata.type === 'Folder')
-                && $.inArray('editAspaceProperties', target.metadata.permissions);
+            return target.metadata.type !== 'File' && $.inArray('editAspaceProperties', target.metadata.permissions);
         }
 
         ExportMenu.prototype.canEditDescription = function() {
