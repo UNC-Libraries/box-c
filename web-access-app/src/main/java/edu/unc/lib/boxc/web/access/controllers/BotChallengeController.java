@@ -39,12 +39,6 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
         HttpSession session = request.getSession(true);
         String ipAddress = request.getRemoteAddr();
 
-        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)) {
-            Map<String, Boolean> resp = new HashMap<>();
-            resp.put("success", true);
-            return SerializationUtil.objectToJSON(resp);
-        }
-
         return turnstileVerification(ipAddress, token, session);
     }
 
@@ -65,12 +59,14 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
             HttpResponse<String> turnstileResponse = client.send(turnstileRequest, HttpResponse.BodyHandlers.ofString());
 
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(turnstileResponse.body());
-            if (jsonNode.get("success").asBoolean()) {
-                session.setAttribute("validCfTurnstileToken", true);
+            JsonNode turnstileJson = mapper.readTree(turnstileResponse.body());
+            var validationSucceeded = turnstileJson.get("validationSucceeded").asBoolean();
+            if (validationSucceeded) {
                 session.setAttribute("turnstileTokenExpiresIn", expiresIn());
-                session.setAttribute("userIPAddress", ipAddress);
             }
+
+            session.setAttribute("validCfTurnstileToken", validationSucceeded);
+            session.setAttribute("userIPAddress", ipAddress);
 
             return turnstileResponse.body();
         } catch (IOException | InterruptedException e) {
