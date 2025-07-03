@@ -39,6 +39,7 @@ public class RefIdServiceTest {
     private PID pid;
     private String pidString;
     private AutoCloseable closeable;
+    private String username = "number one user";
     @Mock
     private AgentPrincipals agent;
     @Mock
@@ -47,6 +48,8 @@ public class RefIdServiceTest {
     private Resource resource;
     @Mock
     private Statement statement;
+    @Mock
+    private WorkObject workObject;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -67,6 +70,10 @@ public class RefIdServiceTest {
         pid = TestHelper.makePid();
         pidString = pid.getId();
         when(agent.getPrincipals()).thenReturn(accessGroupSet);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(statement);
+        when(agent.getUsername()).thenReturn(username);
     }
 
     @AfterEach
@@ -96,14 +103,8 @@ public class RefIdServiceTest {
 
     @Test
     public void testUpdateCurrentRefIdWithIdenticalRefId() {
-        var workObject = mock(WorkObject.class);
         var request = buildRequest(REF_ID);
-        var username = "number one user";
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-        when(workObject.getResource()).thenReturn(resource);
-        when(resource.getProperty(any())).thenReturn(statement);
         when(statement.getString()).thenReturn(REF_ID);
-        when(agent.getUsername()).thenReturn(username);
 
         service.updateRefId(request);
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
@@ -114,13 +115,7 @@ public class RefIdServiceTest {
 
     @Test
     public void testUpdateCurrentRefIdWithBlankRefId() {
-        var workObject = mock(WorkObject.class);
         var request = buildRequest("");
-        var username = "number one user";
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-        when(agent.getUsername()).thenReturn(username);
-        when(workObject.getResource()).thenReturn(resource);
-        when(resource.getProperty(any())).thenReturn(statement);
         when(statement.getString()).thenReturn("REF ID HERE");
 
         service.updateRefId(request);
@@ -128,14 +123,11 @@ public class RefIdServiceTest {
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
+
     @Test
     public void testUpdateNonExistentRefIdWithBlankRefId() {
-        var workObject = mock(WorkObject.class);
         var request = buildRequest("");
         var username = "number one user";
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-        when(agent.getUsername()).thenReturn(username);
-        when(workObject.getResource()).thenReturn(resource);
         when(resource.getProperty(any())).thenReturn(null);
 
         service.updateRefId(request);
@@ -147,12 +139,7 @@ public class RefIdServiceTest {
 
     @Test
     public void testUpdateRefIdSuccess() {
-        var workObject = mock(WorkObject.class);
         var request = buildRequest(REF_ID);
-        var username = "number one user";
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-        when(agent.getUsername()).thenReturn(username);
-        when(workObject.getResource()).thenReturn(resource);
         when(resource.getProperty(any())).thenReturn(null);
 
         service.updateRefId(request);
