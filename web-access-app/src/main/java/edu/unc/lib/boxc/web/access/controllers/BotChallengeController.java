@@ -60,7 +60,7 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode turnstileJson = mapper.readTree(turnstileResponse.body());
-            var validationSucceeded = turnstileJson.get("validationSucceeded").asBoolean();
+            var validationSucceeded = turnstileJson.get("success").asBoolean();
             if (validationSucceeded) {
                 session.setAttribute("turnstileTokenExpiresIn", expiresIn());
             }
@@ -80,8 +80,12 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     }
 
     private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (ipAddress.equals("127.0.0.1") || ipAddress.equals("0:0:0:0:0:0:0:1")) {
+        if (ipAddress.equals("127.0.0.1")) {
             return true;
+        }
+
+        if (ipAddress.equals("0:0:0:0:0:0:0:1")) {
+            return false;
         }
 
         var uncAddresses = List.of(
