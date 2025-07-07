@@ -12,6 +12,9 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -19,6 +22,7 @@ import java.util.Objects;
  * Service which assigns an ArchivesSpace Ref ID to a work
  */
 public class RefIdService {
+    private static final Logger log = LoggerFactory.getLogger(RefIdService.class);
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
@@ -29,6 +33,7 @@ public class RefIdService {
         var workPid = PIDs.get(pidString);
         var agent = request.getAgent();
         var agentPrincipals = agent.getPrincipals();
+        log.debug("Updating Ref ID for {}", pidString);
         aclService.assertHasAccess(
                 "User does not have permission to edit Aspace properties",
                 workPid, agentPrincipals, Permission.editAspaceProperties);
@@ -42,19 +47,21 @@ public class RefIdService {
         var currentRefId = getCurrentRefId(repoObj);
         var requestRefId = request.getRefId();
         // if there is no current ID and the request ID is blank, do nothing
-        if (currentRefId.isBlank() && requestRefId.isBlank()) {
+        if (StringUtils.isBlank(currentRefId) && StringUtils.isBlank(requestRefId)) {
+            log.debug("The current Ref ID is blank and the requested Ref ID is blank");
             return;
         }
         // if we're just updating to the same ID, do nothing
         if (Objects.equals(currentRefId, requestRefId)) {
+            log.debug("The current Ref ID is {} and the requested Ref ID is the same", currentRefId);
             return;
         }
         // if there is a current ID and the request ID is blank, delete the property
         if (requestRefId.isBlank()) {
             repositoryObjectFactory.deleteProperty(repoObj, CdrAspace.refId);
+        } else {
+            repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
         }
-
-        repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
         indexingMessageSender.sendIndexingOperation(agent.getUsername(), workPid, IndexingActionType.UPDATE_ASPACE_REF_ID);
     }
 

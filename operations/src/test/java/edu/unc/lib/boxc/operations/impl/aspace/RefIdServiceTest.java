@@ -120,6 +120,8 @@ public class RefIdServiceTest {
 
         service.updateRefId(request);
         verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
