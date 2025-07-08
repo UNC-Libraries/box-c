@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-     $Id: schema.xml 1818 2011-02-15 18:34:17Z bbpennel $
-     $URL: https://vcs.lib.unc.edu/cdr/cdr-access/trunk/solr_config/schema.xml $
      Solr schema for the CDR public UI.  Includes metadata for direct display to the user interface,
      as well as search indexes, facets and basic access control metadata.
      See full field documentation here:

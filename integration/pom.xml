@@ -10,6 +10,10 @@
     </parent>
     <packaging>jar</packaging>
     <name>Box-c Integration tests</name>
+    <properties>
+        <fcrepo.dynamic.test.port>48085</fcrepo.dynamic.test.port>
+    </properties>
+
     <build>
         <testResources>
             <testResource>
@@ -47,7 +51,7 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>9.4.19.v20190610</version>
+                <version>11.0.25</version>
                 <configuration>
                     <supportedPackagings>jar</supportedPackagings>
                     <systemProperties>
@@ -64,11 +68,24 @@
                             <name>fcrepo.baseUri</name>
                             <value>http://localhost:48085/fcrepo/rest</value>
                         </systemProperty>
+                        <systemProperty>
+                            <name>logback.configurationFile</name>
+                            <value>file:${project.build.directory}/logback-jetty.xml</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.eclipse.jetty.LEVEL</name>
+                            <value>DEBUG</value>
+                        </systemProperty>
                     </systemProperties>
-                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <jettyXmls>
+                        <jettyXml>${project.build.directory}/test-classes/jetty-test.xml</jettyXml>
+                    </jettyXmls>
+                    <webApp>
+                        <contextPath>/access</contextPath>
+                        <war>${project.build.directory}/web-access-app.war</war>
+                    </webApp>
                     <stopKey>STOP</stopKey>
                     <stopPort>49000</stopPort>
-                    <daemon>true</daemon>
                 </configuration>
                 <executions>
                     <execution>
@@ -78,16 +95,6 @@
                             <goal>stop</goal>
                             <goal>start</goal>
                         </goals>
-                        <configuration>
-                            <jettyXml>${project.build.directory}/test-classes/jetty-test.xml</jettyXml>
-                            <scanIntervalSeconds>0</scanIntervalSeconds>
-                            <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                                    <war>${project.build.directory}/web-access-app.war</war>
-                                    <contextPath>/access</contextPath>
-                                </contextHandler>
-                            </contextHandlers>
-                        </configuration>
                     </execution>
 
                     <execution>

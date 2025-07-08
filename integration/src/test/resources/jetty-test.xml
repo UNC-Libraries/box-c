@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_3.dtd">
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_10_0.dtd">
 <!-- =============================================================== -->
 <!-- Documentation of this file format can be found at:              -->
 <!-- http://wiki.eclipse.org/Jetty/Reference/jetty.xml_syntax        -->
@@ -29,7 +29,7 @@
             <Item>
                 <New class="org.eclipse.jetty.server.ServerConnector">
                     <Arg><Ref refid="Server"/></Arg>
-                    <Set name="port" type="int"><SystemProperty name="boxc.dynamic.test.port" default="48080"/></Set>
+                    <Set name="port"><Property name="boxc.dynamic.test.port" default="48080"/></Set>
                     <Set name="idleTimeout">60000</Set>
                 </New>
             </Item>

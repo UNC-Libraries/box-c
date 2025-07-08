@@ -7,7 +7,7 @@ import java.net.URI;
 import java.util.List;
 
 import jakarta.annotation.PreDestroy;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.commons.io.IOUtils;
