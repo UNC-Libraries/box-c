@@ -62,8 +62,8 @@
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         <jp24u.version>1.0-SNAPSHOT</jp24u.version>
         
-        <spring.version>5.3.39</spring.version>
-        <spring.ws.version>3.1.8</spring.ws.version>
+        <spring.version>6.2.8</spring.version>
+        <spring.ws.version>4.1.0</spring.ws.version>
         
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
         <mockito.version>5.15.2</mockito.version>
@@ -122,6 +122,7 @@
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
         <camel.version>3.22.3</camel.version>
         <tika.version>3.1.0</tika.version>
+        <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
         
         <maven.failsafe.version>3.2.5</maven.failsafe.version>
         <maven.surefire.version>3.2.5</maven.surefire.version>
@@ -555,6 +556,11 @@
                 <version>${jai-imageio-jpeg2000.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
+                <version>${jakarta.jms-api.version}</version>
+            </dependency>
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>

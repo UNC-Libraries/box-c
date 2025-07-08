@@ -1,40 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
-import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
-import edu.unc.lib.boxc.web.services.utils.EmbeddedActiveMQBroker;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MvcResult;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import org.springframework.http.MediaType;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.getMapFromResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,9 +7,40 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
+import jakarta.jms.TextMessage;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -52,60 +48,50 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  */
 @ContextConfiguration("/export-xml-it-servlet.xml")
-public class ExportXMLIT extends AbstractAPIIT {
-    private static String QUEUE_NAME = "activemq:queue:repository.exportxml";
+public class ExportXMLTest extends AbstractAPIIT {
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
+    @Mock
     private JmsTemplate jmsTemplate;
-    private Connection conn;
-    private Session session;
-    private MessageConsumer consumer;
+    @Mock
+    private jakarta.jms.Session mockSession;
+    @Mock
+    private TextMessage mockTextMessage;
+
     private AutoCloseable closeable;
     @Autowired
     private ExportXMLRequestService exportXmlRequestService;
     private PIDMinter pidMinter;
     private List<ExportXMLRequest> receivedMessages;
 
-    @RegisterExtension
-    final public EmbeddedActiveMQBroker broker = new EmbeddedActiveMQBroker();
-
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
         pidMinter = new RepositoryPIDMinter();
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                "vm://embedded-broker?create=false&waitForStart=5000");
-        jmsTemplate = new JmsTemplate();
-        jmsTemplate.setConnectionFactory(connectionFactory);
-        jmsTemplate.setPubSubDomain(false);
-        jmsTemplate.setDefaultDestinationName(QUEUE_NAME);
-        setField(exportXmlRequestService, "jmsTemplate", jmsTemplate);
-        conn = connectionFactory.createConnection();
-        session = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-        Queue queue = session.createQueue(QUEUE_NAME);
-        consumer = session.createConsumer(queue);
         receivedMessages = new ArrayList<>();
-        consumer.setMessageListener(new MessageListener() {
-            @Override
-            public void onMessage(Message message) {
-                try {
-                    String text = ((TextMessage) message).getText();
-                    receivedMessages.add(exportXmlRequestService.deserializeRequest(text));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
+
+        // When createTextMessage is called, capture the message content
+        when(mockSession.createTextMessage(anyString())).thenAnswer(invocation -> {
+            String messageText = invocation.getArgument(0);
+            when(mockTextMessage.getText()).thenReturn(messageText);
+            // Store the deserialized message for test assertions
+            receivedMessages.add(exportXmlRequestService.deserializeRequest(messageText));
+            return mockTextMessage;
         });
-        conn.start();
+
+        // Configure mock JmsTemplate to capture messages
+        doAnswer(invocation -> {
+            var messageCreator = invocation.getArgument(0, MessageCreator.class);
+            return messageCreator.createMessage(mockSession);
+        }).when(jmsTemplate).send(any(MessageCreator.class));
+
+        setField(exportXmlRequestService, "jmsTemplate", jmsTemplate);
     }
 
     @AfterEach
     public void shutdown() throws Exception {
         closeable.close();
-        consumer.close();
-        session.close();
-        conn.stop();
     }
 
     @Test
@@ -124,7 +110,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
         Awaitility.await("Number of messages was " + receivedMessages.size())
                 .atMost(Duration.ofSeconds(2)).until(() -> receivedMessages.size() == 1);
-        ExportXMLRequest sentReq = receivedMessages.get(0);
+        ExportXMLRequest sentReq = receivedMessages.getFirst();
         assertEquals(USERNAME, sentReq.getAgent().getUsername());
         assertTrue(sentReq.getAgent().getPrincipals().containsAll(GROUPS));
         assertEquals(exports, sentReq.getPids());
