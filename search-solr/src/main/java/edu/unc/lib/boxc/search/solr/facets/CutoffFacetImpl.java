@@ -105,7 +105,7 @@ public class CutoffFacetImpl extends AbstractHierarchicalFacet implements Cutoff
         String[] facetParts = facetValue.split("!");
         if (facetParts.length >= 2) {
             try {
-                this.cutoff = Integer.getInteger(facetParts[1]);
+                this.cutoff = Integer.valueOf(facetParts[1]);
             } catch (NumberFormatException e) {
                 // Was not a cut off value, ignore
             }
@@ -113,7 +113,7 @@ public class CutoffFacetImpl extends AbstractHierarchicalFacet implements Cutoff
 
         if (facetParts.length >= 3) {
             try {
-                this.facetCutoff = Integer.getInteger(facetParts[2]);
+                this.facetCutoff = Integer.valueOf(facetParts[2]);
             } catch (NumberFormatException e) {
                 // Was not a cut off value, ignore
             }

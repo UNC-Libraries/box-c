@@ -238,7 +238,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      */
     protected boolean isFileOnlyMode() {
         if (fileOnlyMode == null) {
-            fileOnlyMode = Boolean.getBoolean(getDepositField(DepositField.filesOnlyMode));
+            fileOnlyMode = Boolean.valueOf(getDepositField(DepositField.filesOnlyMode));
         }
         return fileOnlyMode;
     }
