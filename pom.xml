@@ -125,6 +125,7 @@
         
         <maven.failsafe.version>3.2.5</maven.failsafe.version>
         <maven.surefire.version>3.2.5</maven.surefire.version>
+        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <compiler.plugin.version>3.14.0</compiler.plugin.version>
         <maven-checkstyle-plugin.version>3.2.1</maven-checkstyle-plugin.version>
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
@@ -198,10 +199,19 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler.plugin.version}</version>
                 <configuration>
                     <release>${project.java.source}</release>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
@@ -874,12 +884,6 @@
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>${jakarta.servlet.api.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${jakarta.servlet.api.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
