@@ -199,7 +199,7 @@ public class SearchSettings extends AbstractSettings {
                 .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getDisplayLabel));
 
         // Access field names
-        this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "false")));
+        this.setAllowPatronAccess(Boolean.getBoolean(properties.getProperty("search.access.allowPatrons", "false")));
 
         // Resource Types, stored here temporarily for usage in jsp
         resourceTypeFile = ResourceType.File.name();

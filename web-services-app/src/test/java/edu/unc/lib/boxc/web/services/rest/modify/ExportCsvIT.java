@@ -823,7 +823,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             if (fileSize == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             } else {
-                assertEquals(fileSize, new Long(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
+                assertEquals(fileSize, Long.getLong(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             }
             if (accessSurrogate == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER)));
@@ -833,7 +833,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             if (numChildren == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             } else {
-                assertEquals(numChildren, new Integer(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
+                assertEquals(numChildren, Integer.getInteger(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             }
 
             String expectedDescribed = described ? CONTENT_DESCRIBED : CONTENT_NOT_DESCRIBED;
