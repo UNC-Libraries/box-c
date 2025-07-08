@@ -47,7 +47,7 @@ public class RefIdService {
         var currentRefId = getCurrentRefId(repoObj);
         var requestRefId = request.getRefId();
         // if currentRefId is null (does not exist) and the request ID is blank, do nothing
-        if (Objects.equals(null,currentRefId) && StringUtils.isBlank(requestRefId)) {
+        if (currentRefId == null && StringUtils.isBlank(requestRefId)) {
             log.debug("The current Ref ID is null and the requested Ref ID is blank");
             return;
         }
