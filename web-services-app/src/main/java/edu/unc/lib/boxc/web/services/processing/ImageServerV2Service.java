@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;

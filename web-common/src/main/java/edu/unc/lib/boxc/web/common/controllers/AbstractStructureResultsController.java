@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
