@@ -46,18 +46,19 @@ public class RefIdService {
 
         var currentRefId = getCurrentRefId(repoObj);
         var requestRefId = request.getRefId();
-        // if there is no current ID and the request ID is blank, do nothing
-        if (StringUtils.isEmpty(currentRefId) && StringUtils.isEmpty(requestRefId)) {
-            log.debug("The current Ref ID is empty and the requested Ref ID is empty");
+        // if currentRefId is null (does not exist) and the request ID is blank, do nothing
+        if (Objects.equals(null,currentRefId) && StringUtils.isBlank(requestRefId)) {
+            log.debug("The current Ref ID is null and the requested Ref ID is blank");
             return;
         }
-        // if we're just updating to the same ID, do nothing
-        if (Objects.equals(currentRefId, requestRefId)) {
-            log.debug("The current Ref ID is {} and the requested Ref ID is the same", currentRefId);
+        // if we're just updating to the same existing ID, do nothing
+        if (!StringUtils.isBlank(currentRefId) && Objects.equals(currentRefId, requestRefId)) {
+            log.debug("The current Ref ID exists: {} and the requested Ref ID is the same", currentRefId);
             return;
         }
-        // if there is a current ID and the request ID is blank, delete the property
-        if (StringUtils.isEmpty(requestRefId)) {
+        // now, if the request ID is blank delete the property
+        if (StringUtils.isBlank(requestRefId)) {
+            log.debug("The requested Ref ID is blank, deleting the property");
             repositoryObjectFactory.deleteProperty(repoObj, CdrAspace.refId);
         } else {
             repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
@@ -68,7 +69,8 @@ public class RefIdService {
     private String getCurrentRefId(RepositoryObject repositoryObject) {
         var property = repositoryObject.getResource().getProperty(CdrAspace.refId);
         if (property == null) {
-            return "";
+            log.debug("property is null");
+            return null;
         }
         return property.getString();
     }

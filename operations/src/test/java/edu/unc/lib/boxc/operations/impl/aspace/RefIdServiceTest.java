@@ -126,6 +126,20 @@ public class RefIdServiceTest {
                 eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
 
+
+    @Test
+    public void testUpdateEmptyStringRefIdWithBlankRefId() {
+        var request = buildRequest("");
+        when(statement.getString()).thenReturn("");
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(""));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
     @Test
     public void testUpdateNonExistentRefIdWithBlankRefId() {
         var request = buildRequest("");
