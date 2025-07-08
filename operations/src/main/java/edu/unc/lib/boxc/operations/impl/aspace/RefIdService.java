@@ -47,8 +47,8 @@ public class RefIdService {
         var currentRefId = getCurrentRefId(repoObj);
         var requestRefId = request.getRefId();
         // if there is no current ID and the request ID is blank, do nothing
-        if (StringUtils.isBlank(currentRefId) && StringUtils.isBlank(requestRefId)) {
-            log.debug("The current Ref ID is blank and the requested Ref ID is blank");
+        if (StringUtils.isEmpty(currentRefId) && StringUtils.isEmpty(requestRefId)) {
+            log.debug("The current Ref ID is empty and the requested Ref ID is empty");
             return;
         }
         // if we're just updating to the same ID, do nothing
@@ -57,7 +57,7 @@ public class RefIdService {
             return;
         }
         // if there is a current ID and the request ID is blank, delete the property
-        if (requestRefId.isBlank()) {
+        if (StringUtils.isEmpty(requestRefId)) {
             repositoryObjectFactory.deleteProperty(repoObj, CdrAspace.refId);
         } else {
             repositoryObjectFactory.createExclusiveRelationship(repoObj, CdrAspace.refId, request.getRefId());
