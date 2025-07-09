@@ -11,6 +11,7 @@
     <packaging>jar</packaging>
     <name>Box-c Integration tests</name>
     <properties>
+        <jetty.version>12.0.23</jetty.version>
         <fcrepo.dynamic.test.port>48085</fcrepo.dynamic.test.port>
     </properties>
 
@@ -29,7 +30,7 @@
                 <executions>
                     <execution>
                         <id>copy</id>
-                        <phase>package</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -49,37 +50,19 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.25</version>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
                 <configuration>
                     <supportedPackagings>jar</supportedPackagings>
+                    <httpConnector>
+                        <port>48080</port>
+                    </httpConnector>
                     <systemProperties>
-                        <force>true</force>
-                        <systemProperty>
-                            <name>server.properties.uri</name>
-                            <value>file:${project.build.directory}/test-classes/access-app.properties</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>acl.properties.uri</name>
-                            <value>file:${project.build.directory}/test-classes/patronPrincipalConfig.json</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>fcrepo.baseUri</name>
-                            <value>http://localhost:48085/fcrepo/rest</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>logback.configurationFile</name>
-                            <value>file:${project.build.directory}/logback-jetty.xml</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.eclipse.jetty.LEVEL</name>
-                            <value>DEBUG</value>
-                        </systemProperty>
+                        <server.properties.uri>file:${project.build.directory}/test-classes/access-app.properties</server.properties.uri>
+                        <acl.properties.uri>file:${project.build.directory}/test-classes/patronPrincipalConfig.json</acl.properties.uri>
+                        <fcrepo.baseUri>http://localhost:48085/fcrepo/rest</fcrepo.baseUri>
                     </systemProperties>
-                    <jettyXmls>
-                        <jettyXml>${project.build.directory}/test-classes/jetty-test.xml</jettyXml>
-                    </jettyXmls>
                     <webApp>
                         <contextPath>/access</contextPath>
                         <war>${project.build.directory}/web-access-app.war</war>
@@ -93,7 +76,7 @@
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>stop</goal>
-                            <goal>start</goal>
+                            <goal>start-war</goal>
                         </goals>
                     </execution>
 
@@ -202,6 +185,27 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-webapp</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-deploy</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
     </dependencies>
 </project>

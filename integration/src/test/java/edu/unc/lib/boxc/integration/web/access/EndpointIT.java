@@ -110,7 +110,6 @@ public class EndpointIT {
     }
 
     public JsonNode getResponseAsJson(CloseableHttpResponse response) throws IOException {
-        System.out.println("Response was: " + IOUtils.toString(response.getEntity().getContent()));
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(response.getEntity().getContent());
     }
