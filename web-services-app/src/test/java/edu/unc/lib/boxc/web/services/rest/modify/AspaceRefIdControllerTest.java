@@ -212,7 +212,7 @@ public class AspaceRefIdControllerTest {
         createExportCsv(true);
         when(exporter.export(any(), any())).thenReturn(csvExportPath);
 
-        MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+        MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds?ids=" + WORK1_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
