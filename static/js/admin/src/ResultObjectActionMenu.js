@@ -494,7 +494,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "exportBulkRefIds" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : `api/edit/aspace/exportRefIds/${metadata.id}`,
+							url : "api/edit/aspace/exportRefIds?ids=" + metadata.id,
 							application: "services"
 						});
 						break;

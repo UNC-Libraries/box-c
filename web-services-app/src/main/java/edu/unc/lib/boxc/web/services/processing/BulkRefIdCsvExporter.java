@@ -50,20 +50,25 @@ public class BulkRefIdCsvExporter {
     private SolrSearchService solrSearchService;
     private AccessControlService aclService;
 
-    public Path export(PID pid, AgentPrincipals agent) throws IOException {
-        aclService.assertHasAccess("Insufficient permissions to export Aspace Ref IDs for " + pid.getId(),
-                pid, agent.getPrincipals(), Permission.editAspaceProperties);
+    public Path export(List<PID> pids, AgentPrincipals agent) throws IOException {
+        // check permissions for all pids first
+        for (PID pid : pids) {
+            aclService.assertHasAccess("Insufficient permissions to export Aspace Ref IDs for " + pid.getId(),
+                    pid, agent.getPrincipals(), Permission.editAspaceProperties);
+        }
 
-        var csvPath = Files.createTempFile("bulk_ref_ids_" + pid.getId(), ".csv");
+        var csvPath = Files.createTempFile("bulk_ref_ids", ".csv");
         var completedExport = false;
 
         try (var csvPrinter = createNewCsvPrinter(EXPORT_CSV_HEADERS, csvPath)) {
-            var parentRecord = getRecord(pid, agent);
-            if (Objects.equals(parentRecord.getResourceType(), Work.name())) {
-                printRecord(csvPrinter, parentRecord);
-            } else {
-                var childRecords = getRecords(parentRecord, agent);
-                printRecords(csvPrinter, childRecords);
+            for (PID pid : pids) {
+                var parentRecord = getRecord(pid, agent);
+                if (Objects.equals(parentRecord.getResourceType(), Work.name())) {
+                    printRecord(csvPrinter, parentRecord);
+                } else {
+                    var childRecords = getRecords(parentRecord, agent);
+                    printRecords(csvPrinter, childRecords);
+                }
             }
             completedExport = true;
         } catch (AccessRestrictionException | InvalidOperationForObjectType e) {

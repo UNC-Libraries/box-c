@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.getPidsFromParamString;
 import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
@@ -65,7 +66,7 @@ public class MemberOrderController {
         Path csvPath = null;
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         try {
-            var pids = Arrays.stream(ids.split(",")).map(String::trim).map(PIDs::get).collect(Collectors.toList());
+            var pids = getPidsFromParamString(ids);
             csvPath = memberOrderCsvExporter.export(pids, agent);
             String filename = getExportFilename();
             response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
