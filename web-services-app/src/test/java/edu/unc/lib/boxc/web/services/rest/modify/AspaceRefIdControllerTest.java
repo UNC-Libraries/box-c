@@ -179,7 +179,8 @@ public class AspaceRefIdControllerTest {
     public void importRefIdsSuccessWithExportCsv() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put(WORK1_ID, REF1_ID);
-        createExportCsv(false);
+        map.put(WORK2_ID, "");
+        createExportCsv();
         var file = mockCsvRequestBody(csvExportPath);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/aspace/updateRefIds/")
@@ -209,10 +210,10 @@ public class AspaceRefIdControllerTest {
 
     @Test
     public void exportRefIdsSuccess() throws Exception {
-        createExportCsv(true);
+        createExportCsv();
         when(exporter.export(any(), any())).thenReturn(csvExportPath);
 
-        MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds?ids=" + WORK1_ID))
+        MvcResult result = mockMvc.perform(get("/edit/aspace/exportRefIds?ids=" + WORK1_ID + "," + WORK2_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -231,14 +232,13 @@ public class AspaceRefIdControllerTest {
         assertEquals("", csvRecord2.get(REF_ID_HEADER));
         assertEquals("", csvRecord2.get(HOOK_ID_HEADER));
         assertEquals("No Ref ID here", csvRecord2.get(TITLE_HEADER));
-
     }
 
     @Test
     public void exportRefIdsNoPermission() throws Exception {
         doThrow(new AccessRestrictionException()).when(exporter).export(any(), any());
 
-        mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+        mockMvc.perform(get("/edit/aspace/exportRefIds?ids=" + WORK1_ID))
                 .andExpect(status().isForbidden())
                 .andReturn();
     }
@@ -247,7 +247,7 @@ public class AspaceRefIdControllerTest {
     public void exportRefIdsError() throws Exception {
         doThrow(new RepositoryException("Failed export")).when(exporter).export(any(), any());
 
-        mockMvc.perform(get("/edit/aspace/exportRefIds/{pid}", WORK1_ID))
+        mockMvc.perform(get("/edit/aspace/exportRefIds?ids=" + WORK1_ID))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
     }
@@ -259,14 +259,10 @@ public class AspaceRefIdControllerTest {
         }
     }
 
-    private void createExportCsv(boolean forExportOnly) throws IOException {
+    private void createExportCsv() throws IOException {
         try (var csvPrinter = createCsvPrinter(EXPORT_CSV_HEADERS, csvExportPath)) {
             csvPrinter.printRecord(WORK1_ID, REF1_ID, HOOK_ID, TITLE);
-            if (forExportOnly) {
-                // TODO BXC-4982
-                // this is temporary only until we account for imports not updating to blank Ref IDs
-                csvPrinter.printRecord(WORK2_ID, "", "", "No Ref ID here");
-            }
+            csvPrinter.printRecord(WORK2_ID, "", "", "No Ref ID here");
         }
     }
 
