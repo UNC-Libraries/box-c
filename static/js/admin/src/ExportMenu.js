@@ -109,7 +109,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                 case "exportRefIds" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
-                                        url : `api/edit/aspace/exportRefIds/${self.getTargets()[0].metadata.id}`,
+                                        url : `api/edit/aspace/exportRefIds?ids=${self.getTargetIdsAsString()}`,
                                         application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
