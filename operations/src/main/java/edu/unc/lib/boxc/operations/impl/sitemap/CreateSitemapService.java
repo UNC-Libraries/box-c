@@ -38,7 +38,8 @@ public class CreateSitemapService {
     private AgentPrincipals agentPrincipals;
     private String baseUrl;
 
-    @Scheduled(cron = "${sitemap.cron.schedule}")
+   // @Scheduled(cron = "${sitemap.cron.schedule}")
+    @Scheduled(cron = "0 * * * * *")
     public void generateSitemap() throws MalformedURLException {
         int pagePrefix = 0;
         ArrayList<String> pages = new ArrayList<>();
