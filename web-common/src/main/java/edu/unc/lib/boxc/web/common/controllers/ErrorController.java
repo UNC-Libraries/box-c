@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.SocketException;
 
 /**
@@ -30,13 +30,13 @@ public class ErrorController {
 
     @RequestMapping("/exception")
     public ResponseEntity<Object> handleException(HttpServletRequest request) {
-        Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
+        Throwable throwable = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
 
         if (throwable.getCause() instanceof SocketException || throwable instanceof IllegalStateException) {
             LOG.debug("Connection aborted for {}",
-                    request.getAttribute("javax.servlet.forward.request_uri"), throwable);
+                    request.getAttribute("jakarta.servlet.forward.request_uri"), throwable);
         } else {
-            LOG.error("An uncaught exception occurred at " + request.getAttribute("javax.servlet.forward.request_uri"),
+            LOG.error("An uncaught exception occurred at " + request.getAttribute("jakarta.servlet.forward.request_uri"),
                     throwable);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

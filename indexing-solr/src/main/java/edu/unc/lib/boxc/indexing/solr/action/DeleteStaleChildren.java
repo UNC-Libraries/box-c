@@ -29,7 +29,7 @@ public class DeleteStaleChildren extends AbstractIndexingAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        Assert.notEmpty(updateRequest.getParams());
+        Assert.notEmpty(updateRequest.getParams(), "Request parameters cannot be empty");
 
         Map<String, String> params = updateRequest.getParams();
         String staleTimestamp = params.get(STALE_TIMESTAMP);

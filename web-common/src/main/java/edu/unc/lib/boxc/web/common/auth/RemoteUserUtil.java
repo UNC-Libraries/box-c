@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.web.common.auth;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Utility for retrieving the remote user

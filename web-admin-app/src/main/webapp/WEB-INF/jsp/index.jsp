@@ -5,11 +5,11 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setTimeZone value="GMT" scope="session"/>
 <c:choose>
-	<c:when test="${empty requestScope['javax.servlet.forward.request_uri']}">
+	<c:when test="${empty requestScope['jakarta.servlet.forward.request_uri']}">
 		<c:set var="currentUrl" value="${pageContext.request.requestURL}" />
 	</c:when>
 	<c:otherwise>
-		<c:set var="currentUrl" value="${requestScope['javax.servlet.forward.request_uri']}" />
+		<c:set var="currentUrl" value="${requestScope['jakarta.servlet.forward.request_uri']}" />
 	</c:otherwise>
 </c:choose>
 <c:if test="${not empty pageContext.request.queryString}">

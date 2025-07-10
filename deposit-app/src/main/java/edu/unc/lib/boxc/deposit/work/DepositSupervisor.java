@@ -16,8 +16,8 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 import edu.unc.lib.boxc.deposit.normalize.WorkFormToBagJob;
 import org.apache.jena.rdf.model.Bag;

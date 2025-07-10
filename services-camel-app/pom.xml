@@ -91,12 +91,6 @@
         <artifactId>fcrepo-camel</artifactId>
         <version>${fcrepo-camel.version}</version>
     </dependency>
-
-    <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-http</artifactId>
-        <version>${camel.version}</version>
-    </dependency>
     
     <dependency>
         <groupId>org.fcrepo.client</groupId>
@@ -191,9 +185,9 @@
     </dependency>
 
     <dependency>
-        <groupId>javax.annotation</groupId>
-        <artifactId>javax.annotation-api</artifactId>
-        <version>${javax.annotation.version}</version>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
+        <version>${jakarta.annotation.version}</version>
     </dependency>
 
     <dependency>
@@ -293,14 +287,10 @@
         <artifactId>activemq-protobuf</artifactId>
         <scope>test</scope>
     </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-    </dependency>
     </dependencies>
 
     <build>
-        <finalName>${artifactId}</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
