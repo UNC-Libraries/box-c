@@ -6,7 +6,6 @@ import com.redfin.sitemapgenerator.WebSitemapUrl;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
@@ -41,12 +40,11 @@ public class CreateSitemapService {
 
     @Scheduled(cron = "${sitemap.cron.schedule}")
     public void generateSitemap() throws MalformedURLException {
-        LOG.warn("Generating DCR sitemap");
-        ArrayList<String> pages = new ArrayList<>();
-        int startRow = 0;
         int pagePrefix = 0;
-        var works = getRecords(startRow);
-        pages.add(buildSitemapPage(works.getResultList(), pagePrefix));;
+        ArrayList<String> pages = new ArrayList<>();
+
+        var works = getRecords(0);
+        pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
 
         if (works.getResultCount() > DEFAULT_PAGE_SIZE) {
             for (var i = DEFAULT_PAGE_SIZE; i < works.getResultCount(); i+= DEFAULT_PAGE_SIZE) {
