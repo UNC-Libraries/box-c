@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +47,11 @@ public class EditTitleController {
 
         try {
             service.editTitle(AgentPrincipalsImpl.createFromThread(), pid, title);
+        } catch (StateUnmodifiedException e) {
+            log.info("No changes were made to {}", pid.getRepositoryPath());
+            result.put("status", "unchanged");
         } catch (Exception e) {
             result.put("error", e.getMessage());
-
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {

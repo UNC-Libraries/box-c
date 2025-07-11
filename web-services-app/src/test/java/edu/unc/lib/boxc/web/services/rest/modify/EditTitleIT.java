@@ -135,6 +135,31 @@ public class EditTitleIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
+    @Test
+    public void testStateUnmodifiedFailureReturns200Status() throws Exception {
+        PID pid = makePid();
+        repositoryObjectFactory.createFolderObject(pid, null);
+
+        String title = "folder_title";
+        // submit a title change
+        mvc.perform(put("/edit/title/" + pid.getUUID())
+                        .param("title", title))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // submit same title change again, state should be unmodified
+        MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
+                        .param("title", title))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        assertEquals(pid.getUUID(), respMap.get("pid"));
+        assertEquals("editTitle", respMap.get("action"));
+        assertEquals("unchanged", respMap.get("status"));
+    }
+
     private Document getUpdatedDescriptionDocument(BinaryObject binary) throws IOException, JDOMException {
         SAXBuilder sb = createSAXBuilder();
         return sb.build(binary.getBinaryStream());
