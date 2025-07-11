@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -47,6 +48,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EditTitleIT extends AbstractAPIIT {
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
+    @Autowired(required = false)
+    private VersionedDatastreamService versionedDatastreamService;
 
     @Test
     public void testCreateTitleWhereNoneExists() throws Exception {
@@ -132,6 +135,32 @@ public class EditTitleIT extends AbstractAPIIT {
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
+    }
+
+    @Test
+    public void testStateUnmodifiedFailureReturns200Status() throws Exception {
+        PID pid = makePid();
+        repositoryObjectFactory.createFolderObject(pid, null);
+
+        String title = "folder_title";
+        // submit a title change
+        mvc.perform(put("/edit/title/" + pid.getUUID())
+                        .param("title", title))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // submit same title change again, state should be unmodified
+        MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
+                        .param("title", title))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        assertEquals(pid.getUUID(), respMap.get("pid"));
+        assertEquals("editTitle", respMap.get("action"));
+        assertEquals("unchanged", respMap.get("status"));
         assertTrue(respMap.containsKey("error"));
     }
 
