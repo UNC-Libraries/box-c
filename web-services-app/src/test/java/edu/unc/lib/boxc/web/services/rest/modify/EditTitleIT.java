@@ -9,7 +9,6 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -48,8 +47,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EditTitleIT extends AbstractAPIIT {
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
-    @Autowired(required = false)
-    private VersionedDatastreamService versionedDatastreamService;
 
     @Test
     public void testCreateTitleWhereNoneExists() throws Exception {
