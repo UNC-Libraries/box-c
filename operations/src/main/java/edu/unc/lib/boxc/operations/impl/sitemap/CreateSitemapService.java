@@ -43,7 +43,7 @@ public class CreateSitemapService {
     @Scheduled(cron = "${sitemap.cron.schedule}")
     public void generateSitemap() {
         try {
-            int pagePrefix = 0;
+            int pagePrefix = 1;
             ArrayList<String> pages = new ArrayList<>();
             var works = getRecords(0);
             pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
@@ -89,7 +89,7 @@ public class CreateSitemapService {
         }
         wsg.write();
 
-        return sitemapBaseUrl + page_name + ".xml";
+        return sitemapBaseUrl + "sitemap/" + page_name + ".xml";
     }
 
     private SearchResultResponse getRecords(int startRow) {
