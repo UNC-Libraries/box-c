@@ -47,14 +47,13 @@ public class EditTitleController {
 
         try {
             service.editTitle(AgentPrincipalsImpl.createFromThread(), pid, title);
+        } catch (StateUnmodifiedException e) {
+            log.info("No changes were made to {}", pid.getRepositoryPath());
+            result.put("status", "unchanged");
         } catch (Exception e) {
             result.put("error", e.getMessage());
-
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-            } else if (e instanceof StateUnmodifiedException) {
-                log.info("No changes were made to {}", pid.getRepositoryPath());
-                result.put("status", "unchanged");
             } else {
                 log.error("Failed to edit title for {}", pid, e);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -158,7 +158,6 @@ public class EditTitleIT extends AbstractAPIIT {
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
         assertEquals("unchanged", respMap.get("status"));
-        assertTrue(respMap.containsKey("error"));
     }
 
     private Document getUpdatedDescriptionDocument(BinaryObject binary) throws IOException, JDOMException {
