@@ -37,35 +37,34 @@ public class CreateSitemapService {
     private SolrSearchService solrSearchService;
     private AgentPrincipals agentPrincipals;
     private String baseUrl;
+    private String sitemapBaseUrl;
+    private String sitemapBasePath;
 
-   // @Scheduled(cron = "${sitemap.cron.schedule}")
-    @Scheduled(cron = "0 * * * * *")
-    public void generateSitemap() throws MalformedURLException {
-        int pagePrefix = 0;
-        ArrayList<String> pages = new ArrayList<>();
+    @Scheduled(cron = "${sitemap.cron.schedule}")
+    public void generateSitemap() {
+        try {
+            int pagePrefix = 0;
+            ArrayList<String> pages = new ArrayList<>();
+            var works = getRecords(0);
+            pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
 
-        var works = getRecords(0);
-        pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
-
-        if (works.getResultCount() > DEFAULT_PAGE_SIZE) {
-            for (var i = DEFAULT_PAGE_SIZE; i < works.getResultCount(); i+= DEFAULT_PAGE_SIZE) {
-                pagePrefix += 1;
-                works = getRecords(i);
-                pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
+            if (works.getResultCount() > DEFAULT_PAGE_SIZE) {
+                for (var i = DEFAULT_PAGE_SIZE; i < works.getResultCount(); i+= DEFAULT_PAGE_SIZE) {
+                    pagePrefix += 1;
+                    works = getRecords(i);
+                    pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
+                }
             }
+
+            buildSitemapIndex(pages);
+        } catch (MalformedURLException e) {
+            LOG.warn("Unable to generate DCR sitemap {}", e.getMessage());
         }
-
-        buildSitemapIndex(pages);
-        LOG.warn("DCR sitemap generated");
-    }
-
-    private String baseSitemapUrl()  {
-        return baseUrl.replaceAll("/record/", "/static/sitemaps/");
     }
 
     private void buildSitemapIndex(ArrayList<String> pages) throws MalformedURLException {
-        SitemapIndexGenerator sitemapIndex = new SitemapIndexGenerator(baseSitemapUrl(),
-                new File("/htdocs/dcr/static/sitemaps/sitemap.xml"));
+        SitemapIndexGenerator sitemapIndex = new SitemapIndexGenerator(sitemapBaseUrl,
+                new File(sitemapBasePath + "/sitemap.xml"));
         for (String page : pages) {
             sitemapIndex.addUrl(page);
         }
@@ -82,7 +81,7 @@ public class CreateSitemapService {
     private String buildSitemapPage(List<ContentObjectRecord> works, int prefix) throws MalformedURLException {
         var page_name = "page_" + prefix;
 
-        var wsg = WebSitemapGenerator.builder(baseSitemapUrl(), new File("/htdocs/dcr/static/sitemaps"))
+        var wsg = WebSitemapGenerator.builder(sitemapBaseUrl, new File(sitemapBasePath))
                 .fileNamePrefix(page_name).build();
         for (ContentObjectRecord work: works) {
             var url = new WebSitemapUrl.Options(baseUrl + work.getId()).lastMod(work.getDateUpdated()).build();
@@ -90,7 +89,7 @@ public class CreateSitemapService {
         }
         wsg.write();
 
-        return baseSitemapUrl() + page_name + ".xml";
+        return sitemapBaseUrl + page_name + ".xml";
     }
 
     private SearchResultResponse getRecords(int startRow) {
@@ -117,5 +116,13 @@ public class CreateSitemapService {
 
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
+    }
+
+    public void setSitemapBaseUrl(String sitemapBaseUrl) {
+        this.sitemapBaseUrl = sitemapBaseUrl;
+    }
+
+    public void setSitemapBasePath(String sitemapBasePath) {
+        this.sitemapBasePath = sitemapBasePath;
     }
 }
