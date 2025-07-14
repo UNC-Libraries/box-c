@@ -20,13 +20,18 @@ import java.nio.file.Paths;
 
 @Controller
 public class SiteMapController  extends AbstractErrorHandlingSearchController {
+    private final String sitemapBasePath;
     private static final Logger LOG = LoggerFactory.getLogger(SiteMapController.class);
+
+    public SiteMapController(String sitemapBasePath) {
+        this.sitemapBasePath = sitemapBasePath;
+    }
 
     @GetMapping(value="sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     public @ResponseBody
     ResponseEntity<String> XMLSitemap(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String content = Files.readString(Paths.get("/opt/data/sitemaps/sitemap.xml"));
+            String content = Files.readString(Paths.get(sitemapBasePath + "/sitemap.xml"));
             return new ResponseEntity<>(content, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -38,7 +43,7 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
     ResponseEntity<String> XMLSitemapPage(@PathVariable("page") String page,
                                       HttpServletRequest request, HttpServletResponse response) {
         try {
-            String content = Files.readString(Paths.get("/opt/data/sitemaps/" + page));
+            String content = Files.readString(Paths.get(sitemapBasePath + page));
             return new ResponseEntity<>(content, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
