@@ -111,7 +111,8 @@
 
         <taglibs.version>1.2.5</taglibs.version>
         <jakarta.servlet.api.version>6.1.0</jakarta.servlet.api.version>
-        <jstl.version>3.0.2</jstl.version>
+        <jstl-api.version>3.0.2</jstl-api.version>
+        <jstl.version>3.0.1</jstl.version>
         <jsp-api.version>4.0.0</jsp-api.version>
 
         <jedis.version>3.10.0</jedis.version>
@@ -863,15 +864,16 @@
             
             <!-- Servlets -->
             <dependency>
-                <groupId>org.apache.taglibs</groupId>
-                <artifactId>taglibs-standard-impl</artifactId>
-                <version>${taglibs.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.servlet.jsp.jstl</groupId>
                 <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+                <version>${jstl-api.version}</version>
+                <!-- Must be at compile time for spring -->
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
                 <version>${jstl.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>jakarta.servlet.jsp</groupId>

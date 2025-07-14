@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ page import="edu.unc.lib.boxc.search.api.requests.SearchState" %>
 <%@ page import="edu.unc.lib.boxc.search.solr.responses.SearchResultResponse" %>
 <%@ page import="edu.unc.lib.boxc.search.solr.config.SearchSettings" %>
