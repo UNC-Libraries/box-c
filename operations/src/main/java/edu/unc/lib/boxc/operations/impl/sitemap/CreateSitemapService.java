@@ -41,6 +41,7 @@ public class CreateSitemapService {
     private String sitemapBasePath;
 
     @Scheduled(cron = "${sitemap.cron.schedule}")
+    @Scheduled(cron = "0 */15 * * * *")
     public void generateSitemap() {
         try {
             int pagePrefix = 1;
