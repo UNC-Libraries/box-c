@@ -31,7 +31,7 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
     public @ResponseBody
     ResponseEntity<String> XMLSitemap(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String content = Files.readString(Paths.get(sitemapBasePath + "/sitemap.xml"));
+            String content = Files.readString(Paths.get(sitemapBasePath + "sitemap.xml"));
             return new ResponseEntity<>(content, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

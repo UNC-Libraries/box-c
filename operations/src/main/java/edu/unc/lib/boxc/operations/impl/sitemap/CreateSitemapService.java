@@ -64,7 +64,7 @@ public class CreateSitemapService {
 
     private void buildSitemapIndex(ArrayList<String> pages) throws MalformedURLException {
         SitemapIndexGenerator sitemapIndex = new SitemapIndexGenerator(sitemapBaseUrl,
-                new File(sitemapBasePath + "/sitemap.xml"));
+                new File(sitemapBasePath + "sitemap.xml"));
         for (String page : pages) {
             sitemapIndex.addUrl(page);
         }
