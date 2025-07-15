@@ -46,7 +46,7 @@ public class TriplesReindexingRouter extends RouteBuilder {
             .routeId("TripleIndexingRoute")
             .bean(indexingMessageProcessor)
             .log(INFO, log, "Received triple reindexing update message: ${headers[CamelFcrepoUri]}")
-            .inOnly(reindexingStream + "?disableTimeToLive=true");
+            .to(ExchangePattern.InOnly, reindexingStream + "?disableTimeToLive=true");
 
         // Route which recursively steps through fedora objects and submits them for indexing
         from(reindexingStream + "?asyncConsumer=true")
@@ -75,7 +75,7 @@ public class TriplesReindexingRouter extends RouteBuilder {
                     }
                 })
             .filter(header(FCREPO_URI).isNotNull())
-            .inOnly(reindexingStream + "?disableTimeToLive=true");
+            .to(ExchangePattern.InOnly, reindexingStream + "?disableTimeToLive=true");
     }
 
     @PropertyInject("error.retryDelay:500")

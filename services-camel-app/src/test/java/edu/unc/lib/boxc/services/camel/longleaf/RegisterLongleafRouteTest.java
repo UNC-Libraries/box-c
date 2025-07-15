@@ -51,7 +51,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
 
-    @Produce("direct-vm:filter.longleaf")
+    @Produce("direct:filter.longleaf")
     private ProducerTemplate template;
 
     @EndpointInject("mock:direct:longleaf.dlq")

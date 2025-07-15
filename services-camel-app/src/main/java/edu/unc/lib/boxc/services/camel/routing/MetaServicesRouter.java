@@ -46,7 +46,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .startupOrder(9)
             .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
             .doTry()
-                .to("direct-vm:index.start")
+                .to("direct:index.start")
             .endDoTry()
             .doCatch(FcrepoOperationFailedException.class)
                 .process(new Processor() {
@@ -66,7 +66,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .end()
             .bean(cacheInvalidatingProcessor)
             .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
-                .wireTap("direct-vm:filter.longleaf")
+                .wireTap("direct:filter.longleaf")
             .end().end() // ending the filter and the wiretap
             .filter().method(FedoraIdFilters.class, "allowedForEnhancements")
             .wireTap("direct:process.enhancement");
