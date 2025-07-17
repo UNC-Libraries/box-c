@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -106,18 +109,30 @@ public class ExportCsvService {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
-    public void streamCsv(List<PID> pids, AgentPrincipals agent, OutputStream out) {
+    public Path exportCsv(List<PID> pids, AgentPrincipals agent) {
         AccessGroupSet accessGroups = agent.getPrincipals();
         validate(pids, accessGroups);
 
-        // Open the CSV
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        try (CSVPrinter printer = getPrinter(writer)) {
-            for (PID pid : pids) {
-                printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+        boolean successful = false;
+        Path csvFile = null;
+        try {
+            csvFile = Files.createTempFile("export-", ".csv");
+            try (var outputStream = Files.newOutputStream(csvFile);
+                 Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+                 CSVPrinter printer = getPrinter(writer);
+                ) {
+                for (PID pid : pids) {
+                    printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+                }
             }
+            successful = true;
+            return csvFile;
         } catch (IOException e) {
             throw new RepositoryException("Failed to stream CSV results: ", e);
+        } finally {
+            if (!successful && csvFile != null) {
+                FileUtils.deleteQuietly(csvFile.toFile());
+            }
         }
     }
 

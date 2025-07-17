@@ -22,7 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,7 +94,7 @@ public class ExportCsvServiceTest {
     }
 
     @Test
-    public void testStreamCsv() {
+    public void testExportCsv() throws Exception {
         var searchResponse = mock(SearchResultResponse.class);
         var facet = mock(CutoffFacet.class);
 
@@ -109,16 +111,16 @@ public class ExportCsvServiceTest {
         when(object.getContentStatus()).thenReturn(List.of(FacetConstants.CONTENT_NOT_DESCRIBED));
         when(facet.getHighestTier()).thenReturn(1);
 
-        exportCsvService.streamCsv(pids, agent, outputStream);
+        var csvPath = exportCsvService.exportCsv(pids, agent);
         verify(accessControlService).assertHasAccess(
                 any(), eq(pid), eq(principals), eq(viewHidden));
         verify(childrenCountService).addChildrenCounts(any(), any());
-        var result = outputStream.toString(StandardCharsets.UTF_8);
+        var result = Files.readString(csvPath, StandardCharsets.UTF_8);
         assertFalse(result.isBlank());
     }
 
     @Test
-    public void testStreamCsvFileObject() {
+    public void testExportCsvFileObject() throws IOException {
         var searchResponse = mock(SearchResultResponse.class);
         var facet = mock(CutoffFacet.class);
         var facetNode = mock(CutoffFacetNode.class);
@@ -136,38 +138,38 @@ public class ExportCsvServiceTest {
         when(facet.getHighestTierNode()).thenReturn(facetNode);
         when(facetNode.getSearchKey()).thenReturn(WORK_ID);
 
-        exportCsvService.streamCsv(pids, agent, outputStream);
+        var csvPath = exportCsvService.exportCsv(pids, agent);
         verify(accessControlService).assertHasAccess(
                 any(), eq(pid), eq(principals), eq(viewHidden));
         verify(childrenCountService).addChildrenCounts(any(), any());
-        var result = outputStream.toString(StandardCharsets.UTF_8);
+        var result = Files.readString(csvPath, StandardCharsets.UTF_8);
         assertFalse(result.isBlank());
     }
 
     @Test
-    public void testStreamCsvContentRoot() {
+    public void testExportCsvContentRoot() {
         assertThrows(IllegalArgumentException.class, () -> {
             var contentRootPid = PIDs.get(CONTENT_ROOT_ID);
             var list = List.of(contentRootPid);
-            exportCsvService.streamCsv(list, agent, outputStream);
+            exportCsvService.exportCsv(list, agent);
         });
     }
 
     @Test
-    public void testStreamCsvNoAccess() {
+    public void testExportCsvNoAccess() {
         assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
                     .assertHasAccess(anyString(), eq(pid), any(), eq(viewHidden));
-            exportCsvService.streamCsv(pids, agent, outputStream);
+            exportCsvService.exportCsv(pids, agent);
         });
     }
 
     @Test
-    public void testStreamCsvNoContentObjectRecord() {
+    public void testExportCsvNoContentObjectRecord() {
         assertThrows(NotFoundException.class, () -> {
             when(solrQueryLayerService.addSelectedContainer(
                     any(), any(), anyBoolean(), any())).thenReturn(null);
-            exportCsvService.streamCsv(pids, agent, outputStream);
+            exportCsvService.exportCsv(pids, agent);
         });
     }
 }
