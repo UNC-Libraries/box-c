@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -11,11 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
 
 import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
+import static edu.unc.lib.boxc.web.services.utils.DownloadTestHelper.makePid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -33,8 +37,6 @@ public class DownloadImageServiceTest {
     private ContentObjectRecord contentObjectRecord;
     @Mock
     private Datastream datastream, jp2Datastream;
-    @Mock
-    private UrlResource urlResource;
 
     @BeforeEach
     public void setup() {
@@ -169,10 +171,21 @@ public class DownloadImageServiceTest {
     }
 
     @Test
-    public void testStreamDownload() {
-//        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class,(mock, context) -> {
-//            when(mock.processPayment()).thenReturn("Credit");
-//        })){
-//        }
+    public void testStreamDownload() throws IOException {
+        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class)){
+            var filename = "original_file";
+            var extension = ".png";
+            var contentDispositionHeader = "attachment; filename=" + filename + "_max.jpg";
+            var contentType = MediaType.IMAGE_JPEG;
+
+            when(contentObjectRecord.getDatastreamObject(any())).thenReturn(datastream);
+            when(datastream.getFilename()).thenReturn(filename + extension);
+            when(contentObjectRecord.getPid()).thenReturn(makePid());
+            var expectedResponse = ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDispositionHeader)
+                    .contentType(contentType)
+                    .body(urlResourceClass);
+            assertEquals(expectedResponse, downloadImageService.streamDownload(contentObjectRecord, FULL_SIZE));
+        }
     }
 }
