@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
 import static edu.unc.lib.boxc.web.services.utils.DownloadTestHelper.makePid;
@@ -172,20 +174,81 @@ public class DownloadImageServiceTest {
 
     @Test
     public void testStreamDownload() throws IOException {
-        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class)){
-            var filename = "original_file";
-            var extension = ".png";
-            var contentDispositionHeader = "attachment; filename=" + filename + "_max.jpg";
+        var constructorArgs = new ArrayList<>();
+        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class,
+                // get the URL sent into UrlResource constructor
+                (mock, context) -> constructorArgs.add(context.arguments().get(0)))){
+            var contentDispositionHeader = "attachment; filename=original_file_max.jpg";
             var contentType = MediaType.IMAGE_JPEG;
-
+            var pid = makePid();
+            var url = ImageServerUtil.buildURL(IIIF_BASE, pid.getId(), FULL_SIZE);
             when(contentObjectRecord.getDatastreamObject(any())).thenReturn(datastream);
-            when(datastream.getFilename()).thenReturn(filename + extension);
-            when(contentObjectRecord.getPid()).thenReturn(makePid());
+            when(datastream.getFilename()).thenReturn("original_file.png");
+            when(contentObjectRecord.getPid()).thenReturn(pid);
+
+            var downloadStream = downloadImageService.streamDownload(contentObjectRecord, FULL_SIZE);
+            var mockedUrlResource = urlResourceClass.constructed().get(0);
+
             var expectedResponse = ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, contentDispositionHeader)
                     .contentType(contentType)
-                    .body(urlResourceClass);
-            assertEquals(expectedResponse, downloadImageService.streamDownload(contentObjectRecord, FULL_SIZE));
+                    .body(mockedUrlResource);
+            assertEquals(expectedResponse, downloadStream);
+            assertEquals(url, constructorArgs.get(0));
         }
     }
+
+    @Test
+    public void testStreamThumbnail() throws IOException {
+        var constructorArgs = new ArrayList<>();
+        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class,
+                // get the URL sent into UrlResource constructor
+                (mock, context) -> constructorArgs.add(context.arguments().get(0))))
+        {
+            var contentDispositionHeader = "inline;";
+            var contentType = MediaType.IMAGE_JPEG;
+            var pid = makePid();
+            var url = ImageServerUtil.buildURL(IIIF_BASE, pid.getId(), FULL_SIZE);
+            when(contentObjectRecord.getDatastreamObject(any())).thenReturn(datastream);
+            when(datastream.getFilename()).thenReturn("original_file.png");
+            when(contentObjectRecord.getPid()).thenReturn(pid);
+
+            var thumbnailStream = downloadImageService.streamThumbnail(contentObjectRecord, FULL_SIZE);
+            var mockedUrlResource = urlResourceClass.constructed().get(0);
+
+            var expectedResponse = ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDispositionHeader)
+                    .contentType(contentType)
+                    .body(mockedUrlResource);
+            assertEquals(expectedResponse, thumbnailStream);
+            // make sure URl matches what is expected
+            assertEquals(url, constructorArgs.get(0));
+        }
+    }
+
+    @Test
+    public void testStreamThumbnailPlaceholder() throws IOException {
+        var constructorArgs = new ArrayList<>();
+        try (MockedConstruction<UrlResource> urlResourceClass = Mockito.mockConstruction(UrlResource.class,
+                // get the URL sent into UrlResource constructor
+                (mock, context) -> constructorArgs.add(context.arguments().get(0)))){
+            var contentDispositionHeader = "inline;";
+            var contentType = MediaType.IMAGE_PNG;
+            var pid = makePid();
+            var url = downloadImageService.getPlaceholderUrl("128");
+            when(contentObjectRecord.getDatastreamObject(eq(DatastreamType.JP2_ACCESS_COPY.getId()))).thenReturn(null);
+            when(contentObjectRecord.getPid()).thenReturn(pid);
+
+            var thumbnailStream = downloadImageService.streamThumbnail(contentObjectRecord, "128");
+            var mockedUrlResource = urlResourceClass.constructed().get(0);
+
+            var expectedResponse = ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDispositionHeader)
+                    .contentType(contentType)
+                    .body(mockedUrlResource);
+            assertEquals(expectedResponse, thumbnailStream);
+            assertEquals(url, constructorArgs.get(0));
+        }
+    }
+
 }

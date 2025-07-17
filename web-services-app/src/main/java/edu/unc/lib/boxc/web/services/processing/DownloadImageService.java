@@ -204,7 +204,7 @@ public class DownloadImageService {
         return Math.max(extent[0], extent[1]);
     }
 
-    private String getPlaceholderUrl(String size) {
+    protected String getPlaceholderUrl(String size) {
         // pixel length should be in !123,123 format
         var formattedSize = "!" + size + "," + size;
         return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";
