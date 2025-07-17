@@ -46,7 +46,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .startupOrder(9)
             .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
             .doTry()
-                .to("direct:index.start")
+                .wireTap("direct:index.start")
             .endDoTry()
             .doCatch(FcrepoOperationFailedException.class)
                 .process(new Processor() {

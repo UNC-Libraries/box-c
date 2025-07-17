@@ -51,9 +51,13 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @TempDir
     public Path tmpFolder;
 
+    private Path jp2BasePath;
+
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         destroyedMsgProcessor = new DestroyedMsgProcessor();
+        jp2BasePath = tmpFolder.resolve("jp2base");
+        destroyedMsgProcessor.setJp2BasePath(jp2BasePath.toString());
         var router = new DestroyDerivativesRouter();
         router.setDestroyedMsgProcessor(destroyedMsgProcessor);
         router.setDestroyAccessCopyProcessor(destroyAccessCopyProcessor);

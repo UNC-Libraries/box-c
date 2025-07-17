@@ -48,7 +48,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
 
     @PropertyInject(value = "fcrepo.baseUri")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     private MockEndpoint resultEndpoint;
@@ -345,7 +345,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String... type) {
+    private Map<String, Object> createEvent(final String identifier, final String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, baseUri + identifier);

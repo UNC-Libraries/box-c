@@ -1,12 +1,12 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.util.Collections.singletonList;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class LongleafAggregationStrategy implements AggregationStrategy {
     @SuppressWarnings("unchecked")
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        String binaryUri = (String) newExchange.getIn().getHeader(FCREPO_URI);
+        String binaryUri = MessageUtil.getFcrepoUri(newExchange.getIn());
         List<String> incomingList ;
         if (binaryUri == null) {
             Object body = newExchange.getIn().getBody();
