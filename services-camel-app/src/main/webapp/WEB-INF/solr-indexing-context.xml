@@ -541,7 +541,7 @@
         <property name="addDocumentMode" value="false" />
     </bean>
 
-    <bean id="addAspaceRefIdAction"
+    <bean id="updateAspaceRefIdAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAspaceRefIdUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
@@ -553,7 +553,7 @@
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
         value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
-        <entry key="ADD_ASPACE_REF_ID" value-ref="addAspaceRefIdAction" />
+        <entry key="UPDATE_ASPACE_REF_ID" value-ref="updateAspaceRefIdAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
         <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />

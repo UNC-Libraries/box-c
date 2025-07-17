@@ -60,6 +60,7 @@ public class BulkRefIdCsvExporterTest {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     private BulkRefIdCsvExporter exporter;
     private PID workPid;
+    private List<PID> pids;
 
 
     @BeforeEach
@@ -82,8 +83,9 @@ public class BulkRefIdCsvExporterTest {
                 "Work Title 1", REF1_ID, "Hook ID 1");
 
         mockSingleRecordResults(solrSearchService, workRecord);
+        pids = List.of(workPid);
 
-        var resultPath = exporter.export(workPid, agent);
+        var resultPath = exporter.export(pids, agent);
         var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(1, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
@@ -96,26 +98,24 @@ public class BulkRefIdCsvExporterTest {
 
         mockSingleRecordResults( solrSearchService, collectionRecord);
         when(solrSearchService.getSearchResults(any())).thenReturn(makeEmptyResponse());
+        pids = List.of(PIDs.get(COLLECTION_UUID));
 
-        var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
+        var resultPath = exporter.export(pids, agent);
         var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(0, csvRecords);
     }
 
     @Test
-    public void exportWorkObjectsUnderCollection() throws IOException {
-        var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.AdminUnit,
-                "Collection 1", null, null);
+    public void exportMultipleWorkObjects() throws IOException {
         var workRecord1 = makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
                 "Work Title 1", REF1_ID, "Hook ID 1");
         var workRecord2 = makeRecord(WORK2_UUID, COLLECTION_UUID, ResourceType.Work,
                 "Work Title 2", REF2_ID, "Hook ID 2");
 
+        mockSingleRecordResults(solrSearchService, workRecord1, workRecord2);
+        pids = List.of(workPid, PIDs.get(WORK2_UUID));
 
-        mockSingleRecordResults(solrSearchService, collectionRecord);
-        mockSearchResults(solrSearchService, workRecord1, workRecord2);
-
-        var resultPath = exporter.export(PIDs.get(COLLECTION_UUID), agent);
+        var resultPath = exporter.export(pids, agent);
         var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries(2, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
@@ -133,8 +133,9 @@ public class BulkRefIdCsvExporterTest {
 
         mockSingleRecordResults(solrSearchService, adminUnitRecord);
         mockSearchResults(solrSearchService, workRecord1, workRecord2);
+        pids = List.of(PIDs.get(ADMIN_UNIT_UUID));
 
-        var resultPath = exporter.export(PIDs.get(ADMIN_UNIT_UUID), agent);
+        var resultPath = exporter.export(pids, agent);
         var csvRecords = parseCsv(EXPORT_CSV_HEADERS, resultPath);
         assertNumberOfEntries( 2, csvRecords);
         assertContainsEntry(csvRecords, WORK1_UUID, REF1_ID, "Hook ID 1", "Work Title 1");
@@ -148,8 +149,9 @@ public class BulkRefIdCsvExporterTest {
                     "Work Title 1", REF1_ID, "Hook ID 1");
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(any(),eq(workPid),
                     any(), eq(Permission.editAspaceProperties));
+            pids = List.of(workPid);
 
-            exporter.export(workPid, agent);
+            exporter.export(pids, agent);
         });
     }
 
@@ -158,8 +160,9 @@ public class BulkRefIdCsvExporterTest {
         assertThrows(RepositoryException.class, () -> {
             makeRecord(WORK1_UUID, COLLECTION_UUID, ResourceType.Work,
                     "Work Title 1", REF1_ID, "Hook ID 1");
+            pids = List.of(workPid);
 
-            exporter.export(PIDs.get(WORK1_UUID), agent);
+            exporter.export(pids, agent);
         });
     }
 

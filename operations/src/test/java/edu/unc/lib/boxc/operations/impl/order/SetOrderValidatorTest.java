@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.operations.impl.order;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -14,9 +15,12 @@ import org.mockito.Mock;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.assertHasErrors;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.mockParentType;
@@ -65,7 +69,7 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void targetNotAWorkTest() throws Exception {
+    public void targetNotAWorkTest() {
         mockParentType(parentObj, ResourceType.AdminUnit);
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
                 Arrays.asList(CHILD1_UUID, CHILD2_UUID));
@@ -78,8 +82,8 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void listedIdsAreNotMembersTest() throws Exception {
-        when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child3Pid));
+    public void listedIdsAreNotMembersTest() {
+        when(membershipService.listMembers(parentPid)).thenReturn(List.of(child3Pid));
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
                 Arrays.asList(CHILD1_UUID, CHILD2_UUID, CHILD3_UUID));
@@ -93,11 +97,11 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void membersNotListedTest() throws Exception {
+    public void membersNotListedTest() {
         when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child2Pid, child3Pid));
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
-                Arrays.asList(CHILD2_UUID));
+                List.of(CHILD2_UUID));
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
@@ -108,7 +112,7 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void multipleErrorsTest() throws Exception {
+    public void multipleErrorsTest() {
         when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child3Pid));
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
@@ -125,7 +129,7 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void duplicateIdsTest() throws Exception {
+    public void duplicateIdsTest() {
         when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child2Pid, child3Pid));
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
@@ -138,7 +142,7 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void validRequestTest() throws Exception {
+    public void validRequestTest() {
         when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child2Pid, child3Pid));
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
@@ -150,7 +154,7 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void validEmptyRequestTest() throws Exception {
+    public void validEmptyRequestTest() {
         when(membershipService.listMembers(parentPid)).thenReturn(Collections.emptyList());
 
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
@@ -159,5 +163,17 @@ public class SetOrderValidatorTest {
 
         assertTrue(validator.isValid());
         assertTrue(validator.getErrors().isEmpty());
+    }
+
+    @Test
+    public void repoObjectNotFoundTest() {
+        doThrow(NotFoundException.class).when(repositoryObjectLoader).getRepositoryObject(any());
+        var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
+                Arrays.asList(CHILD1_UUID, CHILD2_UUID, CHILD3_UUID));
+        validator.setRequest(request);
+
+        assertFalse(validator.isValid());
+        assertHasErrors(validator, "Invalid request to SET order for " + PARENT_UUID
+                + ", RepositoryObjectLoader could not load object with that ID");
     }
 }
