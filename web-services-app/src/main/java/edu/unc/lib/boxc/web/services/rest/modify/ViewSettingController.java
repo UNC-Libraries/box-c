@@ -78,7 +78,7 @@ public class ViewSettingController {
 
     @PutMapping(value = "/edit/viewSettings", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<Object> updateViewSetting(@RequestParam("allParams") Map<String,String> allParams) {
+    public ResponseEntity<Object> updateViewSetting(@RequestParam Map<String,String> allParams) {
         Map<String, Object> result = new HashMap<>();
 
         if (hasBadParams(allParams)) {
