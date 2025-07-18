@@ -20,8 +20,8 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
-import static edu.unc.lib.boxc.web.services.utils.DownloadTestHelper.makePid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -169,6 +169,8 @@ public class DownloadImageServiceTest {
                 .thenReturn(null);
         when(contentObjectRecord.getDatastreamObject(eq(DatastreamType.ORIGINAL_FILE.getId())))
                 .thenReturn(datastream);
+        when(datastream.getExtent()).thenReturn("500x500");
+        assertEquals("125", downloadImageService.getSize(contentObjectRecord, "125"));
 
     }
 
@@ -208,12 +210,14 @@ public class DownloadImageServiceTest {
             var contentDispositionHeader = "inline;";
             var contentType = MediaType.IMAGE_JPEG;
             var pid = makePid();
-            var url = ImageServerUtil.buildURL(IIIF_BASE, pid.getId(), FULL_SIZE);
-            when(contentObjectRecord.getDatastreamObject(any())).thenReturn(datastream);
-            when(datastream.getFilename()).thenReturn("original_file.png");
+            var url = ImageServerUtil.buildURL(IIIF_BASE, pid.getId(), "128");
+            when(contentObjectRecord.getDatastreamObject(eq(DatastreamType.JP2_ACCESS_COPY.getId()))).thenReturn(jp2Datastream);
+            when(jp2Datastream.getFilename()).thenReturn("derivative.png");
+            when(jp2Datastream.getFilesize()).thenReturn(1048L);
+            when(jp2Datastream.getExtent()).thenReturn("300x300");
             when(contentObjectRecord.getPid()).thenReturn(pid);
 
-            var thumbnailStream = downloadImageService.streamThumbnail(contentObjectRecord, FULL_SIZE);
+            var thumbnailStream = downloadImageService.streamThumbnail(contentObjectRecord, "128");
             var mockedUrlResource = urlResourceClass.constructed().get(0);
 
             var expectedResponse = ResponseEntity.ok()

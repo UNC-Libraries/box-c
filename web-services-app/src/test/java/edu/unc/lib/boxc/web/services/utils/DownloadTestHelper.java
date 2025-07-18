@@ -17,8 +17,4 @@ public class DownloadTestHelper {
 
         assertArrayEquals(imageContent, actualContent);
     }
-
-    public static PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
-    }
 }
