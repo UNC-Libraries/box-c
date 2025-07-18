@@ -271,7 +271,7 @@ public class DepositController {
 
     @RequestMapping(value = { "{stateOrUUID}", "/{stateOrUUID}" }, method = RequestMethod.GET)
     public @ResponseBody
-    Map<String, Object> get(@PathVariable String stateOrUUID) {
+    Map<String, Object> get(@PathVariable("stateOrUUID") String stateOrUUID) {
         DepositState depositState = null;
         try {
             depositState = DepositState.valueOf(stateOrUUID);
@@ -293,7 +293,7 @@ public class DepositController {
      * @param uuid
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
-    public void destroy(@PathVariable String uuid) {
+    public void destroy(@PathVariable("uuid") String uuid) {
         // verify deposit is registered and not yet cleaned up
         // set deposit status to canceling
     }
@@ -310,7 +310,7 @@ public class DepositController {
      *           the action to take on the deposit (pause, resume, cancel, destroy)
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
-    public void update(@PathVariable String uuid, @RequestParam(required = true) String action,
+    public void update(@PathVariable("uuid") String uuid, @RequestParam("action") String action,
             HttpServletResponse response) {
         DepositAction actionRequested = DepositAction.valueOf(action);
         if (actionRequested == null) {
@@ -373,7 +373,7 @@ public class DepositController {
 
     @RequestMapping(value = { "{uuid}/jobs", "/{uuid}/jobs" }, method = RequestMethod.GET)
     public @ResponseBody
-    Map<String, Map<String, String>> getJobs(@PathVariable String uuid) {
+    Map<String, Map<String, String>> getJobs(@PathVariable("uuid") String uuid) {
         LOG.debug("getJobs( {} )", uuid);
         try (Jedis jedis = getJedisPool().getResource()) {
             Map<String, Map<String, String>> jobs = new HashMap<>();
@@ -395,7 +395,7 @@ public class DepositController {
 
     @RequestMapping(value = { "{uuid}/events" }, method = RequestMethod.GET)
     public @ResponseBody
-    Document getEvents(@PathVariable String uuid) throws Exception {
+    Document getEvents(@PathVariable("uuid") String uuid) throws Exception {
         LOG.debug("getEvents( {} )", uuid);
         String bagDirectory;
         try (Jedis jedis = getJedisPool().getResource()) {

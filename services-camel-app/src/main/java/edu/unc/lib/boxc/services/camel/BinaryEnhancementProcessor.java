@@ -33,10 +33,14 @@ public class BinaryEnhancementProcessor implements Processor {
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-        String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
+        String fcrepoBinaryUri = MessageUtil.getFcrepoUri(in);
 
         if (fcrepoBinaryUri == null) {
             Document msgBody = MessageUtil.getDocumentBody(in);
+            if (msgBody == null) {
+                log.debug("No body found in message, cannot set enhancement headers");
+                return;
+            }
             Element body = msgBody.getRootElement();
 
             Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);

@@ -40,6 +40,9 @@
         <property name="configuration" ref="jmsConfig" />
         <property name="transacted" value="true" />
         <property name="lazyCreateTransactionManager" value="false" />
+        <property name="headerFilterStrategy">
+            <bean class="org.apache.camel.component.jms.ClassicJmsHeaderFilterStrategy"/>
+        </property>
     </bean>
     
     <bean class="org.springframework.jms.core.JmsTemplate">

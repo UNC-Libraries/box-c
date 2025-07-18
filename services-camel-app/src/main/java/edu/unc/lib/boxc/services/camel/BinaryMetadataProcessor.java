@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.services.camel;
 import static edu.unc.lib.boxc.model.api.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -46,7 +46,7 @@ public class BinaryMetadataProcessor implements Processor {
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 
-        String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
+        String fcrepoBinaryUri = MessageUtil.getFcrepoUri(in);
         PID binPid = PIDs.get(fcrepoBinaryUri);
         PID filePid = PIDs.get(binPid.getId());
 

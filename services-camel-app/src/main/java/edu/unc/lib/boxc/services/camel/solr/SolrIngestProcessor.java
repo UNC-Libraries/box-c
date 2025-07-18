@@ -2,12 +2,12 @@ package edu.unc.lib.boxc.services.camel.solr;
 
 import static edu.unc.lib.boxc.common.metrics.TimerFactory.createTimerForClass;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -58,7 +58,7 @@ public class SolrIngestProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         try (Timer.Context context = timer.time()) {
             final Message in = exchange.getIn();
-            String fcrepoUri = (String) in.getHeader(FCREPO_URI);
+            String fcrepoUri = MessageUtil.getFcrepoUri(in);
 
             log.debug("Processing solr request for {}", fcrepoUri);
 

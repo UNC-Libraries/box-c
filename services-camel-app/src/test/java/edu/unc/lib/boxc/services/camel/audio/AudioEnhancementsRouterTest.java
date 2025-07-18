@@ -50,7 +50,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     private final String audioAccessCopy = "AudioAccessCopy";
 
     @PropertyInject(value = "fcrepo.baseUrl")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     protected MockEndpoint resultEndpoint;
@@ -193,7 +193,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String eventTypes,
+    private Map<String, Object> createEvent(final String identifier, final String eventTypes,
                                                    final String force) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, identifier);

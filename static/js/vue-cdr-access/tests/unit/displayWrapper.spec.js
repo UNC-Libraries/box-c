@@ -86,7 +86,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=true');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp();
 
         wrapper.vm.getBriefObject();
@@ -96,7 +96,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=false');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp();
 
         wrapper.vm.getBriefObject();
@@ -304,7 +304,7 @@ describe('displayWrapper.vue', () => {
                 'resourceType': 'AdminUnit',
                 'markedForDeletion': false
             });
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
         mountApp();
         await flushPromises();
 
@@ -324,7 +324,7 @@ describe('displayWrapper.vue', () => {
 
     it("shows a 'not found' message if no data is returned", async () => {
         stubQueryResponse(`/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`, '');
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
         mountApp();
 
         await wrapper.vm.getBriefObject()
@@ -336,7 +336,7 @@ describe('displayWrapper.vue', () => {
             status: 404,
             response: JSON.stringify({ message: 'Nothing to see here' })
         });
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/?browse_type=list-display');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
         mountApp();
 
         await wrapper.vm.getBriefObject()
@@ -348,7 +348,7 @@ describe('displayWrapper.vue', () => {
             status: 503,
             response: JSON.stringify({ message: 'bad stuff happened' })
         });
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/?browse_type=list-display');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
         mountApp();
         await wrapper.vm.getBriefObject();
         expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);

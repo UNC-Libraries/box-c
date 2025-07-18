@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
@@ -264,11 +264,11 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     /**
-     * @param fcrepuUri uri of object
+     * @param exchange
      * @return true if the object is a binary that should be registered in longleaf.
      */
     public static boolean registerableBinary(Exchange exchange) {
-        String fcrepoUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+        String fcrepoUri = MessageUtil.getFcrepoUri(exchange.getIn());
         String dsId = StringUtils.substringAfterLast(fcrepoUri, "/");
 
         if (dsId.equals("fcr:metadata")) {

@@ -77,7 +77,7 @@ public class DepositPipelineController {
      *      or an invalid action was requested
      */
     @PostMapping( path = { "{actionName}", "/{actionName}" }, produces = APPLICATION_JSON_VALUE )
-    public @ResponseBody ResponseEntity<Object> requestAction(@PathVariable String actionName) {
+    public @ResponseBody ResponseEntity<Object> requestAction(@PathVariable("actionName") String actionName) {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.createAdminUnit)) {
             return new ResponseEntity<>(singletonMap(ERROR_KEY, "Unauthorized"), HttpStatus.UNAUTHORIZED);

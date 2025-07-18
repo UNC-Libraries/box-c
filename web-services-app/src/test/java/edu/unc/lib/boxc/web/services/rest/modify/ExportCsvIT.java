@@ -442,7 +442,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String id = collPid.getId();
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/?ids=" + id))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
