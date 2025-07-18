@@ -48,7 +48,7 @@ describe('worksOnly.vue', () => {
     });
 
     it("updates route to only show works if button is checked for a gallery view",  async () => {
-        await router.push('/record/1234/?browse_type=gallery-display');
+        await router.push('/record/1234?browse_type=gallery-display');
         await wrapper.setData({ works_only: false });
         await record_input.trigger('click');
         await flushPromises();
@@ -56,7 +56,7 @@ describe('worksOnly.vue', () => {
     });
 
     it("updates route to only show works and folders if button is unchecked for a gallery view", async  () => {
-        await router.push('/record/1234/?browse_type=gallery-display');
+        await router.push('/record/1234?browse_type=gallery-display');
         await wrapper.setData({ works_only: true });
         await record_input.trigger('click');
         await flushPromises();
@@ -65,7 +65,7 @@ describe('worksOnly.vue', () => {
     });
 
     it("updates route to only show works if button is checked for a list view", async() => {
-        await router.push('/record/1234/?browse_type=list-display');
+        await router.push('/record/1234?browse_type=list-display');
         await wrapper.setData({ works_only: false });
         await record_input.trigger('click');
         await flushPromises();
@@ -74,7 +74,7 @@ describe('worksOnly.vue', () => {
     });
 
     it("updates route to show works and folders if button is unchecked for a list view", async () => {
-        await router.push('/record/1234/?browse_type=list-display');
+        await router.push('/record/1234?browse_type=list-display');
         await wrapper.setData({ works_only: true });
         await record_input.trigger('click');
         await flushPromises();
