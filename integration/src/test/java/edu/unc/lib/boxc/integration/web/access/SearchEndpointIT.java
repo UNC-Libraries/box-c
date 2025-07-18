@@ -5,6 +5,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +74,7 @@ public class SearchEndpointIT extends EndpointIT {
                 "readGroup", "everyone");
         workFactory.createFileInWork(work, fileOptions);
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?titleIndex=text");
+        var getMethod = new HttpGet(SEARCH_URL + "?titleIndex=text");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -99,7 +101,7 @@ public class SearchEndpointIT extends EndpointIT {
                 "readGroup", "everyone");
         workFactory.createFileInWork(textWork, fileOptions);
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?anywhere=through");
+        var getMethod = new HttpGet(SEARCH_URL + "?anywhere=through");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -120,7 +122,7 @@ public class SearchEndpointIT extends EndpointIT {
     public void testSearchTypeParamWithOneType() throws Exception {
         createDefaultObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work");
+        var getMethod = new HttpGet(SEARCH_URL + "?types=Work");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -138,7 +140,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
 
         // rollup=false disables the FileObjects getting grouped into their associated Works
-        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
+        var getMethod = new HttpGet(SEARCH_URL + "?types=Work,File&rollup=false");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -159,7 +161,7 @@ public class SearchEndpointIT extends EndpointIT {
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
+        var getMethod = new HttpGet(SEARCH_URL + "?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -183,7 +185,7 @@ public class SearchEndpointIT extends EndpointIT {
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
+        var getMethod = new HttpGet(SEARCH_URL + "?sort=title,reverse");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -209,7 +211,7 @@ public class SearchEndpointIT extends EndpointIT {
         folderFactory.createFolder(collection,
                 Map.of("title", "Folder Object 2", "readGroup", "everyone"));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?start=0&rows=5");
+        var getMethod = new HttpGet(SEARCH_URL + "?start=0&rows=5");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -226,7 +228,7 @@ public class SearchEndpointIT extends EndpointIT {
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?start=3");
+        var getMethod = new HttpGet(SEARCH_URL + "?start=3");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -295,10 +297,10 @@ public class SearchEndpointIT extends EndpointIT {
     public void testDateDepositedInclusiveSearch() throws Exception {
         createDefaultObjects();
         var currentYear = Year.now().getValue();
-        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + ",", 5);
-        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + "," + currentYear, 5);
-        assertResultCountEquals(SEARCH_URL + "/?added=," + currentYear, 5);
-        assertResultCountEquals(SEARCH_URL + "/?added=" + (currentYear + 1) + ",", 0);
+        assertResultCountEquals(SEARCH_URL + "?added=" + currentYear + ",", 5);
+        assertResultCountEquals(SEARCH_URL + "?added=" + currentYear + "," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "?added=," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "?added=" + (currentYear + 1) + ",", 0);
     }
 
     @Test
@@ -307,7 +309,7 @@ public class SearchEndpointIT extends EndpointIT {
         var ids = createDatedObjects();
         var datedCollectionId = ids.get(1);
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=2022,2022");
+        var getMethod = new HttpGet(SEARCH_URL + "?createdYear=2022,2022");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -327,7 +329,7 @@ public class SearchEndpointIT extends EndpointIT {
         var datedAdminUnitId = ids.get(0);
         var datedCollectionId = ids.get(1);
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=unknown");
+        var getMethod = new HttpGet(SEARCH_URL + "?createdYear=unknown");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -349,7 +351,7 @@ public class SearchEndpointIT extends EndpointIT {
         var firstFile = workFactory.createFileInWork(mWork, Map.of("title", "File A", FILE_FORMAT_OPTION, IMAGE_FORMAT));
         workFactory.createFileInWork(mWork, Map.of("title", "File D", FILE_FORMAT_OPTION, IMAGE_FORMAT));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?id=" + mWork.getPid().getId());
+        var getMethod = new HttpGet(SEARCH_URL + "?id=" + mWork.getPid().getId());
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -368,7 +370,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         createLanguageSubjectObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language&language=English&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -384,7 +386,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         createLanguageSubjectObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language&language=English&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -403,7 +405,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         createLanguageSubjectObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&subject=North%2520Carolina&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language%2Csubject&subject=North%2520Carolina&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -426,7 +428,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         createLanguageSubjectObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=false");
+        var getMethod = new HttpGet(SEARCH_URL + "?getFacets=false");
 
         try (var resp = httpClient.execute(getMethod)) {
             var respJson = getResponseAsJson(resp);
@@ -439,7 +441,7 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testGetFacetsTrueSearchReturnsDefaultFacets() throws Exception {
         createDefaultObjects();
-        var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -458,7 +460,7 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchWithFacetSelectOnlyShowsThoseFacets() throws Exception {
         createDefaultObjects();
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language%2Csubject&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -473,7 +475,7 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchWithFacetSelectCannotShowDisallowedFacets() throws Exception {
         createDefaultObjects();
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language,subject,contentStatus&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language,subject,contentStatus&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -495,7 +497,7 @@ public class SearchEndpointIT extends EndpointIT {
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "Collection Object", "adminGroup", "adminGroup", "languageTerm", "por"));
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "?facetSelect=language&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
@@ -514,7 +516,7 @@ public class SearchEndpointIT extends EndpointIT {
     public void testSearchAllExpectedFieldsForRecordReturned() throws Exception {
         createWorkAndFileObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
+        var getMethod = new HttpGet(SEARCH_URL + "?types=Work,File&rollup=false");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
