@@ -58,7 +58,7 @@ public class BinaryEnhancementProcessor implements Processor {
                         in.setHeader("force", "false");
                     }
                 } catch (ObjectTypeMismatchException e) {
-                    log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
+                    log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
                 }
             }
         }

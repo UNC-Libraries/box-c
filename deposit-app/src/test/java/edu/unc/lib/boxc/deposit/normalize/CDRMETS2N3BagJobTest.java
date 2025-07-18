@@ -146,7 +146,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
         job.run();
         Model model = job.getReadOnlyModel();
-        Bag bag = model.getBag(depositPid.getURI());
+        Bag bag = model.getBag(depositPid.getRepositoryPath());
         Resource manifestResc = bag.getPropertyResourceValue(CdrDeposit.hasDatastreamManifest);
         assertNotNull(manifestResc);
         assertNotNull(manifestResc.getProperty(CdrDeposit.stagingLocation));
@@ -178,7 +178,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Files.copy(new File("src/test/resources/mets_object_only.xml"), new File(data, "mets.xml"));
         job.run();
         Model model = job.getReadOnlyModel();
-        Bag bag = model.getBag(depositPid.getURI());
+        Bag bag = model.getBag(depositPid.getRepositoryPath());
         NodeIterator childIt = bag.iterator();
         Resource res = (Resource) childIt.next();
         Resource originalResc = DepositModelHelpers.getDatastream(res);

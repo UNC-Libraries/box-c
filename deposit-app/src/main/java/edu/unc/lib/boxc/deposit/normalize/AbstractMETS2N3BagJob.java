@@ -108,9 +108,9 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             }
             PID pid = pidMinter.mintContentPid();
             if (cids == null) {
-                div.setAttribute("CONTENTIDS", pid.getURI());
+                div.setAttribute("CONTENTIDS", pid.getRepositoryPath());
             } else {
-                StringBuilder sb = new StringBuilder(pid.getURI());
+                StringBuilder sb = new StringBuilder(pid.getRepositoryPath());
                 for (String s : cids.split("\\s")) {
                     sb.append(" ").append(s);
                 }
@@ -189,7 +189,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
      */
     protected void addManifestURI(Model model) {
         File metsFile = getMETSFile();
-        Resource depositResc = model.getResource(depositPID.getURI());
+        Resource depositResc = model.getResource(depositPID.getRepositoryPath());
 
         log.debug("Adding manifest URI referencing {}", metsFile);
         Resource manifestResc = DepositModelHelpers.addManifest(depositResc, "mets.xml");

@@ -50,7 +50,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         closeable = openMocks(this);
 
         validator = new ContentObjectAccessRestrictionValidator();
-        when(pid.getURI()).thenReturn(PID_URI);
+        when(pid.getRepositoryPath()).thenReturn(PID_URI);
 
         model = ModelFactory.createDefaultModel();
         resc = model.getResource(PID_URI);

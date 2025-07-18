@@ -110,7 +110,7 @@ public class RecursiveTreeIndexer {
 
     private Map<String, Set<String>> getMembers(PID parentPid) {
         String queryString = String.format(CHILDREN_QUERY,
-                PcdmModels.memberOf, parentPid.getURI(), RDF.type, Cdr.NS);
+                PcdmModels.memberOf, parentPid.getRepositoryPath(), RDF.type, Cdr.NS);
 
         log.debug("Performing member query:\n{}", queryString);
 

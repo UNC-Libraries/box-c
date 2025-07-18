@@ -255,7 +255,7 @@ public class DepositEmailHandler {
 
             Model model = depositModelManager.getReadModel(depositPID);
 
-            String depositPid = depositPID.getURI();
+            String depositPid = depositPID.getRepositoryPath();
             Bag depositBag = model.getBag(depositPid);
 
             List<String> topLevelPids = new ArrayList<>();

@@ -108,7 +108,7 @@ public class DepositModelManager implements Closeable {
      * @return
      */
     public Model getWriteModel(PID depositPid) {
-        String depositUri = depositPid.getURI();
+        String depositUri = depositPid.getRepositoryPath();
 
         long start = System.currentTimeMillis();
         try {
@@ -136,7 +136,7 @@ public class DepositModelManager implements Closeable {
      */
     public Model getReadModel(PID depositPid) {
         long start = System.currentTimeMillis();
-        String depositUri = depositPid.getURI();
+        String depositUri = depositPid.getRepositoryPath();
 
         try {
             dataset.begin(ReadWrite.READ);
@@ -157,7 +157,7 @@ public class DepositModelManager implements Closeable {
      * @param depositPid
      */
     public synchronized void removeModel(PID depositPid) {
-        String uri = depositPid.getURI();
+        String uri = depositPid.getRepositoryPath();
         // Start a write transaction if one isn't already active
         ReadWrite txType = dataset.transactionMode();
         if (!ReadWrite.WRITE.equals(txType)) {

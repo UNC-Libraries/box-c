@@ -57,7 +57,7 @@ public class DepositGraphUtils {
 
     public static List<Resource> getObjectsBreadthFirst(Model m, PID depositPID) {
         List<Resource> result = new ArrayList<Resource>();
-        Resource top = m.getResource(depositPID.getURI());
+        Resource top = m.getResource(depositPID.getRepositoryPath());
         addChildren(top, result);
         return result;
     }
