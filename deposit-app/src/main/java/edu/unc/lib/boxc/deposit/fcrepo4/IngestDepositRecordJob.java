@@ -63,7 +63,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         PID depositPID = getDepositPID();
-        String depositUri = depositPID.getURI();
+        String depositUri = depositPID.getRepositoryPath();
 
         log.debug("Creating record for deposit {}", depositUri);
 
