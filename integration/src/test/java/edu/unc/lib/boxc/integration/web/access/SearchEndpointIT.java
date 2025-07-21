@@ -5,7 +5,6 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
