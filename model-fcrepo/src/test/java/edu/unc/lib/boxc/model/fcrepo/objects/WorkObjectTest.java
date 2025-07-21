@@ -82,7 +82,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         pid = makePid();
 
         model = ModelFactory.createDefaultModel();
-        resc = model.getResource(pid.getURI());
+        resc = model.getResource(pid.getRepositoryPath());
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
@@ -131,7 +131,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     @Test
     public void setPrimaryObjectTest() {
         PID primaryPid = makePid();
-        Resource primaryResc = createResource(primaryPid.getURI());
+        Resource primaryResc = createResource(primaryPid.getRepositoryPath());
 
         when(fileObj.getResource()).thenReturn(primaryResc);
 
