@@ -92,8 +92,7 @@
         <commons-fileupload.version>1.5</commons-fileupload.version>
         <commons-collections.version>4.4</commons-collections.version>
 
-        <activemq.version>5.17.7</activemq.version>
-        <activemq-protobuf.version>1.1</activemq-protobuf.version>
+        <activemq.version>6.1.7</activemq.version>
 
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.13</logback.version>
@@ -121,7 +120,7 @@
         <jena.version>4.10.0</jena.version>
 
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
-        <camel.version>3.22.3</camel.version>
+        <camel.version>4.13.0</camel.version>
         <tika.version>3.1.0</tika.version>
         <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
         
@@ -820,24 +819,6 @@
                 <artifactId>jedis</artifactId>
                 <version>${jedis.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-kahadb-store</artifactId>
-                <version>${activemq.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq.protobuf</groupId>
-                <artifactId>activemq-protobuf</artifactId>
-                <version>${activemq-protobuf.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq.tooling</groupId>
-                <artifactId>activemq-junit</artifactId>
-                <version>${activemq.version}</version>
-                <scope>test</scope>
-            </dependency> 
             
             <dependency>
                 <groupId>org.apache.solr</groupId>

@@ -5,6 +5,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -24,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-
 /**
  * Processor which invalidates the image cache for a given object in the image server
  *
@@ -44,7 +43,7 @@ public class ImageCacheInvalidationProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 
-        String fcrepoUri = (String) in.getHeader(FCREPO_URI);
+        String fcrepoUri = MessageUtil.getFcrepoUri(in);
         PID pid = PIDs.get(fcrepoUri);
         var client = getHttpClient();
         var imageId = ImageServerUtil.getImageServiceId(pid.getId());

@@ -15,7 +15,7 @@ export default {
                 }
             }
             if (browse_type) {
-                return `/record/${id}/?browse_type=${browse_type}`;
+                return `/record/${id}?browse_type=${browse_type}`;
             } else {
                 return `/record/${id}`;
             }

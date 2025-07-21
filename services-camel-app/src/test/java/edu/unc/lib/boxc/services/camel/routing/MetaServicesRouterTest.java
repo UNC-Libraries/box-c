@@ -48,7 +48,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
 
     @PropertyInject(value = "fcrepo.baseUri")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     private MockEndpoint resultEndpoint;
@@ -68,9 +68,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartContainer() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(1);
@@ -88,9 +88,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartTimemap() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(0);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -111,9 +111,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartDatafs() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -134,9 +134,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartDepositRecord() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -157,9 +157,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartNotAPid() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -180,9 +180,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartCollections() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(1);
@@ -202,9 +202,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartBinaryMetadata() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -229,9 +229,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartOriginalBinary() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(1);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(1);
@@ -250,9 +250,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testRouteStartPremisBinary() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
         indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(1);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
         processEnhEndpoint.expectedMessageCount(0);
@@ -273,7 +273,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        var processCreationEndpoint = getMockEndpoint("mock:direct-vm:process.creation");
+        var processCreationEndpoint = getMockEndpoint("mock:direct:process.creation");
         processCreationEndpoint.expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
@@ -305,7 +305,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testUpdateNonBinary() throws Exception {
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processCreationEndpoint = getMockEndpoint("mock:direct:process.creation");
         processCreationEndpoint.expectedMessageCount(0);
@@ -345,7 +345,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String... type) {
+    private Map<String, Object> createEvent(final String identifier, final String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, baseUri + identifier);
