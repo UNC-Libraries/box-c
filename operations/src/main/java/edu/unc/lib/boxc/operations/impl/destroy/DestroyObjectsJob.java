@@ -190,7 +190,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
             throws IOException, FcrepoOperationFailedException {
 
         Model stoneModel = ModelFactory.createDefaultModel();
-        stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
+        stoneModel.add((StmtIterator) destroyedResc.getModel().listStatements()
+                .filterKeep(new TombstonePropertyPredicate(destroyedResc)));
 
         // determine paths and store in tombstone model
         ObjectPath objPath = pathFactory.getPath(destroyedObj.getPid());
@@ -216,9 +217,9 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource(true);
-        TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
+        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(childResc);
         Model childModel = childResc.getModel();
-        StmtIterator iter = childModel.listStatements(selector);
+        var iter = childModel.listStatements().filterKeep(selector);
 
         while (iter.hasNext()) {
             Statement s = iter.next();

@@ -10,51 +10,50 @@ import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.operations.impl.destroy.TombstonePropertySelector;
 
 /**
  *
  * @author harring
  *
  */
-public class TombstonePropertySelectorTest {
+public class TombstonePropertyPredicateTest {
 
     @Test
     public void testPermittedPropertyAnySubject() {
-        TombstonePropertySelector selector = new TombstonePropertySelector();
+        TombstonePropertyPredicate selector = new TombstonePropertyPredicate();
         Statement s = ResourceFactory.createStatement(ResourceFactory.createResource(), DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertTrue(selector.selects(s));
+        assertTrue(selector.test(s));
     }
 
     @Test
     public void testPermittedPropertySpecificSubject() {
         Resource resc = ResourceFactory.createResource();
-        TombstonePropertySelector selector = new TombstonePropertySelector(resc);
+        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(resc);
         Statement s1 = ResourceFactory.createStatement(resc, DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertTrue(selector.selects(s1));
+        assertTrue(selector.test(s1));
         Resource unrelatedResc = ResourceFactory.createResource();
         Statement s2 = ResourceFactory.createStatement(unrelatedResc, DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertFalse(selector.selects(s2));
+        assertFalse(selector.test(s2));
     }
 
     @Test
     public void testPropertyNotPermittedAnySubject() {
-        TombstonePropertySelector selector = new TombstonePropertySelector();
+        TombstonePropertyPredicate selector = new TombstonePropertyPredicate();
         Statement s = ResourceFactory.createStatement(ResourceFactory.createResource(), Ebucore.privateTelephoneNumber,
                 ResourceFactory.createPlainLiteral("800-FOR-BOXY"));
-        assertFalse(selector.selects(s));
+        assertFalse(selector.test(s));
     }
 
     @Test
     public void testPropertyNotPermittedSpecificSubject() {
         Resource resc = ResourceFactory.createResource();
-        TombstonePropertySelector selector = new TombstonePropertySelector(resc);
+        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(resc);
         Statement s = ResourceFactory.createStatement(resc, Ebucore.privateTelephoneNumber,
                 ResourceFactory.createPlainLiteral("800-FOR-BOXY"));
-        assertFalse(selector.selects(s));
+        assertFalse(selector.test(s));
     }
 
 }

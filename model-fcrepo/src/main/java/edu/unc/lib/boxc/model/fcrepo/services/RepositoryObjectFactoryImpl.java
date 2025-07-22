@@ -24,6 +24,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -33,7 +34,7 @@ import org.slf4j.Logger;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.exceptions.ChecksumMismatchException;
 import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
-import edu.unc.lib.boxc.fcrepo.utils.SanitizeServerManagedTriplesSelector;
+import edu.unc.lib.boxc.fcrepo.utils.SanitizeServerManagedTriplesPredicate;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -658,7 +659,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         if (model != null) {
             try {
                 Model newModel = ModelFactory.createDefaultModel();
-                newModel.add(model.listStatements(new SanitizeServerManagedTriplesSelector()));
+                newModel.add((StmtIterator) model.listStatements().filterKeep(new SanitizeServerManagedTriplesPredicate()));
                 modelStream = RDFModelUtil.streamModel(newModel);
             } catch (IOException e) {
                 throw new FedoraException("Unable to create object at " + uri, e);

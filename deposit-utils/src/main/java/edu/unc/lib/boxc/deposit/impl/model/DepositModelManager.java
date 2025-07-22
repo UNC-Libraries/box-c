@@ -26,7 +26,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.transaction.TDBTransactionException;
+import org.apache.jena.tdb1.transaction.TDBTransactionException;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
@@ -264,7 +264,6 @@ public class DepositModelManager implements Closeable {
 
     /**
      * Perform the provided actions and commits the changes to the dataset
-     * @param dataset
      * @param actions Runnable which performs actions on the dataset to commit
      */
     public void commit(Runnable actions) {
