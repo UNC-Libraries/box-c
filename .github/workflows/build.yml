@@ -104,7 +104,8 @@ jobs:
 #          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
 #          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
 #          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info:lcov
-
+    - name: Generate coverage
+      run: mvn -pl !clamav-java,!jp24u verify
     - name: Qlty Code Coverage
       uses: qltysh/qlty-action/coverage@v1
       with:
