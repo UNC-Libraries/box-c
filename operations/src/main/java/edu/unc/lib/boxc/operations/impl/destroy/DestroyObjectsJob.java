@@ -190,8 +190,9 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
             throws IOException, FcrepoOperationFailedException {
 
         Model stoneModel = ModelFactory.createDefaultModel();
-        stoneModel.add((StmtIterator) destroyedResc.getModel().listStatements()
-                .filterKeep(new TombstonePropertyPredicate(destroyedResc)));
+        destroyedResc.getModel().listStatements()
+                .filterKeep(new TombstonePropertyPredicate(destroyedResc))
+                .forEach(stoneModel::add);
 
         // determine paths and store in tombstone model
         ObjectPath objPath = pathFactory.getPath(destroyedObj.getPid());

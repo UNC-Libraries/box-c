@@ -659,7 +659,9 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         if (model != null) {
             try {
                 Model newModel = ModelFactory.createDefaultModel();
-                newModel.add((StmtIterator) model.listStatements().filterKeep(new SanitizeServerManagedTriplesPredicate()));
+                model.listStatements()
+                        .filterKeep(new SanitizeServerManagedTriplesPredicate())
+                        .forEach(newModel::add);
                 modelStream = RDFModelUtil.streamModel(newModel);
             } catch (IOException e) {
                 throw new FedoraException("Unable to create object at " + uri, e);
