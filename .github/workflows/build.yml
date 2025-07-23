@@ -115,6 +115,8 @@ jobs:
           ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml
           ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
           ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info
+        strip-prefix: ${{github.workspace}}/**/
+        add-prefix: /src/main/java
     - name: View fedora service logs
       if: always()
       run: |
