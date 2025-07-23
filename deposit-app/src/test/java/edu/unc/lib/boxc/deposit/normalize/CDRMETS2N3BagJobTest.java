@@ -156,8 +156,8 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Resource child = (Resource) childIt.next();
         // check that parent is a work and has acl set
         assertTrue(child.hasProperty(RDF.type, Cdr.Work));
-        assertEquals(child.getProperty(CdrAcl.embargoUntil).getObject().toString(),
-                "2018-01-19T00:00:00^^http://www.w3.org/2001/XMLSchema#dateTime");
+        assertEquals("2018-01-19T00:00:00",
+                child.getProperty(CdrAcl.embargoUntil).getString());
 
         // check that properties get set on child object of work
         Bag childBag = model.getBag(child);

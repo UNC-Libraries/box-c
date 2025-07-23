@@ -9,7 +9,6 @@ import static edu.unc.lib.boxc.model.api.rdf.Premis.hasMessageDigest;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
@@ -17,26 +16,28 @@ import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.Memento;
 
+import java.util.function.Predicate;
+
 /**
- * Selector which returns all triples which are not fcrepo server managed
+ * Predicate which returns all triples which are not fcrepo server managed
  * triples.
  *
  * @author bbpennel
  *
  */
-public class SanitizeServerManagedTriplesSelector extends SimpleSelector {
+public class SanitizeServerManagedTriplesPredicate implements Predicate<Statement> {
     private boolean allowRelaxed;
 
-    public SanitizeServerManagedTriplesSelector() {
+    public SanitizeServerManagedTriplesPredicate() {
         allowRelaxed = false;
     }
 
-    public SanitizeServerManagedTriplesSelector(boolean allowRelaxed) {
+    public SanitizeServerManagedTriplesPredicate(boolean allowRelaxed) {
         this.allowRelaxed = allowRelaxed;
     }
 
     @Override
-    public boolean selects(Statement s) {
+    public boolean test(Statement s) {
         return !isServerManaged(s);
     }
 
