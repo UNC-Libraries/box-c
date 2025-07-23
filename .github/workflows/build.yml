@@ -106,16 +106,22 @@ jobs:
 #          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info:lcov
     - name: Generate coverage
       run: mvn -pl !clamav-java,!jp24u verify
-    - name: Qlty Code Coverage
+    - name: Qlty Code Coverage auth-api
       uses: qltysh/qlty-action/coverage@v1
       with:
         token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
         files: |
-          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml
-          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml
-          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
-          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info
-        strip-prefix: ${{github.workspace}}/**/src/main/java/
+          ${{github.workspace}}/auth-api/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/auth-api/target/site/jacoco-it/jacoco.xml
+        add-prefix: ${{github.workspace}}/auth-api/src/main/java/
+    - name: Qlty Code Coverage auth-fcrepo
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/auth-fcrepo/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/auth-fcrepo/target/site/jacoco-it/jacoco.xml
+        add-prefix: ${{github.workspace}}/auth-api/src/main/java/
     - name: View fedora service logs
       if: always()
       run: |
