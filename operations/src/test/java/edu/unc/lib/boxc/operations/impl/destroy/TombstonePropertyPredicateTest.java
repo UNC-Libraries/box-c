@@ -20,40 +20,40 @@ public class TombstonePropertyPredicateTest {
 
     @Test
     public void testPermittedPropertyAnySubject() {
-        TombstonePropertyPredicate selector = new TombstonePropertyPredicate();
+        TombstonePropertyPredicate predicate = new TombstonePropertyPredicate();
         Statement s = ResourceFactory.createStatement(ResourceFactory.createResource(), DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertTrue(selector.test(s));
+        assertTrue(predicate.test(s));
     }
 
     @Test
     public void testPermittedPropertySpecificSubject() {
         Resource resc = ResourceFactory.createResource();
-        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(resc);
+        TombstonePropertyPredicate predicate = new TombstonePropertyPredicate(resc);
         Statement s1 = ResourceFactory.createStatement(resc, DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertTrue(selector.test(s1));
+        assertTrue(predicate.test(s1));
         Resource unrelatedResc = ResourceFactory.createResource();
         Statement s2 = ResourceFactory.createStatement(unrelatedResc, DcElements.title,
                 ResourceFactory.createPlainLiteral("title"));
-        assertFalse(selector.test(s2));
+        assertFalse(predicate.test(s2));
     }
 
     @Test
     public void testPropertyNotPermittedAnySubject() {
-        TombstonePropertyPredicate selector = new TombstonePropertyPredicate();
+        TombstonePropertyPredicate predicate = new TombstonePropertyPredicate();
         Statement s = ResourceFactory.createStatement(ResourceFactory.createResource(), Ebucore.privateTelephoneNumber,
                 ResourceFactory.createPlainLiteral("800-FOR-BOXY"));
-        assertFalse(selector.test(s));
+        assertFalse(predicate.test(s));
     }
 
     @Test
     public void testPropertyNotPermittedSpecificSubject() {
         Resource resc = ResourceFactory.createResource();
-        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(resc);
+        TombstonePropertyPredicate predicate = new TombstonePropertyPredicate(resc);
         Statement s = ResourceFactory.createStatement(resc, Ebucore.privateTelephoneNumber,
                 ResourceFactory.createPlainLiteral("800-FOR-BOXY"));
-        assertFalse(selector.test(s));
+        assertFalse(predicate.test(s));
     }
 
 }

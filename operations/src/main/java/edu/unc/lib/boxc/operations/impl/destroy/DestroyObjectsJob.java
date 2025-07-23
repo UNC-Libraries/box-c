@@ -218,9 +218,9 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource(true);
-        TombstonePropertyPredicate selector = new TombstonePropertyPredicate(childResc);
+        TombstonePropertyPredicate tombstonePredicate = new TombstonePropertyPredicate(childResc);
         Model childModel = childResc.getModel();
-        var iter = childModel.listStatements().filterKeep(selector);
+        var iter = childModel.listStatements().filterKeep(tombstonePredicate);
 
         while (iter.hasNext()) {
             Statement s = iter.next();

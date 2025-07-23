@@ -62,6 +62,4 @@ public class SanitizeServerManagedTriplesPredicate implements Predicate<Statemen
         return allowRelaxed && (p.equals(created) || p.equals(createdBy)
                 || p.equals(lastModifiedBy) || p.equals(lastModified));
     }
-
-
 }
