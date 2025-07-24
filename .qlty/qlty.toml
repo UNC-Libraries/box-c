@@ -34,6 +34,10 @@ test_patterns = [
   "**/spec_*.*",
 ]
 
+[[source]]
+name = "default"
+default = true
+
 [smells]
 mode = "comment"
 
@@ -64,10 +68,6 @@ enabled = true
 [smells.duplication]
 enabled = true
 threshold = 50
-
-[[source]]
-name = "default"
-default = true
 
 [[plugin]]
 name = "pmd"
