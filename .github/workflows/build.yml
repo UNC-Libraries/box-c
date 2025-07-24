@@ -238,7 +238,7 @@ jobs:
         token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
         files: |
           ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
-        add-prefix: ${{github.workspace}}/static/js/vue-cdr-access
+        add-prefix: ${{github.workspace}}/
         tag: static-vue-cdr-access
     - name: Qlty Code Coverage static-vue-cdr-access
       uses: qltysh/qlty-action/coverage@v1
@@ -246,7 +246,7 @@ jobs:
         token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
         files: |
           ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info
-        add-prefix: ${{github.workspace}}/static/js/vue-cdr-admin
+        add-prefix: ${{github.workspace}}/
         tag: static-vue-cdr-admin
     - name: Qlty Code Coverage web-access-app
       uses: qltysh/qlty-action/coverage@v1
