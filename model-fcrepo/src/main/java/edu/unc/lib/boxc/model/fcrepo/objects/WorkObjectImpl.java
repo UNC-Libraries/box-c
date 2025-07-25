@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;

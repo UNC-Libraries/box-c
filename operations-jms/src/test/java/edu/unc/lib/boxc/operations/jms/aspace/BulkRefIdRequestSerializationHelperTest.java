@@ -3,8 +3,6 @@ package edu.unc.lib.boxc.operations.jms.aspace;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

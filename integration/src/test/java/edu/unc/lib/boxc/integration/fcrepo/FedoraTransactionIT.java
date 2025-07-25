@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.integration.fcrepo;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
-import edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
@@ -18,7 +17,6 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
