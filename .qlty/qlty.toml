@@ -14,11 +14,8 @@
 config_version = "0"
 
 exclude_patterns = [
-  "static/js/lib/",
-  "static/js/admin/performance_visualizations/assets/",
-  "static/js/admin/lib/",
-  "static/js/xmleditor/",
-  "static/plugins/",
+  "static/js/admin/lib/**",
+  "static/js/xmleditor/**",
   "**/test/",
   "**/tests/",
 ]
