@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 
 import java.io.IOException;
 

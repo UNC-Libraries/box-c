@@ -24,7 +24,6 @@ import org.junit.jupiter.api.io.TempDir;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.persist.api.storage.StorageType;
-import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
 
 /**
  * @author bbpennel

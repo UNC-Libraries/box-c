@@ -21,8 +21,6 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import org.apache.commons.io.IOUtils;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

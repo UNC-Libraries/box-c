@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import edu.unc.lib.boxc.deposit.DepositTestUtils;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.boxc.deposit.normalize.UnpackDepositJob;
 
 public class UnpackDepositJobTest extends AbstractDepositJobTest {
 

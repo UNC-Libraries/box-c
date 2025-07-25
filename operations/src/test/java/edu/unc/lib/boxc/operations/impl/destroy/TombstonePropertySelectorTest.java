@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.operations.impl.destroy.TombstonePropertySelector;
 
 /**
  *

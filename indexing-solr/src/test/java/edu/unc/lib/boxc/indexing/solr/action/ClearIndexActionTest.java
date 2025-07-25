@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.ClearIndexAction;
 
 public class ClearIndexActionTest extends BaseEmbeddedSolrTest {
 

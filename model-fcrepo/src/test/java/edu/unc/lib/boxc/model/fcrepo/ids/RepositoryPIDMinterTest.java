@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 
 /**
  *

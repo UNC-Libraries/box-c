@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Job which runs through a list of PIDs and assigns the corresponding ArchivesSpace ref IDs

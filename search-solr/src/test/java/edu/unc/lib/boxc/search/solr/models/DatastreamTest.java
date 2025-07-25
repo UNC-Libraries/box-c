@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 
 /**
  *
