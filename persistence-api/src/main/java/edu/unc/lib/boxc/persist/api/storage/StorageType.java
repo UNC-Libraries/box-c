@@ -10,7 +10,7 @@ public enum StorageType {
 
     private final String id;
 
-    private StorageType(String id) {
+    StorageType(String id) {
         this.id = id;
     }
 
