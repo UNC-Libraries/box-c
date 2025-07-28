@@ -39,16 +39,16 @@ public class SoftwareAgentConstants {
         private String version;
         private boolean useCdrVersion = false;
 
-        private SoftwareAgent(String value) {
+        SoftwareAgent(String value) {
             this.value = value;
         }
 
-        private SoftwareAgent(String value, boolean useCdrVersion) {
+        SoftwareAgent(String value, boolean useCdrVersion) {
             this.value = value;
             this.useCdrVersion = useCdrVersion;
         }
 
-        private SoftwareAgent(String value, String version) {
+        SoftwareAgent(String value, String version) {
             this.value = value;
             this.version = version;
         }
