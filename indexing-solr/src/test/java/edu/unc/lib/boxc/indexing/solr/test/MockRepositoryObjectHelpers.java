@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.indexing.solr.test;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -8,11 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 

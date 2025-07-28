@@ -15,7 +15,6 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 
 /**
  * @author bbpennel

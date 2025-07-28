@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.operations.jms.accessSurrogates;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;

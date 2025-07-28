@@ -30,7 +30,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractFedoraObjectTest;
 import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
-import edu.unc.lib.boxc.operations.impl.events.FilePremisLogger;
 
 /**
  *

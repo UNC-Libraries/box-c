@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
-import edu.unc.lib.boxc.deposit.normalize.PreconstructedDepositJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 
 /**
