@@ -1,9 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.download;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 public class DownloadBulkRequest {
     private String workPidString;

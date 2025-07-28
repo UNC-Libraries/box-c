@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.IndexTreeInplaceAction;
-import edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 
 /**

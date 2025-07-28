@@ -29,7 +29,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;

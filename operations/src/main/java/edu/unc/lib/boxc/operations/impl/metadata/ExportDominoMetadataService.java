@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;

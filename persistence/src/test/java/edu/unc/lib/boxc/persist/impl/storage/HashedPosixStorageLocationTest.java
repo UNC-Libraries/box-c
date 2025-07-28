@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.persist.api.storage.StorageType;
-import edu.unc.lib.boxc.persist.impl.storage.HashedPosixStorageLocation;
 
 /**
  * @author bbpennel

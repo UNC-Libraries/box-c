@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Service to process access copy image downloads
+ * Service to process access copy image downloads and thumbnails
  * @author snluong
  */
 public class DownloadImageService {
@@ -158,11 +158,13 @@ public class DownloadImageService {
         String extent = ds == null ? null : ds.getExtent();
         if (StringUtils.isEmpty(extent)) {
             ds = contentObjectRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+            if (ds == null) {
+                throw new NotFoundException("No jp2 or original_file available for " + contentObjectRecord.getId());
+            }
+            return ds.getExtent();
+        } else {
+            return extent;
         }
-        if (ds == null) {
-            throw new NotFoundException("No jp2 or original_file available for " + contentObjectRecord.getId());
-        }
-        return ds.getExtent();
     }
 
     /**
@@ -202,7 +204,7 @@ public class DownloadImageService {
         return Math.max(extent[0], extent[1]);
     }
 
-    private String getPlaceholderUrl(String size) {
+    protected String getPlaceholderUrl(String size) {
         // pixel length should be in !123,123 format
         var formattedSize = "!" + size + "," + size;
         return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";

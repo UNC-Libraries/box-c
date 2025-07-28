@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper;
 
 /**
  *

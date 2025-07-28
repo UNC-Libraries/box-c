@@ -4,9 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.jupiter.api.Assertions;
@@ -16,8 +14,6 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 
 public class CutoffFacetTest extends Assertions {
