@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AudioEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(AudioEnhancementsRouter.class);
 
-    @BeanInject(value = "addAudioAccessCopyProcessor")
+    @BeanInject("addAudioAccessCopyProcessor")
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
     private UuidGenerator uuidGenerator;

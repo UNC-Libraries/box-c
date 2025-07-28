@@ -23,7 +23,7 @@ public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
     @Produce("direct:start")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "streamingPropertiesRequestProcessor")
+    @BeanInject("streamingPropertiesRequestProcessor")
     private StreamingPropertiesRequestProcessor processor;
 
     @Override

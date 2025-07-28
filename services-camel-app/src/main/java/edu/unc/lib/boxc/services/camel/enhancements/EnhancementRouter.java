@@ -28,13 +28,13 @@ import edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor;
 public class EnhancementRouter extends RouteBuilder {
     private static final Logger log = getLogger(EnhancementRouter.class);
 
-    @BeanInject(value = "binaryEnhancementProcessor")
+    @BeanInject("binaryEnhancementProcessor")
     private BinaryEnhancementProcessor enProcessor;
 
-    @BeanInject(value = "binaryMetadataProcessor")
+    @BeanInject("binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
-    @PropertyInject(value = "cdr.enhancement.processingThreads")
+    @PropertyInject("cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
     private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy";

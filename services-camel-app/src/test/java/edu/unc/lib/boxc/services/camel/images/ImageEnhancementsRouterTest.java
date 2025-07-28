@@ -60,7 +60,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private static final String derivTmpPath = "tmp/" + fileName;
 
-    @PropertyInject(value = "fcrepo.baseUrl")
+    @PropertyInject("fcrepo.baseUrl")
     private static String baseUri;
 
     @EndpointInject("mock:fcrepo")
@@ -69,19 +69,19 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "jp2Processor")
+    @BeanInject("jp2Processor")
     private Jp2Processor jp2Processor;
 
-    @BeanInject(value = "addAccessCopyProcessor")
+    @BeanInject("addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    @BeanInject(value = "imageCacheInvalidationProcessor")
+    @BeanInject("imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
-    @BeanInject(value = "imageDerivativeProcessor")
+    @BeanInject("imageDerivativeProcessor")
     private ImageDerivativeProcessor imageDerivativeProcessor;
 
-    @BeanInject(value = "pdfImageProcessor")
+    @BeanInject("pdfImageProcessor")
     private PdfImageProcessor pdfImageProcessor;
 
     @TempDir

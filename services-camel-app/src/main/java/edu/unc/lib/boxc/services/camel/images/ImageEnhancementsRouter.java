@@ -24,19 +24,19 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     private static final int CACHE_INVALIDATE_THREADS = 5;
     private static final int CACHE_INVALIDATE_REQUESTS_PER_SEC = 10;
 
-    @BeanInject(value = "addAccessCopyProcessor")
+    @BeanInject("addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    @BeanInject(value = "imageCacheInvalidationProcessor")
+    @BeanInject("imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
-    @BeanInject(value = "jp2Processor")
+    @BeanInject("jp2Processor")
     private Jp2Processor jp2Processor;
 
-    @BeanInject(value = "pdfImageProcessor")
+    @BeanInject("pdfImageProcessor")
     private PdfImageProcessor pdfImageProcessor;
 
-    @BeanInject(value = "imageDerivativeProcessor")
+    @BeanInject("imageDerivativeProcessor")
     private ImageDerivativeProcessor imageDerivativeProcessor;
 
     private UuidGenerator uuidGenerator;
