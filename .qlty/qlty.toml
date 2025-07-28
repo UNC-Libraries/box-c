@@ -68,8 +68,8 @@ threshold = 50
 
 [[plugin]]
 name = "pmd"
-enabled = true
+mode = "comment"
 
 [[plugin]]
 name = "checkstyle"
-enabled = false
+mode = "disabled"
