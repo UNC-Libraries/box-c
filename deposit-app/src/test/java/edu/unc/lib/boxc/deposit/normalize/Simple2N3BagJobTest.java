@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;

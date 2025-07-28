@@ -5,8 +5,6 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-
 /**
  *
  * @author bbpennel

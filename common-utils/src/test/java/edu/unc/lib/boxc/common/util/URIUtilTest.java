@@ -6,8 +6,6 @@ import java.net.URI;
 
 import org.junit.jupiter.api.Test;
 
-import edu.unc.lib.boxc.common.util.URIUtil;
-
 public class URIUtilTest {
 
     @Test

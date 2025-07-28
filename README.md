@@ -1,4 +1,6 @@
-![Build](https://github.com/UNC-Libraries/box-c/workflows/DcrBuild/badge.svg)
+[![Maintainability](https://qlty.sh/gh/UNC-Libraries/projects/box-c/maintainability.svg)](https://qlty.sh/gh/UNC-Libraries/projects/box-c)
+[![Code Coverage](https://qlty.sh/gh/UNC-Libraries/projects/box-c/coverage.svg)](https://qlty.sh/gh/UNC-Libraries/projects/box-c)
+[![Build](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml/badge.svg)](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml)
 
 Requirements
 ============
