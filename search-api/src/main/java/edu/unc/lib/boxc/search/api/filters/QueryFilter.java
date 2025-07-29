@@ -11,10 +11,10 @@ public interface QueryFilter {
     /**
      * @return this filter represented as a query string
      */
-    public String toFilterString();
+    String toFilterString();
 
     /**
      * @return SearchFieldKey for the field to apply the filter to
      */
-    public SearchFieldKey getFieldKey();
+    SearchFieldKey getFieldKey();
 }

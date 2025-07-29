@@ -12,38 +12,38 @@ public interface PID {
      * @return String representation of the PID
      */
     @Deprecated
-    public String getPid();
+    String getPid();
 
     /**
      * @return URI representation of the persistent identifer
      */
     @Deprecated
-    public String getURI();
+    String getURI();
 
     /**
      * @return
      */
     @Deprecated
-    public String getPath();
+    String getPath();
 
     /**
      * @return The UUID portion of this PID
      */
-    public String getUUID();
+    String getUUID();
 
     /**
      * Get the unique identifier for this object.
      *
      * @return the unique identifier for this object
      */
-    public String getId();
+    String getId();
 
     /**
      * Get the object type path qualifier for this object.
      *
      * @return the object type path qualifier for this object.
      */
-    public String getQualifier();
+    String getQualifier();
 
     /**
      * Get the qualified unique identifier for this object, containing the
@@ -51,7 +51,7 @@ public interface PID {
      *
      * @return the qualified id
      */
-    public String getQualifiedId();
+    String getQualifiedId();
 
     /**
      * Get the component path, which is the portion of the repository path identifying
@@ -59,14 +59,14 @@ public interface PID {
      *
      * @return the component path
      */
-    public String getComponentPath();
+    String getComponentPath();
 
     /**
      * Get the unique identifier for this object, including the component path if present
      *
      * @return
      */
-    public String getComponentId();
+    String getComponentId();
 
     /**
      * Returns true if the provided pid is a component of the this pid
@@ -74,20 +74,20 @@ public interface PID {
      * @param pid
      * @return
      */
-    public boolean containsComponent(PID pid);
+    boolean containsComponent(PID pid);
 
     /**
      * Returns the full repository uri for this object or component.
      *
      * @return
      */
-    public URI getRepositoryUri();
+    URI getRepositoryUri();
 
     /**
      * Returns the repository URI for this pid as a string
      *
      * @return
      */
-    public String getRepositoryPath();
+    String getRepositoryPath();
 }
 

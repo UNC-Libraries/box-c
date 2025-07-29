@@ -25,7 +25,7 @@ public interface AclFactory {
      * @param pid
      * @return A map of principals to sets of roles, where the roles are expressed as URI strings.
      */
-    public Map<String, Set<String>> getPrincipalRoles(PID pid);
+    Map<String, Set<String>> getPrincipalRoles(PID pid);
 
     /**
      * Retrieve all staff role assignments for the specified object
@@ -33,7 +33,7 @@ public interface AclFactory {
      * @param pid identifier for the object
      * @return List of RoleAssignments for all the staff roles assigned to the object
      */
-    public List<RoleAssignment> getStaffRoleAssignments(PID pid);
+    List<RoleAssignment> getStaffRoleAssignments(PID pid);
 
     /**
      * Retrieve all patron role assignments for the specified object
@@ -41,7 +41,7 @@ public interface AclFactory {
      * @param pid identifier for the object
      * @return List of RoleAssignments for all the patron roles assigned to the object
      */
-    public List<RoleAssignment> getPatronRoleAssignments(PID pid);
+    List<RoleAssignment> getPatronRoleAssignments(PID pid);
 
     /**
      * Returns active patron role assignments for an object, accounting for roles,
@@ -50,7 +50,7 @@ public interface AclFactory {
      * @param pid identifier for the object
      * @return List of patron role assignments after applying all restrictions.
      */
-    public List<RoleAssignment> getPatronAccess(PID pid);
+    List<RoleAssignment> getPatronAccess(PID pid);
 
     /**
      * Returns the expiration date of an embargo imposed on the object, or null if no embargo is specified
@@ -58,7 +58,7 @@ public interface AclFactory {
      * @param pid
      * @return
      */
-    public Date getEmbargoUntil(PID pid);
+    Date getEmbargoUntil(PID pid);
 
     /**
      * Returns true if the object specified is marked for deletion.
@@ -66,5 +66,5 @@ public interface AclFactory {
      * @param pid
      * @return
      */
-    public boolean isMarkedForDeletion(PID pid);
+    boolean isMarkedForDeletion(PID pid);
 }

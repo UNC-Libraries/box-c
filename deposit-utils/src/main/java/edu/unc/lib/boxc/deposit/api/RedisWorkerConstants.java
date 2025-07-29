@@ -14,7 +14,7 @@ public class RedisWorkerConstants {
 
     public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
 
-    public static enum DepositField {
+    public enum DepositField {
         uuid, state, actionRequest, contactName, depositorName, intSenderDescription,
         fileName, depositMethod, containerId,
         createTime, startTime, endTime, ingestedObjects, directory, lock, submitTime,
@@ -25,19 +25,19 @@ public class RedisWorkerConstants {
         createParentFolder, filesOnlyMode;
     }
 
-    public static enum JobField {
+    public enum JobField {
         uuid, name, status, message, starttime, endtime, options, num, total;
     }
 
-    public static enum JobStatus {
+    public enum JobStatus {
         queued, working, completed, failed, killed;
     }
 
-    public static enum DepositState {
+    public enum DepositState {
         unregistered, queued, running, paused, finished, cancelled, failed, quieted;
     }
 
-    public static enum Priority {
+    public enum Priority {
         low, normal, high
     }
 
@@ -47,11 +47,11 @@ public class RedisWorkerConstants {
      * @author count0
      *
      */
-    public static enum DepositAction {
+    public enum DepositAction {
         register, pause, resume, cancel, destroy;
     }
 
-    public static enum DepositPipelineState {
+    public enum DepositPipelineState {
         starting, active, quieted, stopped, shutdown;
 
         public static DepositPipelineState fromName(String name) {
@@ -63,7 +63,7 @@ public class RedisWorkerConstants {
         }
     }
 
-    public static enum DepositPipelineAction {
+    public enum DepositPipelineAction {
         quiet, unquiet, stop;
 
         public static DepositPipelineAction fromName(String name) {

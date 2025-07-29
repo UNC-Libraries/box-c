@@ -12,35 +12,35 @@ public interface SearchFacet {
      *
      * @return
      */
-    public String getFieldName();
+    String getFieldName();
 
     /**
      * Returns the number of results matching this facet
      *
      * @return
      */
-    public long getCount();
+    long getCount();
 
     /**
      * Returns the string value assigned to this facet
      *
      * @return
      */
-    public String getValue();
+    String getValue();
 
     /**
      * Returns the value used for displaying the facets value to users
      *
      * @return
      */
-    public String getDisplayValue();
+    String getDisplayValue();
 
     /**
      * Returns the value used for searching for this facet
      *
      * @return
      */
-    public String getSearchValue();
+    String getSearchValue();
 
     /**
      * Returns the value for limiting results to this facet, formatted such that
@@ -50,5 +50,5 @@ public interface SearchFacet {
      *
      * @return
      */
-    public String getLimitToValue();
+    String getLimitToValue();
 }

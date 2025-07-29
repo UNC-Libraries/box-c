@@ -38,7 +38,7 @@ public class JMSMessageUtil {
         return servicesMessageNamespace;
     }
 
-    public static enum FedoraActions {
+    public enum FedoraActions {
         MODIFY_OBJECT("modifyObject"), MODIFY_DATASTREAM_BY_VALUE(
                 "modifyDatastreamByValue"), MODIFY_DATASTREAM_BY_REFERENCE(
                 "modifyDatastreamByReference"), ADD_DATASTREAM("addDatastream"), PURGE_OBJECT(
@@ -91,7 +91,7 @@ public class JMSMessageUtil {
         }
     }
 
-    public static enum CDRActions {
+    public enum CDRActions {
         ADD("add"),
         EDIT_ACCESS_CONTROL("editAccess"),
         EDIT_TYPE("editType"),
@@ -150,7 +150,7 @@ public class JMSMessageUtil {
         }
     }
 
-    public static enum ServicesActions {
+    public enum ServicesActions {
         APPLY_SERVICE_STACK("APPLY_SERVICE_STACK"), APPLY_SERVICE(
                 "PERFORM_SERVICE");
 

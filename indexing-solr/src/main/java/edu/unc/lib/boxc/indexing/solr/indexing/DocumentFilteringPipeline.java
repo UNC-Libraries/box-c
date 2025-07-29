@@ -20,7 +20,7 @@ public interface DocumentFilteringPipeline {
      * @param dip Indexing package being modified
      * @throws IndexingException
      */
-    public void process(DocumentIndexingPackage dip) throws IndexingException;
+    void process(DocumentIndexingPackage dip) throws IndexingException;
 
-    public void setFilters(List<IndexDocumentFilter> filters);
+    void setFilters(List<IndexDocumentFilter> filters);
 }

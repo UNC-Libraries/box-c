@@ -87,7 +87,7 @@ public enum SearchFieldKey {
     private static Map<String, SearchFieldKey> urlParamToKey = Arrays.stream(SearchFieldKey.values())
             .collect(Collectors.toMap(SearchFieldKey::getUrlParam, Function.identity()));
 
-    private SearchFieldKey(String solrField, String urlParam, String displayLabel) {
+    SearchFieldKey(String solrField, String urlParam, String displayLabel) {
         this.solrField = solrField;
         this.urlParam = urlParam;
         this.displayLabel = displayLabel;
