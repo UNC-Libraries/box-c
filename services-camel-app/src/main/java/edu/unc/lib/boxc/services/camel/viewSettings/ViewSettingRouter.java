@@ -16,7 +16,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class ViewSettingRouter extends RouteBuilder {
     private static final Logger log = getLogger(ViewSettingRouter.class);
 
-    @BeanInject(value = "viewSettingRequestProcessor")
+    @BeanInject("viewSettingRequestProcessor")
     private ViewSettingRequestProcessor viewSettingRequestProcessor;
     private String viewSettingStreamCamel;
 

@@ -19,16 +19,16 @@ import org.springframework.beans.factory.annotation.Value;
 public class LongleafRouter extends RouteBuilder {
     private static final Logger log = getLogger(LongleafRouter.class);
 
-    @BeanInject(value = "getUrisProcessor")
+    @BeanInject("getUrisProcessor")
     private GetUrisProcessor getUrisProcessor;
 
-    @BeanInject(value = "registerLongleafProcessor")
+    @BeanInject("registerLongleafProcessor")
     private RegisterToLongleafProcessor registerProcessor;
 
-    @BeanInject(value = "deregisterLongleafProcessor")
+    @BeanInject("deregisterLongleafProcessor")
     private DeregisterLongleafProcessor deregisterProcessor;
 
-    @BeanInject(value = "longleafAggregationStrategy")
+    @BeanInject("longleafAggregationStrategy")
     private LongleafAggregationStrategy longleafAggregationStrategy;
     @Value("${longleaf.maxRedelivieries:3}")
     private int longleafMaxRedelivieries;

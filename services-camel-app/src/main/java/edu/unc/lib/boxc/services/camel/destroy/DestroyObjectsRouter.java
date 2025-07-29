@@ -18,7 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DestroyObjectsRouter extends RouteBuilder {
     private static final Logger log = getLogger(DestroyObjectsRouter.class);
 
-    @BeanInject(value = "destroyObjectsProcessor")
+    @BeanInject("destroyObjectsProcessor")
     private DestroyObjectsProcessor destroyObjectsProcessor;
 
     private String cdrDestroyStreamCamel;

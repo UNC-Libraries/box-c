@@ -38,7 +38,7 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     @Produce("direct:start")
     private ProducerTemplate template;
 
-    @BeanInject(value = "solrIngestProcessor")
+    @BeanInject("solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
     @Override

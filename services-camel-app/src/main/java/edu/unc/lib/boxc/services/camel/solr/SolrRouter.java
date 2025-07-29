@@ -22,7 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SolrRouter extends RouteBuilder {
     private static final Logger log = getLogger(SolrRouter.class);
 
-    @BeanInject(value = "solrIngestProcessor")
+    @BeanInject("solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
     @Override
