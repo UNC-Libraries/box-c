@@ -6,11 +6,11 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -39,6 +40,7 @@ public class CreateSitemapServiceTest {
     @Mock
     private SolrSearchService solrSearchService;
 
+    @TempDir
     public Path temporaryFolderPath;
 
     private CreateSitemapService createSitemapService;
@@ -46,32 +48,25 @@ public class CreateSitemapServiceTest {
     @BeforeEach
     public void setup() throws IOException {
         closeable = openMocks(this);
-        temporaryFolderPath = Files.createTempDirectory("createSitemapServiceTest");
         createSitemapService = new CreateSitemapService();
         createSitemapService.setSolrSearchService(solrSearchService);
         createSitemapService.setAccessGroups(new AccessGroupSetImpl("agroup"));
-        createSitemapService.setSitemapBasePath(temporaryFolderPath.toString() + "/");
+        createSitemapService.setSitemapBasePath(temporaryFolderPath.toString());
         createSitemapService.setSitemapBaseUrl("https://sitemaps.example.com/");
         createSitemapService.setBaseUrl("https://sitemaps.example.com/");
     }
 
     @AfterEach
     void closeService() throws Exception {
-        FileUtils.deleteDirectory(temporaryFolderPath.toFile());
         closeable.close();
-    }
-
-    @Test
-    public void createSitemapTest() throws Exception {
-        createSitemap();
-
-        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("sitemap.xml")));
-        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("page_1.xml")));
     }
 
     @Test
     public void sitemapIndexTest() throws Exception {
         createSitemap();
+
+        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("sitemap.xml")));
+        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("page_1.xml")));
 
         File xmlFile = new File(String.valueOf(temporaryFolderPath.resolve("sitemap.xml")));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -79,29 +74,23 @@ public class CreateSitemapServiceTest {
         Document doc = dBuilder.parse(xmlFile);
         NodeList nodeList = doc.getElementsByTagName("loc");
 
-        Assertions.assertEquals(1, nodeList.getLength());
-        Assertions.assertEquals("https://sitemaps.example.com/sitemap/page_1.xml", nodeList.item(0).getTextContent());
-    }
+        assertEquals(1, nodeList.getLength());
+        assertEquals("https://sitemaps.example.com/sitemap/page_1.xml", nodeList.item(0).getTextContent());
 
-    @Test
-    public void sitemapPageTest() throws Exception {
-        createSitemap();
+        File xmlPageFile = temporaryFolderPath.resolve("page_1.xml").toFile();
+        DocumentBuilderFactory dbPageFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dPageBuilder = dbPageFactory.newDocumentBuilder();
+        Document docPage = dPageBuilder.parse(xmlPageFile);
+        NodeList pageNodeList = docPage.getElementsByTagName("loc");
 
-        File xmlFile = new File(String.valueOf(temporaryFolderPath.resolve("page_1.xml")));
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(xmlFile);
-        NodeList nodeList = doc.getElementsByTagName("loc");
-
-        Assertions.assertEquals(2, nodeList.getLength());
-        Assertions.assertEquals("https://sitemaps.example.com/f277bb38-272c-471c-a28a-9887a1328a1f", nodeList
+        assertEquals(2, pageNodeList.getLength());
+        assertEquals("https://sitemaps.example.com/f277bb38-272c-471c-a28a-9887a1328a1f", pageNodeList
                 .item(0).getTextContent());
-        Assertions.assertEquals("https://sitemaps.example.com/ba70a1ee-fa7c-437f-a979-cc8b16599652", nodeList
+        assertEquals("https://sitemaps.example.com/ba70a1ee-fa7c-437f-a979-cc8b16599652", pageNodeList
                 .item(1).getTextContent());
     }
 
     private void createSitemap() {
-        makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection, "Collection", new Date());
         var workRecord1 = makeWorkRecord(UUID1, "Work 1");
         var workRecord2 = makeWorkRecord(UUID2, "Work 2");
         mockResults(workRecord1, workRecord2);

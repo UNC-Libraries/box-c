@@ -6,6 +6,7 @@ import com.redfin.sitemapgenerator.WebSitemapUrl;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
@@ -58,13 +59,13 @@ public class CreateSitemapService {
 
             buildSitemapIndex(pages);
         } catch (MalformedURLException e) {
-            LOG.warn("Unable to generate DCR sitemap {}", e.getMessage());
+            LOG.error("Unable to generate DCR sitemap {}", e.getMessage());
         }
     }
 
-    private void buildSitemapIndex(ArrayList<String> pages) throws MalformedURLException {
+    private void buildSitemapIndex(List<String> pages) throws MalformedURLException {
         SitemapIndexGenerator sitemapIndex = new SitemapIndexGenerator(sitemapBaseUrl,
-                new File(sitemapBasePath + "sitemap.xml"));
+                new File(sitemapBasePath, "sitemap.xml"));
         for (String page : pages) {
             sitemapIndex.addUrl(page);
         }
@@ -84,12 +85,12 @@ public class CreateSitemapService {
         var wsg = WebSitemapGenerator.builder(sitemapBaseUrl, new File(sitemapBasePath))
                 .fileNamePrefix(page_name).build();
         for (ContentObjectRecord work: works) {
-            var url = new WebSitemapUrl.Options(baseUrl + work.getId()).lastMod(work.getDateUpdated()).build();
+            var url = new WebSitemapUrl.Options(URIUtil.join(baseUrl, work.getId())).lastMod(work.getDateUpdated()).build();
             wsg.addUrl(url);
         }
         wsg.write();
 
-        return sitemapBaseUrl + "sitemap/" + page_name + ".xml";
+        return URIUtil.join(sitemapBaseUrl, "sitemap", page_name) + ".xml";
     }
 
     private SearchResultResponse getRecords(int startRow) {
