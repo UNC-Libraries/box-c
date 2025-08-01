@@ -547,6 +547,14 @@
         <property name="accessGroups" ref="accessGroups" />
     </bean>
 
+    <bean id="createSitemapService" class="edu.unc.lib.boxc.operations.impl.sitemap.CreateSitemapService">
+        <property name="accessGroups" ref="accessGroups" />
+        <property name="solrSearchService" ref="queryLayer" />
+        <property name="baseUrl" value="${base.record.url}"/>
+        <property name="sitemapBaseUrl" value="${sitemap.base.url}"/>
+        <property name="sitemapBasePath" value="${sitemap.base.path}"/>
+    </bean>
+
     <bean id="refIdService" class="edu.unc.lib.boxc.operations.impl.aspace.RefIdService">
         <property name="aclService" ref="aclService"/>
         <property name="repoObjLoader" ref="repositoryObjectLoader"/>
