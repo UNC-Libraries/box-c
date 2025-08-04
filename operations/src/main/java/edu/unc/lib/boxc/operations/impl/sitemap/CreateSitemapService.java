@@ -44,18 +44,18 @@ public class CreateSitemapService {
     @Scheduled(cron = "${sitemap.cron.schedule}")
     public void generateSitemap() {
         try {
-            int pagePrefix = 1;
+            SearchResultResponse works;
             ArrayList<String> pages = new ArrayList<>();
-            var works = getRecords(0);
-            pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
+            int pagePrefix = 1;
+            var i = 0;
 
-            if (works.getResultCount() > DEFAULT_PAGE_SIZE) {
-                for (var i = DEFAULT_PAGE_SIZE; i < works.getResultCount(); i+= DEFAULT_PAGE_SIZE) {
-                    pagePrefix += 1;
-                    works = getRecords(i);
-                    pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
-                }
-            }
+            do {
+                works = getRecords(i);
+                pages.add(buildSitemapPage(works.getResultList(), pagePrefix));
+
+                pagePrefix += 1;
+                i += DEFAULT_PAGE_SIZE;
+            } while (i < works.getResultCount());
 
             buildSitemapIndex(pages);
         } catch (MalformedURLException e) {

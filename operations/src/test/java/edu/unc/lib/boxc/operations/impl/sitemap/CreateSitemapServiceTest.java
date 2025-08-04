@@ -65,10 +65,12 @@ public class CreateSitemapServiceTest {
     public void sitemapIndexTest() throws Exception {
         createSitemap();
 
-        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("sitemap.xml")));
-        Assertions.assertTrue(Files.exists(temporaryFolderPath.resolve("page_1.xml")));
+        var sitemapIndexPage = temporaryFolderPath.resolve("sitemap.xml");
+        var sitemapPageOne = temporaryFolderPath.resolve("page_1.xml");
+        Assertions.assertTrue(Files.exists(sitemapIndexPage));
+        Assertions.assertTrue(Files.exists(sitemapPageOne));
 
-        File xmlFile = new File(String.valueOf(temporaryFolderPath.resolve("sitemap.xml")));
+        File xmlFile = sitemapIndexPage.toFile();
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(xmlFile);
@@ -77,7 +79,7 @@ public class CreateSitemapServiceTest {
         assertEquals(1, nodeList.getLength());
         assertEquals("https://sitemaps.example.com/sitemap/page_1.xml", nodeList.item(0).getTextContent());
 
-        File xmlPageFile = temporaryFolderPath.resolve("page_1.xml").toFile();
+        File xmlPageFile = sitemapPageOne.toFile();
         DocumentBuilderFactory dbPageFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dPageBuilder = dbPageFactory.newDocumentBuilder();
         Document docPage = dPageBuilder.parse(xmlPageFile);
