@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
@@ -24,7 +23,7 @@ import java.nio.file.Paths;
  */
 @Controller
 public class SiteMapController  extends AbstractErrorHandlingSearchController {
-    private final String sitemapBasePath;
+    private String sitemapBasePath;
     private static final Logger LOG = LoggerFactory.getLogger(SiteMapController.class);
 
     public SiteMapController(String sitemapBasePath) {
@@ -39,8 +38,8 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
         try {
             var content = Paths.get(sitemapBasePath, "sitemap.xml");
             UrlResource urlResource = new UrlResource(content.toUri());
-            return ResponseEntity.ok()
-                    .body(urlResource);
+
+            return ResponseEntity.ok().body(urlResource);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -48,7 +47,7 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
 
     @GetMapping(value="sitemap/{page}", produces = MediaType.APPLICATION_XML_VALUE)
     public @ResponseBody
-    ResponseEntity<String> xmlSitemapPage(@PathVariable("page") String page) {
+    ResponseEntity<Resource> xmlSitemapPage(@PathVariable("page") String page) {
         LOG.debug("Searching for sitemap page: " + page);
 
         try {
@@ -56,10 +55,15 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
                 throw new IOException("Invalid sitemap page number requested: " + page);
             }
 
-            String content = Files.readString(Paths.get(sitemapBasePath + page));
-            return new ResponseEntity<>(content, HttpStatus.OK);
+            var content = Paths.get(sitemapBasePath, page);
+            UrlResource urlResource = new UrlResource(content.toUri());
+            return ResponseEntity.ok().body(urlResource);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    public void setSitemapBasePath(String sitemapBasePath) {
+        this.sitemapBasePath = sitemapBasePath;
     }
 }
