@@ -80,9 +80,7 @@ public class CreateSitemapServiceTest {
         assertEquals("https://sitemaps.example.com/sitemap/page_1.xml", nodeList.item(0).getTextContent());
 
         File xmlPageFile = sitemapPageOne.toFile();
-        DocumentBuilderFactory dbPageFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dPageBuilder = dbPageFactory.newDocumentBuilder();
-        Document docPage = dPageBuilder.parse(xmlPageFile);
+        Document docPage = dBuilder.parse(xmlPageFile);
         NodeList pageNodeList = docPage.getElementsByTagName("loc");
 
         assertEquals(2, pageNodeList.getLength());

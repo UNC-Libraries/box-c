@@ -37,8 +37,9 @@ public class SiteMapControllerTest {
     @BeforeEach
     public void setup() throws IOException {
         closeable = openMocks(this);
-        Files.writeString(tmpFolder.resolve( "sitemap.xml"), "");
-        Files.writeString(tmpFolder.resolve( "page_1.xml"), "");
+        Files.writeString(tmpFolder.resolve("sitemap.xml"), "");
+        Files.writeString(tmpFolder.resolve("page_1.xml"), "");
+        Files.writeString(tmpFolder.resolve("beige_11.xml"), "");
         controller.setSitemapBasePath(tmpFolder.toString());
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
@@ -61,6 +62,14 @@ public class SiteMapControllerTest {
         mockMvc.perform(get("/sitemap/{page}", "page_1.xml")
                         .contentType(MediaType.APPLICATION_XML))
                 .andExpect(status().is2xxSuccessful())
+                .andReturn();
+    }
+
+    @Test
+    public void testGetSitemapForValidRequest() throws Exception {
+        mockMvc.perform(get("/sitemap/{page}", "page_2.xml")
+                        .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().is4xxClientError())
                 .andReturn();
     }
 

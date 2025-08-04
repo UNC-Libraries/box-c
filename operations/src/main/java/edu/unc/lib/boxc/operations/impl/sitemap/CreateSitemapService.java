@@ -28,6 +28,11 @@ import java.util.List;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 
+/**
+ * Service to generate sitemaps for DCR works
+ *
+ * @author lfarrell
+ */
 @Component
 @EnableScheduling
 public class CreateSitemapService {

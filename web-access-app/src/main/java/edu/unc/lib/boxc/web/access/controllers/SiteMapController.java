@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,11 +14,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 
 /**
- * Controller which returns sitemaps for DCR content
+ * Controller that returns sitemaps for DCR content
  *
  * @author lfarrell
  */
@@ -35,29 +39,30 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
     ResponseEntity<Resource> xmlSitemap() {
         LOG.info("XML sitemap contents list");
 
-        try {
-            var content = Paths.get(sitemapBasePath, "sitemap.xml");
-            UrlResource urlResource = new UrlResource(content.toUri());
+        var content = Paths.get(sitemapBasePath, "sitemap.xml");
+        PathResource pathResource = new PathResource(content.toUri());
 
-            return ResponseEntity.ok().body(urlResource);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok().body(pathResource);
     }
 
     @GetMapping(value="sitemap/{page}", produces = MediaType.APPLICATION_XML_VALUE)
     public @ResponseBody
     ResponseEntity<Resource> xmlSitemapPage(@PathVariable("page") String page) {
-        LOG.debug("Searching for sitemap page: " + page);
+        LOG.debug("Searching for sitemap page: {}", page);
 
         try {
             if (!page.matches("^page_\\d+\\.xml$")) {
-                throw new IOException("Invalid sitemap page number requested: " + page);
+                LOG.debug("Invalid sitemap page number requested: {}", page);
+                throw new IOException();
             }
 
             var content = Paths.get(sitemapBasePath, page);
-            UrlResource urlResource = new UrlResource(content.toUri());
-            return ResponseEntity.ok().body(urlResource);
+            PathResource pathResource = new PathResource(content.toUri());
+            if (!pathResource.exists()) {
+                throw new FileNotFoundException();
+            }
+
+            return ResponseEntity.ok().body(pathResource);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
