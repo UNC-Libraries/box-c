@@ -114,7 +114,7 @@
         <jstl.version>3.0.1</jstl.version>
         <jsp-api.version>4.0.0</jsp-api.version>
 
-        <jedis.version>3.10.0</jedis.version>
+        <jedis.version>5.1.5</jedis.version>
         <solr.version>9.8.0</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>5.5.0</jena.version>

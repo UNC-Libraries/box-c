@@ -1,0 +1,39 @@
+package edu.unc.lib.boxc.deposit.impl.jms;
+
+/**
+ * Message containing details about a deposit job to be executed
+ *
+ * @author bbpennel
+ */
+public class DepositJobMessage {
+    private String jobClassName;
+    private String jobId;
+    private String depositId;
+
+    public DepositJobMessage() {
+    }
+
+    public String getJobClassName() {
+        return jobClassName;
+    }
+
+    public void setJobClassName(String jobClassName) {
+        this.jobClassName = jobClassName;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public String getDepositId() {
+        return depositId;
+    }
+
+    public void setDepositId(String depositId) {
+        this.depositId = depositId;
+    }
+}
