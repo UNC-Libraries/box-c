@@ -14,7 +14,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class BulkRefIdRouter extends RouteBuilder {
     private static final Logger log = getLogger(BulkRefIdRouter.class);
-    @BeanInject(value = "bulkRefIdRequestProcessor")
+    @BeanInject("bulkRefIdRequestProcessor")
     private BulkRefIdRequestProcessor processor;
 
     @Override

@@ -15,126 +15,126 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
  * @author bbpennel
  *
  */
-public interface ContentObjectRecord {
-    public CutoffFacet getAncestorPathFacet();
+ public interface ContentObjectRecord {
+    CutoffFacet getAncestorPathFacet();
 
-    public ObjectPath getObjectPath();
+    ObjectPath getObjectPath();
 
-    public void setObjectPath(ObjectPath objectPath);
+    void setObjectPath(ObjectPath objectPath);
 
-    public CutoffFacet getPath();
+    CutoffFacet getPath();
 
-    public List<HierarchicalFacet> getContentTypeFacet();
+    List<HierarchicalFacet> getContentTypeFacet();
 
-    public List<Datastream> getDatastreamObjects();
+    List<Datastream> getDatastreamObjects();
 
-    public Datastream getDatastreamObject(String datastreamName);
+    Datastream getDatastreamObject(String datastreamName);
 
-    public Map<String, Collection<String>> getGroupRoleMap();
+    Map<String, Collection<String>> getGroupRoleMap();
 
-    public void setCountMap(Map<String,Long> countMap);
+    void setCountMap(Map<String,Long> countMap);
 
-    public Map<String,Long> getCountMap();
+    Map<String,Long> getCountMap();
 
-    public String getId();
+    String getId();
 
-    public PID getPid();
+    PID getPid();
 
-    public List<String> getAncestorPath();
+    List<String> getAncestorPath();
 
-    public String getAncestorIds();
+    String getAncestorIds();
 
-    public String getParentCollectionName();
+    String getParentCollectionName();
 
-    public String getParentCollection();
+    String getParentCollection();
 
-    public String getParentCollectionId();
+    String getParentCollectionId();
 
-    public String getRollup();
+    String getRollup();
 
-    public Long get_version_();
+    Long get_version_();
 
-    public List<String> getDatastream();
+    List<String> getDatastream();
 
-    public Long getFilesizeSort();
+    Long getFilesizeSort();
 
-    public Long getFilesizeTotal();
+    Long getFilesizeTotal();
 
-    public String getResourceType();
+    String getResourceType();
 
-    public Integer getResourceTypeSort();
+    Integer getResourceTypeSort();
 
-    public List<String> getFileFormatCategory();
+    List<String> getFileFormatCategory();
 
-    public List<String> getFileFormatType();
+    List<String> getFileFormatType();
 
-    public List<String> getFileFormatDescription();
+    List<String> getFileFormatDescription();
 
-    public Date getTimestamp();
+    Date getTimestamp();
 
-    public Date getLastIndexed();
+    Date getLastIndexed();
 
-    public List<String> getRoleGroup();
+    List<String> getRoleGroup();
 
-    public List<String> getReadGroup();
+    List<String> getReadGroup();
 
-    public List<String> getAdminGroup();
+    List<String> getAdminGroup();
 
-    public List<String> getStatus();
+    List<String> getStatus();
 
-    public List<String> getContentStatus();
+    List<String> getContentStatus();
 
-    public List<String> getIdentifier();
+    List<String> getIdentifier();
 
-    public String getIdentifierSort();
+    String getIdentifierSort();
 
-    public Integer getMemberOrderId();
+    Integer getMemberOrderId();
 
-    public String getTitle();
+    String getTitle();
 
-    public String getAncestorNames();
+    String getAncestorNames();
 
-    public List<String> getOtherTitle();
+    List<String> getOtherTitle();
 
-    public String getAbstractText();
+    String getAbstractText();
 
-    public List<String> getKeyword();
+    List<String> getKeyword();
 
-    public List<String> getExhibit();
+    List<String> getExhibit();
 
-    public List<String> getSubject();
+    List<String> getSubject();
 
-    public String getStreamingType();
+    String getStreamingType();
 
-    public String getStreamingUrl();
+    String getStreamingUrl();
 
-    public List<String> getLocation();
+    List<String> getLocation();
 
-    public List<String> getGenre();
+    List<String> getGenre();
 
-    public List<String> getLanguage();
+    List<String> getLanguage();
 
-    public List<String> getCreator();
+    List<String> getCreator();
 
-    public List<String> getContributor();
+    List<String> getContributor();
 
-    public List<String> getCreatorContributor();
+    List<String> getCreatorContributor();
 
-    public List<String> getPublisher();
+    List<String> getPublisher();
 
-    public Date getDateCreated();
+    Date getDateCreated();
 
-    public String getDateCreatedYear();
+    String getDateCreatedYear();
 
-    public Date getDateAdded();
+    Date getDateAdded();
 
-    public Date getDateUpdated();
+    Date getDateUpdated();
 
-    public String getCitation();
+    String getCitation();
 
-    public String getFullText();
+    String getFullText();
 
-    public Map<String,Object> getDynamicFields();
+    Map<String,Object> getDynamicFields();
 
     String getCollectionId();
 

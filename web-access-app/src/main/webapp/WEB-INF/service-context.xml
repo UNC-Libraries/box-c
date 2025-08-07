@@ -43,7 +43,11 @@
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg value="${admin.base.url}" />
     </bean>
-    
+
+    <bean id="sitemapBasePath" class="java.lang.String">
+        <constructor-arg value="${sitemap.base.path}" />
+    </bean>
+
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
     </bean>

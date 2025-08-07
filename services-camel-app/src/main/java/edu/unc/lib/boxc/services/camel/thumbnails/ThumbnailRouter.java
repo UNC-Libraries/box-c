@@ -16,9 +16,9 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ThumbnailRouter extends RouteBuilder {
     private static final Logger log = getLogger(ThumbnailRouter.class);
-    @BeanInject(value = "thumbnailRequestProcessor")
+    @BeanInject("thumbnailRequestProcessor")
     private ThumbnailRequestProcessor thumbnailRequestProcessor;
-    @BeanInject(value = "importThumbnailRequestProcessor")
+    @BeanInject("importThumbnailRequestProcessor")
     private ImportThumbnailRequestProcessor importThumbnailRequestProcessor;
 
     @Override

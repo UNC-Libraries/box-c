@@ -24,13 +24,13 @@ import edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor;
 public class MetaServicesRouter extends RouteBuilder {
     private static final Logger log = getLogger(MetaServicesRouter.class);
 
-    @BeanInject(value = "binaryMetadataProcessor")
+    @BeanInject("binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
-    @BeanInject(value = "cacheInvalidatingProcessor")
+    @BeanInject("cacheInvalidatingProcessor")
     private CacheInvalidatingProcessor cacheInvalidatingProcessor;
 
-    @PropertyInject(value = "cdr.enhancement.processingThreads")
+    @PropertyInject("cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
     @Override
