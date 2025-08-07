@@ -69,19 +69,19 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "jp2Processor")
+    @BeanInject("jp2Processor")
     private Jp2Processor jp2Processor;
 
-    @BeanInject(value = "addAccessCopyProcessor")
+    @BeanInject("addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    @BeanInject(value = "imageCacheInvalidationProcessor")
+    @BeanInject("imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
-    @BeanInject(value = "imageDerivativeProcessor")
+    @BeanInject("imageDerivativeProcessor")
     private ImageDerivativeProcessor imageDerivativeProcessor;
 
-    @BeanInject(value = "pdfImageProcessor")
+    @BeanInject("pdfImageProcessor")
     private PdfImageProcessor pdfImageProcessor;
 
     @TempDir

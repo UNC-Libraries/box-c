@@ -22,7 +22,7 @@ public class TriplesReindexingRouter extends RouteBuilder {
 
     private static final String LDP_CONTAINS = "<http://www.w3.org/ns/ldp#contains>";
 
-    @BeanInject(value = "indexingMessageProcessor")
+    @BeanInject("indexingMessageProcessor")
     private IndexingMessageProcessor indexingMessageProcessor;
 
     private String fcrepoBaseUrl;

@@ -16,7 +16,7 @@ public class ExportXMLRouter extends RouteBuilder {
 
     private static final Logger log = getLogger(ExportXMLRouter.class);
 
-    @BeanInject(value = "exportXMLProcessor")
+    @BeanInject("exportXMLProcessor")
     private ExportXMLProcessor exportXmlProcessor;
 
     @Override

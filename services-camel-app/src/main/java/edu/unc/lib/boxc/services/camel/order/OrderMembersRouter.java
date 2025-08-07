@@ -16,7 +16,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class OrderMembersRouter extends RouteBuilder {
     private static final Logger log = getLogger(OrderMembersRouter.class);
 
-    @BeanInject(value = "orderRequestProcessor")
+    @BeanInject("orderRequestProcessor")
     private OrderRequestProcessor orderRequestProcessor;
 
     private String orderMembersStream;
