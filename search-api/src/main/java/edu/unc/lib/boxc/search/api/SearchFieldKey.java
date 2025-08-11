@@ -18,6 +18,7 @@ public enum SearchFieldKey {
     ANCESTOR_IDS("ancestorIds", "ancestorIds", "Ancestor Ids"),
     ANCESTOR_PATH("ancestorPath", "path", "Folders"),
     ASPACE_REF_ID("aspaceRefId", "aspaceRefId", "ArchivesSpace Ref ID"),
+    CHECKSUM("checksum", "checksum", "Checksum"),
     CITATION("citation", "citation", "Citation"),
     COLLECTION_ID("collectionId", "collectionId", "Archival Collection ID"),
     CONTENT_STATUS("contentStatus", "contentStatus", "Content Status"),

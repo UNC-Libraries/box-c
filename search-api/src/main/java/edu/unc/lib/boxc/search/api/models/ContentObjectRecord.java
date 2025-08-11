@@ -156,4 +156,9 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
     String getAltText();
 
     void setAltText(String altText);
+
+   /**
+    * @return the checksum on the OriginalFile Datastream, if one is present
+    */
+   String getChecksum();
 }
