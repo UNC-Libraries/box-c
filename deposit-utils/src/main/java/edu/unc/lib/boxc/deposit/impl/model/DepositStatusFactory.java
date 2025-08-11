@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,5 +211,35 @@ public class DepositStatusFactory extends AbstractJedisFactory {
             jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
             jedis.expire(DEPOSIT_MANIFEST_PREFIX + depositUUID, seconds);
         });
+    }
+
+    /**
+     * Queue a deposit for processing. This will set the deposit state to queued
+     * and add it to the deposit queue.
+     *
+     * @param depositUUID
+     *            the UUID of the deposit to queue
+     */
+    public void queueDeposit(String depositUUID) {
+        connectWithRetries((jedis) -> {
+            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
+                    DepositState.queued.name());
+            jedis.zadd(RedisWorkerConstants.DEPOSIT_QUEUE, System.nanoTime(), depositUUID);
+        });
+    }
+
+    /**
+     * Pop the first deposit off the queue
+     * @return id of the first deposit in the queue, or null if the queue is empty
+     */
+    public String getFirstQueuedDeposit() {
+        final AtomicReference<String> result = new AtomicReference<>();
+        connectWithRetries((jedis) -> {
+            var items = jedis.zpopmin(RedisWorkerConstants.DEPOSIT_QUEUE);
+            if (items != null) {
+                result.set(items.getElement());
+            }
+        });
+        return result.get();
     }
 }

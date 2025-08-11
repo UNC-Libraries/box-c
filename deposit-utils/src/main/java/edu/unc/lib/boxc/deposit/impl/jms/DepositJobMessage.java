@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.deposit.impl.jms;
 
+import java.util.UUID;
+
 /**
  * Message containing details about a deposit job to be executed
  *
@@ -7,7 +9,7 @@ package edu.unc.lib.boxc.deposit.impl.jms;
  */
 public class DepositJobMessage {
     private String jobClassName;
-    private String jobId;
+    private String jobId = UUID.randomUUID().toString();
     private String depositId;
 
     public DepositJobMessage() {

@@ -11,6 +11,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +43,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 
     protected PIDMinter pidMinter;
     private DepositStatusFactory depositStatusFactory;
+    private DepositOperationMessageService depositOperationMessageService;
     private File depositsDirectory;
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
@@ -50,6 +56,10 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 
     public void setDepositsDirectory(File depositsDirectory) {
         this.depositsDirectory = depositsDirectory;
+    }
+
+    public void setDepositOperationMessageService(DepositOperationMessageService depositOperationMessageService) {
+        this.depositOperationMessageService = depositOperationMessageService;
     }
 
     /**
@@ -147,6 +157,16 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         }
 
         depositStatusFactory.save(depositPid.getId(), status);
+        // Send a message to the JMS queue to register the deposit
+        var registerMessage = new DepositOperationMessage();
+        registerMessage.setDepositId(depositPid.getId());
+        registerMessage.setAction(DepositOperation.REGISTER);
+        registerMessage.setUsername(agent.getUsername());
+        try {
+            depositOperationMessageService.sendDepositOperationMessage(registerMessage);
+        } catch (JsonProcessingException e) {
+            throw new RepositoryException("Failed to submit deposit registration for " + depositPid.getId(), e);
+        }
 
         if (log.isInfoEnabled()) {
             log.info("Registered deposit with details {}", status);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import jakarta.jms.JMSException;
+import org.apache.activemq.ScheduledMessage;
 import org.springframework.jms.core.JmsTemplate;
 import jakarta.jms.Message;
 
@@ -29,6 +30,21 @@ public class DepositJobMessageService {
     public void sendDepositJobMessage(DepositJobMessage message) throws JsonProcessingException {
         String json = REQUEST_WRITER.writeValueAsString(message);
         jmsTemplate.convertAndSend(destinationName, json);
+    }
+
+    /**
+     * Send a deposit job message with a specified delivery delay
+     *
+     * @param message the deposit job message to send
+     * @param delay number of seconds to delay message delivery
+     * @throws JsonProcessingException if the message cannot be serialized to JSON
+     */
+    public void sendDepositJobMessage(DepositJobMessage message, int delay) throws JsonProcessingException {
+        String json = REQUEST_WRITER.writeValueAsString(message);
+        jmsTemplate.convertAndSend(destinationName, json, m -> {
+            m.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, delay * 1000L);
+            return m;
+        });
     }
 
     public DepositJobMessage fromJson(Message message) throws IOException, JMSException {

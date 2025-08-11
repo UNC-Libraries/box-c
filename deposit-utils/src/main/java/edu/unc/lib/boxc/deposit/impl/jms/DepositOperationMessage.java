@@ -13,7 +13,9 @@ public class DepositOperationMessage {
     private String depositId;
     private String username;
     private String jobId;
-    private String body;
+    private String exceptionClassName;
+    private String exceptionMessage;
+    private String exceptionStackTrace;
 
     public DepositOperationMessage() {
     }
@@ -50,11 +52,27 @@ public class DepositOperationMessage {
         this.jobId = jobId;
     }
 
-    public String getBody() {
-        return body;
+    public String getExceptionClassName() {
+        return exceptionClassName;
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    public void setExceptionClassName(String exceptionClassName) {
+        this.exceptionClassName = exceptionClassName;
+    }
+
+    public String getExceptionMessage() {
+        return exceptionMessage;
+    }
+
+    public void setExceptionMessage(String exceptionMessage) {
+        this.exceptionMessage = exceptionMessage;
+    }
+
+    public String getExceptionStackTrace() {
+        return exceptionStackTrace;
+    }
+
+    public void setExceptionStackTrace(String exceptionStackTrace) {
+        this.exceptionStackTrace = exceptionStackTrace;
     }
 }
