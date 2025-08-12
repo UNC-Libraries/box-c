@@ -9,5 +9,5 @@ import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
  *
  */
 public interface IndexDocumentFilter {
-    public void filter(DocumentIndexingPackage dip) throws IndexingException;
+    void filter(DocumentIndexingPackage dip) throws IndexingException;
 }

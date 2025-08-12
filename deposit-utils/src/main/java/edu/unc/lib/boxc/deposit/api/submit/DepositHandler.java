@@ -18,5 +18,5 @@ public interface DepositHandler {
      * @return PID of the deposit
      * @throws DepositException
      */
-    public PID doDeposit(PID destination, DepositData deposit) throws DepositException;
+    PID doDeposit(PID destination, DepositData deposit) throws DepositException;
 }

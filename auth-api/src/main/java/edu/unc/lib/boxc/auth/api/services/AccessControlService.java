@@ -26,7 +26,7 @@ public interface AccessControlService {
      *            The permission being tested
      * @return
      */
-    public boolean hasAccess(PID pid, Set<String> principals, Permission permission);
+    boolean hasAccess(PID pid, Set<String> principals, Permission permission);
 
     /**
      * Throws an AccessRestrictionException if the given groups do not have the
@@ -42,7 +42,7 @@ public interface AccessControlService {
      *
      * @throws AccessRestrictionException
      */
-    public void assertHasAccess(PID pid, Set<String> principals, Permission permission)
+    void assertHasAccess(PID pid, Set<String> principals, Permission permission)
             throws AccessRestrictionException;
 
     /**
@@ -62,6 +62,6 @@ public interface AccessControlService {
      *
      * @throws AccessRestrictionException
      */
-    public void assertHasAccess(String message, PID pid, Set<String> principals, Permission permission)
+    void assertHasAccess(String message, PID pid, Set<String> principals, Permission permission)
             throws AccessRestrictionException;
 }

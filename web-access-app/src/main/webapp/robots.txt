@@ -7,3 +7,5 @@ Disallow: /services/api/iiif
 Disallow: /services/api/downloadImage
 
 Crawl-delay: 5
+
+Sitemap: https://dcr.lib.unc.edu/sitemap.xml

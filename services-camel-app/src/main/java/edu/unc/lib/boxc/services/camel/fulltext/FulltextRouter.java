@@ -19,10 +19,10 @@ import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 public class FulltextRouter extends RouteBuilder {
     private static final Logger log = getLogger(FulltextRouter.class);
 
-    @BeanInject(value = "fulltextProcessor")
+    @BeanInject("fulltextProcessor")
     private FulltextProcessor ftProcessor;
 
-    @BeanInject(value = "addFullTextDerivativeProcessor")
+    @BeanInject("addFullTextDerivativeProcessor")
     private AddDerivativeProcessor adProcessor;
 
     @Override

@@ -23,14 +23,14 @@ public interface PremisLogger extends PremisLog, AutoCloseable {
      * @param date timestamp of the event
      * @return PremisEventBuilder
      */
-    public PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date);
+    PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date);
 
     /**
      * Returns an instance of buildEvent with the timestamp automatically set to the current time
      * @param eventType
      * @return PremisEventBuilder
      */
-    public PremisEventBuilder buildEvent(Resource eventType);
+    PremisEventBuilder buildEvent(Resource eventType);
 
     /**
      * Adds events to this log
@@ -38,7 +38,7 @@ public interface PremisLogger extends PremisLog, AutoCloseable {
      * @param eventResc
      * @return
      */
-    public PremisLogger writeEvents(Resource... eventResc);
+    PremisLogger writeEvents(Resource... eventResc);
 
     /**
      * Creates the log for this logger from the given inputstream if
@@ -47,7 +47,7 @@ public interface PremisLogger extends PremisLog, AutoCloseable {
      * @param contentStream contents of the log
      * @return this logger
      */
-    public PremisLogger createLog(InputStream contentStream);
+    PremisLogger createLog(InputStream contentStream);
 
     /**
      * Closes the logger

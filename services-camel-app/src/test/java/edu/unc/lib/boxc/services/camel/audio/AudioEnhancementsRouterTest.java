@@ -58,7 +58,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "addAudioAccessCopyProcessor")
+    @BeanInject("addAudioAccessCopyProcessor")
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
     @Override

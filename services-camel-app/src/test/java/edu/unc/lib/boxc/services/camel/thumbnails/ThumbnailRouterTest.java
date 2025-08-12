@@ -28,10 +28,10 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Produce("direct:start")
     protected ProducerTemplate template;
-    @BeanInject(value = "thumbnailRequestProcessor")
+    @BeanInject("thumbnailRequestProcessor")
     private ThumbnailRequestProcessor processor;
 
-    @BeanInject(value = "importThumbnailRequestProcessor")
+    @BeanInject("importThumbnailRequestProcessor")
     private ImportThumbnailRequestProcessor importProcessor;
     @Override
     protected AbstractApplicationContext createApplicationContext() {

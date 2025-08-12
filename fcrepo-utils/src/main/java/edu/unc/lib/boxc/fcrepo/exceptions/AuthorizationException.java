@@ -28,7 +28,7 @@ public class AuthorizationException extends FedoraException {
         this.type = type;
     }
 
-    public static enum AuthorizationErrorType {
+    public enum AuthorizationErrorType {
         NOT_APPLICABLE, DENIED, INDETERMINATE
     }
 }

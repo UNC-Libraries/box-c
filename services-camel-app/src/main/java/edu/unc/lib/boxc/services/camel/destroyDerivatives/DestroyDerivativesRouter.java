@@ -21,16 +21,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DestroyDerivativesRouter extends RouteBuilder {
     private static final Logger log = getLogger(DestroyDerivativesRouter.class);
 
-    @BeanInject(value = "destroyedMsgProcessor")
+    @BeanInject("destroyedMsgProcessor")
     private DestroyedMsgProcessor destroyedMsgProcessor;
 
-    @BeanInject(value = "destroyAccessCopyProcessor")
+    @BeanInject("destroyAccessCopyProcessor")
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
-    @BeanInject(value = "destroyFulltextProcessor")
+    @BeanInject("destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
-    @BeanInject(value = "destroyAudioProcessor")
+    @BeanInject("destroyAudioProcessor")
     private DestroyDerivativesProcessor destroyAudioProcessor;
 
     private String destroyDerivativesStreamCamel;

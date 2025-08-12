@@ -6,5 +6,5 @@ package edu.unc.lib.boxc.deposit.normalize;
  *
  */
 public interface FilePathFunction {
-    public String getPath(String piduri);
+    String getPath(String piduri);
 }

@@ -174,7 +174,7 @@ public class DepositSupervisor implements WorkerListener {
         actionMonitoringTask = new ActionMonitoringTask();
     }
 
-    private static enum Queue {
+    private enum Queue {
         PREPARE, DELAYED_PREPARE, CDRMETSCONVERT, PREPARE_HIGH_PRIORITY, PREPARE_LOW_PRIORITY
     }
 
