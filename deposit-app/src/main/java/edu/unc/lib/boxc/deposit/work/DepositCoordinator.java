@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.deposit.work;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
@@ -11,11 +11,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -47,21 +45,30 @@ public class DepositCoordinator implements MessageListener {
     @Override
     public void onMessage(Message message) {
         // Inspect the message to determine what event occurred
+        DepositOperationMessage opMessage = null;
         try {
-            var opMessage = depositOperationMessageService.fromJson(message);
+            opMessage = depositOperationMessageService.fromJson(message);
             switch(opMessage.getAction()) {
             case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
             case PAUSE -> depositPauseHandler.handleMessage(opMessage);
             case RESUME -> depositResumeHandler.handleMessage(opMessage);
-            case CANCEL -> handleCancel(opMessage);
-            case DESTROY -> handleDestroy(opMessage);
             case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
             case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
             default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
             }
             startNextDepositIfNeeded(opMessage);
-        } catch (IOException | JMSException e) {
+        } catch (Exception e) {
             LOG.error("Error processing deposit operation message", e);
+            if (opMessage != null) {
+                depositStatusFactory.fail(opMessage.getDepositId());
+                activeDeposits.markInactive(opMessage.getDepositId());
+            }
+        } finally {
+            try {
+                message.acknowledge();
+            } catch (JMSException e) {
+                LOG.error("Error acknowledging deposit operation message", e);
+            }
         }
     }
 
@@ -73,7 +80,7 @@ public class DepositCoordinator implements MessageListener {
             return;
         }
         // Check if the deposit is in a state that would free up a worker or populate the queue
-        var depositState = depositStatusFactory.getState(opMessage.getDepositId());
+        var depositState = depositStatusFactory.getState(depositId);
         if (DepositState.paused.equals(depositState) || DepositState.finished.equals(depositState)
                 || DepositState.failed.equals(depositState) || DepositState.queued.equals(depositState)) {
             // Start next deposit if there is one waiting
@@ -82,27 +89,39 @@ public class DepositCoordinator implements MessageListener {
                 LOG.debug("No next deposit to start");
             } else {
                 LOG.info("Starting next deposit: {}", nextDepositId);
-                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, getDepositStatus(depositId));
-                try {
-                    depositJobMessageService.sendDepositJobMessage(jobMessage);
-                } catch (JsonProcessingException e) {
-                    throw new DepositFailedException("Failed to submit first job for deposit " + depositId, e);
-                }
-                depositStatusFactory.setState(depositId, DepositState.running);
+                startDeposit(nextDepositId);
             }
         }
     }
 
-    private void handleCancel(DepositOperationMessage opMessage) {
-        throw new NotImplementedException("Cancel operation not implemented yet");
+    private void startDeposit(String depositId) {
+        var depositStatus = depositStatusFactory.get(depositId);
+        var depositUser = depositStatus.get(DepositField.depositorName.name());
+        if (depositStatusFactory.addSupervisorLock(depositId, depositUser)) {
+            try {
+                activeDeposits.markActive(depositId);
+                depositStatusFactory.setState(depositId, DepositState.running);
+                assignStartTime(depositId, depositStatus);
+
+                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
+                depositJobMessageService.sendDepositJobMessage(jobMessage);
+            } catch (Exception e) {
+                LOG.error("Error sending deposit job message for {}", depositId, e);
+                depositStatusFactory.fail(depositId);
+                activeDeposits.markInactive(depositId);
+            } finally {
+                depositStatusFactory.removeSupervisorLock(depositId);
+            }
+        }
     }
 
-    private void handleDestroy(DepositOperationMessage opMessage) {
-        throw new NotImplementedException("Destroy operation not implemented yet");
-    }
-
-    private Map<String, String> getDepositStatus(String depositId) {
-        return depositStatusFactory.get(depositId);
+    private void assignStartTime(String depositId, Map<String, String> depositStatus) {
+        if (depositStatus.containsKey(DepositField.startTime.name())) {
+            return;
+        }
+        long depositStartTime = System.currentTimeMillis();
+        String strDepositStartTime = Long.toString(depositStartTime);
+        depositStatusFactory.set(depositId, DepositField.startTime, strDepositStartTime);
     }
 
     public void setActiveDeposits(ActiveDepositsService activeDeposits) {

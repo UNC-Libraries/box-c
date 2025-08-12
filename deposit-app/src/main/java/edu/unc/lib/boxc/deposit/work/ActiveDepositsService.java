@@ -16,6 +16,10 @@ public class ActiveDepositsService {
         activeDepositIds.remove(depositId);
     }
 
+    public synchronized void markActive(String depositId) {
+        activeDepositIds.add(depositId);
+    }
+
     public synchronized boolean acceptingNewDeposits() {
         return activeDepositIds.size() < maxConcurrentDeposits;
     }

@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.deposit.work;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
@@ -48,18 +47,10 @@ public class JobSuccessHandler implements DepositOperationHandler {
             // Send JMS message indicating the deposit has completed
             depositCompleteService.sendDepositCompleteEvent(depositId);
             // Queue the cleanup job after a delay
-            try {
-                depositJobMessageService.sendDepositJobMessage(nextMessage, cleanupDelaySeconds);
-            } catch (JsonProcessingException e) {
-                throw new DepositFailedException("Failed to submit first job for deposit " + depositId, e);
-            }
+            depositJobMessageService.sendDepositJobMessage(nextMessage, cleanupDelaySeconds);
         } else {
             LOG.info("Queuing next job {} for deposit {}", nextMessage.getJobClassName(), depositId);
-            try {
-                depositJobMessageService.sendDepositJobMessage(nextMessage);
-            } catch (JsonProcessingException e) {
-                throw new DepositFailedException("Failed to submit first job for deposit " + depositId, e);
-            }
+            depositJobMessageService.sendDepositJobMessage(nextMessage);
         }
     }
 

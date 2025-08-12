@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Factory for deposit job messages, which determine the next job to run
+ *
  * @author bbpennel
  */
 public class DepositJobMessageFactory {
@@ -79,6 +81,12 @@ public class DepositJobMessageFactory {
 
     private JobStatusFactory jobStatusFactory;
 
+    /**
+     * Creates a new job message for the next job to run in the deposit workflow.
+     * @param depositId id of the deposit
+     * @param status current status of the deposit, containing job names that have been completed
+     * @return a new DepositJobMessage with the next job to run
+     */
     public DepositJobMessage createNextJobMessage(String depositId, Map<String, String> status) {
         DepositJobMessage jobMessage = new DepositJobMessage();
         jobMessage.setDepositId(depositId);
@@ -199,5 +207,9 @@ public class DepositJobMessageFactory {
 
     private boolean notComplete(Set<String> successfulJobs, Class<?> jobClass) {
         return !successfulJobs.contains(jobClass.getName());
+    }
+
+    public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
+        this.jobStatusFactory = jobStatusFactory;
     }
 }

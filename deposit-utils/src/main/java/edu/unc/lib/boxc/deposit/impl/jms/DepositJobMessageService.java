@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import edu.unc.lib.boxc.deposit.api.exceptions.DepositMessageException;
 import jakarta.jms.JMSException;
 import org.apache.activemq.ScheduledMessage;
 import org.springframework.jms.core.JmsTemplate;
@@ -27,9 +28,17 @@ public class DepositJobMessageService {
     private JmsTemplate jmsTemplate;
     private String destinationName;
 
-    public void sendDepositJobMessage(DepositJobMessage message) throws JsonProcessingException {
-        String json = REQUEST_WRITER.writeValueAsString(message);
-        jmsTemplate.convertAndSend(destinationName, json);
+    /**
+     * Send a deposit job message to the JMS queue
+     * @param message the deposit job message to send
+     */
+    public void sendDepositJobMessage(DepositJobMessage message) {
+        try {
+            String json = REQUEST_WRITER.writeValueAsString(message);
+            jmsTemplate.convertAndSend(destinationName, json);
+        } catch (JsonProcessingException e) {
+            throw new DepositMessageException("Failed to serialize deposit message for " + message.getDepositId(), e);
+        }
     }
 
     /**
@@ -37,14 +46,17 @@ public class DepositJobMessageService {
      *
      * @param message the deposit job message to send
      * @param delay number of seconds to delay message delivery
-     * @throws JsonProcessingException if the message cannot be serialized to JSON
      */
-    public void sendDepositJobMessage(DepositJobMessage message, int delay) throws JsonProcessingException {
-        String json = REQUEST_WRITER.writeValueAsString(message);
-        jmsTemplate.convertAndSend(destinationName, json, m -> {
-            m.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, delay * 1000L);
-            return m;
-        });
+    public void sendDepositJobMessage(DepositJobMessage message, int delay) {
+        try {
+            String json = REQUEST_WRITER.writeValueAsString(message);
+            jmsTemplate.convertAndSend(destinationName, json, m -> {
+                m.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, delay * 1000L);
+                return m;
+            });
+        } catch (JsonProcessingException e) {
+            throw new DepositMessageException("Failed to serialize deposit message for " + message.getDepositId(), e);
+        }
     }
 
     public DepositJobMessage fromJson(Message message) throws IOException, JMSException {
