@@ -283,15 +283,4 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     public void setThumbnailId(String thumbnailId) {
         this.thumbnailId = thumbnailId;
     }
-
-    @Override
-    public String getChecksum() {
-        if (checksum != null) {
-            return checksum;
-        }
-        var datastream = getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-        var checksum = datastream.getChecksum();
-        this.checksum = checksum;
-        return checksum;
-    }
 }
