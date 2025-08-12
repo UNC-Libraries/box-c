@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.beans.Field;
@@ -45,7 +44,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
     protected String thumbnailId;
-    protected String checksum;
 
     public ContentObjectSolrRecord() {
         countMap = new HashMap<>(2);
