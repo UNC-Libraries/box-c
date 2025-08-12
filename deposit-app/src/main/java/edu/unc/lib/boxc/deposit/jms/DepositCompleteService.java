@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Service for reporting on the completion of a deposit.
+ *
  * @author bbpennel
  */
 public class DepositCompleteService {
@@ -31,7 +33,7 @@ public class DepositCompleteService {
      * Send a message indicating that the deposit with the given ID has completed.
      * This will result in an "add" operation being sent for the deposited objects.
      *
-     * @param depositId
+     * @param depositId the ID of the deposit that has completed
      */
     public void sendDepositCompleteEvent(String depositId) {
         var depositStatus = depositStatusFactory.get(depositId);
@@ -56,5 +58,17 @@ public class DepositCompleteService {
         } finally {
             depositModelManager.end();
         }
+    }
+
+    public void setDepositModelManager(DepositModelManager depositModelManager) {
+        this.depositModelManager = depositModelManager;
+    }
+
+    public void setOpsMessageSender(OperationsMessageSender opsMessageSender) {
+        this.opsMessageSender = opsMessageSender;
+    }
+
+    public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
+        this.depositStatusFactory = depositStatusFactory;
     }
 }

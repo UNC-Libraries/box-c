@@ -49,7 +49,9 @@ public class DepositOperationMessageServiceTest {
         message.setUsername("test-username");
         message.setDepositId("test-deposit-id");
         message.setJobId("test-job-id");
-        message.setBody("Test body content");
+        message.setExceptionClassName("TestException");
+        message.setExceptionMessage("TestMessage");
+        message.setExceptionStackTrace("TestStackTrace");
 
         service.sendDepositOperationMessage(message);
 
@@ -60,7 +62,9 @@ public class DepositOperationMessageServiceTest {
         assertTrue(capturedMessage.contains("test-deposit-id"));
         assertTrue(capturedMessage.contains("REGISTER"));
         assertTrue(capturedMessage.contains("test-job-id"));
-        assertTrue(capturedMessage.contains("Test body content"));
+        assertTrue(capturedMessage.contains("TestException"));
+        assertTrue(capturedMessage.contains("TestMessage"));
+        assertTrue(capturedMessage.contains("TestStackTrace"));
     }
 
     @Test
@@ -69,7 +73,7 @@ public class DepositOperationMessageServiceTest {
                 "\"action\":\"PAUSE\"," +
                 "\"username\":\"test-user\"," +
                 "\"jobId\":\"test-job-id\"," +
-                "\"body\":\"Test body content\"}";
+                "\"exceptionClassName\":\"TestException\"}";
         when(jmsMessage.getBody(String.class)).thenReturn(jsonMessage);
 
         DepositOperationMessage result = service.fromJson(jmsMessage);
@@ -78,6 +82,6 @@ public class DepositOperationMessageServiceTest {
         assertEquals("test-deposit-id", result.getDepositId());
         assertEquals("test-user", result.getUsername());
         assertEquals("test-job-id", result.getJobId());
-        assertEquals("Test body content", result.getBody());
+        assertEquals("TestException", result.getExceptionClassName());
     }
 }
