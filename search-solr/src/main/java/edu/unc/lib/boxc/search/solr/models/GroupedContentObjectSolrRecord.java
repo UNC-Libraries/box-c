@@ -406,9 +406,4 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     public void setAltText(String altText) {
         representative.setAltText(altText);
     }
-
-    @Override
-    public String getChecksum() {
-        return representative.getChecksum();
-    }
 }

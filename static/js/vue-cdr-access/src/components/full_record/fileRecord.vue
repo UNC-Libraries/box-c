@@ -30,9 +30,9 @@
                         <dt>{{ $t('full_record.creator') }}</dt>
                         <dd>{{ recordData.briefObject.creator.join('; ') }}</dd>
                     </template>
-                    <template v-if="fieldExists(recordData.briefObject.checksum)">
+                    <template>
                         <dt>{{ $t('full_record.checksum') }}</dt>
-                        <dd>{{ formatFilesize(recordData.briefObject.checksum) }}</dd>
+                        <dd>{{ getChecksum(recordData.briefObject) }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.filesize)">
                         <dt>{{ $t('full_record.filesize') }}</dt>
@@ -85,6 +85,17 @@ export default {
     computed: {
         parentWorkUrl() {
             return `/record/${this.recordData.containingWorkUUID}`;
+        },
+
+        getChecksum(brief_object) {
+            const original_file =  brief_object.datastream.find(file => file.startsWith('original_file'));
+            if (original_file === undefined) {
+                return undefined;
+            }
+            //DS name|mimetype|filename|extension|filesize|checksum|owner|extent
+            const datastream_metadata = original_file.split('|');
+            return datastream_metadata[datastream_metadata.length - 3];
+
         }
     }
 }
