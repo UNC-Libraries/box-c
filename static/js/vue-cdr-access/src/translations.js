@@ -41,6 +41,7 @@ export default {
             additional_metadata: "View Additional Metadata",
             available_date: "Available after {available_date}",
             bulk_download: "Download All Files",
+            checksum: "Checksum",
             collection: "Collection",
             contains: "Contains",
             copied_link: "Download URL, {text}, copied to clipboard",

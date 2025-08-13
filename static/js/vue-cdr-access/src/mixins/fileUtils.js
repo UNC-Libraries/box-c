@@ -61,6 +61,16 @@ export default {
             }
 
             return `${val} ${sizes[i]}`;
+        },
+
+        getChecksum(datastreams) {
+            const original_file = datastreams.find(file => file.startsWith('original_file'));
+            if (original_file === undefined) {
+                return undefined;
+            }
+            //DS name|mimetype|filename|extension|filesize|checksum|owner|extent
+            const datastream_metadata = original_file.split('|');
+            return datastream_metadata[datastream_metadata.length - 3];
         }
     }
 }
