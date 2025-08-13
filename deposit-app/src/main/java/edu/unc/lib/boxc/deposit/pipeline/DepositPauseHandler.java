@@ -1,27 +1,28 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Register a new deposit, adding it to the deposit queue.
- *
  * @author bbpennel
  */
-public class DepositRegisterHandler implements DepositOperationHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(DepositRegisterHandler.class);
+public class DepositPauseHandler implements DepositOperationHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(DepositPauseHandler.class);
     private DepositStatusFactory depositStatusFactory;
+    private ActiveDepositsService activeDeposits;
 
     @Override
     public void handleMessage(DepositOperationMessage opMessage) {
         String depositId = opMessage.getDepositId();
-        LOG.info("Registering deposit {}", depositId);
+        LOG.info("Pausing deposit {}", depositId);
 
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
-                depositStatusFactory.queueDeposit(depositId);
+                depositStatusFactory.setState(depositId, RedisWorkerConstants.DepositState.paused);
+                activeDeposits.markInactive(depositId);
             } finally {
                 depositStatusFactory.removeSupervisorLock(depositId);
             }
@@ -35,5 +36,9 @@ public class DepositRegisterHandler implements DepositOperationHandler {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
+    }
+
+    public void setActiveDeposits(ActiveDepositsService activeDeposits) {
+        this.activeDeposits = activeDeposits;
     }
 }

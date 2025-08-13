@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;

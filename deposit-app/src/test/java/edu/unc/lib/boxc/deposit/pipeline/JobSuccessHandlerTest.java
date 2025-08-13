@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,13 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;

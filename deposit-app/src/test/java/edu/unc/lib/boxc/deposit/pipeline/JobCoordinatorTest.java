@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

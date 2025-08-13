@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;

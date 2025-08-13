@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import java.util.HashSet;
 import java.util.Set;

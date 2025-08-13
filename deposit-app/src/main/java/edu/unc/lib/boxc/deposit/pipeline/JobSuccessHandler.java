@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.jms.DepositCompleteService;
 import edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory;
+import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

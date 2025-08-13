@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.deposit.work;
+package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
