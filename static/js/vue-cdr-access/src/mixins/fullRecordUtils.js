@@ -109,6 +109,20 @@ export default {
 
         hasMoreExhibits(current_exhibit, exhibits) {
             return current_exhibit < Object.keys(exhibits).length - 1;
+        },
+
+        getChecksum(datastreams) {
+            const original_file = datastreams.find(file => file.startsWith('original_file'));
+            if (original_file === undefined) {
+                return undefined;
+            }
+            //DS name|mimetype|filename|extension|filesize|checksum|owner|extent
+            const datastream_metadata = original_file.split('|');
+            const checksum = datastream_metadata[datastream_metadata.length - 3];
+            if (checksum === '') {
+                return undefined
+            }
+            return checksum;
         }
     }
 }

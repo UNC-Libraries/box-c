@@ -388,4 +388,17 @@ describe('fileRecord.vue', () => {
         });
         expect(wrapper.find('.embargo').text()).toEqual('2199-01-01')
     });
+
+    it("displays a checksum, if present", async () => {
+        expect(wrapper.find('.checksum').text()).toEqual('urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a')
+    });
+
+    it("does not display a checksum, if not present", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.datastream = ["original_file|image/jpeg|beez||694904|||2048x1536"];
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.checksum').exists()).toBe(false)
+    });
 });
