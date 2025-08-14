@@ -72,8 +72,8 @@
         <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
-        <jackson.version>2.18.2</jackson.version>
-        <jackson.databind.version>2.18.2</jackson.databind.version>
+        <jackson.version>2.19.2</jackson.version>
+        <jackson.databind.version>2.19.2</jackson.databind.version>
         <jesque.version>2.2.0</jesque.version>
         
         <joda-time.version>2.13.1</joda-time.version>
