@@ -35,4 +35,13 @@
     <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
+
+    <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.springframework.jms.core.JmsTemplate" />
+    </bean>
+
+    <bean id="pipelineMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+        <property name="destinationName" value="pipelineQueue" />
+    </bean>
 </beans>

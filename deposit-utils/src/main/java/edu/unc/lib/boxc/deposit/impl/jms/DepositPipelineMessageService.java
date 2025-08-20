@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import edu.unc.lib.boxc.deposit.api.exceptions.DepositMessageException;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import org.springframework.jms.core.JmsTemplate;
@@ -26,9 +27,13 @@ public class DepositPipelineMessageService {
     private JmsTemplate jmsTemplate;
     private String destinationName;
 
-    public void sendDepositPipelineMessage(DepositPipelineMessage message) throws JsonProcessingException {
-        String json = REQUEST_WRITER.writeValueAsString(message);
-        jmsTemplate.convertAndSend(destinationName, json);
+    public void sendDepositPipelineMessage(DepositPipelineMessage message) {
+        try {
+            String json = REQUEST_WRITER.writeValueAsString(message);
+            jmsTemplate.convertAndSend(destinationName, json);
+        } catch (JsonProcessingException e) {
+            throw new DepositMessageException("Failed to serialize pipeline message for " + message.getAction(), e);
+        }
     }
 
     public DepositPipelineMessage fromJson(Message message) throws IOException, JMSException {

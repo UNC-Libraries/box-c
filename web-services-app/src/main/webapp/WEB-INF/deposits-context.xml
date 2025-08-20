@@ -76,4 +76,9 @@
         <property name="aclService" ref="aclService" />
         <property name="packageHandlers" ref="packageHandlers" />
     </bean>
+
+    <bean id="pipelineMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+        <property name="destinationName" value="${jms.deposit.pipeline.stream}" />
+    </bean>
 </beans>
