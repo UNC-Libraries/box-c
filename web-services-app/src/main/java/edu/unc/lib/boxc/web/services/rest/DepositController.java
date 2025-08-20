@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -83,6 +86,9 @@ public class DepositController {
 
     @Autowired
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+
+    @Autowired
+    private DepositOperationMessageService depositOperationMessageService;
 
     @PostConstruct
     public void init() {
@@ -337,7 +343,8 @@ public class DepositController {
                 } else if (DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already failed");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.pause);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.PAUSE, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
                     response.setStatus(204);
                 }
                 break;
@@ -345,7 +352,8 @@ public class DepositController {
                 if (!DepositState.paused.name().equals(state) && !DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("The deposit must be paused or failed before you can resume");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.resume);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.RESUME, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
                     response.setStatus(204);
                 }
                 break;
@@ -353,13 +361,15 @@ public class DepositController {
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.cancel);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.CANCEL, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
                     response.setStatus(204);
                 }
                 break;
             case destroy:
                 if (DepositState.cancelled.name().equals(state) || DepositState.finished.name().equals(state)) {
-                    depositStatusFactory.requestAction(uuid, DepositAction.destroy);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.DESTROY, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
                     response.setStatus(204);
                 } else {
                     throw new IllegalArgumentException(

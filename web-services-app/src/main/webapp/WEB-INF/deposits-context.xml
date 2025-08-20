@@ -20,24 +20,32 @@
         <property name="configPath" value="${ingestSources.path}" />
         <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
+
+    <bean id="depositOperationMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService">
+        <property name="destinationName" value="${jms.deposit.operation.stream}"/>
+        <property name="jmsTemplate" ref="jmsTemplate" />
+    </bean>
     
     <!-- Deposit Handlers -->
     <bean id="cdrMetsDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
+        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
     
     <bean id="simpleObjectDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
+        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
     
     <bean id="fileServerDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
+        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
     
     <util:map id="packageHandlers">
