@@ -162,11 +162,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         registerMessage.setDepositId(depositPid.getId());
         registerMessage.setAction(DepositOperation.REGISTER);
         registerMessage.setUsername(agent.getUsername());
-        try {
-            depositOperationMessageService.sendDepositOperationMessage(registerMessage);
-        } catch (JsonProcessingException e) {
-            throw new RepositoryException("Failed to submit deposit registration for " + depositPid.getId(), e);
-        }
+        depositOperationMessageService.sendDepositOperationMessage(registerMessage);
 
         if (log.isInfoEnabled()) {
             log.info("Registered deposit with details {}", status);

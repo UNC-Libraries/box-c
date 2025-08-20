@@ -101,6 +101,7 @@ public class DepositJobMessageFactory {
 
         Class<?> nextJobClass = getNextJobClass(status, successfulJobs);
         jobMessage.setJobClassName(nextJobClass.getName());
+        jobMessage.setUsername(status.get(DepositField.depositorName.name()));
 
         return jobMessage;
     }

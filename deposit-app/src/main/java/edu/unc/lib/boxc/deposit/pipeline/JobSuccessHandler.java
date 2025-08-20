@@ -2,6 +2,8 @@ package edu.unc.lib.boxc.deposit.pipeline;
 
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
@@ -35,6 +37,12 @@ public class JobSuccessHandler implements DepositOperationHandler {
         LOG.debug("Handling success of job {} for deposit {}", opMessage.getJobId(), depositId);
         // Mark the job as completed
         jobStatusFactory.completed(opMessage.getJobId());
+        DepositState depositState = depositStatusFactory.getState(depositId);
+        if (!DepositState.running.equals(depositState)){
+            LOG.warn("Not queueing next job for deposit {} because it is in state {}",
+                    depositId, depositState);
+            return;
+        }
 
         // Queue the next job for the deposit
         var depositStatus = getDepositStatus(depositId);

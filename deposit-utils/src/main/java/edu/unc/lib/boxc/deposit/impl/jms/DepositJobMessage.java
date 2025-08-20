@@ -11,6 +11,7 @@ public class DepositJobMessage {
     private String jobClassName;
     private String jobId = UUID.randomUUID().toString();
     private String depositId;
+    private String username;
 
     public DepositJobMessage() {
     }
@@ -37,5 +38,13 @@ public class DepositJobMessage {
 
     public void setDepositId(String depositId) {
         this.depositId = depositId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

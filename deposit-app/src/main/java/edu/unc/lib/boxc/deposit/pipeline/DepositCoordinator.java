@@ -1,10 +1,13 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory;
 import jakarta.annotation.PostConstruct;
@@ -15,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service for coordinating deposit operations and job execution.
@@ -33,13 +37,15 @@ public class DepositCoordinator implements MessageListener {
     private DepositRegisterHandler depositRegisterHandler;
     private DepositPauseHandler depositPauseHandler;
     private JobFailureHandler jobFailureHandler;
+    private DepositPipelineStatusFactory pipelineStatusFactory;
     protected DepositJobMessageFactory depositJobMessageFactory;
     protected DepositJobMessageService depositJobMessageService;
 
-    @PostConstruct
     public void init() {
-        // TODO Poll for in progress deposits and repopulate tracking information
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.starting);
         // Make sure all the deposits in queued state are in the queue
+        requeueAll();
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
     }
 
     @Override
@@ -48,6 +54,7 @@ public class DepositCoordinator implements MessageListener {
         DepositOperationMessage opMessage = null;
         try {
             opMessage = depositOperationMessageService.fromJson(message);
+            LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
             switch(opMessage.getAction()) {
             case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
             case PAUSE -> depositPauseHandler.handleMessage(opMessage);
@@ -124,6 +131,27 @@ public class DepositCoordinator implements MessageListener {
         depositStatusFactory.set(depositId, DepositField.startTime, strDepositStartTime);
     }
 
+    private void requeueAll() {
+        Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
+        for (Map<String, String> fields : depositStatuses) {
+            LOG.error("Reactivating deposit during startup: {}", fields.get(DepositField.uuid.name()));
+            DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
+            String depositId = fields.get(DepositField.uuid.name());
+            if (DepositState.running.equals(depositState)) {
+                LOG.info("Reactivating deposit {} during startup", depositId);
+                depositStatusFactory.removeSupervisorLock(depositId);
+                activeDeposits.markActive(depositId);
+            }
+            if (DepositState.quieted.equals(depositState)) {
+                // Job may have been locked to a particular supervisor depend on when it was interrupted
+                LOG.info("Unquieting deposit {} during startup", depositId);
+                depositStatusFactory.removeSupervisorLock(depositId);
+                var opMessage = new DepositOperationMessage(DepositOperation.RESUME, depositId, null);
+                depositResumeHandler.handleMessage(opMessage);
+            }
+        }
+    }
+
     public void setActiveDeposits(ActiveDepositsService activeDeposits) {
         this.activeDeposits = activeDeposits;
     }
@@ -162,5 +190,9 @@ public class DepositCoordinator implements MessageListener {
 
     public void setDepositJobMessageService(DepositJobMessageService depositJobMessageService) {
         this.depositJobMessageService = depositJobMessageService;
+    }
+
+    public void setPipelineStatusFactory(DepositPipelineStatusFactory pipelineStatusFactory) {
+        this.pipelineStatusFactory = pipelineStatusFactory;
     }
 }

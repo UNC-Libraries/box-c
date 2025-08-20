@@ -53,112 +53,233 @@
         <property name="maxTotal" value="25"/>
     </bean>
 
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />
-        <constructor-arg value="${redis.port:6379}" type="int" />
-        <constructor-arg value="2000" type="int" />
-        <constructor-arg type="java.lang.String">
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" type="java.lang.String" />
-        <constructor-arg value="0" type="int" />
-    </bean>
+<!--    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">-->
+<!--        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />-->
+<!--        <constructor-arg value="${redis.port:6379}" type="int" />-->
+<!--        <constructor-arg value="2000" type="int" />-->
+<!--        <constructor-arg type="java.lang.String">-->
+<!--            <null />-->
+<!--        </constructor-arg>-->
+<!--        <constructor-arg value="resque" type="java.lang.String" />-->
+<!--        <constructor-arg value="0" type="int" />-->
+<!--    </bean>-->
 
-    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
-        scope="prototype">
-        <constructor-arg ref="jesqueConfig" />
-        <constructor-arg ref="jedisPool" />
-    </bean>
-    
-    <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
-        <constructor-arg ref="jesqueConfig" />
-        <constructor-arg ref="jedisPool" />
-    </bean>
+<!--    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"-->
+<!--        scope="prototype">-->
+<!--        <constructor-arg ref="jesqueConfig" />-->
+<!--        <constructor-arg ref="jedisPool" />-->
+<!--    </bean>-->
+<!--    -->
+<!--    <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">-->
+<!--        <constructor-arg ref="jesqueConfig" />-->
+<!--        <constructor-arg ref="jedisPool" />-->
+<!--    </bean>-->
     
     <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             destroy-method="close">
         <constructor-arg value="${deposits.tdb.dir}" />
     </bean>
 
-    <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
-        <constructor-arg name="workerFactory">
-            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-                <constructor-arg name="config" ref="jesqueConfig" />
-                <constructor-arg name="queues">
-                    <util:list>
-                        <value>PREPARE</value>
-                        <value>DELAYED_PREPARE</value>
-                    </util:list>
-                </constructor-arg>
-                <constructor-arg ref="jobFactory" />
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="numWorkers" value="${workers.num:2}" />
-    </bean>
-    
-    <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
-        <constructor-arg name="workerFactory">
-            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-                <constructor-arg name="config" ref="jesqueConfig" />
-                <constructor-arg name="queues">
-                    <util:list>
-                        <value>PREPARE_HIGH_PRIORITY</value>
-                    </util:list>
-                </constructor-arg>
-                <constructor-arg ref="jobFactory" />
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="numWorkers" value="${workers.high.num:4}" />
+<!--    <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">-->
+<!--        <constructor-arg name="workerFactory">-->
+<!--            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">-->
+<!--                <constructor-arg name="config" ref="jesqueConfig" />-->
+<!--                <constructor-arg name="queues">-->
+<!--                    <util:list>-->
+<!--                        <value>PREPARE</value>-->
+<!--                        <value>DELAYED_PREPARE</value>-->
+<!--                    </util:list>-->
+<!--                </constructor-arg>-->
+<!--                <constructor-arg ref="jobFactory" />-->
+<!--            </bean>-->
+<!--        </constructor-arg>-->
+<!--        <constructor-arg name="numWorkers" value="${workers.num:2}" />-->
+<!--    </bean>-->
+<!--    -->
+<!--    <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">-->
+<!--        <constructor-arg name="workerFactory">-->
+<!--            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">-->
+<!--                <constructor-arg name="config" ref="jesqueConfig" />-->
+<!--                <constructor-arg name="queues">-->
+<!--                    <util:list>-->
+<!--                        <value>PREPARE_HIGH_PRIORITY</value>-->
+<!--                    </util:list>-->
+<!--                </constructor-arg>-->
+<!--                <constructor-arg ref="jobFactory" />-->
+<!--            </bean>-->
+<!--        </constructor-arg>-->
+<!--        <constructor-arg name="numWorkers" value="${workers.high.num:4}" />-->
+<!--    </bean>-->
+
+<!--    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">-->
+<!--        <constructor-arg name="workerFactory">-->
+<!--            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">-->
+<!--                <constructor-arg name="config" ref="jesqueConfig" />-->
+<!--                <constructor-arg name="queues">-->
+<!--                    <util:list>-->
+<!--                        <value>PREPARE_LOW_PRIORITY</value>-->
+<!--                    </util:list>-->
+<!--                </constructor-arg>-->
+<!--                <constructor-arg ref="jobFactory" />-->
+<!--            </bean>-->
+<!--        </constructor-arg>-->
+<!--        <constructor-arg name="numWorkers" value="${workers.low.num:2}" />-->
+<!--    </bean>-->
+<!--    -->
+<!--    <bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">-->
+<!--        <constructor-arg name="workerFactory">-->
+<!--            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">-->
+<!--                <constructor-arg name="config" ref="jesqueConfig" />-->
+<!--                <constructor-arg name="queues">-->
+<!--                    <util:list>-->
+<!--                        <value>CDRMETSCONVERT</value>-->
+<!--                    </util:list>-->
+<!--                </constructor-arg>-->
+<!--                <constructor-arg ref="jobFactory" />-->
+<!--            </bean>-->
+<!--        </constructor-arg>-->
+<!--        <constructor-arg name="numWorkers" value="${workers.mets.num:1}" />-->
+<!--    </bean>-->
+<!--    -->
+<!--    <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">-->
+<!--        <ref bean="depositWorkerPool"/>-->
+<!--        <ref bean="highPriorityDepositWorkerPool"/>-->
+<!--        <ref bean="migrationDepositWorkPool"/>-->
+<!--        <ref bean="cdrMetsDepositWorkerPool"/>-->
+<!--    </util:list>-->
+
+<!--    <bean id="depositSupervisor" class="edu.unc.lib.boxc.deposit.work.DepositSupervisor">-->
+<!--        <property name="jesqueConfig" ref="jesqueConfig"/>-->
+<!--        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>-->
+<!--        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>-->
+<!--    </bean>-->
+<!--    -->
+<!--    <bean id="depositServiceInitiator" class="edu.unc.lib.boxc.deposit.SpringDepositServiceInitiator">-->
+<!--        <property name="depositSupervisor" ref="depositSupervisor" />-->
+<!--    </bean>-->
+
+<!--    <bean id="jobFactory" class="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />-->
+
+    <bean id="pipelineJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">
-        <constructor-arg name="workerFactory">
-            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-                <constructor-arg name="config" ref="jesqueConfig" />
-                <constructor-arg name="queues">
-                    <util:list>
-                        <value>PREPARE_LOW_PRIORITY</value>
-                    </util:list>
-                </constructor-arg>
-                <constructor-arg ref="jobFactory" />
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="numWorkers" value="${workers.low.num:2}" />
-    </bean>
-    
-    <bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
-        <constructor-arg name="workerFactory">
-            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-                <constructor-arg name="config" ref="jesqueConfig" />
-                <constructor-arg name="queues">
-                    <util:list>
-                        <value>CDRMETSCONVERT</value>
-                    </util:list>
-                </constructor-arg>
-                <constructor-arg ref="jobFactory" />
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="numWorkers" value="${workers.mets.num:1}" />
-    </bean>
-    
-    <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
-        <ref bean="depositWorkerPool"/>
-        <ref bean="highPriorityDepositWorkerPool"/>
-        <ref bean="migrationDepositWorkPool"/>
-        <ref bean="cdrMetsDepositWorkerPool"/>
-    </util:list>
-
-    <bean id="depositSupervisor" class="edu.unc.lib.boxc.deposit.work.DepositSupervisor">
-        <property name="jesqueConfig" ref="jesqueConfig"/>
-        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
-        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
-    </bean>
-    
-    <bean id="depositServiceInitiator" class="edu.unc.lib.boxc.deposit.SpringDepositServiceInitiator">
-        <property name="depositSupervisor" ref="depositSupervisor" />
+    <bean id="depositJobMessageFactory" class="edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory">
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
     </bean>
 
-    <bean id="jobFactory" class="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
+    <bean id="depositJobMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService">
+        <property name="jmsTemplate" ref="pipelineJmsTemplate" />
+        <property name="destinationName" value="${jms.deposit.job.stream}" />
+    </bean>
+
+    <bean id="jobListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+        destroy-method="shutdown">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destinationName" value="${jms.deposit.job.stream}" />
+        <property name="messageListener" ref="jobCoordinator" />
+        <property name="concurrency" value="${workers.high.num:4}" />
+        <property name="acknowledgeAfterListener" value="false" />
+    </bean>
+
+    <bean id="depositOperationMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService">
+        <property name="jmsTemplate" ref="pipelineJmsTemplate" />
+        <property name="destinationName" value="${jms.deposit.operation.stream}" />
+    </bean>
+
+    <bean id="operationListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+          destroy-method="shutdown">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destinationName" value="${jms.deposit.operation.stream}" />
+        <property name="messageListener" ref="depositCoordinator" />
+        <property name="concurrency" value="2" />
+        <property name="acknowledgeAfterListener" value="false" />
+    </bean>
+
+    <bean id="pipelineMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService">
+        <property name="jmsTemplate" ref="pipelineJmsTemplate" />
+        <property name="destinationName" value="${jms.deposit.pipeline.stream}" />
+    </bean>
+
+    <bean id="pipelineListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+          destroy-method="shutdown">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destinationName" value="${jms.deposit.pipeline.stream}" />
+        <property name="messageListener" ref="pipelineCoordinator" />
+        <property name="concurrency" value="1" />
+        <property name="acknowledgeAfterListener" value="true" />
+    </bean>
+
+    <bean id="depositCompleteService" class="edu.unc.lib.boxc.deposit.jms.DepositCompleteService">
+        <property name="depositModelManager" ref="depositModelManager" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="opsMessageSender" ref="operationsMessageSender" />
+    </bean>
+
+    <bean id="activeDeposits" class="edu.unc.lib.boxc.deposit.pipeline.ActiveDepositsService">
+        <property name="maxConcurrentDeposits" value="${workers.high.num:4}" />
+    </bean>
+
+    <bean id="jobSuccessHandler" class="edu.unc.lib.boxc.deposit.pipeline.JobSuccessHandler">
+        <property name="depositJobMessageService" ref="depositJobMessageService" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositJobMessageFactory" ref="depositJobMessageFactory" />
+        <property name="depositEmailHandler" ref="depositEmailHandler" />
+        <property name="depositCompleteService" ref="depositCompleteService" />
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
+        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}" />
+    </bean>
+
+    <bean id="depositResumeHandler" class="edu.unc.lib.boxc.deposit.pipeline.DepositResumeHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
+    </bean>
+
+    <bean id="depositRegisterHandler" class="edu.unc.lib.boxc.deposit.pipeline.DepositRegisterHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+    </bean>
+
+    <bean id="depositPauseHandler" class="edu.unc.lib.boxc.deposit.pipeline.DepositPauseHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="activeDeposits" ref="activeDeposits" />
+    </bean>
+
+    <bean id="jobFailureHandler" class="edu.unc.lib.boxc.deposit.pipeline.JobFailureHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
+        <property name="depositEmailHandler" ref="depositEmailHandler" />
+        <property name="activeDeposits" ref="activeDeposits" />
+    </bean>
+
+    <bean id="depositCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.DepositCoordinator" init-method="init">
+        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
+        <property name="jobSuccessHandler" ref="jobSuccessHandler" />
+        <property name="depositResumeHandler" ref="depositResumeHandler" />
+        <property name="depositRegisterHandler" ref="depositRegisterHandler" />
+        <property name="depositPauseHandler" ref="depositPauseHandler" />
+        <property name="jobFailureHandler" ref="jobFailureHandler" />
+        <property name="activeDeposits" ref="activeDeposits" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositJobMessageFactory" ref="depositJobMessageFactory" />
+        <property name="depositJobMessageService" ref="depositJobMessageService" />
+        <property name="pipelineStatusFactory" ref="pipelineStatusFactory" />
+    </bean>
+
+    <bean id="jobCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.JobCoordinator">
+        <property name="depositJobMessageService" ref="depositJobMessageService" />
+        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
+        <property name="depositPipelineStatusFactory" ref="pipelineStatusFactory" />
+        <property name="activeDeposits" ref="activeDeposits" />
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
+    </bean>
+
+    <bean id="pipelineCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.PipelineCoordinator">
+        <property name="pipelineMessageService" ref="pipelineMessageService" />
+        <property name="pipelineStatusFactory" ref="pipelineStatusFactory" />
+        <property name="jobListenerContainer" ref="jobListenerContainer" />
+        <property name="operationListenerContainer" ref="operationListenerContainer" />
+    </bean>
 
     <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory" >
         <property name="jedisPool" ref="jedisPool" />

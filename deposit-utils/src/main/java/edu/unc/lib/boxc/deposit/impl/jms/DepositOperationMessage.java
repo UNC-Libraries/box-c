@@ -20,6 +20,12 @@ public class DepositOperationMessage {
     public DepositOperationMessage() {
     }
 
+    public DepositOperationMessage(DepositOperation action, String depositId, String username) {
+        this.action = action;
+        this.depositId = depositId;
+        this.username = username;
+    }
+
     public DepositOperation getAction() {
         return action;
     }

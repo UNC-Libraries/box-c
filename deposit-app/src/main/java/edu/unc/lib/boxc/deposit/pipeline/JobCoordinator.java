@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessage;
@@ -8,6 +7,7 @@ import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
@@ -32,11 +32,13 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
     private DepositPipelineStatusFactory depositPipelineStatusFactory;
     private ApplicationContext applicationContext;
     private ActiveDepositsService activeDeposits;
+    private JobStatusFactory jobStatusFactory;
 
     @Override
     public void onMessage(Message message) {
         // Check if queues are active, if not then do not acknowledge the message and stop processing
-        if (!DepositPipelineState.active.equals(depositPipelineStatusFactory.getPipelineState())) {
+        if (!isAcceptingMessages()) {
+            LOG.warn("Ignoring message due to pipeline state");
             return;
         }
 
@@ -49,7 +51,9 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         }
 
         var jobRunnable = getJobRunnable(jobMessage);
+        LOG.debug("Got job runnable {}", jobRunnable.getClass().getName());
         try {
+            jobStatusFactory.started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
             jobRunnable.run();
             var successMessage = buildSuccessMessage(jobMessage);
             sendDepositOperationMessage(successMessage);
@@ -64,9 +68,15 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         }
     }
 
+    private boolean isAcceptingMessages() {
+        var pipelineState = depositPipelineStatusFactory.getPipelineState();
+        return DepositPipelineState.active.equals(pipelineState) || DepositPipelineState.starting.equals(pipelineState);
+    }
+
     private void acknowledgeMessage(Message message) {
         try {
             message.acknowledge();
+            LOG.debug("Acknowledged message {}", message.getJMSMessageID());
         } catch (JMSException e) {
             LOG.error("Error acknowledging message", e);
         }
@@ -77,6 +87,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         successMessage.setJobId(jobMessage.getJobId());
         successMessage.setDepositId(jobMessage.getDepositId());
         successMessage.setAction(DepositOperation.JOB_SUCCESS);
+        successMessage.setUsername(jobMessage.getUsername());
         return successMessage;
     }
 
@@ -85,6 +96,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         failureMessage.setJobId(jobMessage.getJobId());
         failureMessage.setDepositId(jobMessage.getDepositId());
         failureMessage.setAction(DepositOperation.JOB_FAILURE);
+        failureMessage.setUsername(jobMessage.getUsername());
         failureMessage.setExceptionClassName(e.getClass().getName());
         failureMessage.setExceptionMessage(e.getMessage());
         failureMessage.setExceptionStackTrace(e.getStackTrace() != null ?
@@ -93,11 +105,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
     }
 
     private void sendDepositOperationMessage(DepositOperationMessage message) {
-        try {
-            depositOperationMessageService.sendDepositOperationMessage(message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to send deposit operation message", e);
-        }
+        depositOperationMessageService.sendDepositOperationMessage(message);
     }
 
     private DepositJobMessage loadJobMessage(Message message) {
@@ -111,7 +119,8 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
 
     private Runnable getJobRunnable(DepositJobMessage jobMessage) {
         try {
-            return (Runnable) applicationContext.getBean(Class.forName(jobMessage.getJobClassName()));
+            return (Runnable) applicationContext.getBean(Class.forName(jobMessage.getJobClassName()),
+                    new Object[] { jobMessage.getJobId(), jobMessage.getDepositId() });
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Unable to load job class: " + jobMessage.getJobClassName(), e);
         }
@@ -132,6 +141,10 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
 
     public void setDepositPipelineStatusFactory(DepositPipelineStatusFactory depositPipelineStatusFactory) {
         this.depositPipelineStatusFactory = depositPipelineStatusFactory;
+    }
+
+    public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
+        this.jobStatusFactory = jobStatusFactory;
     }
 
     public void setActiveDeposits(ActiveDepositsService activeDeposits) {

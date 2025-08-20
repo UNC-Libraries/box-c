@@ -33,16 +33,17 @@ public class JobFailureHandler implements DepositOperationHandler {
 
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
-                if (JobInterruptedException.class.getName().equals(opMessage.getExceptionClassName())) {
+                LOG.debug("Handling failure for job {} class {}", depositId, opMessage.getExceptionClassName());
+                if (isExceptionOfType(opMessage, JobInterruptedException.class)) {
                     LOG.info("Job {} in deposit {} was interrupted: {}",
                             jobId, depositId, opMessage.getExceptionMessage());
                     jobStatusFactory.interrupted(jobId);
                     return;
                 }
-                LOG.error("Job {} in deposit {} failed with exception: {}\n{}",
+                LOG.debug("Job {} in deposit {} failed with exception: {}\n{}",
                         jobId, depositId, opMessage.getExceptionMessage(), opMessage.getExceptionStackTrace());
                 jobStatusFactory.failed(jobId);
-                if (JobFailedException.class.getName().equals(opMessage.getExceptionClassName())) {
+                if (isExceptionOfType(opMessage, JobFailedException.class)) {
                     depositStatusFactory.fail(depositId, opMessage.getExceptionMessage());
                 } else {
                     String serviceName = StringUtils.substringAfterLast(opMessage.getExceptionClassName(), ".");
@@ -54,6 +55,16 @@ public class JobFailureHandler implements DepositOperationHandler {
                 activeDeposits.markInactive(depositId);
                 depositStatusFactory.removeSupervisorLock(depositId);
             }
+        }
+    }
+
+    private boolean isExceptionOfType(DepositOperationMessage opMessage, Class<?> exceptionType) {
+        try {
+            Class<?> exceptionClass = Class.forName(opMessage.getExceptionClassName());
+            return exceptionType.isAssignableFrom(exceptionClass);
+        } catch (ClassNotFoundException e) {
+            LOG.warn("Could not load exception class: {}", opMessage.getExceptionClassName());
+            return false;
         }
     }
 
