@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
@@ -43,9 +44,10 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         }
 
         var jobMessage = loadJobMessage(message);
-        if (!activeDeposits.isDepositActive(jobMessage.getDepositId())) {
-            LOG.warn("Skipping job message {} for deposit {} because the deposit is not active",
-                    jobMessage.getJobId(), jobMessage.getDepositId());
+        String depositId = jobMessage.getDepositId();
+        String jobId = jobMessage.getJobId();
+        if (!activeDeposits.isDepositActive(depositId)) {
+            LOG.warn("Skipping job message {} for deposit {} because the deposit is not active", jobId, depositId);
             acknowledgeMessage(message);
             return;
         }
@@ -53,17 +55,19 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         var jobRunnable = getJobRunnable(jobMessage);
         LOG.debug("Got job runnable {}", jobRunnable.getClass().getName());
         try {
-            jobStatusFactory.started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+            jobStatusFactory.started(jobId, depositId, jobRunnable.getClass());
             jobRunnable.run();
             var successMessage = buildSuccessMessage(jobMessage);
             sendDepositOperationMessage(successMessage);
-            acknowledgeMessage(message);
+        } catch (JobInterruptedException e) {
+            LOG.info("Job {} in deposit {} was interrupted: {}", jobId, depositId, e.getMessage());
+            jobStatusFactory.interrupted(jobId);
+            sendDepositOperationMessage(buildInterruptedMessage(jobMessage, e));
         } catch (Exception e) {
-            LOG.error("Error processing job message {} for deposit {}",
-                    jobMessage.getJobId(), jobMessage.getDepositId(), e);
-            var failureMessage = buildFailureMessage(jobMessage, e);
-            sendDepositOperationMessage(failureMessage);
-            // Not acknowledging the message if the operation message doesn't send, so it can be retried
+            LOG.error("Error processing job message {} for deposit {}", jobId, depositId, e);
+            jobStatusFactory.failed(jobId);
+            sendDepositOperationMessage(buildFailureMessage(jobMessage, e));
+        } finally {
             acknowledgeMessage(message);
         }
     }
@@ -102,6 +106,17 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         failureMessage.setExceptionStackTrace(e.getStackTrace() != null ?
                 Arrays.toString(e.getStackTrace()) : null);
         return failureMessage;
+    }
+
+    private DepositOperationMessage buildInterruptedMessage(DepositJobMessage jobMessage, Exception e) {
+        var message = new DepositOperationMessage();
+        message.setJobId(jobMessage.getJobId());
+        message.setDepositId(jobMessage.getDepositId());
+        message.setAction(DepositOperation.JOB_INTERRUPTED);
+        message.setUsername(jobMessage.getUsername());
+        message.setExceptionClassName(e.getClass().getName());
+        message.setExceptionMessage(e.getMessage());
+        return message;
     }
 
     private void sendDepositOperationMessage(DepositOperationMessage message) {

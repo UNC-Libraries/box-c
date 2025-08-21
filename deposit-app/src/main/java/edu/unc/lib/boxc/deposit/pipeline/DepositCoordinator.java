@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory;
-import jakarta.annotation.PostConstruct;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
@@ -37,6 +36,7 @@ public class DepositCoordinator implements MessageListener {
     private DepositRegisterHandler depositRegisterHandler;
     private DepositPauseHandler depositPauseHandler;
     private JobFailureHandler jobFailureHandler;
+    private JobInterruptedHandler jobInterruptedHandler;
     private DepositPipelineStatusFactory pipelineStatusFactory;
     protected DepositJobMessageFactory depositJobMessageFactory;
     protected DepositJobMessageService depositJobMessageService;
@@ -61,6 +61,7 @@ public class DepositCoordinator implements MessageListener {
             case RESUME -> depositResumeHandler.handleMessage(opMessage);
             case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
             case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
+            case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
             default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
             }
             startNextDepositIfNeeded(opMessage);
@@ -134,7 +135,7 @@ public class DepositCoordinator implements MessageListener {
     private void requeueAll() {
         Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
         for (Map<String, String> fields : depositStatuses) {
-            LOG.error("Reactivating deposit during startup: {}", fields.get(DepositField.uuid.name()));
+            LOG.info("Reactivating deposit during startup: {}", fields.get(DepositField.uuid.name()));
             DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
             String depositId = fields.get(DepositField.uuid.name());
             if (DepositState.running.equals(depositState)) {
@@ -182,6 +183,10 @@ public class DepositCoordinator implements MessageListener {
 
     public void setJobFailureHandler(JobFailureHandler jobFailureHandler) {
         this.jobFailureHandler = jobFailureHandler;
+    }
+
+    public void setJobInterruptedHandler(JobInterruptedHandler jobInterruptedHandler) {
+        this.jobInterruptedHandler = jobInterruptedHandler;
     }
 
     public void setDepositJobMessageFactory(DepositJobMessageFactory depositJobMessageFactory) {

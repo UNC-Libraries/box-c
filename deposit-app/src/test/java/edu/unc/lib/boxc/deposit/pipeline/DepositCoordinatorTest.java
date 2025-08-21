@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -10,7 +9,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,11 +58,15 @@ public class DepositCoordinatorTest {
     @Mock
     private JobFailureHandler jobFailureHandler;
     @Mock
+    private JobInterruptedHandler jobInterruptedHandler;
+    @Mock
     private DepositJobMessageFactory depositJobMessageFactory;
     @Mock
     private DepositJobMessageService depositJobMessageService;
     @Mock
     private Message message;
+    @Mock
+    private DepositPipelineStatusFactory pipelineStatusFactory;
 
     private DepositOperationMessage operationMessage;
     private final String DEPOSIT_ID = "deposit123";
@@ -76,8 +84,10 @@ public class DepositCoordinatorTest {
         coordinator.setDepositRegisterHandler(depositRegisterHandler);
         coordinator.setDepositPauseHandler(depositPauseHandler);
         coordinator.setJobFailureHandler(jobFailureHandler);
+        coordinator.setJobInterruptedHandler(jobInterruptedHandler);
         coordinator.setDepositJobMessageFactory(depositJobMessageFactory);
         coordinator.setDepositJobMessageService(depositJobMessageService);
+        coordinator.setPipelineStatusFactory(pipelineStatusFactory);
 
         operationMessage = new DepositOperationMessage();
         operationMessage.setDepositId(DEPOSIT_ID);
@@ -146,6 +156,19 @@ public class DepositCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(jobFailureHandler).handleMessage(operationMessage);
+        verify(depositStatusFactory, never()).getFirstQueuedDeposit();
+        verify(message).acknowledge();
+    }
+
+    @Test
+    public void testOnMessageJobInterrupted() throws Exception {
+        operationMessage.setAction(DepositOperation.JOB_INTERRUPTED);
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
+
+        coordinator.onMessage(message);
+
+        verify(jobInterruptedHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
     }
@@ -340,5 +363,51 @@ public class DepositCoordinatorTest {
         verify(jobSuccessHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+    }
+
+    @Test
+    public void testInit() {
+        coordinator.init();
+
+        verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.starting);
+        verify(depositStatusFactory).getAll();
+        verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
+    }
+
+    @Test
+    public void testInitRequeueAll() {
+        // Setup deposits in different states
+        Map<String, String> runningDeposit = new HashMap<>();
+        runningDeposit.put(DepositField.uuid.name(), "running-deposit");
+        runningDeposit.put(DepositField.state.name(), DepositState.running.name());
+
+        Map<String, String> quietedDeposit = new HashMap<>();
+        quietedDeposit.put(DepositField.uuid.name(), "quieted-deposit");
+        quietedDeposit.put(DepositField.state.name(), DepositState.quieted.name());
+
+        Map<String, String> queuedDeposit = new HashMap<>();
+        queuedDeposit.put(DepositField.uuid.name(), "queued-deposit");
+        queuedDeposit.put(DepositField.state.name(), DepositState.queued.name());
+
+        Set<Map<String, String>> allDeposits = Set.of(runningDeposit, quietedDeposit, queuedDeposit);
+        when(depositStatusFactory.getAll()).thenReturn(allDeposits);
+
+        coordinator.init();
+
+        // Verify pipeline state transitions
+        verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.starting);
+        verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
+
+        // Verify running deposit reactivation
+        verify(depositStatusFactory).removeSupervisorLock("running-deposit");
+        verify(activeDeposits).markActive("running-deposit");
+
+        // Verify quieted deposit handling
+        verify(depositStatusFactory).removeSupervisorLock("quieted-deposit");
+        verify(depositResumeHandler).handleMessage(any(DepositOperationMessage.class));
+
+        // Verify queued deposit is not specially handled (just logged)
+        verify(activeDeposits, never()).markActive("queued-deposit");
+        verify(depositResumeHandler, never()).handleMessage(any(DepositOperationMessage.class));
     }
 }

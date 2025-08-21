@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.deposit.pipeline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -19,7 +20,9 @@ import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 
+import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +54,8 @@ public class JobCoordinatorTest {
     private Message message;
     @Mock
     private Runnable jobRunnable;
+    @Mock
+    private JobStatusFactory jobStatusFactory;
 
     private DepositJobMessage jobMessage;
     private final String JOB_ID = "job123";
@@ -65,6 +70,7 @@ public class JobCoordinatorTest {
         coordinator.setDepositPipelineStatusFactory(depositPipelineStatusFactory);
         coordinator.setApplicationContext(applicationContext);
         coordinator.setActiveDeposits(activeDeposits);
+        coordinator.setJobStatusFactory(jobStatusFactory);
 
         // Setup job message
         jobMessage = new DepositJobMessage();
@@ -76,7 +82,7 @@ public class JobCoordinatorTest {
         when(depositPipelineStatusFactory.getPipelineState()).thenReturn(DepositPipelineState.active);
         when(depositJobMessageService.fromJson(message)).thenReturn(jobMessage);
         when(activeDeposits.isDepositActive(DEPOSIT_ID)).thenReturn(true);
-        when(applicationContext.getBean(any(Class.class))).thenReturn(jobRunnable);
+        when(applicationContext.getBean(any(Class.class), any(Object[].class))).thenReturn(jobRunnable);
     }
 
     @Test
@@ -97,6 +103,7 @@ public class JobCoordinatorTest {
         assertEquals(DepositOperation.JOB_SUCCESS, successMessage.getAction());
         assertEquals(JOB_ID, successMessage.getJobId());
         assertEquals(DEPOSIT_ID, successMessage.getDepositId());
+        verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
     }
 
     @Test
@@ -120,6 +127,34 @@ public class JobCoordinatorTest {
         assertEquals(DEPOSIT_ID, failureMessage.getDepositId());
         assertEquals(RuntimeException.class.getName(), failureMessage.getExceptionClassName());
         assertEquals("Job failed", failureMessage.getExceptionMessage());
+
+        verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+        verify(jobStatusFactory).failed(jobMessage.getJobId());
+    }
+
+    @Test
+    public void testJobExecutionInterrupted() throws Exception {
+        // Given a job that throws an exception
+        JobInterruptedException jobException = new JobInterruptedException("Job interrupted");
+        doThrow(jobException).when(jobRunnable).run();
+
+        // When the job is executed
+        coordinator.onMessage(message);
+
+        // Then message should still be acknowledged
+        verify(message).acknowledge();
+
+        // And interrupt message should be sent
+        ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
+        verify(depositOperationMessageService).sendDepositOperationMessage(messageCaptor.capture());
+        DepositOperationMessage interruptMessage = messageCaptor.getValue();
+        assertEquals(DepositOperation.JOB_INTERRUPTED, interruptMessage.getAction());
+        assertEquals(JOB_ID, interruptMessage.getJobId());
+        assertEquals(DEPOSIT_ID, interruptMessage.getDepositId());
+        assertEquals(JobInterruptedException.class.getName(), interruptMessage.getExceptionClassName());
+        assertEquals("Job interrupted", interruptMessage.getExceptionMessage());
+        verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+        verify(jobStatusFactory).interrupted(jobMessage.getJobId());
     }
 
     @Test
@@ -134,6 +169,7 @@ public class JobCoordinatorTest {
         verify(depositJobMessageService, never()).fromJson(any());
         verify(message, never()).acknowledge();
         verify(jobRunnable, never()).run();
+        verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
     }
 
     @Test
@@ -147,6 +183,7 @@ public class JobCoordinatorTest {
         // Then message should be acknowledged but job shouldn't run
         verify(message).acknowledge();
         verify(jobRunnable, never()).run();
+        verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
     }
 
     @Test
@@ -160,21 +197,5 @@ public class JobCoordinatorTest {
         verify(message).acknowledge();
         // Then no job should run
         verify(jobRunnable, never()).run();
-    }
-
-    @Test
-    public void testSendOperationMessageFailure() throws Exception {
-        // Given a failure sending the operation message
-        doThrow(new JsonProcessingException("Serialization error") {}).when(depositOperationMessageService)
-                .sendDepositOperationMessage(any());
-
-        // When a message is received
-        assertThrows(RuntimeException.class, () -> coordinator.onMessage(message));
-
-        // The job should still run
-        verify(jobRunnable).run();
-
-        // But the message shouldn't be acknowledged
-        verify(message, never()).acknowledge();
     }
 }

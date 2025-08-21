@@ -70,7 +70,7 @@ public class DepositJobMessageFactoryTest {
     @Test
     public void testPackageIntegrityCheckJobFirst() {
         depositStatus.put(DepositField.depositMd5.name(), "abc123");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -81,7 +81,7 @@ public class DepositJobMessageFactoryTest {
     @Test
     public void testUnpackDepositJobForZipFile() {
         depositStatus.put(DepositField.fileName.name(), "test.zip");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
         successfulJobs.add(PackageIntegrityCheckJob.class.getName());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
@@ -92,7 +92,7 @@ public class DepositJobMessageFactoryTest {
     @Test
     public void testSkipUnpackForSimpleObjectZip() {
         depositStatus.put(DepositField.fileName.name(), "test.zip");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -102,7 +102,7 @@ public class DepositJobMessageFactoryTest {
     @Test
     public void testSkipUnpackForNonZipFile() {
         depositStatus.put(DepositField.fileName.name(), "test.tar");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -111,7 +111,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testPreconstructedDepositJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAG_WITH_N3.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAG_WITH_N3.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -120,7 +120,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testCDRMETS2N3BagJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.METS_CDR.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.METS_CDR.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -129,7 +129,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testSimple2N3BagJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -138,7 +138,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testBagIt2N3BagJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -147,7 +147,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testDirectoryToBagJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.DIRECTORY.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.DIRECTORY.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -156,7 +156,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testWorkFormToBagJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.WORK_FORM_DEPOSIT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.WORK_FORM_DEPOSIT.getUri());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
 
@@ -165,7 +165,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testNormalizeFileObjectsJobForMETSCDR() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.METS_CDR.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.METS_CDR.getUri());
         successfulJobs.add(CDRMETS2N3BagJob.class.getName());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
@@ -175,7 +175,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testSkipNormalizeFileObjectsJobForNonMETSCDR() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         successfulJobs.add(Simple2N3BagJob.class.getName());
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
@@ -185,7 +185,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testValidationJobSequence() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         successfulJobs.add(Simple2N3BagJob.class.getName());
 
         // Test ValidateDestinationJob
@@ -219,7 +219,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testIngestJobSequence() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         addAllValidationJobs();
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
@@ -240,7 +240,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testStaffOnlyPermissionJob() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         depositStatus.put(DepositField.staffOnly.name(), "true");
         addAllValidationJobs();
         successfulJobs.add(AssignStorageLocationsJob.class.getName());
@@ -253,7 +253,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testSkipStaffOnlyPermissionJobWhenFalse() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         depositStatus.put(DepositField.staffOnly.name(), "false");
         addAllValidationJobs();
         successfulJobs.add(AssignStorageLocationsJob.class.getName());
@@ -266,7 +266,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testSkipIngestDepositRecordWhenExcluded() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         depositStatus.put(DepositField.excludeDepositRecord.name(), "true");
         addAllValidationJobs();
         successfulJobs.add(AssignStorageLocationsJob.class.getName());
@@ -279,7 +279,7 @@ public class DepositJobMessageFactoryTest {
 
     @Test
     public void testCleanupJobLast() {
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
         addAllJobs();
 
         DepositJobMessage result = factory.createNextJobMessage(DEPOSIT_ID, depositStatus);
@@ -302,7 +302,7 @@ public class DepositJobMessageFactoryTest {
     @Test
     public void testInvalidSuccessfulJobs() {
         successfulJobs.add("InvalidJobClass");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.name());
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.SIMPLE_OBJECT.getUri());
 
         DepositFailedException exception = assertThrows(DepositFailedException.class, () -> {
             factory.createNextJobMessage(DEPOSIT_ID, depositStatus);

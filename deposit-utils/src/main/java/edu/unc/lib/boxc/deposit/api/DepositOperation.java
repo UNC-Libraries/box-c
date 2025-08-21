@@ -13,4 +13,5 @@ public enum DepositOperation {
     DESTROY,
     JOB_SUCCESS,
     JOB_FAILURE,
+    JOB_INTERRUPTED,
 }

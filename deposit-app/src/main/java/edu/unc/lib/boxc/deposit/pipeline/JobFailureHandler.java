@@ -21,7 +21,6 @@ import java.util.Map;
 public class JobFailureHandler implements DepositOperationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JobFailureHandler.class);
     private DepositStatusFactory depositStatusFactory;
-    private JobStatusFactory jobStatusFactory;
     private ActiveDepositsService activeDeposits;
     private DepositEmailHandler depositEmailHandler;
 
@@ -29,20 +28,11 @@ public class JobFailureHandler implements DepositOperationHandler {
     public void handleMessage(DepositOperationMessage opMessage) {
         String depositId = opMessage.getDepositId();
         String jobId = opMessage.getJobId();
-        LOG.info("Handling failure for job {}", depositId);
 
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
-                LOG.debug("Handling failure for job {} class {}", depositId, opMessage.getExceptionClassName());
-                if (isExceptionOfType(opMessage, JobInterruptedException.class)) {
-                    LOG.info("Job {} in deposit {} was interrupted: {}",
-                            jobId, depositId, opMessage.getExceptionMessage());
-                    jobStatusFactory.interrupted(jobId);
-                    return;
-                }
                 LOG.debug("Job {} in deposit {} failed with exception: {}\n{}",
                         jobId, depositId, opMessage.getExceptionMessage(), opMessage.getExceptionStackTrace());
-                jobStatusFactory.failed(jobId);
                 if (isExceptionOfType(opMessage, JobFailedException.class)) {
                     depositStatusFactory.fail(depositId, opMessage.getExceptionMessage());
                 } else {
@@ -86,10 +76,6 @@ public class JobFailureHandler implements DepositOperationHandler {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
-    }
-
-    public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
-        this.jobStatusFactory = jobStatusFactory;
     }
 
     public void setActiveDeposits(ActiveDepositsService activeDeposits) {

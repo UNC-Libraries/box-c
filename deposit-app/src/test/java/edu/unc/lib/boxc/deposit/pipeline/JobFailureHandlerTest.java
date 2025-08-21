@@ -33,8 +33,6 @@ public class JobFailureHandlerTest {
     @Mock
     private DepositStatusFactory depositStatusFactory;
     @Mock
-    private JobStatusFactory jobStatusFactory;
-    @Mock
     private ActiveDepositsService activeDeposits;
     @Mock
     private DepositEmailHandler depositEmailHandler;
@@ -50,7 +48,6 @@ public class JobFailureHandlerTest {
     public void setup() {
         handler = new JobFailureHandler();
         handler.setDepositStatusFactory(depositStatusFactory);
-        handler.setJobStatusFactory(jobStatusFactory);
         handler.setActiveDeposits(activeDeposits);
         handler.setDepositEmailHandler(depositEmailHandler);
 
@@ -61,22 +58,6 @@ public class JobFailureHandlerTest {
         operationMessage.setUsername(USERNAME);
         operationMessage.setExceptionMessage(EXCEPTION_MESSAGE);
         operationMessage.setExceptionStackTrace(STACK_TRACE);
-    }
-
-    @Test
-    public void testJobInterrupted() {
-        operationMessage.setExceptionClassName(JobInterruptedException.class.getName());
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory).interrupted(JOB_ID);
-        verify(jobStatusFactory, never()).failed(JOB_ID);
-        verify(depositStatusFactory, never()).fail(eq(DEPOSIT_ID), any());
-        verify(depositEmailHandler, never()).sendDepositResults(DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
@@ -91,7 +72,6 @@ public class JobFailureHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory).failed(JOB_ID);
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -111,7 +91,6 @@ public class JobFailureHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory).failed(JOB_ID);
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory, never()).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -131,7 +110,6 @@ public class JobFailureHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory).failed(JOB_ID);
         verify(depositStatusFactory).fail(DEPOSIT_ID, "Failed while performing service IllegalArgumentException");
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -147,8 +125,6 @@ public class JobFailureHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory, never()).failed(JOB_ID);
-        verify(jobStatusFactory, never()).interrupted(JOB_ID);
         verify(depositStatusFactory, never()).fail(eq(DEPOSIT_ID), any());
         verify(depositEmailHandler, never()).sendDepositResults(DEPOSIT_ID);
         verify(activeDeposits, never()).markInactive(DEPOSIT_ID);
