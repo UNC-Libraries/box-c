@@ -247,7 +247,6 @@
 
     <bean id="jobFailureHandler" class="edu.unc.lib.boxc.deposit.pipeline.JobFailureHandler">
         <property name="depositStatusFactory" ref="depositStatusFactory" />
-        <property name="jobStatusFactory" ref="jobStatusFactory" />
         <property name="depositEmailHandler" ref="depositEmailHandler" />
         <property name="activeDeposits" ref="activeDeposits" />
     </bean>
