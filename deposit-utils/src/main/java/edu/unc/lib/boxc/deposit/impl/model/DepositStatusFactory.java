@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 
@@ -166,36 +165,6 @@ public class DepositStatusFactory extends AbstractJedisFactory {
     public void deleteField(String depositUUID, DepositField field) {
         connectWithRetries((jedis) -> {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, field.name());
-        });
-    }
-
-    public void requestAction(String depositUUID, DepositAction action) {
-        log.debug("Setting action request for {} to {}", depositUUID, action);
-        connectWithRetries((jedis) -> {
-            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(),
-                    action.name());
-        });
-    }
-
-    public void clearActionRequest(String depositUUID) {
-        log.debug("Clearing action request for {}", depositUUID);
-        connectWithRetries((jedis) -> {
-            jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name());
-        });
-    }
-
-    /**
-     * Remove empty deposit service workers
-     */
-    public void clearEmptyWorkers() {
-        String workers = "resque:workers";
-        connectWithRetries((jedis) -> {
-            Set<String> members = jedis.smembers(workers);
-            for (String member : members) {
-                if (jedis.get(member) == null) {
-                    jedis.srem(workers, member);
-                }
-            }
         });
     }
 

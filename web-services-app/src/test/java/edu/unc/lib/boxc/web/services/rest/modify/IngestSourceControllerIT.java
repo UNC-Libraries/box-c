@@ -16,6 +16,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,6 +35,8 @@ import java.util.Map;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
 import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
@@ -108,6 +112,8 @@ public class IngestSourceControllerIT {
     @Mock
     private ContentPathFactory contentPathFactory;
     private RepositoryPIDMinter pidMinter;
+    @Mock
+    private DepositOperationMessageService depositOperationMessageService;
     @Autowired
     private JedisPool jedisPool;
     private MockMvc mvc;
@@ -131,6 +137,7 @@ public class IngestSourceControllerIT {
         fileServerDepositHandler = new FileServerDepositHandler();
         fileServerDepositHandler.setDepositStatusFactory(depositStatusFactory);
         fileServerDepositHandler.setPidMinter(pidMinter);
+        fileServerDepositHandler.setDepositOperationMessageService(depositOperationMessageService);
 
         sourceManager = new IngestSourceManagerImpl();
         sourceManager.setContentPathFactory(contentPathFactory);
@@ -342,6 +349,7 @@ public class IngestSourceControllerIT {
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
         assertEquals("candidate", candStatus1.get(DepositField.depositSlug.name()));
         assertDepositorDetailsStored(candStatus1);
+        verify(depositOperationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -492,6 +500,7 @@ public class IngestSourceControllerIT {
         assertEquals(DIRECTORY.getUri(), candStatus2.get(DepositField.packagingType.name()));
         assertFalse(Boolean.parseBoolean(candStatus2.get(DepositField.staffOnly.name())));
         assertDepositorDetailsStored(candStatus2);
+        verify(depositOperationMessageService, times(2)).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test

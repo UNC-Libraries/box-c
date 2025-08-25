@@ -6,12 +6,14 @@ import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineS
 import static java.util.Collections.singletonMap;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.deposit.api.PipelineAction;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
-import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Controller for API endpoints to interact with the deposit pipeline.
@@ -93,8 +91,8 @@ public class DepositPipelineController {
         try {
             action = PipelineAction.valueOf(actionName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            String allowed = Arrays.stream(DepositPipelineAction.values())
-                    .map(DepositPipelineAction::name)
+            String allowed = Arrays.stream(PipelineAction.values())
+                    .map(PipelineAction::name)
                     .collect(Collectors.joining(", "));
             return new ResponseEntity<>(
                     singletonMap(ERROR_KEY, "Invalid action specified, must specify one of the follow: " + allowed),

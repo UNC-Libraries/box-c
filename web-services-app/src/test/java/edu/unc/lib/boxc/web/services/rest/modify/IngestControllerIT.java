@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -26,6 +27,8 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.web.common.auth.AccessLevel;
@@ -92,6 +95,8 @@ public class IngestControllerIT {
     private AccessControlService aclService;
     @Mock
     private AccessLevel accessLevel;
+    @Mock
+    private DepositOperationMessageService depositOperationMessageService;
     @InjectMocks
     private IngestController controller;
     private AutoCloseable closeable;
@@ -115,10 +120,12 @@ public class IngestControllerIT {
         metsHandler.setPidMinter(pidMinter);
         metsHandler.setDepositStatusFactory(depositStatusFactory);
         metsHandler.setDepositsDirectory(depositsDir);
+        metsHandler.setDepositOperationMessageService(depositOperationMessageService);
         simpleHandler = new SimpleObjectDepositHandler();
         simpleHandler.setDepositsDirectory(depositsDir);
         simpleHandler.setDepositStatusFactory(depositStatusFactory);
         simpleHandler.setPidMinter(pidMinter);
+        simpleHandler.setDepositOperationMessageService(depositOperationMessageService);
 
         depositSubmissionService = new DepositSubmissionService();
         depositSubmissionService.setAclService(aclService);
@@ -198,6 +205,8 @@ public class IngestControllerIT {
         assertDepositorDetailsStored(status);
 
         assertDepositFileStored(depositId, filename, fileContent);
+
+        verify(depositOperationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -229,6 +238,8 @@ public class IngestControllerIT {
 
         String metsContent = IOUtils.toString(getTestMETSInputStream(), "UTF-8");
         assertDepositFileStored(depositId, filename, metsContent);
+
+        verify(depositOperationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test

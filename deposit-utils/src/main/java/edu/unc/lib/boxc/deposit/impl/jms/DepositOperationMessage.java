@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.deposit.impl.jms;
 
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 
 /**
  * Message containing details about a deposit operation

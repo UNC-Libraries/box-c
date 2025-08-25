@@ -30,7 +30,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
@@ -138,7 +137,6 @@ public class FileServerDepositHandlerTest {
         assertEquals(Priority.normal.name(), status.get(DepositField.priority.name()));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
-        assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
         assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");

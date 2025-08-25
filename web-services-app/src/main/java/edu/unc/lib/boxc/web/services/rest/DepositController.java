@@ -3,24 +3,28 @@ package edu.unc.lib.boxc.web.services.rest;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositConstants;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jdom2.Content;
 import org.jdom2.Document;
@@ -36,27 +40,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.DepositConstants;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
-import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Gregory Jansen
@@ -318,11 +314,7 @@ public class DepositController {
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
     public void update(@PathVariable("uuid") String uuid, @RequestParam("action") String action,
             HttpServletResponse response) {
-        DepositAction actionRequested = DepositAction.valueOf(action);
-        if (actionRequested == null) {
-            throw new IllegalArgumentException(
-                    "The deposit action is not recognized: " + action);
-        }
+        DepositOperation opRequested = DepositOperation.valueOf(action.toLowerCase());
         // permission check, admin group or depositor required
         String username = GroupsThreadStore.getUsername();
         Map<String, String> status = depositStatusFactory.get(uuid);
@@ -336,8 +328,8 @@ public class DepositController {
             }
         }
         String state = status.get(DepositField.state.name());
-        switch (actionRequested) {
-            case pause:
+        switch (opRequested) {
+            case PAUSE:
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else if (DepositState.failed.name().equals(state)) {
@@ -348,7 +340,7 @@ public class DepositController {
                     response.setStatus(204);
                 }
                 break;
-            case resume:
+            case RESUME:
                 if (!DepositState.paused.name().equals(state) && !DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("The deposit must be paused or failed before you can resume");
                 } else {
@@ -357,7 +349,7 @@ public class DepositController {
                     response.setStatus(204);
                 }
                 break;
-            case cancel:
+            case CANCEL:
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else {
@@ -366,7 +358,7 @@ public class DepositController {
                     response.setStatus(204);
                 }
                 break;
-            case destroy:
+            case DESTROY:
                 if (DepositState.cancelled.name().equals(state) || DepositState.finished.name().equals(state)) {
                     var depositMessage = new DepositOperationMessage(DepositOperation.DESTROY, uuid, username);
                     depositOperationMessageService.sendDepositOperationMessage(depositMessage);

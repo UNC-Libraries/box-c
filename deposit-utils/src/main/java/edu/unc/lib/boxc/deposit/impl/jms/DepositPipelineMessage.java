@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.deposit.impl.jms;
 
 import edu.unc.lib.boxc.deposit.api.PipelineAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
 
 /**
  * Message containing details about a deposit pipeline action to be executed
