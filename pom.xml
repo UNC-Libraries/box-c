@@ -74,8 +74,7 @@
         
         <jackson.version>2.18.2</jackson.version>
         <jackson.databind.version>2.18.2</jackson.databind.version>
-        <jesque.version>2.2.0</jesque.version>
-        
+
         <joda-time.version>2.13.1</joda-time.version>
         <jmustache.version>1.16</jmustache.version>
         <mail.version>2.0.1</mail.version>
@@ -392,11 +391,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>net.greghaines</groupId>
-                <artifactId>jesque</artifactId>
-                <version>${jesque.version}</version>
-            </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>common-utils</artifactId>

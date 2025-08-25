@@ -55,10 +55,6 @@
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
         </dependency>
-        <dependency>
-            <groupId>net.greghaines</groupId>
-            <artifactId>jesque</artifactId>
-        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

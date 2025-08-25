@@ -29,7 +29,7 @@
         <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
-                <value>5.0</value>
+                <value>6.0</value>
             </list>
         </property>
     </bean>

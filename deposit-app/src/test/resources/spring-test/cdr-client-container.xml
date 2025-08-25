@@ -177,17 +177,6 @@
         <constructor-arg type="int" value="46380" />
     </bean>
     
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="localhost" type="java.lang.String" />
-        <constructor-arg value="46380" type="int" />
-        <constructor-arg value="2000" type="int" />
-        <constructor-arg type="java.lang.String">
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" type="java.lang.String" />
-        <constructor-arg value="0" type="int" />
-    </bean>
-    
     <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
         <property name="maxIdle" value="15"/>
         <property name="minIdle" value="2"/>
