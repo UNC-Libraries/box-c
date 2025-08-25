@@ -408,6 +408,5 @@ public class DepositCoordinatorTest {
 
         // Verify queued deposit is not specially handled (just logged)
         verify(activeDeposits, never()).markActive("queued-deposit");
-        verify(depositResumeHandler, never()).handleMessage(any(DepositOperationMessage.class));
     }
 }

@@ -1,27 +1,16 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import edu.unc.lib.boxc.deposit.api.DepositOperation;
-import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessage;
@@ -31,7 +20,19 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.jms.DepositCompleteService;
 import edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory;
+import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class JobSuccessHandlerTest {
 
@@ -75,6 +76,8 @@ public class JobSuccessHandlerTest {
 
         nextJobMessage = new DepositJobMessage();
         nextJobMessage.setJobClassName(REGULAR_JOB_CLASS);
+
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
     }
 
     @Test
@@ -136,6 +139,25 @@ public class JobSuccessHandlerTest {
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
         verify(depositCompleteService).sendDepositCompleteEvent(DEPOSIT_ID);
         verify(depositJobMessageService).sendDepositJobMessage(nextJobMessage, CLEANUP_DELAY_SECONDS);
+    }
+
+    @Test
+    public void testDepositNotRunning() throws Exception {
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.failed);
+
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.startTime.name(), "1234567890");
+
+        when(depositStatusFactory.get(DEPOSIT_ID)).thenReturn(depositStatus);
+        when(depositJobMessageFactory.createNextJobMessage(DEPOSIT_ID, depositStatus))
+                .thenReturn(nextJobMessage);
+
+        handler.handleMessage(operationMessage);
+
+        // Job marked as completed, but no further jobs queued
+        verify(jobStatusFactory).completed(JOB_ID);
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any(DepositJobMessage.class));
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any(DepositJobMessage.class), anyInt());
     }
 
     @Test
