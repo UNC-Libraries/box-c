@@ -106,6 +106,7 @@ public class DepositCoordinatorTest {
         verify(depositRegisterHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
     }
 
     @Test
@@ -119,6 +120,7 @@ public class DepositCoordinatorTest {
         verify(depositPauseHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
     }
 
     @Test
@@ -132,6 +134,7 @@ public class DepositCoordinatorTest {
         verify(depositResumeHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
     }
 
     @Test
@@ -145,6 +148,7 @@ public class DepositCoordinatorTest {
         verify(jobSuccessHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
     }
 
     @Test
@@ -158,6 +162,7 @@ public class DepositCoordinatorTest {
         verify(jobFailureHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
     }
 
     @Test
@@ -209,6 +214,7 @@ public class DepositCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(handler).handleMessage(operationMessage);
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
@@ -244,6 +250,7 @@ public class DepositCoordinatorTest {
         verify(jobSuccessHandler).handleMessage(operationMessage);
         verify(depositStatusFactory).getFirstQueuedDeposit();
         verify(activeDeposits, never()).markActive(any());
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(message).acknowledge();
     }
 
@@ -268,12 +275,13 @@ public class DepositCoordinatorTest {
 
         verify(depositStatusFactory, never()).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
         verify(message).acknowledge();
+        verify(activeDeposits).markActive(DEPOSIT_ID);
     }
 
     @Test
     public void testStartDepositFailsToGetLock() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
-        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
         when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
         when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
@@ -285,6 +293,7 @@ public class DepositCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
+        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(message).acknowledge();
     }

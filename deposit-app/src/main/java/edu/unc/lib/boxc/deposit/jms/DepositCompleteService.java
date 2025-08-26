@@ -38,6 +38,7 @@ public class DepositCompleteService {
     public void sendDepositCompleteEvent(String depositId) {
         var depositStatus = depositStatusFactory.get(depositId);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
+        LOG.debug("Sending deposit complete event for deposit {}", depositPid);
         try {
             Model model = depositModelManager.getReadModel(depositPid);
             Bag depositBag = model.getBag(depositPid.getRepositoryPath());
@@ -51,6 +52,7 @@ public class DepositCompleteService {
                 return;
             }
             childIt.forEachRemaining(node -> addedPids.add(PIDs.get(node.asResource().getURI())));
+            LOG.debug("Deposit {} completed with {} objects", depositId, addedPids.size());
 
             // Send message indicating the deposit has completed
             opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),

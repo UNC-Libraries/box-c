@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 public class DepositPauseHandler implements DepositOperationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DepositPauseHandler.class);
     private DepositStatusFactory depositStatusFactory;
-    private ActiveDepositsService activeDeposits;
 
     @Override
     public void handleMessage(DepositOperationMessage opMessage) {
@@ -22,7 +21,6 @@ public class DepositPauseHandler implements DepositOperationHandler {
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
                 depositStatusFactory.setState(depositId, RedisWorkerConstants.DepositState.paused);
-                activeDeposits.markInactive(depositId);
             } finally {
                 depositStatusFactory.removeSupervisorLock(depositId);
             }
@@ -36,9 +34,5 @@ public class DepositPauseHandler implements DepositOperationHandler {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
-    }
-
-    public void setActiveDeposits(ActiveDepositsService activeDeposits) {
-        this.activeDeposits = activeDeposits;
     }
 }

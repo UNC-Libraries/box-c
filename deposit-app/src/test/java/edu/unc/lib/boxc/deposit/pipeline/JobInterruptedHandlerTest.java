@@ -24,8 +24,6 @@ public class JobInterruptedHandlerTest {
 
     @Mock
     private DepositStatusFactory depositStatusFactory;
-    @Mock
-    private ActiveDepositsService activeDeposits;
 
     private DepositOperationMessage operationMessage;
     private final static String DEPOSIT_ID = "deposit123";
@@ -36,7 +34,6 @@ public class JobInterruptedHandlerTest {
     public void setup() {
         handler = new JobInterruptedHandler();
         handler.setDepositStatusFactory(depositStatusFactory);
-        handler.setActiveDeposits(activeDeposits);
 
         operationMessage = new DepositOperationMessage();
         operationMessage.setDepositId(DEPOSIT_ID);
@@ -54,7 +51,6 @@ public class JobInterruptedHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -66,7 +62,6 @@ public class JobInterruptedHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -79,7 +74,6 @@ public class JobInterruptedHandlerTest {
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory, never()).getState(DEPOSIT_ID);
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(activeDeposits, never()).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 

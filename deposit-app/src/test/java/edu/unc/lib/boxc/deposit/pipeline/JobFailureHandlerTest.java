@@ -33,8 +33,6 @@ public class JobFailureHandlerTest {
     @Mock
     private DepositStatusFactory depositStatusFactory;
     @Mock
-    private ActiveDepositsService activeDeposits;
-    @Mock
     private DepositEmailHandler depositEmailHandler;
 
     private DepositOperationMessage operationMessage;
@@ -48,7 +46,6 @@ public class JobFailureHandlerTest {
     public void setup() {
         handler = new JobFailureHandler();
         handler.setDepositStatusFactory(depositStatusFactory);
-        handler.setActiveDeposits(activeDeposits);
         handler.setDepositEmailHandler(depositEmailHandler);
 
         operationMessage = new DepositOperationMessage();
@@ -75,7 +72,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -94,7 +90,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory, never()).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -113,7 +108,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, "Failed while performing service IllegalArgumentException");
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -127,7 +121,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory, never()).fail(eq(DEPOSIT_ID), any());
         verify(depositEmailHandler, never()).sendDepositResults(DEPOSIT_ID);
-        verify(activeDeposits, never()).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 

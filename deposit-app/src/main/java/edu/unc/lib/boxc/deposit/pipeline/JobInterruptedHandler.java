@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 public class JobInterruptedHandler implements DepositOperationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JobInterruptedHandler.class);
     private DepositStatusFactory depositStatusFactory;
-    private ActiveDepositsService activeDeposits;
 
     @Override
     public void handleMessage(DepositOperationMessage opMessage) {
@@ -29,7 +28,6 @@ public class JobInterruptedHandler implements DepositOperationHandler {
                     depositStatusFactory.setState(depositId, DepositState.quieted);
                 }
             } finally {
-                activeDeposits.markInactive(depositId);
                 depositStatusFactory.removeSupervisorLock(depositId);
             }
         }
@@ -42,9 +40,5 @@ public class JobInterruptedHandler implements DepositOperationHandler {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
-    }
-
-    public void setActiveDeposits(ActiveDepositsService activeDeposits) {
-        this.activeDeposits = activeDeposits;
     }
 }

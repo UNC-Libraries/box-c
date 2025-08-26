@@ -23,8 +23,6 @@ public class DepositPauseHandlerTest {
 
     @Mock
     private DepositStatusFactory depositStatusFactory;
-    @Mock
-    private ActiveDepositsService activeDeposits;
 
     private DepositOperationMessage operationMessage;
     private final static String DEPOSIT_ID = "deposit123";
@@ -34,7 +32,6 @@ public class DepositPauseHandlerTest {
     public void setup() {
         handler = new DepositPauseHandler();
         handler.setDepositStatusFactory(depositStatusFactory);
-        handler.setActiveDeposits(activeDeposits);
 
         operationMessage = new DepositOperationMessage();
         operationMessage.setDepositId(DEPOSIT_ID);
@@ -50,7 +47,6 @@ public class DepositPauseHandlerTest {
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.paused);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
@@ -62,7 +58,6 @@ public class DepositPauseHandlerTest {
 
         verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.paused);
-        verify(activeDeposits, never()).markInactive(DEPOSIT_ID);
         verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 

@@ -64,7 +64,9 @@ public class DepositCoordinator implements MessageListener {
             case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
             default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
             }
-            startNextDepositIfNeeded(opMessage);
+            var depositState = depositStatusFactory.getState(opMessage.getDepositId());
+            updateActiveDeposits(opMessage.getDepositId(), depositState);
+            startNextDepositIfNeeded(opMessage.getDepositId(), depositState);
         } catch (Exception e) {
             LOG.error("Error processing deposit operation message", e);
             if (opMessage != null) {
@@ -80,15 +82,23 @@ public class DepositCoordinator implements MessageListener {
         }
     }
 
-    private synchronized void startNextDepositIfNeeded(DepositOperationMessage opMessage) {
-        String depositId = opMessage.getDepositId();
+    private void updateActiveDeposits(String depositId, DepositState depositState) {
+        if (DepositState.running.equals(depositState)) {
+            LOG.debug("Marking deposit {} as active", depositId);
+            activeDeposits.markActive(depositId);
+        } else {
+            LOG.debug("Marking deposit {} as inactive", depositId);
+            activeDeposits.markInactive(depositId);
+        }
+    }
+
+    private synchronized void startNextDepositIfNeeded(String depositId, DepositState depositState) {
         // Check if there are workers available to handle the deposit
         if (!activeDeposits.acceptingNewDeposits()) {
             LOG.debug("No available workers to start next deposit");
             return;
         }
         // Check if the deposit is in a state that would free up a worker or populate the queue
-        var depositState = depositStatusFactory.getState(depositId);
         if (DepositState.paused.equals(depositState) || DepositState.finished.equals(depositState)
                 || DepositState.failed.equals(depositState) || DepositState.queued.equals(depositState)) {
             // Start next deposit if there is one waiting
@@ -135,7 +145,7 @@ public class DepositCoordinator implements MessageListener {
     private void requeueAll() {
         Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
         for (Map<String, String> fields : depositStatuses) {
-            LOG.info("Reactivating deposit during startup: {}", fields.get(DepositField.uuid.name()));
+            LOG.debug("Scanning deposits during startup: {}", fields.get(DepositField.uuid.name()));
             DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
             String depositId = fields.get(DepositField.uuid.name());
             if (DepositState.running.equals(depositState)) {

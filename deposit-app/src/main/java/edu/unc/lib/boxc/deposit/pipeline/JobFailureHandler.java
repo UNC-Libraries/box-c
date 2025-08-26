@@ -21,7 +21,6 @@ import java.util.Map;
 public class JobFailureHandler implements DepositOperationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JobFailureHandler.class);
     private DepositStatusFactory depositStatusFactory;
-    private ActiveDepositsService activeDeposits;
     private DepositEmailHandler depositEmailHandler;
 
     @Override
@@ -42,7 +41,6 @@ public class JobFailureHandler implements DepositOperationHandler {
                 depositDuration(depositId, getDepositStatus(depositId));
                 depositEmailHandler.sendDepositResults(depositId);
             } finally {
-                activeDeposits.markInactive(depositId);
                 depositStatusFactory.removeSupervisorLock(depositId);
             }
         }
@@ -76,10 +74,6 @@ public class JobFailureHandler implements DepositOperationHandler {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
-    }
-
-    public void setActiveDeposits(ActiveDepositsService activeDeposits) {
-        this.activeDeposits = activeDeposits;
     }
 
     public void setDepositEmailHandler(DepositEmailHandler depositEmailHandler) {
