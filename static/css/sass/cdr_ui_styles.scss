@@ -534,18 +534,18 @@ table.dataTable {
   a, .button.is-text {
     color: white;
   }
+}
 
-  .is-active,
-  .navbar-link:hover,
-  a.navbar-item:hover,
-  a.navbar-item:active,
-  a.navbar-item:focus,
-  .button.has-text-white:hover,
-  .button.has-text-white:active,
-  .button.has-text-white:focus {
-    background-color: #fafafa;
-    color: #3273dc;
-  }
+.is-active,
+.navbar-link:hover,
+a.navbar-item:hover,
+a.navbar-item:active,
+a.navbar-item:focus,
+.button.is-text.has-text-white:hover,
+.button.is-text.has-text-white:active,
+.button.is-text.has-text-white:focus {
+  background-color: #fafafa;
+  color: #3273dc !important;
 }
 
 /*** End of Bulma overrides ***/
