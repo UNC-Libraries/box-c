@@ -79,6 +79,7 @@
         <property name="messageListener" ref="jobCoordinator" />
         <property name="concurrency" value="${workers.high.num:4}" />
         <property name="acknowledgeAfterListener" value="false" />
+        <property name="sessionTransacted" value="true" />
     </bean>
 
     <bean id="depositOperationMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService">
@@ -93,6 +94,9 @@
         <property name="messageListener" ref="depositCoordinator" />
         <property name="concurrency" value="2" />
         <property name="acknowledgeAfterListener" value="false" />
+        <property name="sessionTransacted" value="true" />
+        <property name="receiveTimeout" value="30000" />
+        <property name="recoveryInterval" value="5000" />
     </bean>
 
     <bean id="pipelineMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService">
@@ -107,6 +111,7 @@
         <property name="messageListener" ref="pipelineCoordinator" />
         <property name="concurrency" value="1" />
         <property name="acknowledgeAfterListener" value="true" />
+        <property name="sessionTransacted" value="true" />
     </bean>
 
     <bean id="depositCompleteService" class="edu.unc.lib.boxc.deposit.jms.DepositCompleteService">
@@ -129,6 +134,10 @@
         <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}" />
     </bean>
 
+    <bean id="jobInterruptedHandler" class="edu.unc.lib.boxc.deposit.pipeline.JobInterruptedHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+    </bean>
+
     <bean id="depositResumeHandler" class="edu.unc.lib.boxc.deposit.pipeline.DepositResumeHandler">
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="jobStatusFactory" ref="jobStatusFactory" />
@@ -140,13 +149,11 @@
 
     <bean id="depositPauseHandler" class="edu.unc.lib.boxc.deposit.pipeline.DepositPauseHandler">
         <property name="depositStatusFactory" ref="depositStatusFactory" />
-        <property name="activeDeposits" ref="activeDeposits" />
     </bean>
 
     <bean id="jobFailureHandler" class="edu.unc.lib.boxc.deposit.pipeline.JobFailureHandler">
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositEmailHandler" ref="depositEmailHandler" />
-        <property name="activeDeposits" ref="activeDeposits" />
     </bean>
 
     <bean id="depositCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.DepositCoordinator" init-method="init">
@@ -156,6 +163,7 @@
         <property name="depositRegisterHandler" ref="depositRegisterHandler" />
         <property name="depositPauseHandler" ref="depositPauseHandler" />
         <property name="jobFailureHandler" ref="jobFailureHandler" />
+        <property name="jobInterruptedHandler" ref="jobInterruptedHandler" />
         <property name="activeDeposits" ref="activeDeposits" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositJobMessageFactory" ref="depositJobMessageFactory" />
