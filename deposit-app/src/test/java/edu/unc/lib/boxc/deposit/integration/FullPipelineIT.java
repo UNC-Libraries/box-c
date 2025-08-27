@@ -8,7 +8,6 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.deposit.api.DepositMethod;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.fcrepo4.IngestContentObjectsJob;
@@ -213,7 +212,7 @@ public class FullPipelineIT {
         awaitJobSuccessful(depositId, ExtractTechnicalMetadataJob.class);
         awaitJobSuccessful(depositId, TransferBinariesToStorageJob.class);
         awaitJobSuccessful(depositId, IngestDepositRecordJob.class);
-        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 8);
+        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 10);
 
         awaitDepositState(depositId, DepositState.finished);
     }
@@ -262,7 +261,7 @@ public class FullPipelineIT {
         awaitJobSuccessful(depositId, ExtractTechnicalMetadataJob.class);
         awaitJobSuccessful(depositId, TransferBinariesToStorageJob.class);
         awaitJobSuccessful(depositId, IngestDepositRecordJob.class);
-        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 8);
+        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 10);
 
         awaitDepositState(depositId, DepositState.finished);
     }

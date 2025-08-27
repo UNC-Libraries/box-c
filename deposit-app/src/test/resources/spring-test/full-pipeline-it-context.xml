@@ -7,4 +7,8 @@
     <bean id="clamClient" class="org.mockito.Mockito" factory-method="mock" primary="true">
         <constructor-arg type="java.lang.Class" value="fi.solita.clamav.ClamAVClient" />
     </bean>
+
+    <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
+    </bean>
 </beans>
