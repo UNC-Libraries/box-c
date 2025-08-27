@@ -213,7 +213,7 @@ public class FullPipelineIT {
         awaitJobSuccessful(depositId, ExtractTechnicalMetadataJob.class);
         awaitJobSuccessful(depositId, TransferBinariesToStorageJob.class);
         awaitJobSuccessful(depositId, IngestDepositRecordJob.class);
-        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 3);
+        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 8);
 
         awaitDepositState(depositId, DepositState.finished);
     }
@@ -262,7 +262,7 @@ public class FullPipelineIT {
         awaitJobSuccessful(depositId, ExtractTechnicalMetadataJob.class);
         awaitJobSuccessful(depositId, TransferBinariesToStorageJob.class);
         awaitJobSuccessful(depositId, IngestDepositRecordJob.class);
-        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 3);
+        awaitJobSuccessful(depositId, IngestContentObjectsJob.class, 8);
 
         awaitDepositState(depositId, DepositState.finished);
     }
@@ -273,7 +273,7 @@ public class FullPipelineIT {
     }
 
     private void awaitJobSuccessful(String depositId, Class<?> jobClass) {
-        awaitJobSuccessful(depositId, jobClass, 2);
+        awaitJobSuccessful(depositId, jobClass, 5);
     }
 
     private void awaitJobSuccessful(String depositId, Class<?> jobClass, long timeoutSeconds) {

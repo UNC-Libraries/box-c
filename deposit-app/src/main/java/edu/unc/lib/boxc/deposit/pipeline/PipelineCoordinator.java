@@ -44,7 +44,6 @@ public class PipelineCoordinator implements MessageListener {
             }
         } catch (Exception e) {
             LOG.error("Error processing pipeline message", e);
-            return;
         }
     }
 
@@ -53,7 +52,6 @@ public class PipelineCoordinator implements MessageListener {
         RedisWorkerConstants.DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.active.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
-            // TODO quiet the pipeline
             jobListenerContainer.stop();
             operationListenerContainer.stop();
         } else {
@@ -81,7 +79,6 @@ public class PipelineCoordinator implements MessageListener {
                 || DepositPipelineState.stopped.equals(state)) {
             LOG.warn("Cannot stop deposit pipeline in state {}", state);
         } else {
-            // TODO stop the pipeline
             pipelineStatusFactory.setPipelineState(DepositPipelineState.stopped);
             jobListenerContainer.shutdown();
             operationListenerContainer.shutdown();

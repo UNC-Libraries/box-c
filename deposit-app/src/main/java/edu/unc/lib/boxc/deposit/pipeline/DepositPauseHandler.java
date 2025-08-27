@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Handler for deposit pause operations
+ *
  * @author bbpennel
  */
 public class DepositPauseHandler implements DepositOperationHandler {
