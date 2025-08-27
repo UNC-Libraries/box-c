@@ -34,6 +34,8 @@ import org.jdom2.input.stax.DefaultStAXFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -312,9 +314,8 @@ public class DepositController {
      *           the action to take on the deposit (pause, resume, cancel, destroy)
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
-    public void update(@PathVariable("uuid") String uuid, @RequestParam("action") String action,
-            HttpServletResponse response) {
-        DepositOperation opRequested = DepositOperation.valueOf(action.toLowerCase());
+    public ResponseEntity<Void> update(@PathVariable("uuid") String uuid, @RequestParam("action") String action) {
+        DepositOperation opRequested = DepositOperation.valueOf(action.toUpperCase());
         // permission check, admin group or depositor required
         String username = GroupsThreadStore.getUsername();
         Map<String, String> status = depositStatusFactory.get(uuid);
@@ -323,8 +324,7 @@ public class DepositController {
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
             if (username == null || (!username.equals(status.get(DepositField.depositorName.name())) &&
                     !globalPermissionEvaluator.hasGlobalPermission(principals, Permission.createAdminUnit))) {
-                response.setStatus(403);
-                return;
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
         String state = status.get(DepositField.state.name());
@@ -337,37 +337,33 @@ public class DepositController {
                 } else {
                     var depositMessage = new DepositOperationMessage(DepositOperation.PAUSE, uuid, username);
                     depositOperationMessageService.sendDepositOperationMessage(depositMessage);
-                    response.setStatus(204);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
             case RESUME:
                 if (!DepositState.paused.name().equals(state) && !DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("The deposit must be paused or failed before you can resume");
                 } else {
                     var depositMessage = new DepositOperationMessage(DepositOperation.RESUME, uuid, username);
                     depositOperationMessageService.sendDepositOperationMessage(depositMessage);
-                    response.setStatus(204);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
             case CANCEL:
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else {
                     var depositMessage = new DepositOperationMessage(DepositOperation.CANCEL, uuid, username);
                     depositOperationMessageService.sendDepositOperationMessage(depositMessage);
-                    response.setStatus(204);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
             case DESTROY:
                 if (DepositState.cancelled.name().equals(state) || DepositState.finished.name().equals(state)) {
                     var depositMessage = new DepositOperationMessage(DepositOperation.DESTROY, uuid, username);
                     depositOperationMessageService.sendDepositOperationMessage(depositMessage);
-                    response.setStatus(204);
+                    return ResponseEntity.noContent().build();
                 } else {
                     throw new IllegalArgumentException(
                             "The deposit must be finished or cancelled before it is destroyed");
                 }
-                break;
             default:
                 throw new IllegalArgumentException("The requested deposit action is not implemented: " + action);
         }

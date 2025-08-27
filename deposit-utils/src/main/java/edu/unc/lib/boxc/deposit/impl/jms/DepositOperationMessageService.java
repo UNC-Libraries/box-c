@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import edu.unc.lib.boxc.deposit.api.exceptions.DepositMessageException;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
 
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.io.IOException;
  * @author bbpennel
  */
 public class DepositOperationMessageService {
+    private static final Logger LOG = LoggerFactory.getLogger(DepositOperationMessageService.class);
     private static final ObjectWriter REQUEST_WRITER;
     private static final ObjectReader REQUEST_READER;
     static {
@@ -29,6 +32,7 @@ public class DepositOperationMessageService {
 
     public void sendDepositOperationMessage(DepositOperationMessage message) {
         try {
+            LOG.debug("Sending deposit operation message {} for {}", message.getAction(), message.getDepositId());
             String json = REQUEST_WRITER.writeValueAsString(message);
             jmsTemplate.convertAndSend(destinationName, json);
         } catch (JsonProcessingException e) {
