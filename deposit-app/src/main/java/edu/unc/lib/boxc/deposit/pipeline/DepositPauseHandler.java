@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class DepositPauseHandler implements DepositOperationHandler {
 
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
-                depositStatusFactory.setState(depositId, RedisWorkerConstants.DepositState.paused);
+                depositStatusFactory.setState(depositId, DepositState.paused);
             } finally {
                 depositStatusFactory.removeSupervisorLock(depositId);
             }

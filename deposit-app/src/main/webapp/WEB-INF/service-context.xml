@@ -92,7 +92,7 @@
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="destinationName" value="${jms.deposit.operation.stream}" />
         <property name="messageListener" ref="depositCoordinator" />
-        <property name="concurrency" value="2" />
+        <property name="concurrency" value="${workers.high.num:4}" />
         <property name="acknowledgeAfterListener" value="false" />
         <property name="sessionTransacted" value="true" />
         <property name="receiveTimeout" value="30000" />
@@ -130,7 +130,6 @@
         <property name="depositJobMessageFactory" ref="depositJobMessageFactory" />
         <property name="depositEmailHandler" ref="depositEmailHandler" />
         <property name="depositCompleteService" ref="depositCompleteService" />
-        <property name="jobStatusFactory" ref="jobStatusFactory" />
         <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}" />
     </bean>
 

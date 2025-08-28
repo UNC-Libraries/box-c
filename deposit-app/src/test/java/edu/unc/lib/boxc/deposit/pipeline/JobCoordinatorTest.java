@@ -104,6 +104,7 @@ public class JobCoordinatorTest {
         assertEquals(JOB_ID, successMessage.getJobId());
         assertEquals(DEPOSIT_ID, successMessage.getDepositId());
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+        verify(jobStatusFactory).completed(jobMessage.getJobId());
     }
 
     @Test
@@ -130,6 +131,7 @@ public class JobCoordinatorTest {
 
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).failed(jobMessage.getJobId());
+        verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
     }
 
     @Test
@@ -155,6 +157,7 @@ public class JobCoordinatorTest {
         assertEquals("Job interrupted", interruptMessage.getExceptionMessage());
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).interrupted(jobMessage.getJobId());
+        verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
     }
 
     @Test
@@ -170,6 +173,7 @@ public class JobCoordinatorTest {
         verify(message, never()).acknowledge();
         verify(jobRunnable, never()).run();
         verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
+        verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
     }
 
     @Test
@@ -184,6 +188,7 @@ public class JobCoordinatorTest {
         verify(message).acknowledge();
         verify(jobRunnable, never()).run();
         verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
+        verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
     }
 
     @Test

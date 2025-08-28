@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
@@ -42,7 +41,7 @@ public class DepositResumeHandler implements DepositOperationHandler {
 
                 // Clear out the previous failed job if there was one
                 jobStatusFactory.clearStale(depositId);
-                depositStatusFactory.deleteField(depositId, RedisWorkerConstants.DepositField.errorMessage);
+                depositStatusFactory.deleteField(depositId, DepositField.errorMessage);
 
                 depositStatusFactory.queueDeposit(depositId);
             } finally {

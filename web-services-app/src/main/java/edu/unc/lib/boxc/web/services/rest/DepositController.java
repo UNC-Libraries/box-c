@@ -24,7 +24,6 @@ import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jdom2.Content;
 import org.jdom2.Document;
@@ -399,7 +398,7 @@ public class DepositController {
         try (Jedis jedis = getJedisPool().getResource()) {
             bagDirectory = jedis.hget(
                     RedisWorkerConstants.DEPOSIT_STATUS_PREFIX + uuid,
-                    RedisWorkerConstants.DepositField.directory.name());
+                    DepositField.directory.name());
         }
         File bagFile = new File(bagDirectory);
         if (!bagFile.exists()) {

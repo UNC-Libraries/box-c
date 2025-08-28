@@ -3,11 +3,9 @@ package edu.unc.lib.boxc.deposit.pipeline;
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.jms.DepositCompleteService;
 import edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory;
 import edu.unc.lib.boxc.deposit.work.DepositEmailHandler;
@@ -28,7 +26,6 @@ public class JobSuccessHandler implements DepositOperationHandler {
     private DepositStatusFactory depositStatusFactory;
     private DepositEmailHandler depositEmailHandler;
     private DepositCompleteService depositCompleteService;
-    private JobStatusFactory jobStatusFactory;
     private int cleanupDelaySeconds;
 
     @Override
@@ -36,7 +33,6 @@ public class JobSuccessHandler implements DepositOperationHandler {
         String depositId = opMessage.getDepositId();
         LOG.debug("Handling success of job {} for deposit {}", opMessage.getJobId(), depositId);
         // Mark the job as completed
-        jobStatusFactory.completed(opMessage.getJobId());
         DepositState depositState = depositStatusFactory.getState(depositId);
         if (!DepositState.running.equals(depositState)){
             LOG.warn("Not queueing next job for deposit {} because it is in state {}",
@@ -49,7 +45,7 @@ public class JobSuccessHandler implements DepositOperationHandler {
         var nextMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
         if (nextMessage.getJobClassName().equals(CleanupDepositJob.class.getName())) {
             // If the next job is a cleanup job, we need to finalize the deposit
-            depositStatusFactory.setState(depositId, RedisWorkerConstants.DepositState.finished);
+            depositStatusFactory.setState(depositId, DepositState.finished);
             depositDuration(depositId, depositStatus);
             // Send email notification of deposit completion
             depositEmailHandler.sendDepositResults(depositId);
@@ -97,10 +93,6 @@ public class JobSuccessHandler implements DepositOperationHandler {
 
     public void setDepositCompleteService(DepositCompleteService depositCompleteService) {
         this.depositCompleteService = depositCompleteService;
-    }
-
-    public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
-        this.jobStatusFactory = jobStatusFactory;
     }
 
     public void setCleanupDelaySeconds(int cleanupDelaySeconds) {

@@ -48,8 +48,6 @@ public class JobSuccessHandlerTest {
     private DepositEmailHandler depositEmailHandler;
     @Mock
     private DepositCompleteService depositCompleteService;
-    @Mock
-    private JobStatusFactory jobStatusFactory;
 
     private DepositOperationMessage operationMessage;
     private DepositJobMessage nextJobMessage;
@@ -66,7 +64,6 @@ public class JobSuccessHandlerTest {
         handler.setDepositStatusFactory(depositStatusFactory);
         handler.setDepositEmailHandler(depositEmailHandler);
         handler.setDepositCompleteService(depositCompleteService);
-        handler.setJobStatusFactory(jobStatusFactory);
         handler.setCleanupDelaySeconds(CLEANUP_DELAY_SECONDS);
 
         operationMessage = new DepositOperationMessage();
@@ -91,7 +88,6 @@ public class JobSuccessHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(jobStatusFactory).completed(JOB_ID);
         verify(depositJobMessageService).sendDepositJobMessage(nextJobMessage);
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.finished);
         verify(depositEmailHandler, never()).sendDepositResults(DEPOSIT_ID);
@@ -112,7 +108,6 @@ public class JobSuccessHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(jobStatusFactory).completed(JOB_ID);
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.finished);
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -133,7 +128,6 @@ public class JobSuccessHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(jobStatusFactory).completed(JOB_ID);
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.finished);
         verify(depositStatusFactory, never()).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -154,8 +148,7 @@ public class JobSuccessHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        // Job marked as completed, but no further jobs queued
-        verify(jobStatusFactory).completed(JOB_ID);
+        // No further jobs queued
         verify(depositJobMessageService, never()).sendDepositJobMessage(any(DepositJobMessage.class));
         verify(depositJobMessageService, never()).sendDepositJobMessage(any(DepositJobMessage.class), anyInt());
     }

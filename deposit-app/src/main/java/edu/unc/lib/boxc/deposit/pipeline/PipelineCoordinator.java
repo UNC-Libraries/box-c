@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
 import edu.unc.lib.boxc.deposit.api.PipelineAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService;
@@ -49,7 +48,7 @@ public class PipelineCoordinator implements MessageListener {
 
     private void quietPipeline() {
         LOG.info("Quieting the deposit pipeline");
-        RedisWorkerConstants.DepositPipelineState state = pipelineStatusFactory.getPipelineState();
+        DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.active.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
             jobListenerContainer.stop();
@@ -61,7 +60,7 @@ public class PipelineCoordinator implements MessageListener {
 
     private void unquietPipeline() {
         LOG.info("Unquieting the deposit pipeline");
-        RedisWorkerConstants.DepositPipelineState state = pipelineStatusFactory.getPipelineState();
+        DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.quieted.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
             jobListenerContainer.start();
@@ -74,7 +73,7 @@ public class PipelineCoordinator implements MessageListener {
 
     private void stopPipeline() {
         LOG.info("Stopping the deposit pipeline");
-        RedisWorkerConstants.DepositPipelineState state = pipelineStatusFactory.getPipelineState();
+        DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.shutdown.equals(state)
                 || DepositPipelineState.stopped.equals(state)) {
             LOG.warn("Cannot stop deposit pipeline in state {}", state);

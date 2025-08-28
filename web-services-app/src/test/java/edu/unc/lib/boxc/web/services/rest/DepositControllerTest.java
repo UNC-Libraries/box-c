@@ -78,7 +78,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_PauseAction_Success() throws Exception {
+    void updatePauseActionSuccess() throws Exception {
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
                         .param("action", "pause"))
                 .andExpect(status().isNoContent());
@@ -87,7 +87,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_PauseAction_FinishedDeposit_ThrowsException() throws Exception {
+    void updatePauseActionFinishedDepositThrowsException() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.finished.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -98,7 +98,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_PauseAction_FailedDeposit_ThrowsException() throws Exception {
+    void updatePauseActionFailedDepositThrowsException() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.failed.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -109,7 +109,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_ResumeAction_PausedDeposit_Success() throws Exception {
+    void updateResumeActionPausedDepositSuccess() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.paused.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -120,7 +120,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_ResumeAction_FailedDeposit_Success() throws Exception {
+    void updateResumeActionFailedDepositSuccess() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.failed.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -131,7 +131,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_ResumeAction_InvalidState_ThrowsException() throws Exception {
+    void updateResumeActionInvalidStateThrowsException() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.running.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -142,7 +142,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_CancelAction_Success() throws Exception {
+    void updateCancelActionSuccess() throws Exception {
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
                         .param("action", "cancel"))
                 .andExpect(status().isNoContent());
@@ -151,7 +151,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_CancelAction_FinishedDeposit_ThrowsException() throws Exception {
+    void updateCancelActionFinishedDepositThrowsException() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.finished.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -162,7 +162,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_DestroyAction_CancelledDeposit_Success() throws Exception {
+    void updateDestroyActionCancelledDepositSuccess() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.cancelled.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -173,7 +173,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_DestroyAction_FinishedDeposit_Success() throws Exception {
+    void updateDestroyActionFinishedDepositSuccess() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.finished.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -184,7 +184,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_DestroyAction_InvalidState_ThrowsException() throws Exception {
+    void updateDestroyActionInvalidStateThrowsException() throws Exception {
         depositStatus.put(DepositField.state.name(), DepositState.running.name());
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -195,7 +195,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_InvalidAction_ThrowsException() throws Exception {
+    void updateInvalidActionThrowsException() throws Exception {
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
                         .param("action", "invalid"))
                 .andExpect(status().isBadRequest());
@@ -204,7 +204,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_NoPermission_WrongUser_Returns403() throws Exception {
+    void updateNoPermissionWrongUserReturns403() throws Exception {
         depositStatus.put(DepositField.depositorName.name(), "otheruser");
 
         mvc.perform(post("/edit/deposit/{uuid}", TEST_UUID)
@@ -215,7 +215,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_HasIngestPermission_Success() throws Exception {
+    void updateHasIngestPermissionSuccess() throws Exception {
         when(globalPermissionEvaluator.hasGlobalPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
                 .thenReturn(true);
         depositStatus.put(DepositField.depositorName.name(), "otheruser");
@@ -228,7 +228,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_HasAdminPermission_Success() throws Exception {
+    void updateHasAdminPermissionSuccess() throws Exception {
         when(globalPermissionEvaluator.hasGlobalPermission(any(AccessGroupSet.class), eq(Permission.createAdminUnit)))
                 .thenReturn(true);
         depositStatus.put(DepositField.depositorName.name(), "otheruser");
@@ -241,7 +241,7 @@ public class DepositControllerTest {
     }
 
     @Test
-    void update_NoUsername_Returns403() throws Exception {
+    void updateNoUsernameReturns403() throws Exception {
         GroupsThreadStore.storeUsername(null);
         depositStatus.put(DepositField.depositorName.name(), "otheruser");
 

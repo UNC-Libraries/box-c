@@ -57,6 +57,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         try {
             jobStatusFactory.started(jobId, depositId, jobRunnable.getClass());
             jobRunnable.run();
+            jobStatusFactory.completed(jobId);
             var successMessage = buildSuccessMessage(jobMessage);
             sendDepositOperationMessage(successMessage);
         } catch (JobInterruptedException e) {

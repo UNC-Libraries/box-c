@@ -17,7 +17,7 @@ public class ActiveDepositsService {
     }
 
     public synchronized boolean markActive(String depositId) {
-        if (activeDepositIds.contains(depositId) || activeDepositIds.size() >= maxConcurrentDeposits) {
+        if (activeDepositIds.contains(depositId) || !acceptingNewDeposits()) {
             return false;
         }
         activeDepositIds.add(depositId);
