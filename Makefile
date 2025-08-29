@@ -99,7 +99,7 @@ build-access-npm:
 
 	cp static/js/vue-cdr-access/dist/assets/access/vue-access-index.js static/assets/access/vue-access-index.js
 	cp static/js/vue-cdr-access/dist/assets/access/index.css static/assets/access/index.css
-	cp static/js/vue-cdr-access/dist/assets/access/watermark.webp static/assets/access/watermark.webp
+# 	cp static/js/vue-cdr-access/dist/assets/access/watermark.webp static/assets/access/watermark.webp
 
 SUSPEND = "n"
 
