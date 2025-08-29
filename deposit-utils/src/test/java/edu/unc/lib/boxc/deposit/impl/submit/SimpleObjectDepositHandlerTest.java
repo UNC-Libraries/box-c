@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,8 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +34,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
@@ -67,6 +69,8 @@ public class SimpleObjectDepositHandlerTest {
     private DepositStatusFactory depositStatusFactory;
     @Captor
     private ArgumentCaptor<Map<String, String>> statusCaptor;
+    @Mock
+    private DepositOperationMessageService operationMessageService;
 
     private File depositsDir;
 
@@ -96,6 +100,7 @@ public class SimpleObjectDepositHandlerTest {
         depositHandler.setDepositsDirectory(depositsDir);
         depositHandler.setPidMinter(pidMinter);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
+        depositHandler.setDepositOperationMessageService(operationMessageService);
     }
 
     @AfterEach
@@ -126,6 +131,7 @@ public class SimpleObjectDepositHandlerTest {
         Map<String, String> status = statusCaptor.getValue();
 
         verifyDepositFields(depositPid, status);
+        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -142,6 +148,7 @@ public class SimpleObjectDepositHandlerTest {
         Map<String, String> status = statusCaptor.getValue();
 
         verifyDepositFields(depositPid, status);
+        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -174,7 +181,6 @@ public class SimpleObjectDepositHandlerTest {
         assertEquals("true", status.get(DepositField.excludeDepositRecord.name()));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
-        assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
         assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");

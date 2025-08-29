@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <artifactId>mockito-junit-jupiter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
@@ -66,10 +66,6 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>operations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.greghaines</groupId>
-            <artifactId>jesque</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>

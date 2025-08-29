@@ -9,10 +9,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 
@@ -168,36 +168,6 @@ public class DepositStatusFactory extends AbstractJedisFactory {
         });
     }
 
-    public void requestAction(String depositUUID, DepositAction action) {
-        log.debug("Setting action request for {} to {}", depositUUID, action);
-        connectWithRetries((jedis) -> {
-            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(),
-                    action.name());
-        });
-    }
-
-    public void clearActionRequest(String depositUUID) {
-        log.debug("Clearing action request for {}", depositUUID);
-        connectWithRetries((jedis) -> {
-            jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name());
-        });
-    }
-
-    /**
-     * Remove empty deposit service workers
-     */
-    public void clearEmptyWorkers() {
-        String workers = "resque:workers";
-        connectWithRetries((jedis) -> {
-            Set<String> members = jedis.smembers(workers);
-            for (String member : members) {
-                if (jedis.get(member) == null) {
-                    jedis.srem(workers, member);
-                }
-            }
-        });
-    }
-
     /**
      * Expire the deposit status key after given interval.
      *
@@ -210,5 +180,35 @@ public class DepositStatusFactory extends AbstractJedisFactory {
             jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
             jedis.expire(DEPOSIT_MANIFEST_PREFIX + depositUUID, seconds);
         });
+    }
+
+    /**
+     * Queue a deposit for processing. This will set the deposit state to queued
+     * and add it to the deposit queue.
+     *
+     * @param depositUUID
+     *            the UUID of the deposit to queue
+     */
+    public void queueDeposit(String depositUUID) {
+        connectWithRetries((jedis) -> {
+            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
+                    DepositState.queued.name());
+            jedis.zadd(RedisWorkerConstants.DEPOSIT_QUEUE, System.nanoTime(), depositUUID);
+        });
+    }
+
+    /**
+     * Pop the first deposit off the queue
+     * @return id of the first deposit in the queue, or null if the queue is empty
+     */
+    public String getFirstQueuedDeposit() {
+        final AtomicReference<String> result = new AtomicReference<>();
+        connectWithRetries((jedis) -> {
+            var items = jedis.zpopmin(RedisWorkerConstants.DEPOSIT_QUEUE);
+            if (items != null) {
+                result.set(items.getElement());
+            }
+        });
+        return result.get();
     }
 }

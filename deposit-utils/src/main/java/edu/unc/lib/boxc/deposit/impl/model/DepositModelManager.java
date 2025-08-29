@@ -141,7 +141,7 @@ public class DepositModelManager implements Closeable {
         try {
             dataset.begin(ReadWrite.READ);
             Model model = dataset.getNamedModel(depositUri);
-            log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+            log.debug("Created read model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
             return model;
         } catch (TDBTransactionException e) {
             if (e.getCause() instanceof InterruptedException) {

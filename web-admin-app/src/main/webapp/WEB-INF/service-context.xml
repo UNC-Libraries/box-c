@@ -105,20 +105,4 @@
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
         <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
     </bean>
-    
-    <bean id="dataPath" class="java.lang.String">
-        <constructor-arg
-            value="${data.dir}" />
-    </bean>
-    
-    <bean id="depositsDirectory" class="java.io.File">
-        <constructor-arg value="${batch.ingest.dir}" />
-    </bean>
-    
-    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-        <property name="host" value="${smtp.host:localhost}" />
-        <property name="port" value="${smtp.port:25}" />
-        <property name="defaultEncoding" value="UTF-8" />
-    </bean>
-    
 </beans>

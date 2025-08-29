@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.persist.api.PackagingType.DIRECTORY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +30,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
@@ -56,6 +58,8 @@ public class FileServerDepositHandlerTest {
     private DepositStatusFactory depositStatusFactory;
     @Captor
     private ArgumentCaptor<Map<String, String>> statusCaptor;
+    @Mock
+    private DepositOperationMessageService operationMessageService;
 
     private PID destPid;
     private PID depositPid;
@@ -83,6 +87,7 @@ public class FileServerDepositHandlerTest {
         depositHandler = new FileServerDepositHandler();
         depositHandler.setPidMinter(pidMinter);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
+        depositHandler.setDepositOperationMessageService(operationMessageService);
     }
 
     @AfterEach
@@ -102,6 +107,7 @@ public class FileServerDepositHandlerTest {
         Map<String, String> status = statusCaptor.getValue();
 
         verifyDepositFields(depositPid, BAGIT, status);
+        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -116,6 +122,7 @@ public class FileServerDepositHandlerTest {
         Map<String, String> status = statusCaptor.getValue();
 
         verifyDepositFields(depositPid, DIRECTORY, status);
+        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     private void verifyDepositFields(PID depositPid, PackagingType packageType,
@@ -130,7 +137,6 @@ public class FileServerDepositHandlerTest {
         assertEquals(Priority.normal.name(), status.get(DepositField.priority.name()));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
-        assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
         assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");

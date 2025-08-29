@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="clamClient" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="fi.solita.clamav.ClamAVClient" />
+    </bean>
+
+    <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
+    </bean>
+</beans>
