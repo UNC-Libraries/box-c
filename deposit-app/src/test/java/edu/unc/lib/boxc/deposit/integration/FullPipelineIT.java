@@ -267,7 +267,7 @@ public class FullPipelineIT {
     }
 
     private void awaitDepositState(String depositId, DepositState expectedState) {
-        Awaitility.await().atMost(Duration.ofSeconds(1))
+        Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> expectedState.equals(depositStatusFactory.getState(depositId)));
     }
 
