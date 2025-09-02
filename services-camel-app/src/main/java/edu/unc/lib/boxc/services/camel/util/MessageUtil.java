@@ -60,10 +60,10 @@ public class MessageUtil {
      * @return
      */
     public static String getFcrepoUri(Message msg) {
-        String fcrepoUri = (String) msg.getHeader(FcrepoHeaders.FCREPO_URI);
+        String fcrepoUri = msg.getHeader(FcrepoHeaders.FCREPO_URI, String.class);
         if (fcrepoUri == null) {
-            String fcrepoId = (String) msg.getHeader(FcrepoJmsConstants.IDENTIFIER);
-            String fcrepoBaseUrl = (String) msg.getHeader(FcrepoJmsConstants.BASE_URL);
+            String fcrepoId = msg.getHeader(FcrepoJmsConstants.IDENTIFIER, String.class);
+            String fcrepoBaseUrl = msg.getHeader(FcrepoJmsConstants.BASE_URL, String.class);
             if (fcrepoBaseUrl == null || fcrepoId == null) {
                 return null;
             }
