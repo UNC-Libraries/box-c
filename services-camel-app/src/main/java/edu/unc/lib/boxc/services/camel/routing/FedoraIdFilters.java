@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.services.camel.routing;
 
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.regex.Pattern;
