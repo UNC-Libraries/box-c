@@ -5,14 +5,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.fcrepo.camel.FcrepoHeaders;
 import org.slf4j.Logger;
 
 /**
- * Processor which ensures fedora related headers are
+ * Processor which ensures fedora related headers are present and appear valid
  *
  * @author bbpennel
  */
@@ -30,7 +29,6 @@ public class FedoraHeadersProcessor implements Processor {
             msg.setHeader(FcrepoJmsConstants.IDENTIFIER, identifier);
         }
         // Ensure that the CamelFcrepoUri header is set
-
         String fcrepoUri = msg.getHeader(FcrepoHeaders.FCREPO_URI, String.class);
         if (fcrepoUri == null) {
             String fcrepoBaseUrl = msg.getHeader(FcrepoJmsConstants.BASE_URL, String.class);
