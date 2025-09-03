@@ -1,9 +1,9 @@
-import { createApp, h } from 'vue'
-import { createI18n } from 'vue-i18n'
-import { createHead, VueHeadMixin } from '@unhead/vue/client'
-import { createPinia } from 'pinia'
-import App from './App.vue'
-import router from './router'
+import { createApp, h } from 'vue';
+import { createI18n } from 'vue-i18n';
+import { createHead, VueHeadMixin } from '@unhead/vue/client';
+import { createPinia } from 'pinia';
+import App from './App.vue';
+import router from './router';
 import translations from '@/translations';
 import './assets/common-styles.css';
 import './assets/nouislider.css'; // Imported here, otherwise it breaks component tests, as an invalid import
