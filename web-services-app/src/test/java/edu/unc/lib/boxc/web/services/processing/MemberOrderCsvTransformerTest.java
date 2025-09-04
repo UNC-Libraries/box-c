@@ -128,20 +128,6 @@ public class MemberOrderCsvTransformerTest {
     }
 
     @Test
-    public void toSetRequestMinimalColumnsTest() throws Exception {
-        var entries = new ArrayList<List<Object>>();
-        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, 2));
-        entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, 1));
-        var csvPath = writeCsvFile(entries, PARENT_PID_HEADER, PID_HEADER, ORDER_HEADER);
-
-        var request = transformer.toRequest(csvPath);
-        assertEquals(OrderOperationType.SET, request.getOperation());
-        var parentToOrder = request.getParentToOrdered();
-        var parent1Children = parentToOrder.get(PARENT1_UUID);
-        assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID), parent1Children);
-    }
-
-    @Test
     public void toSetRequestMultipleEntriesTest() throws Exception {
         var entries = new ArrayList<List<Object>>();
         entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
@@ -161,6 +147,20 @@ public class MemberOrderCsvTransformerTest {
         assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID, CHILD3_UUID), parent1Children);
         var parent2Children = parentToOrder.get(PARENT2_UUID);
         assertEquals(Arrays.asList(CHILD4_UUID), parent2Children);
+    }
+
+    @Test
+    public void toSetRequestMinimalColumnsTest() throws Exception {
+        var entries = new ArrayList<List<Object>>();
+        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, 2));
+        entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, 1));
+        var csvPath = writeCsvFile(entries, PARENT_PID_HEADER, PID_HEADER, ORDER_HEADER);
+
+        var request = transformer.toRequest(csvPath);
+        assertEquals(OrderOperationType.SET, request.getOperation());
+        var parentToOrder = request.getParentToOrdered();
+        var parent1Children = parentToOrder.get(PARENT1_UUID);
+        assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID), parent1Children);
     }
 
     private void assertErrorMessageContains(Exception e, String expected) {
