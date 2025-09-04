@@ -62,21 +62,6 @@ public class MemberOrderCsvTransformer {
         return parentToChildren;
     }
 
-//    private static boolean validateCsvOrderIds(Map<String, List<SortableChildEntry>> mapping) {
-//        for (var parentEntry : mapping.entrySet()) {
-//            var orderIds = new ArrayList<>();
-//            var items = parentEntry.getValue();
-//            for (var item : items) {
-//                orderIds.add(item.orderId);
-//            }
-//            orderIds.stream().anyMatch()
-//            for (var orderId : orderIds) {
-//                if (orderId.)
-//            }
-//        }
-//        return true;
-//    }
-
     // Produces a map where keys are the parent id and values are lists of children ids sorted by the provided order id
     private static Map<String, List<String>> sortParentToChildren(
             Map<String, List<SortableChildEntry>> parentToUnsorted) {

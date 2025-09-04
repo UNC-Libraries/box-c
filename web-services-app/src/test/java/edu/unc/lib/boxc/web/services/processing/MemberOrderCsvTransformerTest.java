@@ -127,68 +127,6 @@ public class MemberOrderCsvTransformerTest {
         }
     }
 
-//    @Test
-//    public void toSetRequestInvalidNullOrderTest() {
-//        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            var entries = new ArrayList<List<Object>>();
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
-//                    "file1.txt", "text/plain", false, null));
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
-//                    "file2.txt", "text/plain", false, 1));
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
-//                    "file3.txt", "text/plain", true, 5));
-//            entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
-//                    "file4.txt", "text/plain", false, 0));
-//            var csvPath = writeCsvFile(entries);
-//
-//            transformer.toRequest(csvPath);
-//        });
-//
-//        assertErrorMessageContains(exception, "Member order is invalid");
-//    }
-//
-//    @Test
-//    public void toDeleteRequestValidNullOrderTest() throws Exception {
-//        var entries = new ArrayList<List<Object>>();
-//        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
-//                "file1.txt", "text/plain", false, null));
-//        entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
-//                "file2.txt", "text/plain", false, null));
-//        entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
-//                "file3.txt", "text/plain", true, null));
-//        entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
-//                "file4.txt", "text/plain", false, 0));
-//        var csvPath = writeCsvFile(entries);
-//
-//        var request = transformer.toRequest(csvPath);
-//        assertEquals(OrderOperationType.CLEAR, request.getOperation());
-//        var parentToOrder = request.getParentToOrdered();
-//        var parent1Children = parentToOrder.get(PARENT1_UUID);
-//        assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID, CHILD3_UUID), parent1Children);
-//        var parent2Children = parentToOrder.get(PARENT2_UUID);
-//        assertEquals(Arrays.asList(CHILD4_UUID), parent2Children);
-//    }
-//
-//    @Test
-//    public void toSetRequestInvalidMissingOrderTest() throws Exception {
-//        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            var entries = new ArrayList<List<Object>>();
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
-//                    "file1.txt", "text/plain", false, 2));
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
-//                    "file2.txt", "text/plain", false, 1));
-//            entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
-//                    "file3.txt", "text/plain", true, ""));
-//            entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
-//                    "file4.txt", "text/plain", false, 0));
-//            var csvPath = writeCsvFile(entries);
-//
-//            var request = transformer.toRequest(csvPath);
-//        });
-//
-//        assertErrorMessageContains(exception, "Member order is invalid");
-//    }
-
     @Test
     public void toSetRequestMinimalColumnsTest() throws Exception {
         var entries = new ArrayList<List<Object>>();
