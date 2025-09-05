@@ -44,6 +44,8 @@ public class PipelineCoordinatorTest {
     @Mock
     private DepositQuietHandler depositQuietHandler;
     @Mock
+    private DepositResumeHandler depositResumeHandler;
+    @Mock
     private Message message;
 
     private DepositPipelineMessage pipelineMessage;
@@ -59,6 +61,7 @@ public class PipelineCoordinatorTest {
         coordinator.setOperationListenerContainer(operationListenerContainer);
         coordinator.setDepositOperationMessageService(depositOperationMessageService);
         coordinator.setDepositQuietHandler(depositQuietHandler);
+        coordinator.setDepositResumeHandler(depositResumeHandler);
 
         pipelineMessage = new DepositPipelineMessage();
         when(pipelineMessageService.fromJson(message)).thenReturn(pipelineMessage);
@@ -113,6 +116,7 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
+        verify(depositResumeHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(jobListenerContainer).start();
         verify(operationListenerContainer).start();

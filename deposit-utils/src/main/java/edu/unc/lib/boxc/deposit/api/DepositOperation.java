@@ -11,6 +11,7 @@ public enum DepositOperation {
     RESUME,
     CANCEL,
     DESTROY,
+    QUIET,
     JOB_SUCCESS,
     JOB_FAILURE,
     JOB_INTERRUPTED,

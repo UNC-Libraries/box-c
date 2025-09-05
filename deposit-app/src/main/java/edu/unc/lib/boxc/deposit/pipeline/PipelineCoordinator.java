@@ -26,6 +26,7 @@ public class PipelineCoordinator implements MessageListener {
     private DefaultMessageListenerContainer operationListenerContainer;
     private DepositOperationMessageService depositOperationMessageService;
     private DepositQuietHandler depositQuietHandler;
+    private DepositResumeHandler depositResumeHandler;
 
     @Override
     public void onMessage(Message message) {
@@ -40,7 +41,7 @@ public class PipelineCoordinator implements MessageListener {
                 quietPipeline(opMessage);
                 break;
             case UNQUIET:
-                unquietPipeline();
+                unquietPipeline(opMessage);
                 break;
             case STOP:
                 stopPipeline();
@@ -64,18 +65,18 @@ public class PipelineCoordinator implements MessageListener {
         }
     }
 
-    private void unquietPipeline() {
+    private void unquietPipeline(DepositOperationMessage opMessage) {
         LOG.info("Unquieting the deposit pipeline");
         DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.quieted.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+            depositResumeHandler.handleMessage(opMessage);
             jobListenerContainer.start();
             operationListenerContainer.start();
         } else {
             LOG.warn("Cannot unquiet deposit pipeline in state {}", state);
         }
     }
-
 
     private void stopPipeline() {
         LOG.info("Stopping the deposit pipeline");
@@ -108,6 +109,10 @@ public class PipelineCoordinator implements MessageListener {
 
     public void setDepositQuietHandler(DepositQuietHandler depositQuietHandler) {
         this.depositQuietHandler = depositQuietHandler;
+    }
+
+    public void setDepositResumeHandler(DepositResumeHandler depositResumeHandler) {
+        this.depositResumeHandler = depositResumeHandler;
     }
 
     public void setDepositOperationMessageService(DepositOperationMessageService depositOperationMessageService) {
