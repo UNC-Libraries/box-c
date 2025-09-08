@@ -22,6 +22,7 @@ public class DepositResumeHandler implements DepositOperationHandler {
     private final Set<DepositState> VALID_STATES = Set.of(
             DepositState.unregistered,
             DepositState.paused,
+            DepositState.quieted,
             DepositState.failed
     );
 
