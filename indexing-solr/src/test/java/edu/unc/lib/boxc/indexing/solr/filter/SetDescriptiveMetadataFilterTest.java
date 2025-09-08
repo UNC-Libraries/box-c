@@ -231,6 +231,22 @@ public class SetDescriptiveMetadataFilterTest {
     }
 
     /*
+     * Covers case where an alternative title appears in the MODS before the main title
+     */
+    @Test
+    public void testAltTitleAppearsBeforeMainTitleInTheMods() throws Exception {
+        SAXBuilder builder = new SAXBuilder();
+        Document modsDoc = builder.build(new FileInputStream(new File(
+                "src/test/resources/datastream/altTitleFirst.xml")));
+        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
+
+        filter.filter(dip);
+
+        assertEquals("The coast of the United States", idb.getTitle());
+        assertEquals(List.of("Title from label on verso"), idb.getOtherTitle());
+    }
+
+    /*
      * Covers case when there is not a dateCreated, but there are both dateIssued and dateCaptured fields
      */
     @Test

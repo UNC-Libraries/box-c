@@ -151,9 +151,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         String mainTitle = null;
         List<String> otherTitles = new ArrayList<>();
         for (Element titleInfoEl : titles) {
-            for (Object titleObj : titleInfoEl.getChildren()) {
-                Element titleEl = (Element) titleObj;
-                if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName())) {
+            // Main title should never have a type attribute
+            boolean hasTypeAttribute = titleInfoEl.getAttribute("type") != null;
+            for (Element titleEl : titleInfoEl.getChildren()) {
+                if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName()) && !hasTypeAttribute) {
                     mainTitle = titleEl.getValue();
                 } else {
                     otherTitles.add(titleEl.getValue());
@@ -165,7 +166,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setTitle(mainTitle);
         }
 
-        if (otherTitles.size() > 0) {
+        if (!otherTitles.isEmpty()) {
             idb.setOtherTitle(otherTitles);
         } else {
             idb.setOtherTitle(null);
