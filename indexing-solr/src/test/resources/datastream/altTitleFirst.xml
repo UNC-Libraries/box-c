@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <mods:titleInfo type="alternative">
+        <mods:title>Title from label on verso</mods:title>
+    </mods:titleInfo>
+    <mods:titleInfo>
+        <mods:title>The coast of the United States</mods:title>
+    </mods:titleInfo>
+</mods:mods>
