@@ -40,6 +40,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "moxios": "^0.4.0",
     "sass": "^1.87.0",
-    "vite": "6.3.5"
+    "vite": "6.3.6"
   }
 }
