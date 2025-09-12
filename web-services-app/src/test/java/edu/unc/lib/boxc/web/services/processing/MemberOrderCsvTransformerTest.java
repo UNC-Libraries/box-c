@@ -88,20 +88,6 @@ public class MemberOrderCsvTransformerTest {
         }
     }
 
-//    @Test
-//    public void toSetRequestNoOrderIdTest() throws Exception {
-//        var entries = new ArrayList<List<Object>>();
-//        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
-//                "file.txt", "text/plain", false, ""));
-//        var csvPath = writeCsvFile(entries);
-//        try {
-//            transformer.toRequest(csvPath);
-//            fail();
-//        } catch (IllegalArgumentException e) {
-//            assertErrorMessageContains(e, "does not specify a value for required field 'Member Order'");
-//        }
-//    }
-
     @Test
     public void toSetRequestOrderIdNotANumberTest() throws Exception {
         var entries = new ArrayList<List<Object>>();
@@ -149,7 +135,7 @@ public class MemberOrderCsvTransformerTest {
         var parent1Children = parentToOrder.get(PARENT1_UUID);
         assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID, CHILD3_UUID), parent1Children);
         var parent2Children = parentToOrder.get(PARENT2_UUID);
-        assertEquals(Arrays.asList(CHILD4_UUID), parent2Children);
+        assertEquals(List.of(CHILD4_UUID), parent2Children);
     }
 
     @Test
