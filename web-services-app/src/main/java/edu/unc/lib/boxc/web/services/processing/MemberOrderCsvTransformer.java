@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  * @author bbpennel
  */
 public class MemberOrderCsvTransformer {
+    public static String MEMBER_ORDER_INVALID = "Import has invalid member order";
     /**
      * Transform the provided CSV document into a request for setting the order of members of one or more containers.
      *
@@ -38,6 +39,10 @@ public class MemberOrderCsvTransformer {
      */
     public MultiParentOrderRequest toRequest(Path csvPath) throws IOException {
         var parentToChildren = parseCsvToMapping(csvPath);
+        var validImport = validateImport(parentToChildren);
+        if (!validImport) {
+            throw new IllegalArgumentException(MEMBER_ORDER_INVALID);
+        }
         var parentToOrdered = sortParentToChildren(parentToChildren);
         var request = new MultiParentOrderRequest();
         request.setParentToOrdered(parentToOrdered);
@@ -53,9 +58,12 @@ public class MemberOrderCsvTransformer {
                 var parentId = getRequiredPidValue(csvRecord, MemberOrderCsvConstants.PARENT_PID_HEADER);
                 var childId = getRequiredPidValue(csvRecord, MemberOrderCsvConstants.PID_HEADER);
                 var orderId = getOrderId(csvRecord);
-
                 var children = parentToChildren.computeIfAbsent(parentId, x -> new ArrayList<>());
-                children.add(new SortableChildEntry(childId, orderId));
+                if (orderId == null) {
+                    children.add(null);
+                } else {
+                    children.add(new SortableChildEntry(childId, orderId));
+                }
             }
         }
         return parentToChildren;
@@ -67,10 +75,15 @@ public class MemberOrderCsvTransformer {
         var parentToChildren = new HashMap<String, List<String>>();
         for (var parentEntry: parentToUnsorted.entrySet()) {
             // Sort the children entries and get a list of children ids
-            var sorted = parentEntry.getValue().stream()
-                    .sorted(Comparator.comparingInt(c -> c.orderId))
-                    .map(c -> c.childId)
-                    .collect(Collectors.toList());
+            var values = parentEntry.getValue();
+            List<String> sorted = null;
+            if (!values.contains(null)) {
+                sorted = values.stream()
+                        .sorted(Comparator.comparingInt(c -> c.orderId))
+                        .map(c -> c.childId)
+                        .collect(Collectors.toList());
+
+            }
             parentToChildren.put(parentEntry.getKey(), sorted);
         }
         return parentToChildren;
@@ -79,12 +92,31 @@ public class MemberOrderCsvTransformer {
     // Object to allow for sorting of children by their order ids
     private static class SortableChildEntry {
         private String childId;
-        private int orderId;
+        private Integer orderId;
 
-        SortableChildEntry(String childId, int orderId) {
+        SortableChildEntry(String childId, Integer orderId) {
             this.childId = childId;
             this.orderId = orderId;
         }
+    }
+
+    // checks each parent's child entries to make sure they're either all nulls or all SortableChildEntry objects
+    private boolean validateImport(Map<String, List<SortableChildEntry>> importMapping) {
+        for (var parentEntry: importMapping.entrySet()) {
+            var values = parentEntry.getValue();
+            var includesNull = values.contains(null);
+            var includesSortableEntry = false;
+            for (var value : values) {
+                includesSortableEntry = value != null;
+                if (includesSortableEntry) {
+                    break;
+                }
+            }
+            if (includesNull && includesSortableEntry) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String getRequiredValue(CSVRecord csvRecord, String fieldName) {
@@ -105,16 +137,20 @@ public class MemberOrderCsvTransformer {
         }
     }
 
-    private static int getOrderId(CSVRecord csvRecord) {
+    private static Integer getOrderId(CSVRecord csvRecord) {
         var fieldName = MemberOrderCsvConstants.ORDER_HEADER;
-        var value = getRequiredValue(csvRecord, fieldName);
+//        var value = getRequiredValue(csvRecord, fieldName);
+        var value = csvRecord.get(fieldName);
         try {
-            var intVal = Integer.parseInt(value);
-            if (intVal < 0) {
-                throw invalidRecordError(csvRecord,
-                        "contains an invalid value for field '" + fieldName + "', it must be >= 0.");
+            if (!value.isBlank()) {
+                var intVal = Integer.parseInt(value);
+                if (intVal < 0) {
+                    throw invalidRecordError(csvRecord,
+                            "contains an invalid value for field '" + fieldName + "', it must be >= 0.");
+                }
+                return intVal;
             }
-            return intVal;
+            return null;
         } catch (NumberFormatException e) {
             throw invalidRecordError(csvRecord,
                     "contains an invalid value for field '" + fieldName + "', it must be an integer.");

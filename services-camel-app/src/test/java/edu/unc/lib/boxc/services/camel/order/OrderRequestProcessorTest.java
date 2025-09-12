@@ -14,6 +14,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
@@ -75,6 +76,8 @@ public class OrderRequestProcessorTest {
     private ArgumentCaptor<List<String>> errorsCaptor;
     @Captor
     private ArgumentCaptor<List<PID>> successesCaptor;
+    @Captor
+    private ArgumentCaptor<OrderRequest> orderRequestCaptor;
     private static final String USERNAME = "user1";
     private AgentPrincipals agent = new AgentPrincipalsImpl(USERNAME, new AccessGroupSetImpl("agroup"));
     private OrderRequestProcessor processor;
@@ -251,7 +254,7 @@ public class OrderRequestProcessorTest {
         mockRequestAsValid();
 
         var requestExchange = createRequestExchange(Map.of(
-                PARENT1_UUID, Arrays.asList("definitely_not_a_pid")));
+                PARENT1_UUID, List.of("definitely_not_a_pid")));
         processor.process(requestExchange);
 
         assertJobNotRun();
@@ -260,6 +263,31 @@ public class OrderRequestProcessorTest {
         assertNotificationWithErrors(
                 "Invalid order request: Invalid qualified path definitely_not_a_pid, cannot construct PID");
         assertNotificationWithoutSuccesses();
+    }
+
+    @Test
+    public void validMixedSetAndClearUpdatesTest() throws Exception {
+        mockRequestAsValid();
+
+        var requestExchange = createRequestExchange(Map.of(
+                PARENT1_UUID, List.of(),
+                PARENT2_UUID, Arrays.asList(CHILD2_UUID, CHILD3_UUID)));
+        processor.process(requestExchange);
+
+        assertJobRanNTimes(2);
+        assertIndexingMessageSent(PARENT1_UUID);
+        assertIndexingMessageSent(PARENT2_UUID);
+
+        assertNotificationSent();
+        assertNotificationWithoutErrors();
+        assertNotificationWithSuccesses(PARENT1_UUID, PARENT2_UUID);
+
+        verify(orderJobFactory, Mockito.times(2)).createJob(orderRequestCaptor.capture());
+        var values = orderRequestCaptor.getAllValues();
+        var firstRequest = values.getFirst();
+        var secondRequest = values.getLast();
+        assertEquals(OrderOperationType.CLEAR, firstRequest.getOperation());
+        assertEquals(OrderOperationType.SET, secondRequest.getOperation());
     }
 
     private void mockDoesNotHavePermission(String parentId) {
