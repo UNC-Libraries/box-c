@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@vueform/vueform": "^1.12.7",
-    "axios": "^1.9.0",
+    "axios": "^1.12.2",
     "datatables.net": "^2.3.0",
     "datatables.net-bm": "^2.3.0",
     "datatables.net-searchpanes-bm": "^2.3.3",
