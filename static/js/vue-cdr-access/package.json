@@ -12,7 +12,7 @@
         "@samvera/clover-iiif": "^2.14.0",
         "@unhead/vue": "^2.0.11",
         "@vue-pdf-viewer/viewer": "^2.3.0",
-        "axios": "^1.8.4",
+        "axios": "^1.12.1",
         "canvas": "^2.11.2",
         "datatables.net": "^2.1.8",
         "datatables.net-bm": "^2.1.8",
