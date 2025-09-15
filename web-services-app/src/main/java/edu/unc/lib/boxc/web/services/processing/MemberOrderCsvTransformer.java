@@ -139,7 +139,6 @@ public class MemberOrderCsvTransformer {
 
     private static Integer getOrderId(CSVRecord csvRecord) {
         var fieldName = MemberOrderCsvConstants.ORDER_HEADER;
-//        var value = getRequiredValue(csvRecord, fieldName);
         var value = csvRecord.get(fieldName);
         try {
             if (!value.isBlank()) {
