@@ -9,30 +9,6 @@
     </parent>
     <name>CDR Solr Ingest</name>
     <build>
-        <!-- resources>
-            <resource>
-                <filtering>true</filtering>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>*.properties</include>
-                </includes>
-            </resource>
-        </resources-->
-        <testResources>
-            <testResource>
-                <filtering>true</filtering>
-                <directory>src/test/resources</directory>
-                <includes>
-                    <include>server.properties</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <excludes>
-                    <exclude>server.properties</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -84,11 +60,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
