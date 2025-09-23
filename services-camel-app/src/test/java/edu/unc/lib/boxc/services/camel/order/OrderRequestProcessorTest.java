@@ -284,8 +284,11 @@ public class OrderRequestProcessorTest {
 
         verify(orderJobFactory, Mockito.times(2)).createJob(orderRequestCaptor.capture());
         var values = orderRequestCaptor.getAllValues();
-        var firstRequest = values.getFirst();
-        var secondRequest = values.getLast();
+        // Find the requests by id, otherwise the order is not guaranteed with the maps used internally
+        var firstRequest = values.stream().filter(r -> r.getParentPid().getId().equals(PARENT1_UUID))
+                .findFirst().get();
+        var secondRequest = values.stream().filter(r -> r.getParentPid().getId().equals(PARENT2_UUID))
+                .findFirst().get();
         assertEquals(OrderOperationType.CLEAR, firstRequest.getOperation());
         assertEquals(OrderOperationType.SET, secondRequest.getOperation());
     }
