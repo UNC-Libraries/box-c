@@ -299,20 +299,6 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.apache.solr</groupId>
-        <artifactId>solr-core</artifactId>
-        <exclusions>
-            <exclusion>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
     </dependencies>
 
     <build>

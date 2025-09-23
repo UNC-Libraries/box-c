@@ -218,7 +218,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
@@ -226,7 +226,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
@@ -244,7 +244,7 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>
