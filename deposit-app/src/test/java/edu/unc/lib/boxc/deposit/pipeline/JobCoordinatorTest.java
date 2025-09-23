@@ -1,9 +1,12 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -105,6 +108,7 @@ public class JobCoordinatorTest {
         assertEquals(DEPOSIT_ID, successMessage.getDepositId());
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).completed(jobMessage.getJobId());
+        assertFalse(coordinator.hasActiveJobs());
     }
 
     @Test
@@ -132,6 +136,7 @@ public class JobCoordinatorTest {
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).failed(jobMessage.getJobId());
         verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
+        assertFalse(coordinator.hasActiveJobs());
     }
 
     @Test
@@ -158,6 +163,26 @@ public class JobCoordinatorTest {
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).interrupted(jobMessage.getJobId());
         verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
+        assertFalse(coordinator.hasActiveJobs());
+    }
+
+    @Test
+    public void testHasActiveJobsExecution() throws Exception {
+        doAnswer((a) -> {
+            assertTrue(coordinator.hasActiveJobs());
+            return null;
+        }).when(jobRunnable).run();
+
+        coordinator.onMessage(message);
+
+        // Then message should be acknowledged
+        verify(message).acknowledge();
+
+        // And job should be executed
+        verify(jobRunnable).run();
+
+        // Should no longer be active jobs
+        assertFalse(coordinator.hasActiveJobs());
     }
 
     @Test

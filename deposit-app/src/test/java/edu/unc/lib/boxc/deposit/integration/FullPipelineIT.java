@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
 import edu.unc.lib.boxc.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.boxc.deposit.pipeline.DepositCoordinator;
+import edu.unc.lib.boxc.deposit.pipeline.JobCoordinator;
 import edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob;
 import edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.boxc.deposit.validate.FixityCheckJob;
@@ -89,6 +90,8 @@ public class FullPipelineIT {
     private JedisPool jedisPool;
     @Autowired
     private DepositCoordinator depositCoordinator;
+    @Autowired
+    private JobCoordinator jobCoordinator;
     @Autowired
     private ClamAVClient clamavClient;
 
@@ -202,6 +205,7 @@ public class FullPipelineIT {
         String depositId = depositPid.getId();
 
         awaitDepositState(depositId, DepositState.running);
+        awaitNoActiveJobs(depositId);
 
         awaitJobSuccessful(depositId, DirectoryToBagJob.class);
         awaitJobSuccessful(depositId, ValidateDestinationJob.class);
@@ -245,6 +249,8 @@ public class FullPipelineIT {
         messageService.sendDepositOperationMessage(pauseMessage);
 
         awaitDepositState(depositId, DepositState.paused);
+        // Wait for any active jobs to complete
+        awaitNoActiveJobs(depositId);
         // Pausing should have happened before the last job completed
         assertFalse(isJobSuccessful(depositId, IngestContentObjectsJob.class));
 
@@ -252,6 +258,7 @@ public class FullPipelineIT {
         messageService.sendDepositOperationMessage(resumeMessage);
 
         awaitDepositState(depositId, DepositState.running);
+        awaitNoActiveJobs(depositId);
 
         awaitJobSuccessful(depositId, ValidateDestinationJob.class);
         awaitJobSuccessful(depositId, ValidateContentModelJob.class);
@@ -278,6 +285,11 @@ public class FullPipelineIT {
     private void awaitJobSuccessful(String depositId, Class<?> jobClass, long timeoutSeconds) {
         Awaitility.await().atMost(Duration.ofSeconds(timeoutSeconds))
                 .until(() -> isJobSuccessful(depositId, jobClass));
+    }
+
+    private void awaitNoActiveJobs(String depositId) {
+        Awaitility.await().atMost(Duration.ofSeconds(10))
+                .until(() -> !jobCoordinator.hasActiveJobs());
     }
 
     private boolean isJobSuccessful(String depositId, Class<?> jobClass) {
