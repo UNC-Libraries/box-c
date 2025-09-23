@@ -273,31 +273,6 @@ public class FullPipelineIT {
         awaitDepositState(depositId, DepositState.finished);
     }
 
-    @Test
-    public void testFullPipelinePauseAndResume2() throws Exception {
-        testFullPipelinePauseAndResume();
-    }
-
-    @Test
-    public void testFullPipelinePauseAndResume3() throws Exception {
-        testFullPipelinePauseAndResume();
-    }
-
-    @Test
-    public void testFullPipelinePauseAndResume4() throws Exception {
-        testFullPipelinePauseAndResume();
-    }
-
-    @Test
-    public void testFullPipelinePauseAndResume5() throws Exception {
-        testFullPipelinePauseAndResume();
-    }
-
-    @Test
-    public void testFullPipelinePauseAndResume6() throws Exception {
-        testFullPipelinePauseAndResume();
-    }
-
     private void awaitDepositState(String depositId, DepositState expectedState) {
         Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> expectedState.equals(depositStatusFactory.getState(depositId)));
