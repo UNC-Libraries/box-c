@@ -1,5 +1,32 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
+import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.model.api.DatastreamType.AUDIO_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.http.HttpHeaders.RANGE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -27,7 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,36 +71,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
-import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static edu.unc.lib.boxc.model.api.DatastreamType.AUDIO_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.http.HttpHeaders.RANGE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -108,7 +107,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
-    private EmbeddedSolrServer embeddedSolrServer;
+    private SolrClient solrClient;
     @Autowired
     private DownloadImageService downloadImageService;
     private DatastreamController controller;
@@ -119,7 +118,10 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void initLocal() {
+    public void initLocal() throws Exception {
+        solrClient.deleteByQuery("*:*");
+        solrClient.commit();
+
         closeable = openMocks(this);
         controller = new DatastreamController();
         controller.setAnalyticsTracker(analyticsTrackerUtil);
@@ -355,8 +357,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     private TestCorpus populateCorpus() throws Exception {
         var corpus = new TestCorpus();
-        embeddedSolrServer.add(corpus.populate());
-        embeddedSolrServer.commit();
+        solrClient.add(corpus.populate());
+        solrClient.commit();
         return corpus;
     }
 
