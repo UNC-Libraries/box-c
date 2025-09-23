@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Coordinates the execution of deposit jobs by listening for job messages
@@ -34,6 +35,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
     private ApplicationContext applicationContext;
     private ActiveDepositsService activeDeposits;
     private JobStatusFactory jobStatusFactory;
+    private AtomicInteger activeJobCount = new AtomicInteger(0);
 
     @Override
     public void onMessage(Message message) {
@@ -55,6 +57,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         var jobRunnable = getJobRunnable(jobMessage);
         LOG.debug("Got job runnable {}", jobRunnable.getClass().getName());
         try {
+            activeJobCount.incrementAndGet();
             jobStatusFactory.started(jobId, depositId, jobRunnable.getClass());
             jobRunnable.run();
             jobStatusFactory.completed(jobId);
@@ -70,7 +73,12 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
             sendDepositOperationMessage(buildFailureMessage(jobMessage, e));
         } finally {
             acknowledgeMessage(message);
+            activeJobCount.decrementAndGet();
         }
+    }
+
+    public boolean hasActiveJobs() {
+        return activeJobCount.get() > 0;
     }
 
     private boolean isAcceptingMessages() {

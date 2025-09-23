@@ -100,7 +100,7 @@ jobs:
     - run: npm --prefix static/js/admin/vue-cdr-admin run test
 
     - name: Generate coverage
-      run: mvn -pl !clamav-java,!jp24u verify
+      run: mvn -pl deposit-app verify
     - name: Qlty Code Coverage auth-api
       uses: qltysh/qlty-action/coverage@v1
       with:
