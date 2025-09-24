@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.fcrepo.client.FcrepoClient;
 import org.mockito.Mock;
 
@@ -50,7 +50,7 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
 
     protected String baseAddress;
     protected File solrDataDir;
-    protected EmbeddedSolrServer server;
+    protected SolrClient server;
     protected SolrUpdateDriver driver;
     protected SolrSearchService solrSearchService;
     protected AccessGroupSet accessGroups;
@@ -75,11 +75,11 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
     @Mock
     protected Message message;
 
-    protected void initCommon() {
+    protected void initCommon() throws Exception {
         baseAddress = applicationContext.getBean("baseAddress", String.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
         solrDataDir = applicationContext.getBean("solrDataDir", File.class);
-        server = applicationContext.getBean(EmbeddedSolrServer.class);
+        server = applicationContext.getBean(SolrClient.class);
         driver = applicationContext.getBean(SolrUpdateDriver.class);
         solrSearchService = applicationContext.getBean(SolrSearchService.class);
         accessGroups = applicationContext.getBean("accessGroups", AccessGroupSet.class);
@@ -93,6 +93,9 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
         repositoryObjectSolrIndexer = applicationContext.getBean(RepositoryObjectSolrIndexer.class);
         locManager = applicationContext.getBean(StorageLocationManager.class);
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+
+        server.deleteByQuery("*:*");
+        server.commit();
     }
 
     protected void generateBaseStructure() throws Exception {
