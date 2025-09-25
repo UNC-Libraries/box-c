@@ -2,8 +2,6 @@ package edu.unc.lib.boxc.deposit.pipeline;
 
 import edu.unc.lib.boxc.deposit.api.PipelineAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
-import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
-import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
@@ -24,24 +22,19 @@ public class PipelineCoordinator implements MessageListener {
     private DepositPipelineStatusFactory pipelineStatusFactory;
     private DefaultMessageListenerContainer jobListenerContainer;
     private DefaultMessageListenerContainer operationListenerContainer;
-    private DepositOperationMessageService depositOperationMessageService;
-    private DepositQuietHandler depositQuietHandler;
-    private DepositResumeHandler depositResumeHandler;
 
     @Override
     public void onMessage(Message message) {
         DepositPipelineMessage pipelineMessage;
-        DepositOperationMessage opMessage;
         try {
             pipelineMessage = pipelineMessageService.fromJson(message);
-            opMessage = depositOperationMessageService.fromJson(message);
             PipelineAction action = pipelineMessage.getAction();
             switch (action) {
             case QUIET:
-                quietPipeline(opMessage);
+                quietPipeline();
                 break;
             case UNQUIET:
-                unquietPipeline(opMessage);
+                unquietPipeline();
                 break;
             case STOP:
                 stopPipeline();
@@ -52,12 +45,11 @@ public class PipelineCoordinator implements MessageListener {
         }
     }
 
-    private void quietPipeline(DepositOperationMessage opMessage) {
+    private void quietPipeline() {
         LOG.info("Quieting the deposit pipeline");
         DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.active.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
-            depositQuietHandler.handleMessage(opMessage);
             jobListenerContainer.stop();
             operationListenerContainer.stop();
         } else {
@@ -65,12 +57,11 @@ public class PipelineCoordinator implements MessageListener {
         }
     }
 
-    private void unquietPipeline(DepositOperationMessage opMessage) {
+    private void unquietPipeline() {
         LOG.info("Unquieting the deposit pipeline");
         DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.quieted.equals(state)) {
             pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
-            depositResumeHandler.handleMessage(opMessage);
             jobListenerContainer.start();
             operationListenerContainer.start();
         } else {
@@ -105,17 +96,5 @@ public class PipelineCoordinator implements MessageListener {
 
     public void setOperationListenerContainer(DefaultMessageListenerContainer operationListenerContainer) {
         this.operationListenerContainer = operationListenerContainer;
-    }
-
-    public void setDepositQuietHandler(DepositQuietHandler depositQuietHandler) {
-        this.depositQuietHandler = depositQuietHandler;
-    }
-
-    public void setDepositResumeHandler(DepositResumeHandler depositResumeHandler) {
-        this.depositResumeHandler = depositResumeHandler;
-    }
-
-    public void setDepositOperationMessageService(DepositOperationMessageService depositOperationMessageService) {
-        this.depositOperationMessageService = depositOperationMessageService;
     }
 }
