@@ -114,14 +114,19 @@
         <mods:genre authority="lcgft">${data.genre}</mods:genre>
     </#if>
 
-    <#if data.placeOfPublication?has_content>
+    <#if data.placeOfPublication?has_content || data.publisher?has_content || data.issuance?has_content ||
+        data.frequency?has_content>
         <mods:originInfo>
-            <mods:place>
-                <mods:placeTerm type="text">${data.placeOfPublication}</mods:placeTerm>
-            </mods:place>
-            <mods:publisher>${data.publisher}</mods:publisher>
-            <mods:issuance>${data.issuance}</mods:issuance>
-            <mods:frequency authority="marcfrequency">${data.frequency}</mods:frequency>
+            <#if data.placeOfPublication?has_content>
+                <mods:place>
+                    <mods:placeTerm type="text">${data.placeOfPublication}</mods:placeTerm>
+                </mods:place>
+            </#if>
+            <#if data.publisher?has_content><mods:publisher>${data.publisher}</mods:publisher></#if>
+            <#if data.issuance?has_content><mods:issuance>${data.issuance}</mods:issuance></#if>
+            <#if data.frequency?has_content>
+                <mods:frequency authority="marcfrequency">${data.frequency}</mods:frequency>
+            </#if>
         </mods:originInfo>
     </#if>
 
