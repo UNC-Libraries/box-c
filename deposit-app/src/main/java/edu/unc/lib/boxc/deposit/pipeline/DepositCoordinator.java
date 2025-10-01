@@ -34,7 +34,6 @@ public class DepositCoordinator implements MessageListener {
     private JobSuccessHandler jobSuccessHandler;
     private DepositResumeHandler depositResumeHandler;
     private DepositRegisterHandler depositRegisterHandler;
-    private DepositQuietHandler depositQuietHandler;
     private DepositPauseHandler depositPauseHandler;
     private JobFailureHandler jobFailureHandler;
     private JobInterruptedHandler jobInterruptedHandler;
@@ -60,7 +59,6 @@ public class DepositCoordinator implements MessageListener {
             case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
             case PAUSE -> depositPauseHandler.handleMessage(opMessage);
             case RESUME -> depositResumeHandler.handleMessage(opMessage);
-            case QUIET -> depositQuietHandler.handleMessage(opMessage);
             case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
             case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
             case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
@@ -191,10 +189,6 @@ public class DepositCoordinator implements MessageListener {
 
     public void setDepositPauseHandler(DepositPauseHandler depositPauseHandler) {
         this.depositPauseHandler = depositPauseHandler;
-    }
-
-    public void setDepositQuietHandler(DepositQuietHandler depositQuietHandler) {
-        this.depositQuietHandler = depositQuietHandler;
     }
 
     public void setJobFailureHandler(JobFailureHandler jobFailureHandler) {

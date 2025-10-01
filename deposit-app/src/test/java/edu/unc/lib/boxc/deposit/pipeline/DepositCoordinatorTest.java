@@ -11,10 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
-import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,8 +54,6 @@ public class DepositCoordinatorTest {
     @Mock
     private DepositPauseHandler depositPauseHandler;
     @Mock
-    private DepositQuietHandler depositQuietHandler;
-    @Mock
     private JobFailureHandler jobFailureHandler;
     @Mock
     private JobInterruptedHandler jobInterruptedHandler;
@@ -85,7 +81,6 @@ public class DepositCoordinatorTest {
         coordinator.setDepositResumeHandler(depositResumeHandler);
         coordinator.setDepositRegisterHandler(depositRegisterHandler);
         coordinator.setDepositPauseHandler(depositPauseHandler);
-        coordinator.setDepositQuietHandler(depositQuietHandler);
         coordinator.setJobFailureHandler(jobFailureHandler);
         coordinator.setJobInterruptedHandler(jobInterruptedHandler);
         coordinator.setDepositJobMessageFactory(depositJobMessageFactory);
@@ -135,20 +130,6 @@ public class DepositCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(depositResumeHandler).handleMessage(operationMessage);
-        verify(depositStatusFactory, never()).getFirstQueuedDeposit();
-        verify(message).acknowledge();
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testOnMessageQuiet() throws Exception {
-        operationMessage.setAction(DepositOperation.QUIET);
-        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.quieted);
-        when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
-
-        coordinator.onMessage(message);
-
-        verify(depositQuietHandler).handleMessage(operationMessage);
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
         verify(activeDeposits).markInactive(DEPOSIT_ID);

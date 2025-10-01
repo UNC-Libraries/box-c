@@ -3,13 +3,11 @@ package edu.unc.lib.boxc.deposit.pipeline;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
-import edu.unc.lib.boxc.deposit.impl.jms.DepositPipelineMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,34 +47,6 @@ public class DepositResumeHandler implements DepositOperationHandler {
                 depositStatusFactory.queueDeposit(depositId);
             } finally {
                 depositStatusFactory.removeSupervisorLock(depositId);
-            }
-        }
-    }
-
-    public void handleMessage(DepositPipelineMessage pipelineMessage) {
-        // Resume all quieted deposits
-        Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
-        for (Map<String, String> fields : depositStatuses) {
-            String depositId = fields.get(DepositField.uuid.name());
-            LOG.info("Resuming deposit {}", depositId);
-            if (depositStatusFactory.addSupervisorLock(depositId, pipelineMessage.getUsername())) {
-                try {
-                    var depositStatus = depositStatusFactory.get(depositId);
-                    DepositState state = DepositState.valueOf(depositStatus.get(DepositField.state.name()));
-
-                    if (!VALID_STATES.contains(state)) {
-                        LOG.warn("Cannot resume deposit {} from non-resumable state {}", depositId, state);
-                        return;
-                    }
-
-                    // Clear out the previous failed job if there was one
-                    jobStatusFactory.clearStale(depositId);
-                    depositStatusFactory.deleteField(depositId, DepositField.errorMessage);
-
-                    depositStatusFactory.queueDeposit(depositId);
-                } finally {
-                    depositStatusFactory.removeSupervisorLock(depositId);
-                }
             }
         }
     }

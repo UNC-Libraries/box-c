@@ -23,8 +23,7 @@ public class PipelineCoordinator implements MessageListener {
     private DefaultMessageListenerContainer jobListenerContainer;
     private DefaultMessageListenerContainer operationListenerContainer;
 
-    private DepositQuietHandler depositQuietHandler;
-    private DepositResumeHandler depositResumeHandler;
+    private PipelineQuietHandler pipelineQuietHandler;
 
     @Override
     public void onMessage(Message message) {
@@ -52,7 +51,7 @@ public class PipelineCoordinator implements MessageListener {
         LOG.info("Quieting the deposit pipeline");
         DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.active.equals(state)) {
-            depositQuietHandler.handleMessage(pipelineMessage);
+            pipelineQuietHandler.quietAll(pipelineMessage);
             pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
             jobListenerContainer.stop();
             operationListenerContainer.stop();
@@ -65,7 +64,7 @@ public class PipelineCoordinator implements MessageListener {
         LOG.info("Unquieting the deposit pipeline");
         DepositPipelineState state = pipelineStatusFactory.getPipelineState();
         if (DepositPipelineState.quieted.equals(state)) {
-            depositResumeHandler.handleMessage(pipelineMessage);
+            pipelineQuietHandler.unquietAll(pipelineMessage);
             pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
             jobListenerContainer.start();
             operationListenerContainer.start();
@@ -103,11 +102,7 @@ public class PipelineCoordinator implements MessageListener {
         this.operationListenerContainer = operationListenerContainer;
     }
 
-    public void setDepositQuietHandler(DepositQuietHandler depositQuietHandler) {
-        this.depositQuietHandler = depositQuietHandler;
-    }
-
-    public void setDepositResumeHandler(DepositResumeHandler depositResumeHandler) {
-        this.depositResumeHandler = depositResumeHandler;
+    public void setPipelineQuietHandler(PipelineQuietHandler pipelineQuietHandler) {
+        this.pipelineQuietHandler = pipelineQuietHandler;
     }
 }
