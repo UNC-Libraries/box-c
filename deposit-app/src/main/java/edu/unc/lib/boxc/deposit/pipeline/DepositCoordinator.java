@@ -157,7 +157,8 @@ public class DepositCoordinator implements MessageListener {
                 // Job may have been locked to a particular supervisor depend on when it was interrupted
                 LOG.info("Unquieting deposit {} during startup", depositId);
                 depositStatusFactory.removeSupervisorLock(depositId);
-                var opMessage = new DepositOperationMessage(DepositOperation.RESUME, depositId, null);
+                var opMessage = new DepositOperationMessage(DepositOperation.RESUME, depositId,
+                        fields.get(DepositField.depositorName.name()));
                 depositResumeHandler.handleMessage(opMessage);
             }
         }
