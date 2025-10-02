@@ -114,6 +114,11 @@
         <property name="sessionTransacted" value="true" />
     </bean>
 
+    <bean id="pipelineQuietHandler" class="edu.unc.lib.boxc.deposit.pipeline.PipelineQuietHandler">
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="jobStatusFactory" ref="jobStatusFactory" />
+    </bean>
+
     <bean id="depositCompleteService" class="edu.unc.lib.boxc.deposit.jms.DepositCompleteService">
         <property name="depositModelManager" ref="depositModelManager" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
@@ -181,6 +186,7 @@
     <bean id="pipelineCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.PipelineCoordinator">
         <property name="pipelineMessageService" ref="pipelineMessageService" />
         <property name="pipelineStatusFactory" ref="pipelineStatusFactory" />
+        <property name="pipelineQuietHandler" ref="pipelineQuietHandler" />
         <property name="jobListenerContainer" ref="jobListenerContainer" />
         <property name="operationListenerContainer" ref="operationListenerContainer" />
     </bean>
