@@ -53,6 +53,11 @@ public class DepositResumeHandlerTest {
     }
 
     @Test
+    public void testSuccessfulResumeFromQuietedState() {
+        testSuccessfulResumeFromAcceptableState(DepositState.quieted);
+    }
+
+    @Test
     public void testSuccessfulResumeFromFailedState() {
         testSuccessfulResumeFromAcceptableState(DepositState.failed);
     }

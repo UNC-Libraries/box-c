@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,10 @@ public class PipelineCoordinatorTest {
     @Mock
     private DefaultMessageListenerContainer operationListenerContainer;
     @Mock
+    private DepositStatusFactory depositStatusFactory;
+    @Mock
+    private PipelineQuietHandler pipelineQuietHandler;
+    @Mock
     private Message message;
 
     private DepositPipelineMessage pipelineMessage;
@@ -45,6 +50,7 @@ public class PipelineCoordinatorTest {
         coordinator.setPipelineStatusFactory(pipelineStatusFactory);
         coordinator.setJobListenerContainer(jobListenerContainer);
         coordinator.setOperationListenerContainer(operationListenerContainer);
+        coordinator.setPipelineQuietHandler(pipelineQuietHandler);
 
         pipelineMessage = new DepositPipelineMessage();
         when(pipelineMessageService.fromJson(message)).thenReturn(pipelineMessage);
@@ -58,6 +64,8 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.quieted);
+        verify(pipelineQuietHandler).quietAll(pipelineMessage);
+        verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(jobListenerContainer).stop();
         verify(operationListenerContainer).stop();
     }
@@ -74,6 +82,7 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory, never()).setPipelineState(any());
+        verify(pipelineQuietHandler, never()).quietAll(pipelineMessage);
         verify(jobListenerContainer, never()).stop();
         verify(operationListenerContainer, never()).stop();
     }
@@ -91,6 +100,8 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
+        verify(pipelineQuietHandler).unquietAll(pipelineMessage);
+        verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(jobListenerContainer).start();
         verify(operationListenerContainer).start();
     }
@@ -112,6 +123,7 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory, never()).setPipelineState(DepositPipelineState.active);
+        verify(pipelineQuietHandler, never()).unquietAll(pipelineMessage);
         verify(jobListenerContainer, never()).start();
         verify(operationListenerContainer, never()).start();
     }
@@ -177,6 +189,8 @@ public class PipelineCoordinatorTest {
         coordinator.onMessage(message);
 
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.quieted);
+        verify(pipelineQuietHandler).quietAll(pipelineMessage);
+        verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(jobListenerContainer).stop();
     }
 
@@ -190,6 +204,7 @@ public class PipelineCoordinatorTest {
 
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
         verify(operationListenerContainer).start();
+        verify(pipelineQuietHandler).unquietAll(pipelineMessage);
     }
 
     @Test

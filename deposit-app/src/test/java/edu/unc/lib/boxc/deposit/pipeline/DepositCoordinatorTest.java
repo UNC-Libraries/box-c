@@ -11,10 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
-import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

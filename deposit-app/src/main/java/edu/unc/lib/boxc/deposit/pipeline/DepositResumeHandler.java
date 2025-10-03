@@ -22,13 +22,14 @@ public class DepositResumeHandler implements DepositOperationHandler {
     private final Set<DepositState> VALID_STATES = Set.of(
             DepositState.unregistered,
             DepositState.paused,
+            DepositState.quieted,
             DepositState.failed
     );
 
     @Override
     public void handleMessage(DepositOperationMessage opMessage) {
         String depositId = opMessage.getDepositId();
-        LOG.info("Resuming job {}", depositId);
+        LOG.info("Resuming deposit {}", depositId);
         if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
             try {
                 var depositStatus = depositStatusFactory.get(depositId);
