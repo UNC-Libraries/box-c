@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class IIIFv3ViewableFilter implements QueryFilter {
     private static final List<String> FILE_TYPES = Arrays.asList("video/mp4",
             "video/mpeg",
-            "video/quicktime",
             "video/mp4",
             "audio/mpeg");
     private static final String FILE_TYPE_FIELD = SearchFieldKey.FILE_FORMAT_TYPE.getSolrField();

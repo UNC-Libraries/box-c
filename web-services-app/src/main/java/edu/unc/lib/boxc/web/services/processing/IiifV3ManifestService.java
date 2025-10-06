@@ -205,7 +205,7 @@ public class IiifV3ManifestService {
         }
         soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
-        if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
+        if (dimensions != null && dimensions.get(DURATION) >= 0) {
             var duration = dimensions.get(DURATION);
             soundContent.setDuration(duration);
             canvas.setDuration(duration);
@@ -231,7 +231,7 @@ public class IiifV3ManifestService {
             canvas.setWidthHeight(width, height); // Dimensions for the canvas
             videoContent.setWidthHeight(width, height); // Dimensions for the actual video
             var duration = dimensions.get(DURATION);
-            if (duration >= 0) {
+            if (duration != null && duration >= 0) {
                 videoContent.setDuration(duration);
                 canvas.setDuration(duration);
             }
