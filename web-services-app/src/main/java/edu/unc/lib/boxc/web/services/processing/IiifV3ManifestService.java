@@ -228,8 +228,10 @@ public class IiifV3ManifestService {
         if (dimensions != null) {
             var width = dimensions.get(WIDTH);
             var height = dimensions.get(HEIGHT);
-            canvas.setWidthHeight(width, height); // Dimensions for the canvas
-            videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            if (width != null && height != null) {
+                canvas.setWidthHeight(width, height); // Dimensions for the canvas
+                videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            }
             var duration = dimensions.get(DURATION);
             if (duration != null && duration >= 0) {
                 videoContent.setDuration(duration);
