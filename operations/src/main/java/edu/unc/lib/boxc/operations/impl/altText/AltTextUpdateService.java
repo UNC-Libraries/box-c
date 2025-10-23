@@ -53,7 +53,8 @@ public class AltTextUpdateService {
         newVersion.setTransferSession(request.getTransferSession());
 
         altTextBinary = versionedDatastreamService.addVersion(newVersion);
-        if (repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())) {
+        var resource = fileObj.getResource();
+        if (resource != null && resource.hasProperty(Cdr.hasAltText)) {
             log.debug("Successfully updated alt text for {}", fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasAltText, createResource(altTextPid.getRepositoryPath()));
