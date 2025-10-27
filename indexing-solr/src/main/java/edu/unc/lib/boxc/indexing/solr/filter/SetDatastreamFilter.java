@@ -211,6 +211,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private String normalizeTime(String duration) {
         Matcher matcher = TIMING_REGEX.matcher(duration);
         boolean matchFound = matcher.find();
+        var trailingTextRegex = "[a-zA-Z]+$";
 
         if (matchFound) {
             var hoursToSeconds = Integer.parseInt(matcher.group(1)) * 60 * 60;
@@ -219,6 +220,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             var millisecondsToSeconds = (matcher.group(4) != null) ? millisecondsToSeconds(matcher.group(4)) : 0;
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
+        } else if (Pattern.compile(trailingTextRegex).matcher(duration).find()) {
+            // Treat timing as seconds if it ends in an a-z character
+            var seconds = duration.replaceAll(trailingTextRegex, "").trim();
+            return  Integer.toString((int) Math.ceil(Double.parseDouble(seconds)));
         }
 
         return Integer.toString(millisecondsToSeconds(duration));
