@@ -239,6 +239,66 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
+    public void buildManifestVideoFileNoDimensionsTest() {
+        var fileObj1 = (ContentObjectSolrRecord) createFileRecord(FILE1_ID, "video", true);
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||xx500");
+        fileObj1.setDatastream(List.of(originalDs.toString()));
+        var filePid = PIDs.get(FILE1_ID);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+
+        var manifest = manifestService.buildManifest(filePid, agent);
+        assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/manifest",
+                manifest.getID().toString());
+        var fileCanvas = manifest.getCanvases().getFirst();
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/canvas",
+                fileCanvas.getID().toString());
+        assertEquals(0, fileCanvas.getHeight());
+        assertEquals(0, fileCanvas.getWidth());
+        assertEquals(500, fileCanvas.getDuration());
+    }
+
+    @Test
+    public void buildManifestVideoFileNoDurationTest() {
+        var fileObj1 = (ContentObjectSolrRecord) createFileRecord(FILE1_ID, "video", true);
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x");
+        fileObj1.setDatastream(List.of(originalDs.toString()));
+        var filePid = PIDs.get(FILE1_ID);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+
+        var manifest = manifestService.buildManifest(filePid, agent);
+        assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/manifest",
+                manifest.getID().toString());
+        var fileCanvas = manifest.getCanvases().getFirst();
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/canvas",
+                fileCanvas.getID().toString());
+        assertEquals(240, fileCanvas.getHeight());
+        assertEquals(750, fileCanvas.getWidth());
+        assertEquals(0, fileCanvas.getDuration());
+    }
+
+    @Test
+    public void buildManifestVideoFileNoExtentTest() {
+        var fileObj1 = (ContentObjectSolrRecord) createFileRecord(FILE1_ID, "video", true);
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||");
+        fileObj1.setDatastream(List.of(originalDs.toString()));
+        var filePid = PIDs.get(FILE1_ID);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
+
+        var manifest = manifestService.buildManifest(filePid, agent);
+        assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/manifest",
+                manifest.getID().toString());
+        var fileCanvas = manifest.getCanvases().getFirst();
+        assertEquals("http://example.com/iiif/v3/faffb3e1-85fc-451f-9075-c60fc7584c7b/canvas",
+                fileCanvas.getID().toString());
+        assertEquals(0, fileCanvas.getHeight());
+        assertEquals(0, fileCanvas.getWidth());
+        assertEquals(0, fileCanvas.getDuration());
+    }
+
+    @Test
     public void buildCanvasViewableFileTest() {
         var fileObj1 = createFileRecord(FILE1_ID, IMAGE, true);
         var filePid = PIDs.get(FILE1_ID);
