@@ -23,7 +23,6 @@
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setAltTextFilter" />
-                <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
                 <ref bean="setMemberOrderFilter" />
@@ -31,6 +30,7 @@
                 <ref bean="setViewBehaviorFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
                 <ref bean="setAspaceRefIdFilter" />
+                <ref bean="setContentStatusFilter" />
             </list>
         </property>
     </bean>
