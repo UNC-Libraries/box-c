@@ -20,6 +20,8 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,7 +48,7 @@ import static org.mockito.Mockito.when;
  * @author bbpennel
  */
 public class AltTextUpdateServiceTest {
-
+    private AutoCloseable closeable;
     private AltTextUpdateService service;
 
     @Mock
@@ -63,6 +65,8 @@ public class AltTextUpdateServiceTest {
     private BinaryObject binaryObject;
     @Mock
     private FileObject fileObject;
+    @Mock
+    private Resource resource;
     private PID pid;
     private String pidString;
     private PID altTextPid;
@@ -71,7 +75,7 @@ public class AltTextUpdateServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         service = new AltTextUpdateService();
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -83,6 +87,11 @@ public class AltTextUpdateServiceTest {
         pidString = pid.getId();
         altTextPid = DatastreamPids.getAltTextPid(pid);
         agent = new AgentPrincipalsImpl("test_user", ACCESS_GROUPS);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test
@@ -129,7 +138,8 @@ public class AltTextUpdateServiceTest {
         request.setAgent(agent);
 
         when(repositoryObjectLoader.getFileObject(any())).thenReturn(fileObject);
-        when(repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())).thenReturn(true);
+        when(fileObject.getResource()).thenReturn(resource);
+        when(resource.hasProperty(Cdr.hasAltText)).thenReturn(true);
         when(versioningService.addVersion(any())).thenReturn(binaryObject);
 
         var result = service.updateAltText(request);
@@ -181,7 +191,6 @@ public class AltTextUpdateServiceTest {
         request.setAgent(agent);
 
         when(repositoryObjectLoader.getFileObject(eq(pid))).thenReturn(fileObject);
-        when(repositoryObjectFactory.objectExists(altTextPid.getRepositoryUri())).thenReturn(false);
         when(versioningService.addVersion(any())).thenReturn(binaryObject);
 
         var result = service.updateAltText(request);
