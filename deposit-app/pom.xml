@@ -7,7 +7,7 @@
     <parent>
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>cdr</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>6.0-SNAPSHOT</version>
     </parent>
     
     <artifactId>deposit-app</artifactId>
@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <artifactId>mockito-junit-jupiter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
@@ -66,10 +66,6 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>operations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.greghaines</groupId>
-            <artifactId>jesque</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -132,7 +128,7 @@
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -171,7 +167,7 @@
     </dependencies>
 
     <build>
-        <finalName>${artifactId}</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>

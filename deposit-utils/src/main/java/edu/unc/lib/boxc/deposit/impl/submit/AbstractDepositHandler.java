@@ -1,5 +1,21 @@
 package edu.unc.lib.boxc.deposit.impl.submit;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.deposit.api.DepositConstants;
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
+import edu.unc.lib.boxc.deposit.api.submit.DepositData;
+import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,21 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.deposit.api.DepositConstants;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
-import edu.unc.lib.boxc.deposit.api.submit.DepositData;
-import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 
 /**
  * Abstract handler for processing a deposit type and submitting it to the
@@ -38,6 +39,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 
     protected PIDMinter pidMinter;
     private DepositStatusFactory depositStatusFactory;
+    private DepositOperationMessageService depositOperationMessageService;
     private File depositsDirectory;
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
@@ -50,6 +52,10 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 
     public void setDepositsDirectory(File depositsDirectory) {
         this.depositsDirectory = depositsDirectory;
+    }
+
+    public void setDepositOperationMessageService(DepositOperationMessageService depositOperationMessageService) {
+        this.depositOperationMessageService = depositOperationMessageService;
     }
 
     /**
@@ -135,7 +141,6 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.permissionGroups.name(), permGroups);
 
         status.put(DepositField.state.name(), DepositState.unregistered.name());
-        status.put(DepositField.actionRequest.name(), DepositAction.register.name());
 
         // Clean out any null deposit details
         Iterator<Entry<String, String>> it = status.entrySet().iterator();
@@ -147,6 +152,12 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         }
 
         depositStatusFactory.save(depositPid.getId(), status);
+        // Send a message to the JMS queue to register the deposit
+        var registerMessage = new DepositOperationMessage();
+        registerMessage.setDepositId(depositPid.getId());
+        registerMessage.setAction(DepositOperation.REGISTER);
+        registerMessage.setUsername(agent.getUsername());
+        depositOperationMessageService.sendDepositOperationMessage(registerMessage);
 
         if (log.isInfoEnabled()) {
             log.info("Registered deposit with details {}", status);

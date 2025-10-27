@@ -2,11 +2,11 @@
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="
     http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
+    https://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/util 
-    http://www.springframework.org/schema/util/spring-util.xsd
+    https://www.springframework.org/schema/util/spring-util.xsd
     http://www.springframework.org/schema/context 
-    http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+    https://www.springframework.org/schema/context/spring-context.xsd"
     xmlns="http://www.springframework.org/schema/beans"
     xmlns:p="http://www.springframework.org/schema/p"
     xmlns:util="http://www.springframework.org/schema/util"
@@ -32,9 +32,7 @@
     </bean>
     
     <bean id="multipartResolver"
-        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="maxUploadSize" value="${file.max.uploadSize}"/>
-        <property name="defaultEncoding" value="UTF-8"/>
+        class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
     </bean>
     
     <bean id="servicesUrl" class="java.lang.String">
@@ -107,20 +105,4 @@
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
         <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
     </bean>
-    
-    <bean id="dataPath" class="java.lang.String">
-        <constructor-arg
-            value="${data.dir}" />
-    </bean>
-    
-    <bean id="depositsDirectory" class="java.io.File">
-        <constructor-arg value="${batch.ingest.dir}" />
-    </bean>
-    
-    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-        <property name="host" value="${smtp.host:localhost}" />
-        <property name="port" value="${smtp.port:25}" />
-        <property name="defaultEncoding" value="UTF-8" />
-    </bean>
-    
 </beans>

@@ -10,16 +10,14 @@ define('EditTitleForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 
         function EditTitleForm(options) {
             this.options = $.extend({}, defaultOptions, options);
-        };
+        }
 
         EditTitleForm.prototype.constructor = EditTitleForm;
         EditTitleForm.prototype = Object.create( AbstractForm.prototype);
 
         EditTitleForm.prototype.preprocessForm = function(resultObject) {
-            var newTitle = $("input[name='title']", this.$form).val();
             var pid = resultObject.metadata.id;
-
-            this.action_url = "/services/api/edit/title/" + pid + "?title=" + encodeURIComponent(newTitle);
+            this.action_url = "/services/api/edit/title/" + pid;
         };
 
         EditTitleForm.prototype.validationErrors = function() {

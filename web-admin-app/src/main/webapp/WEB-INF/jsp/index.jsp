@@ -1,15 +1,15 @@
 <%@ page language="java" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <fmt:setTimeZone value="GMT" scope="session"/>
 <c:choose>
-	<c:when test="${empty requestScope['javax.servlet.forward.request_uri']}">
+	<c:when test="${empty requestScope['jakarta.servlet.forward.request_uri']}">
 		<c:set var="currentUrl" value="${pageContext.request.requestURL}" />
 	</c:when>
 	<c:otherwise>
-		<c:set var="currentUrl" value="${requestScope['javax.servlet.forward.request_uri']}" />
+		<c:set var="currentUrl" value="${requestScope['jakarta.servlet.forward.request_uri']}" />
 	</c:otherwise>
 </c:choose>
 <c:if test="${not empty pageContext.request.queryString}">

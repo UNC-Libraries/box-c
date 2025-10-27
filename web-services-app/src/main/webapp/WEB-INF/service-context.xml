@@ -4,11 +4,11 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd">
+        https://www.springframework.org/schema/util/spring-util.xsd">
 
     <context:annotation-config />
 
@@ -32,13 +32,14 @@
         <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
-                <value>5.0</value>
+                <value>6.0</value>
             </list>
         </property>
     </bean>
   
     <!-- a pooling based JMS provider -->
-    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+          init-method="start" destroy-method="stop">
         <property name="connectionFactory">
             <bean class="org.apache.activemq.ActiveMQConnectionFactory">
                 <property name="brokerURL"> 
@@ -59,23 +60,6 @@
         <property name="maxIdle" value="15"/>
         <property name="minIdle" value="2"/>
         <property name="maxTotal" value="25"/>
-    </bean>
-    
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />
-        <constructor-arg value="${redis.port:6379}" type="int" />
-        <constructor-arg value="2000" type="int" />
-        <constructor-arg type="java.lang.String">
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" type="java.lang.String" />
-        <constructor-arg value="0" type="int" />
-    </bean>
-    
-    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
-        scope="prototype">
-        <constructor-arg ref="jesqueConfig" />
-        <constructor-arg ref="jedisPool" />
     </bean>
     
     <bean id="moveObjectsService"
@@ -589,8 +573,6 @@
     </bean>
 
     <bean id="multipartResolver"
-        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="maxUploadSize" value="${file.max.uploadSize}"/>
-        <property name="defaultEncoding" value="UTF-8"/>
+        class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
     </bean>
 </beans>

@@ -67,7 +67,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
         Resource mainResource = depositBag.iterator().next().asResource();
 
         assertEquals(mainResource.getProperty(CdrDeposit.label).getString(), name, "Label was not set");

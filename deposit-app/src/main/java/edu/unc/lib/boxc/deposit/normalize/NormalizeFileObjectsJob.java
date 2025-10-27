@@ -51,7 +51,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         Model model = getReadOnlyModel();
-        Bag depositBag = model.getBag(getDepositPID().getURI().toString());
+        Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
         normalizeChildren(depositBag);
     }
@@ -89,7 +89,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
         // Construct the new Work object
         PID workPid = pidMinter.mintContentPid();
 
-        Bag workBag = model.createBag(workPid.getURI());
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, filename);
 

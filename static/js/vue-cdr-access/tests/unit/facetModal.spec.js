@@ -87,7 +87,7 @@ describe('modalMetadata.vue', () => {
     });
 
     it("it appends some current url params, if present", async () => {
-        const route = '/search/?start=0&rows=20&sort=default,normal&' +
+        const route = '/search?start=0&rows=20&sort=default,normal&' +
             'facetSelect=createdYear,format,genre,language,subject,location,creatorContributor,publisher&' +
             'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection,File';
         await router.push(route);

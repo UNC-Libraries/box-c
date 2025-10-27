@@ -61,7 +61,7 @@ describe('browseSort.vue', () => {
     });
 
     it("updates the url when the dropdown changes for browsing", async () => {
-        await router.push('/record/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e/?collection_name=testCollection&sort=title,normal');
+        await router.push('/record/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
         wrapper.findAll('option')[2].setSelected();
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.sort).toEqual('title,reverse');

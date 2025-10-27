@@ -20,7 +20,7 @@ public class CutoffFacetNodeImpl implements HierarchicalFacetNode, CutoffFacetNo
         String[] facetComponents = facetValue.split(",", 3);
         if (facetComponents.length > 0) {
             try {
-                this.tier = new Integer(facetComponents[0]);
+                this.tier = Integer.valueOf(facetComponents[0]);
             } catch (Exception e) {
                 throw new InvalidHierarchicalFacetException("Invalid tier value "
                         + facetComponents[0] + " from facet string " + facetValue);
@@ -46,7 +46,7 @@ public class CutoffFacetNodeImpl implements HierarchicalFacetNode, CutoffFacetNo
         this.facetValue = node.facetValue;
         this.searchKey = node.searchKey;
         this.searchValue = node.searchValue;
-        this.tier = new Integer(node.tier);
+        this.tier = node.tier;
     }
 
     @Override

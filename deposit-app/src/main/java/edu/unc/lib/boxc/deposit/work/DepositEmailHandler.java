@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Bag;
@@ -255,7 +255,7 @@ public class DepositEmailHandler {
 
             Model model = depositModelManager.getReadModel(depositPID);
 
-            String depositPid = depositPID.getURI();
+            String depositPid = depositPID.getRepositoryPath();
             Bag depositBag = model.getBag(depositPid);
 
             List<String> topLevelPids = new ArrayList<>();

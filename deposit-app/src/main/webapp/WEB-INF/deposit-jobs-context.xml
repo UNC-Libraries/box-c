@@ -4,11 +4,11 @@
     xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+        https://www.springframework.org/schema/context/spring-context.xsd">
 
     <bean name="propertiesURI" class="java.lang.System"
         factory-method="getProperty">
@@ -27,14 +27,21 @@
     </bean>
     
     <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-        destroy-method="stop">
+          init-method="start" destroy-method="stop">
         <property name="connectionFactory">
             <bean class="org.apache.activemq.ActiveMQConnectionFactory">
                 <property name="brokerURL">
                     <value>${jms.broker.uri}</value>
                 </property>
+                <property name="closeTimeout" value="15000" />
+                <property name="sendTimeout" value="10000" />
+                <property name="useAsyncSend" value="true" />
             </bean>
         </property>
+        <property name="maxConnections" value="10" />
+        <property name="maximumActiveSessionPerConnection" value="20" />
+        <property name="blockIfSessionPoolIsFull" value="true" />
+        <property name="blockIfSessionPoolIsFullTimeout" value="5000" />
     </bean>
     
     <bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -310,6 +317,13 @@
         <property name="host" value="${smtp.host:localhost}" />
         <property name="port" value="${smtp.port:25}" />
         <property name="defaultEncoding" value="UTF-8" />
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.timeout">10000</prop>
+                <prop key="mail.smtp.connectiontimeout">10000</prop>
+                <prop key="mail.smtp.writetimeout">10000</prop>
+            </props>
+        </property>
     </bean>
     
     <bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>

@@ -11,12 +11,13 @@ import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,12 +51,12 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
     }
 
     @RequestMapping(path = "/api/advancedSearch", method = RequestMethod.GET)
-    public String handleRequest(Model model, HttpServletRequest request) {
+    public ModelAndView handleRequest(ModelMap model, HttpServletRequest request) {
         // If the user has submitted the search form, then generate a search state
         // and forward them to the search servlet.
         SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
         model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-        return "redirect:/search";
+        return new ModelAndView("redirect:/search", model);
     }
 }

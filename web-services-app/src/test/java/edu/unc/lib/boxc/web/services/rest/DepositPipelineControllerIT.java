@@ -49,7 +49,6 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() {
-        pipelineStatusFactory.clearPipelineActionRequest();
         pipelineStatusFactory.setPipelineState(null);
     }
 

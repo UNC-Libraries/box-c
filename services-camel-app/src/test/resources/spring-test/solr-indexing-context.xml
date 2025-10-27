@@ -5,11 +5,11 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
@@ -35,9 +35,7 @@
     </bean>
 
     <util:properties id="searchProperties" location="classpath:search.properties" />
-    <util:properties id="solrProperties" location="classpath:solr.properties">
-        <prop key="solr.path">http://localhost:8983/solr</prop>
-    </util:properties>
+    <util:properties id="solrProperties" location="classpath:solr.properties" />
 
     <bean id="searchSettings" class="edu.unc.lib.boxc.search.solr.config.SearchSettings">
         <property name="properties" ref="searchProperties" />
@@ -103,23 +101,8 @@
         </property>
     </bean>
 
-    <bean id="embeddedSolrServer" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer"
-          destroy-method="close">
-        <constructor-arg ref="coreContainer" />
-        <constructor-arg value="access" />
-    </bean>
-
-    <bean id="solrHomePath" class="java.io.File">
-        <constructor-arg value="../etc/solr-config" />
-    </bean>
-    
-    <bean id="solrConfigPath" class="java.io.File">
-        <constructor-arg value="../etc/solr-config/solr.xml" />
-    </bean>
-
-    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" destroy-method="shutdown">
-        <constructor-arg value="#{solrHomePath.toPath().toAbsolutePath()}" />
-        <constructor-arg value="#{solrConfigPath.toPath().toAbsolutePath()}" />
+    <bean id="solrClient" class="org.apache.solr.client.solrj.SolrClient"
+          factory-bean="solrSettings" factory-method="getSolrClient" destroy-method="close">
     </bean>
     
     <bean id="solrSearchService" class="edu.unc.lib.boxc.search.solr.services.SolrSearchService">
@@ -127,7 +110,7 @@
         <property name="searchSettings" ref="searchSettings" />
         <property name="facetFieldUtil" ref="facetFieldUtil" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
 
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
@@ -140,8 +123,8 @@
         <property name="solrSettings" ref="solrSettings" />
         <property name="autoPushCount" value="1" />
         <property name="updateThreads" value="2" />
-        <property name="solrClient" ref="embeddedSolrServer" />
-        <property name="updateSolrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
+        <property name="updateSolrClient" ref="solrClient" />
     </bean>
 
     <bean id="inheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">

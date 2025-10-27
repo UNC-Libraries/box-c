@@ -199,7 +199,7 @@ describe('facets.vue', () => {
     });
 
     it("does not display slider/form for 'Date Created' facet if unknown is set", async () => {
-        await router.push('/search/?createdYear=unknown');
+        await router.push('/search?createdYear=unknown');
 
         let facet_headers = wrapper.findAll('.facet-display h3');
 
@@ -364,7 +364,7 @@ describe('facets.vue', () => {
     });
 
     it("displays a listing of selected facets", async () => {
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
         let format_facets = listFacetEntries('format')
@@ -393,7 +393,7 @@ describe('facets.vue', () => {
     });
 
     it("clears a selected facet if it is unchecked", async () => {
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         // Add facet
         selected_facet.trigger('click');
         await flushPromises();
@@ -414,7 +414,7 @@ describe('facets.vue', () => {
         expect(wrapper.vm.$router.currentRoute.value.query.format).toBe(undefined);
 
         // Add facet
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('Image');
@@ -422,7 +422,7 @@ describe('facets.vue', () => {
 
     it("updates the query parameters if a facet is removed", async () => {
         // Add facet
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('Image');
@@ -437,12 +437,12 @@ describe('facets.vue', () => {
     });
 
     it("updates facet display for a collection", async () => {
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
     });
 
     it("accepts multiple facets", async () => {
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         collection.trigger('click');
         await flushPromises();
         selected_facet.trigger('click');
@@ -462,7 +462,7 @@ describe('facets.vue', () => {
     });
 
     it("sets selected facets, including multiple from same facet, if the page is reloaded", async () => {
-        await router.push('/search/?format=Image%257C%257CText');
+        await router.push('/search?format=Image%257C%257CText');
         await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual(['format=Image||Text']);
         let format_facets = listFacetEntries('format');
@@ -485,7 +485,7 @@ describe('facets.vue', () => {
     });
 
     it("sets the 'created date' picker values from the url", async () => {
-        await router.push('/search/?createdYear=2019,2021');
+        await router.push('/search?createdYear=2019,2021');
         await flushPromises();
 
         expect(wrapper.vm.selected_facets).toEqual(['createdYear=2019,2021']);
@@ -554,7 +554,7 @@ describe('facets.vue', () => {
         store = useAccessStore();
 
         moxios.wait(async () => {
-            await router.push('/search/?createdYear=unknown');
+            await router.push('/search?createdYear=unknown');
 
             let facet_headers = wrapper.findAll('.facet-display h3');
             expect(facet_headers[1].text()).toBe('Date Created');

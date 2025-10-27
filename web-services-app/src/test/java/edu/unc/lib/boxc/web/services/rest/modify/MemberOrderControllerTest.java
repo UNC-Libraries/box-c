@@ -1,7 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -14,41 +12,31 @@ import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer;
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.getMapFromResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -178,7 +166,7 @@ public class MemberOrderControllerTest {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        var respMap = MvcTestHelpers.getMapFromResponse(result);
+        var respMap = getMapFromResponse(result);
         assertEquals("import member order", respMap.get("action"));
         verify(requestSender).sendToQueue(eq(generatedRequest));
     }
@@ -200,8 +188,9 @@ public class MemberOrderControllerTest {
     public void memberOrderCsvImportReadFailureTest() throws Exception {
         var generatedRequest = new MultiParentOrderRequest();
         when(csvTransformer.toRequest(any())).thenReturn(generatedRequest);
+        var errorMessage = "oh no an error";
 
-        doThrow(new IOException()).when(requestSender).sendToQueue(any());
+        doThrow(new IOException(errorMessage)).when(requestSender).sendToQueue(any());
 
         MockMultipartFile importFile = new MockMultipartFile("file",
                 "some,csv,content".getBytes(StandardCharsets.UTF_8));
@@ -210,11 +199,26 @@ public class MemberOrderControllerTest {
                         .file(importFile))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
+        var response = getMapFromResponse(result);
+        assertEquals(errorMessage, response.get("errorStack"));
     }
 
-    protected Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
-        MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(), type);
+    @Test
+    public void memberOrderCsvIllegalArgumentFailureTest() throws Exception {
+        var generatedRequest = new MultiParentOrderRequest();
+        when(csvTransformer.toRequest(any())).thenReturn(generatedRequest);
+        var errorMessage = "bad member order";
+
+        doThrow(new IllegalArgumentException(errorMessage)).when(requestSender).sendToQueue(any());
+
+        MockMultipartFile importFile = new MockMultipartFile("file",
+                "some,csv,content".getBytes(StandardCharsets.UTF_8));
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/memberOrder/import/csv"))
+                        .file(importFile))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        var response = getMapFromResponse(result);
+        assertEquals(errorMessage, response.get("errorStack"));
     }
 }

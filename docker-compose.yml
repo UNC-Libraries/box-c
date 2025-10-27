@@ -1,6 +1,13 @@
 version: '3.7'
 
 services:
+  activemq:
+    image: apache/activemq-artemis:latest-alpine
+    ports:
+      - "46161:61616"
+      - "46888:8161"
+    environment:
+      ANONYMOUS_LOGIN: true
   fedora:
     image: fcrepo/fcrepo:5.1.1-multiplatform
     ports:

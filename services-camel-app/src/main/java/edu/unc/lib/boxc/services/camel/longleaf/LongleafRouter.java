@@ -55,7 +55,7 @@ public class LongleafRouter extends RouteBuilder {
                 .redeliveryDelay(longleafRedeliveryDelay)
                 .onPrepareFailure(failedRouteProcessor));
 
-        from("direct-vm:filter.longleaf")
+        from("direct:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
             .startupOrder(18)
             .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")

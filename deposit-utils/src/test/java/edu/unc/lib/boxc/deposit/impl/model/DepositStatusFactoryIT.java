@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.Jedis;
@@ -90,17 +89,6 @@ public class DepositStatusFactoryIT {
 
         Set<Map<String,String>> statuses = factory.getAll();
         assertEquals(statuses.size(), 2);
-    }
-
-    @Test
-    public void testRequestClearAction() {
-        final String uuid = UUID.randomUUID().toString();
-        factory.requestAction(uuid, DepositAction.pause);
-        Map<String,String> status = factory.get(uuid);
-        assertEquals(DepositAction.pause.toString(), status.get(DepositField.actionRequest.name()));
-        factory.clearActionRequest(uuid);
-        status = factory.get(uuid);
-        assertNull(status.get(DepositField.actionRequest.name()));
     }
 
     @Test

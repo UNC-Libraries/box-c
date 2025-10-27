@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder />
     
@@ -175,17 +175,6 @@
         <constructor-arg ref="poolConfig"/>
         <constructor-arg type="String" value="localhost" />
         <constructor-arg type="int" value="46380" />
-    </bean>
-    
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="localhost" type="java.lang.String" />
-        <constructor-arg value="46380" type="int" />
-        <constructor-arg value="2000" type="int" />
-        <constructor-arg type="java.lang.String">
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" type="java.lang.String" />
-        <constructor-arg value="0" type="int" />
     </bean>
     
     <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">

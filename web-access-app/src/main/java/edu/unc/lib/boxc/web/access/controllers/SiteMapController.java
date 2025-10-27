@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class SiteMapController  extends AbstractErrorHandlingSearchController {
     private String sitemapBasePath;
     private static final Logger LOG = LoggerFactory.getLogger(SiteMapController.class);
 
-    public SiteMapController(String sitemapBasePath) {
+    public SiteMapController(@Qualifier("sitemapBasePath") String sitemapBasePath) {
         this.sitemapBasePath = sitemapBasePath;
     }
 

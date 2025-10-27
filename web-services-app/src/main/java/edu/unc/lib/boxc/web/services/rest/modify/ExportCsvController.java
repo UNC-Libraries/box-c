@@ -9,14 +9,15 @@ import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.PathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,21 +47,22 @@ public class ExportCsvController extends AbstractSolrSearchController {
         var pids = getPids(pidList);
 
         try {
+
             String filename = "export.csv";
-            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-            response.addHeader("Content-Type", "text/csv");
-
-            exportCsvService.streamCsv(pids, getAgentPrincipals(), response.getOutputStream());
-
-            response.setStatus(HttpStatus.OK.value());
+            var csvPath = exportCsvService.exportCsv(pids, getAgentPrincipals());
+            PathResource pathResource = new PathResource(csvPath);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .header("Content-Type", "text/csv")
+                    .body(pathResource);
         } catch (NotFoundException e) {
             log.warn("Object not found: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (RepositoryException | IOException e) {
+        } catch (RepositoryException e) {
             log.error("Error exporting CSV: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return null;
+
     }
 
     private List<PID> getPids(List<String> pidStrings){

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>cdr</artifactId>
         <groupId>edu.unc.lib.cdr</groupId>
-        <version>5.0-SNAPSHOT</version>
+        <version>6.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>services-camel-app</artifactId>
@@ -36,6 +36,16 @@
         <groupId>org.apache.camel.springboot</groupId>
         <artifactId>camel-spring-boot-xml-starter</artifactId>
         <version>${camel.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
         <groupId>org.apache.camel</groupId>
@@ -50,6 +60,11 @@
     <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-activemq</artifactId>
+        <version>${camel.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-direct</artifactId>
         <version>${camel.version}</version>
     </dependency>
     <dependency>
@@ -78,7 +93,7 @@
     <dependency>
         <groupId>jakarta.jms</groupId>
         <artifactId>jakarta.jms-api</artifactId>
-        <version>3.1.0</version>
+        <version>${jakarta.jms-api.version}</version>
     </dependency>
 
     <dependency>
@@ -90,12 +105,6 @@
         <groupId>org.fcrepo.camel</groupId>
         <artifactId>fcrepo-camel</artifactId>
         <version>${fcrepo-camel.version}</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-http</artifactId>
-        <version>${camel.version}</version>
     </dependency>
     
     <dependency>
@@ -136,12 +145,24 @@
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-core</artifactId>
         <version>${tika.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-parsers-standard-package</artifactId>
         <version>${tika.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
@@ -191,9 +212,9 @@
     </dependency>
 
     <dependency>
-        <groupId>javax.annotation</groupId>
-        <artifactId>javax.annotation-api</artifactId>
-        <version>${javax.annotation.version}</version>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
+        <version>${jakarta.annotation.version}</version>
     </dependency>
 
     <dependency>
@@ -206,12 +227,6 @@
     </dependency>
 
     <!-- Testing -->
-    <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-test-spring</artifactId>
-        <version>${camel.version}</version>
-        <scope>test</scope>
-    </dependency>
     <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-test-spring-junit5</artifactId>
@@ -274,33 +289,20 @@
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+    </dependency>
     <!-- integration testing -->
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.apache.solr</groupId>
-        <artifactId>solr-core</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-kahadb-store</artifactId>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.activemq.protobuf</groupId>
-        <artifactId>activemq-protobuf</artifactId>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-    </dependency>
     </dependencies>
 
     <build>
-        <finalName>${artifactId}</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>

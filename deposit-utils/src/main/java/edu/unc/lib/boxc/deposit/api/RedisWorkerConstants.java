@@ -6,16 +6,13 @@ public class RedisWorkerConstants {
     public static final String DEPOSIT_MANIFEST_PREFIX = "deposit-manifest:";
     public static final String DEPOSIT_TO_JOBS_PREFIX = "deposit-to-jobs:";
     public static final String DEPOSIT_PIPELINE_STATE = "deposit-pipeline-state";
-    public static final String DEPOSIT_PIPELINE_ACTION = "deposit-pipeline-action";
     public static final String JOB_STATUS_PREFIX = "job-status:";
     public static final String JOB_COMPLETED_OBJECTS = "job-completed-objects:";
 
-    public static final String RUN_ENHANCEMENT_TREE_QUEUE = "enhance-tree";
-
-    public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
+    public static final String DEPOSIT_QUEUE = "deposit-queue";
 
     public enum DepositField {
-        uuid, state, actionRequest, contactName, depositorName, intSenderDescription,
+        uuid, state, contactName, depositorName, intSenderDescription,
         fileName, depositMethod, containerId,
         createTime, startTime, endTime, ingestedObjects, directory, lock, submitTime,
         depositorEmail, packagingType, packageProfile, metsType, permissionGroups, depositMd5, depositSlug,
@@ -41,32 +38,10 @@ public class RedisWorkerConstants {
         low, normal, high
     }
 
-    /**
-     * Deposit-level instructions that can be executed by a deposit supervisor.
-     *
-     * @author count0
-     *
-     */
-    public enum DepositAction {
-        register, pause, resume, cancel, destroy;
-    }
-
     public enum DepositPipelineState {
         starting, active, quieted, stopped, shutdown;
 
         public static DepositPipelineState fromName(String name) {
-            try {
-                return valueOf(name);
-            } catch (IllegalArgumentException | NullPointerException e) {
-                return null;
-            }
-        }
-    }
-
-    public enum DepositPipelineAction {
-        quiet, unquiet, stop;
-
-        public static DepositPipelineAction fromName(String name) {
             try {
                 return valueOf(name);
             } catch (IllegalArgumentException | NullPointerException e) {

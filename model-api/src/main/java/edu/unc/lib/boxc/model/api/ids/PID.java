@@ -9,24 +9,6 @@ import java.net.URI;
  */
 public interface PID {
     /**
-     * @return String representation of the PID
-     */
-    @Deprecated
-    String getPid();
-
-    /**
-     * @return URI representation of the persistent identifer
-     */
-    @Deprecated
-    String getURI();
-
-    /**
-     * @return
-     */
-    @Deprecated
-    String getPath();
-
-    /**
      * @return The UUID portion of this PID
      */
     String getUUID();

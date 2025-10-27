@@ -5,11 +5,11 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:camel="http://camel.apache.org/schema/spring"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
@@ -218,7 +218,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
@@ -226,7 +226,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
@@ -244,7 +244,7 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
-        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>

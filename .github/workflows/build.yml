@@ -27,6 +27,13 @@ jobs:
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
           CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      activemq:
+        image: apache/activemq-artemis:latest-alpine
+        ports:
+          - 46161:61616
+          - 46888:8161
+        env:
+          ANONYMOUS_LOGIN: true
 
     steps:
     - name: Change permissions of /tmp/boxc_test_storage
@@ -60,10 +67,10 @@ jobs:
       run: |
         docker run -v /tmp/solr-config:/solr_config -d --rm -p 48983:8983 solr:9 solr-precreate access /solr_config/access
 
-    - name: Set up JDK 11
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: 11
+        java-version: 21
         distribution: 'temurin'
 
     - name: Cache Maven packages

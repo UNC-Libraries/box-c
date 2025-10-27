@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
 import edu.unc.lib.boxc.model.api.DatastreamType;
@@ -26,8 +26,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Selector;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
@@ -67,7 +65,6 @@ import io.dropwizard.metrics5.Timer;
 public abstract class AbstractDepositJob implements Runnable {
     private static final Logger log = LoggerFactory
             .getLogger(AbstractDepositJob.class);
-    public static final String DEPOSIT_QUEUE = "Deposit";
 
     protected final Timer timer = TimerFactory.createTimerForClass(getClass(), "job-duration");
 
@@ -451,8 +448,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
         List<Entry<PID, String>> results = new ArrayList<>();
 
-        Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
-        StmtIterator i = model.listStatements(stageSelector);
+        StmtIterator i = model.listStatements(null, property, (RDFNode) null);
         while (i.hasNext()) {
             Statement s = i.nextStatement();
             PID p = PIDs.get(s.getSubject().getURI());
@@ -472,8 +468,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected List<Entry<PID, String>> getOriginalStagingPairList(Model model) {
         List<Entry<PID, String>> results = new ArrayList<>();
 
-        Selector stageSelector = new SimpleSelector((Resource) null, CdrDeposit.hasDatastreamOriginal, (RDFNode) null);
-        StmtIterator i = model.listStatements(stageSelector);
+        StmtIterator i = model.listStatements(null, CdrDeposit.hasDatastreamOriginal, (RDFNode) null);
         while (i.hasNext()) {
             Statement s = i.nextStatement();
             PID fileObjPid = PIDs.get(s.getSubject().getURI());
