@@ -291,6 +291,18 @@ public class SearchStateFactoryTest {
     }
 
     @Test
+    public void extractEncodedFacetLimitsValid() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimits", new String[]{"language%3a20"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        var limits = searchState.getFacetLimits();
+        assertEquals(1, limits.size());
+        assertEquals(20, limits.get("LANGUAGE"));
+    }
+
+    @Test
     public void extractFacetLimitsUnknownField() {
         Map<String, String[]> parameters = new LinkedHashMap<>();
         parameters.put("anywhere", new String[]{""});
