@@ -79,6 +79,7 @@ public class SearchSettings extends AbstractSettings {
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
             SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class,
+            SearchFieldKey.PARENT_COLLECTION.name(), FilterableDisplayValueFacet.class,
             SearchFieldKey.PARENT_UNIT.name(), FilterableDisplayValueFacet.class
     );
 
@@ -131,7 +132,8 @@ public class SearchSettings extends AbstractSettings {
     // Indicates whether to limit search results to only those with administrative viewing privileges
     public Boolean allowPatronAccess;
     // Search manipulation related actions, remove on
-    public final Map<String, String> actions = Map.of("SET_FACET_LIMIT", "facetLimits",
+    public final Map<String, String> actions = Map.of("SET_FACET_LIMIT", "setFacetLimit",
+            "REMOVE_FACET_LIMIT", "removeFacetLimit",
             "NEXT_PAGE", "nextPage",
             "PREVIOUS_PAGE", "previousPage",
             "SET_START_ROW", "setStartRow");
