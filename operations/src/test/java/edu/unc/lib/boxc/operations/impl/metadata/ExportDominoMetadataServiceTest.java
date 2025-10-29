@@ -4,6 +4,8 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.CSV_HEADERS;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.IMAGE;
+import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.LINK;
+import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.PDF;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.VIDEO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -147,8 +149,8 @@ public class ExportDominoMetadataServiceTest {
 
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(resultPath);
-        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", "pdf");
-        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", "link");
+        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", PDF);
+        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", LINK);
         assertNumberOfEntries(2, csvRecords);
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());

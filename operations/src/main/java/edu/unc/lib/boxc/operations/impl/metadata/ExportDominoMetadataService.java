@@ -44,6 +44,9 @@ public class ExportDominoMetadataService {
     private static final int DEFAULT_PAGE_SIZE = 10000;
     public static final String AUDIO = "audio";
     public static final String VIDEO = "video";
+    public static final String PDF = "pdf";
+    public static final String SOUND = "sound";
+    public static final String LINK = "link";
     public static final String IMAGE = "image";
     public static final String REF_ID_NAME = "ref_id";
     public static final String CONTENT_ID_NAME = "content_id";
@@ -82,10 +85,10 @@ public class ExportDominoMetadataService {
             for (PID pid : pids) {
                 aclService.assertHasAccess("Insufficient permissions to export metadata for " + pid.getId(),
                         pid, principals, Permission.viewHidden);
-                var parentRec = getRecord(pid, agent);
+                var parentRec = getRecord(pid);
                 assertParentRecordValid(pid, parentRec);
 
-                var childRecords = getRecords(parentRec, agent, startDate, endDate);
+                var childRecords = getRecords(parentRec, startDate, endDate);
                 exportedRecordCount += childRecords.size();
                 printRecords(printer, childRecords);
             }
@@ -106,8 +109,8 @@ public class ExportDominoMetadataService {
 
     private CSVPrinter createCsvPrinter(Path csvPath) throws IOException {
         var writer = Files.newBufferedWriter(csvPath);
-        return new CSVPrinter(writer, CSVFormat.DEFAULT
-                .withHeader(CSV_HEADERS));
+        return new CSVPrinter(writer, CSVFormat.DEFAULT.builder()
+                .setHeader(CSV_HEADERS).get());
     }
 
     private void printRecords(CSVPrinter csvPrinter, List<ContentObjectRecord> children) throws IOException {
@@ -116,7 +119,7 @@ public class ExportDominoMetadataService {
         }
     }
 
-    // Print a single objects metadata to the CSV export
+    // Print a single object's metadata to the CSV export
     private void printRecord(CSVPrinter printer, ContentObjectRecord object) throws IOException {
         log.debug("Printing record for {}", object.getId());
 
@@ -128,8 +131,7 @@ public class ExportDominoMetadataService {
     }
 
     // Query for all children/members of the specified record, in default sort order
-    private List<ContentObjectRecord> getRecords(ContentObjectRecord parentRec, AgentPrincipals agent,
-                                                 String startDate, String endDate) {
+    private List<ContentObjectRecord> getRecords(ContentObjectRecord parentRec, String startDate, String endDate) {
         SearchState searchState = new SearchState();
         searchState.setIgnoreMaxRows(true);
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
@@ -145,7 +147,7 @@ public class ExportDominoMetadataService {
         return solrSearchService.getSearchResults(searchRequest).getResultList();
     }
 
-    private ContentObjectRecord getRecord(PID pid, AgentPrincipals agent) {
+    private ContentObjectRecord getRecord(PID pid) {
         var workRequest = new SimpleIdRequest(pid, PARENT_REQUEST_FIELDS, principals);
         return solrSearchService.getObjectById(workRequest);
     }
@@ -183,7 +185,7 @@ public class ExportDominoMetadataService {
         var streamingChild = accessCopiesService.getFirstStreamingChild(record, principals);
         if (streamingChild != null) {
             var streamingType = streamingChild.getStreamingType();
-            if (streamingType.contains("sound")) {
+            if (streamingType.contains(SOUND)) {
                 return "streaming audio";
             }
             if (streamingType.contains(VIDEO)) {
@@ -194,10 +196,10 @@ public class ExportDominoMetadataService {
         // check if it's a PDF
         if (accessCopiesService.getDatastreamPid(record, principals, PDF_MIMETYPE_REGEX) != null ||
                 accessCopiesService.isPdf(record)) {
-            return "pdf";
+            return PDF;
         }
 
-        return "link";
+        return LINK;
     }
 
 
