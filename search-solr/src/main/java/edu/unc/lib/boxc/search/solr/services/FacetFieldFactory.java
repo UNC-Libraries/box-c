@@ -45,11 +45,11 @@ public class FacetFieldFactory {
         Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
         try {
             Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
-            if (facetValue == null) {
-                facetValue = "50";
-            }
-            Object newFacet = constructor.newInstance(fieldKey, facetValue);
-            return (GenericFacet) newFacet;
+
+                Object newFacet = constructor.newInstance(fieldKey, facetValue);
+                return (GenericFacet) newFacet;
+
+
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof InvalidHierarchicalFacetException) {
                 throw (InvalidHierarchicalFacetException) e.getCause();
