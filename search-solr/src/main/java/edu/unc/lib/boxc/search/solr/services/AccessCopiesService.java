@@ -270,6 +270,11 @@ public class AccessCopiesService {
         return solrSearchService.getSearchResults(searchRequest);
     }
 
+    public boolean isPdf(ContentObjectRecord briefObject) {
+        return ResourceType.Work.nameEquals(briefObject.getResourceType()) && briefObject.getFileFormatType() != null
+                && briefObject.getFileFormatType().stream().anyMatch(format -> format.matches(PDF_MIMETYPE_REGEX));
+    }
+
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
         this.globalPermissionEvaluator = globalPermissionEvaluator;
     }

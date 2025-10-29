@@ -1,8 +1,10 @@
 package edu.unc.lib.boxc.operations.impl.metadata;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -15,6 +17,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -28,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static java.util.Arrays.asList;
 
 /**
@@ -37,18 +41,21 @@ import static java.util.Arrays.asList;
  */
 public class ExportDominoMetadataService {
     private static final Logger log = LoggerFactory.getLogger(ExportDominoMetadataService.class);
-
     private static final int DEFAULT_PAGE_SIZE = 10000;
-
+    public static final String AUDIO = "audio";
+    public static final String VIDEO = "video";
+    public static final String IMAGE = "image";
     public static final String REF_ID_NAME = "ref_id";
     public static final String CONTENT_ID_NAME = "content_id";
     public static final String WORK_TITLE_NAME = "work_title";
+    public static final String CONTENT_TYPE_NAME = "content_type";
 
-    public static final String[] CSV_HEADERS = {CONTENT_ID_NAME, REF_ID_NAME, WORK_TITLE_NAME};
+    public static final String[] CSV_HEADERS = {CONTENT_ID_NAME, REF_ID_NAME, WORK_TITLE_NAME, CONTENT_TYPE_NAME};
 
     private AccessControlService aclService;
     private SolrSearchService solrSearchService;
     private AccessCopiesService accessCopiesService;
+    private AccessGroupSet principals;
 
     private static final List<String> PARENT_REQUEST_FIELDS = asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
@@ -69,11 +76,12 @@ public class ExportDominoMetadataService {
         var csvPath = Files.createTempFile("metadata", ".csv");
         var completedExport = false;
         var exportedRecordCount = 0;
+        principals = agent.getPrincipals();
 
         try (CSVPrinter printer = createCsvPrinter(csvPath)) {
             for (PID pid : pids) {
                 aclService.assertHasAccess("Insufficient permissions to export metadata for " + pid.getId(),
-                        pid, agent.getPrincipals(), Permission.viewHidden);
+                        pid, principals, Permission.viewHidden);
                 var parentRec = getRecord(pid, agent);
                 assertParentRecordValid(pid, parentRec);
 
@@ -115,6 +123,7 @@ public class ExportDominoMetadataService {
         printer.print(object.getId());
         printer.print(object.getAspaceRefId());
         printer.print(object.getTitle());
+        printer.print(getContentType(object, principals));
         printer.println();
     }
 
@@ -132,12 +141,12 @@ public class ExportDominoMetadataService {
         searchState.getRangeFields().put(SearchFieldKey.DATE_UPDATED.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
-        var searchRequest = new SearchRequest(searchState, agent.getPrincipals());
+        var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest).getResultList();
     }
 
     private ContentObjectRecord getRecord(PID pid, AgentPrincipals agent) {
-        var workRequest = new SimpleIdRequest(pid, PARENT_REQUEST_FIELDS, agent.getPrincipals());
+        var workRequest = new SimpleIdRequest(pid, PARENT_REQUEST_FIELDS, principals);
         return solrSearchService.getObjectById(workRequest);
     }
 
@@ -154,13 +163,44 @@ public class ExportDominoMetadataService {
         }
     }
 
-    private String getContentType() {
-        // Check for viewable images
-        if (accessCopiesService.hasViewableFiles(briefObject, principals)) {
-
+    private String getContentType(ContentObjectRecord record, AccessGroupSet principals) {
+        // Check for viewable files: video, audio, or image
+        if (accessCopiesService.hasViewableFiles(record, principals)) {
+            var origDatastream = record.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+            var mimetype = origDatastream.getMimetype();
+            if (mimetype.contains(AUDIO)) {
+                return AUDIO;
+            }
+            if (mimetype.contains(VIDEO)) {
+                return VIDEO;
+            }
+            if (mimetype.contains(IMAGE)) {
+                return IMAGE;
+            }
         }
+
+        // check for streaming content: audio or video
+        var streamingChild = accessCopiesService.getFirstStreamingChild(record, principals);
+        if (streamingChild != null) {
+            var streamingType = streamingChild.getStreamingType();
+            if (streamingType.contains("sound")) {
+                return "streaming audio";
+            }
+            if (streamingType.contains(VIDEO)) {
+                return "streaming video";
+            }
+        }
+
+        // check if it's a PDF
+        if (accessCopiesService.getDatastreamPid(record, principals, PDF_MIMETYPE_REGEX) != null ||
+                accessCopiesService.isPdf(record)) {
+            return "pdf";
+        }
+
         return "link";
     }
+
+
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
@@ -168,6 +208,14 @@ public class ExportDominoMetadataService {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
+    }
+
+    public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
+        this.accessCopiesService = accessCopiesService;
+    }
+
+    public void setPrincipals(AccessGroupSet principals) {
+        this.principals = principals;
     }
 
     public static class NoRecordsExportedException extends RuntimeException {
