@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.utils;
+package edu.unc.lib.boxc.search.solr.utils;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;

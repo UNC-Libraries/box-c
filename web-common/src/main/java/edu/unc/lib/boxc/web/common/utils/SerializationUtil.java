@@ -15,6 +15,7 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.utils.DatastreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

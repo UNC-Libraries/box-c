@@ -5,7 +5,7 @@
 <s:eval var="viewRecordUrl" expression=
 	"T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, 'record', resultObject.id)" />
 <s:eval var="originalSubpath" expression=
-	"T(edu.unc.lib.boxc.web.common.utils.DatastreamUtil).getOriginalFileUrl(resultObject)" />
+	"T(edu.unc.lib.boxc.search.solr.utils.DatastreamUtil).getOriginalFileUrl(resultObject)" />
 <s:eval var="originalFileUrl" expression=
 	"T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, originalSubpath)" />
 

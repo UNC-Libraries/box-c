@@ -48,6 +48,7 @@ public class ExportDominoMetadataService {
 
     private AccessControlService aclService;
     private SolrSearchService solrSearchService;
+    private AccessCopiesService accessCopiesService;
 
     private static final List<String> PARENT_REQUEST_FIELDS = asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
@@ -151,6 +152,14 @@ public class ExportDominoMetadataService {
             throw new InvalidOperationForObjectType("Object " + pid.getId() + " of type "
                     + resourceType.name() + " is not valid for DOMino metadata export");
         }
+    }
+
+    private String getContentType() {
+        // Check for viewable images
+        if (accessCopiesService.hasViewableFiles(briefObject, principals)) {
+
+        }
+        return "link";
     }
 
     public void setAclService(AccessControlService aclService) {

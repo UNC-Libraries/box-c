@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;

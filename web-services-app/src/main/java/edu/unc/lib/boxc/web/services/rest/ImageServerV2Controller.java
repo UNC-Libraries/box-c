@@ -11,7 +11,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.ImageServerV2Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

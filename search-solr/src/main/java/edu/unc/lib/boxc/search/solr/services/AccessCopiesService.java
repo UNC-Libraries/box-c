@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.services;
+package edu.unc.lib.boxc.search.solr.services;
 
 import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
@@ -18,8 +18,8 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+import edu.unc.lib.boxc.search.solr.utils.DatastreamUtil;
+import edu.unc.lib.boxc.search.solr.utils.PermissionsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

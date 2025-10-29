@@ -1,16 +1,17 @@
-package edu.unc.lib.boxc.web.common.utils;
+package edu.unc.lib.boxc.search.solr.utils;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -122,5 +123,9 @@ public class DatastreamUtilTest {
         assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "application/pdf"));
         assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "text/rtf"));
         assertFalse(DatastreamUtil.originalFileMimetypeMatches(mdObj, "image/png"));
+    }
+
+    private PID makePid() {
+        return PIDs.get(UUID.randomUUID().toString());
     }
 }

@@ -23,7 +23,7 @@ import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.boxc.web.common.auth.PatronActionPermissionsUtil;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
@@ -58,9 +58,9 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**

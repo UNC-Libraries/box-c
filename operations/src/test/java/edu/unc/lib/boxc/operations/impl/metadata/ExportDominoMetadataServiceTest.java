@@ -199,12 +199,9 @@ public class ExportDominoMetadataServiceTest {
     }
 
     private static List<CSVRecord> parseCsv(String[] headers, Path csvPath) throws IOException {
+        var format = CSVFormat.DEFAULT.builder().setSkipHeaderRecord(true).setHeader(headers).setTrim(true).get();
         Reader reader = Files.newBufferedReader(csvPath);
-        return new CSVParser(reader, CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .withHeader(headers)
-                .withTrim())
-                .getRecords();
+        return CSVParser.parse(reader, format).getRecords();
     }
 
     private void assertContainsEntry(List<CSVRecord> csvRecords, String contentId, String refId, String title) {
