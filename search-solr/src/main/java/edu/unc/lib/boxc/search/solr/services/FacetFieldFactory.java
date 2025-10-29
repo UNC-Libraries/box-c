@@ -20,6 +20,8 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
+
 /**
  * Factory for constructing SearchFacet and FacetField objects
  *
@@ -43,6 +45,9 @@ public class FacetFieldFactory {
         Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
         try {
             Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
+            if (facetValue == null) {
+                facetValue = "50";
+            }
             Object newFacet = constructor.newInstance(fieldKey, facetValue);
             return (GenericFacet) newFacet;
         } catch (InvocationTargetException e) {
