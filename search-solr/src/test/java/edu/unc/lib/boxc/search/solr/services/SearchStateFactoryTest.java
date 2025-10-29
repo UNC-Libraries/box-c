@@ -290,6 +290,21 @@ public class SearchStateFactoryTest {
         assertEquals(20, limits.get("LANGUAGE"));
     }
 
+    /**
+     * Collections are FilterableDisplayValueFacets. Most other facets are GenericFacets
+     */
+    @Test
+    public void extractCollectionFacetLimitsValid() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimits", new String[]{"collection:20"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        var limits = searchState.getFacetLimits();
+        assertEquals(1, limits.size());
+        assertEquals(20, limits.get("PARENT_COLLECTION"));
+    }
+
     @Test
     public void extractEncodedFacetLimitsValid() {
         Map<String, String[]> parameters = new LinkedHashMap<>();
