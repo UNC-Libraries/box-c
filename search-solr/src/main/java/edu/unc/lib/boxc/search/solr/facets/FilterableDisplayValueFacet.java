@@ -33,21 +33,19 @@ public class FilterableDisplayValueFacet extends GenericFacet {
         if (facetString == null) {
             this.value = null;
             this.displayValue = null;
-         //   return;
-        } else {
-            var parts = facetString.split("\\|", 2);
-
-            // Only one value provided, so treat it as the search value
-            if (parts.length == 1) {
-                this.value = parts[0];
-                this.displayValue = "*";
-            } else {
-                this.value = parts[1];
-                this.displayValue = parts[0];
-            }
+            return;
         }
 
+        var parts = facetString.split("\\|", 2);
 
+        // Only one value provided, so treat it as the search value
+        if (parts.length == 1) {
+            this.value = parts[0];
+            this.displayValue = "*";
+        } else {
+            this.value = parts[1];
+            this.displayValue = parts[0];
+        }
     }
 
     /**
