@@ -79,7 +79,6 @@ public class SearchSettings extends AbstractSettings {
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
             SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class,
-            SearchFieldKey.PARENT_COLLECTION.name(), FilterableDisplayValueFacet.class,
             SearchFieldKey.PARENT_UNIT.name(), FilterableDisplayValueFacet.class
     );
 
