@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.operations.impl.metadata;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.AUDIO;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.CSV_HEADERS;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.IMAGE;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.LINK;
@@ -104,7 +105,7 @@ public class ExportDominoMetadataServiceTest {
     }
 
     @Test
-    public void exportDominoMetadataTest() throws Exception {
+    public void exportDominoMetadataVideoAndStreamingAudioTest() throws Exception {
         var videoDatastream = Collections.singletonList(ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
                 "Collection", new Date(), null);
@@ -121,6 +122,34 @@ public class ExportDominoMetadataServiceTest {
         var csvRecords = parseCsv(resultPath);
         assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", VIDEO);
         assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", "streaming audio");
+        assertNumberOfEntries(2, csvRecords);
+
+        verify(solrSearchService).getSearchResults(searchRequest.capture());
+        var searchState = searchRequest.getValue().getSearchState();
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
+        var refIdFilter = searchState.getFilters().getFirst();
+        assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
+        assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
+    }
+
+    @Test
+    public void exportDominoMetadataAudioAndStreamingVideoTest() throws Exception {
+        var audioDatastream = Collections.singletonList(ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
+        var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
+                "Collection", new Date(), null);
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, audioDatastream);
+        var workRecord2 = makeWorkRecord(UUID2, "Work 2", REF_ID_2, null);
+        var streamingVideoFileObject = createStreamingVideoObject();
+
+        mockParentResults(collectionRecord);
+        mockChildrenResults(workRecord1, workRecord2);
+        when(accessCopiesService.hasViewableFiles(any(),any())).thenReturn(true).thenReturn(false);
+        when(accessCopiesService.getFirstStreamingChild(eq(workRecord2), any())).thenReturn(streamingVideoFileObject);
+
+        var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
+        var csvRecords = parseCsv(resultPath);
+        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", AUDIO);
+        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", "streaming video");
         assertNumberOfEntries(2, csvRecords);
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
@@ -316,5 +345,18 @@ public class ExportDominoMetadataServiceTest {
         mdObjectAudio.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0003");
         mdObjectAudio.setStreamingType("sound");
         return mdObjectAudio;
+    }
+
+    private ContentObjectSolrRecord createStreamingVideoObject() {
+        var uuid = UUID.randomUUID().toString();
+        List<String> videoDatastream = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
+        var mdObject = (ContentObjectSolrRecord) makeRecord(uuid, UUID1, ResourceType.File,
+                "title", new Date(), videoDatastream);
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("video/mp4"));
+        mdObject.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001");
+        mdObject.setStreamingType("video");
+        return mdObject;
     }
 }
