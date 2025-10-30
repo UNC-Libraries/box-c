@@ -43,7 +43,7 @@
 		</div>
 		<div>
 			<h3>Descriptive</h3>
-			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=collection,dept,language,subject<c:if test="${not empty searchStateParameters}">&${searchStateParameters}</c:if></c:set>
+			<c:set var="facetsDataUrl">facets<c:if test="${not empty resultResponse.selectedContainer}">/${resultResponse.selectedContainer.id}</c:if>?facetSelect=collection,language,subject<c:if test="${not empty searchStateParameters}">&${searchStateParameters}</c:if></c:set>
 			<div data-href="${facetsDataUrl}">
 				<div class="center"><img src="/static/images/admin/loading_small.gif"/></div>
 			</div>

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -303,9 +304,10 @@ public class SearchStateFactory {
         //retrieve facet limits
         String parameter = getParameter(request, SearchSettings.URL_PARAM_FACET_LIMIT_FIELDS);
         if (parameter != null) {
-            String parameterArray[] = parameter.split("\\|");
+            String[] parameterArray = parameter.split("\\|");
             for (String parameterPair: parameterArray) {
-                String parameterPairArray[] = parameterPair.split(":", 2);
+                var decodedParameterPair = URLDecoder.decode(parameterPair, StandardCharsets.UTF_8);
+                String[] parameterPairArray = decodedParameterPair.split(":", 2);
                 if (parameterPairArray.length > 1) {
                     try {
                         var fieldKey = searchSettings.searchFieldKey(parameterPairArray[0]);
@@ -329,7 +331,7 @@ public class SearchStateFactory {
             try {
                 searchState.setBaseFacetLimit(Integer.parseInt(parameter));
             } catch (Exception e) {
-                log.error("Failed to parse base facet limit: " + parameter);
+                log.error("Failed to parse base facet limit: {}", parameter);
             }
         }
 
