@@ -48,6 +48,8 @@ public class ExportDominoMetadataService {
     public static final String SOUND = "sound";
     public static final String LINK = "link";
     public static final String IMAGE = "image";
+    public static final String STREAMING_AUDIO = "streaming audio";
+    public static final String STREAMING_VIDEO = "streaming video";
     public static final String REF_ID_NAME = "ref_id";
     public static final String CONTENT_ID_NAME = "content_id";
     public static final String WORK_TITLE_NAME = "work_title";
@@ -58,7 +60,6 @@ public class ExportDominoMetadataService {
     private AccessControlService aclService;
     private SolrSearchService solrSearchService;
     private AccessCopiesService accessCopiesService;
-    private AccessGroupSet principals;
 
     private static final List<String> PARENT_REQUEST_FIELDS = asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
@@ -79,18 +80,18 @@ public class ExportDominoMetadataService {
         var csvPath = Files.createTempFile("metadata", ".csv");
         var completedExport = false;
         var exportedRecordCount = 0;
-        principals = agent.getPrincipals();
+        var principals = agent.getPrincipals();
 
         try (CSVPrinter printer = createCsvPrinter(csvPath)) {
             for (PID pid : pids) {
                 aclService.assertHasAccess("Insufficient permissions to export metadata for " + pid.getId(),
                         pid, principals, Permission.viewHidden);
-                var parentRec = getRecord(pid);
+                var parentRec = getRecord(pid, principals);
                 assertParentRecordValid(pid, parentRec);
 
-                var childRecords = getRecords(parentRec, startDate, endDate);
+                var childRecords = getRecords(parentRec, startDate, endDate, principals);
                 exportedRecordCount += childRecords.size();
-                printRecords(printer, childRecords);
+                printRecords(printer, childRecords, principals);
             }
             if (exportedRecordCount == 0) {
                 throw new NoRecordsExportedException("No records exported for pids: " + pids);
@@ -113,14 +114,14 @@ public class ExportDominoMetadataService {
                 .setHeader(CSV_HEADERS).get());
     }
 
-    private void printRecords(CSVPrinter csvPrinter, List<ContentObjectRecord> children) throws IOException {
+    private void printRecords(CSVPrinter csvPrinter, List<ContentObjectRecord> children, AccessGroupSet principals) throws IOException {
         for (var childRec : children) {
-            printRecord(csvPrinter, childRec);
+            printRecord(csvPrinter, childRec, principals);
         }
     }
 
     // Print a single object's metadata to the CSV export
-    private void printRecord(CSVPrinter printer, ContentObjectRecord object) throws IOException {
+    private void printRecord(CSVPrinter printer, ContentObjectRecord object, AccessGroupSet principals) throws IOException {
         log.debug("Printing record for {}", object.getId());
 
         printer.print(object.getId());
@@ -131,7 +132,7 @@ public class ExportDominoMetadataService {
     }
 
     // Query for all children/members of the specified record, in default sort order
-    private List<ContentObjectRecord> getRecords(ContentObjectRecord parentRec, String startDate, String endDate) {
+    private List<ContentObjectRecord> getRecords(ContentObjectRecord parentRec, String startDate, String endDate, AccessGroupSet principals) {
         SearchState searchState = new SearchState();
         searchState.setIgnoreMaxRows(true);
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
@@ -147,7 +148,7 @@ public class ExportDominoMetadataService {
         return solrSearchService.getSearchResults(searchRequest).getResultList();
     }
 
-    private ContentObjectRecord getRecord(PID pid) {
+    private ContentObjectRecord getRecord(PID pid, AccessGroupSet principals) {
         var workRequest = new SimpleIdRequest(pid, PARENT_REQUEST_FIELDS, principals);
         return solrSearchService.getObjectById(workRequest);
     }
@@ -167,8 +168,10 @@ public class ExportDominoMetadataService {
 
     private String getContentType(ContentObjectRecord record, AccessGroupSet principals) {
         // Check for viewable files: video, audio, or image
-        if (accessCopiesService.hasViewableFiles(record, principals)) {
-            var origDatastream = record.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        var searchResult = accessCopiesService.getFirstViewableFile(record, principals);
+        if (searchResult.getResultCount() > 0) {
+            var viewableFile = searchResult.getResultList().getFirst();
+            var origDatastream = viewableFile.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
             var mimetype = origDatastream.getMimetype();
             if (mimetype.contains(AUDIO)) {
                 return AUDIO;
@@ -186,16 +189,15 @@ public class ExportDominoMetadataService {
         if (streamingChild != null) {
             var streamingType = streamingChild.getStreamingType();
             if (streamingType.contains(SOUND)) {
-                return "streaming audio";
+                return STREAMING_AUDIO;
             }
             if (streamingType.contains(VIDEO)) {
-                return "streaming video";
+                return STREAMING_VIDEO;
             }
         }
 
         // check if it's a PDF
-        if (accessCopiesService.getDatastreamPid(record, principals, PDF_MIMETYPE_REGEX) != null ||
-                accessCopiesService.isPdf(record)) {
+        if (accessCopiesService.isPdf(record)) {
             return PDF;
         }
 
@@ -214,10 +216,6 @@ public class ExportDominoMetadataService {
 
     public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
         this.accessCopiesService = accessCopiesService;
-    }
-
-    public void setPrincipals(AccessGroupSet principals) {
-        this.principals = principals;
     }
 
     public static class NoRecordsExportedException extends RuntimeException {

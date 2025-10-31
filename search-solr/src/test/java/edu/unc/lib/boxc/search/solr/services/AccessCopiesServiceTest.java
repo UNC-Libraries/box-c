@@ -524,6 +524,16 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
+    public void getFirstViewableFileTest() {
+        var mdObjectVideo = createVideoObject(ResourceType.Work);
+        hasPermissions(mdObjectVideo, true);
+        accessCopiesService.getFirstViewableFile(mdObjectVideo, principals);
+        assertRequestedIiifV3Filters();
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        assertEquals(1, searchState.getRowsPerPage());
+    }
+    
+    @Test
     public void hasMatchingChildTest() {
         var mdObjectPdf = createPdfObject(ResourceType.Work);
         hasPermissions(mdObjectPdf, true);

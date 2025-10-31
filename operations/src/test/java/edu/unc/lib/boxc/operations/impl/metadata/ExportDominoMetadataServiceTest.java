@@ -7,6 +7,8 @@ import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataServ
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.IMAGE;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.LINK;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.PDF;
+import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.STREAMING_AUDIO;
+import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.STREAMING_VIDEO;
 import static edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService.VIDEO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -121,7 +123,7 @@ public class ExportDominoMetadataServiceTest {
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(resultPath);
         assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", VIDEO);
-        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", "streaming audio");
+        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", STREAMING_AUDIO);
         assertNumberOfEntries(2, csvRecords);
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
@@ -149,7 +151,7 @@ public class ExportDominoMetadataServiceTest {
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(resultPath);
         assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", AUDIO);
-        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", "streaming video");
+        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", STREAMING_VIDEO);
         assertNumberOfEntries(2, csvRecords);
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
