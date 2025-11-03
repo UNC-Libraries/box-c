@@ -7,6 +7,9 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ASPACE_REF_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_SORT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_VIEW_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_WORKS_ONLY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR;
@@ -125,6 +128,33 @@ public class IndexDocumentBean {
 
     public String getParentUnit() {
         return (String) fields.get(PARENT_UNIT.getSolrField());
+    }
+
+    public String getCollectionDefaultSort() {
+        return (String) fields.get(COLLECTION_SORT.getSolrField());
+    }
+
+    @Field
+    public void setCollectionDefaultSort(String collectionDefaultSort) {
+        fields.put(COLLECTION_SORT.getSolrField(), collectionDefaultSort);
+    }
+
+    public boolean getCollectionShowWorksOnly() {
+        return (boolean) fields.get(COLLECTION_WORKS_ONLY.getSolrField());
+    }
+
+    @Field
+    public void setCollectionShowWorksOnly(boolean collectionShowWorksOnly) {
+        fields.put(COLLECTION_WORKS_ONLY.getSolrField(), collectionShowWorksOnly);
+    }
+
+    public String getCollectionDefaultViewType() {
+        return (String) fields.get(COLLECTION_VIEW_TYPE.getSolrField());
+    }
+
+    @Field
+    public void setCollectionDefaultViewType(String collectionDefaultViewType) {
+        fields.put(COLLECTION_VIEW_TYPE.getSolrField(), collectionDefaultViewType);
     }
 
     @Field

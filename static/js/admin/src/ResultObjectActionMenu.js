@@ -1,8 +1,8 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm',
+		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'CollectionDisplaySettingsForm', 'EditStreamingPropertiesForm',
 		'EditAltTextForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, CollectionDisplaySettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -210,6 +210,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["ingestSourceFilesOnly"] = {name : 'Add Files from Server'};
 		}
 
+		if (metadata.type === 'Collection' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
+			items["editCollectionDisplaySettings"] = {name : 'Edit Collection Display Settings'};
+		}
+
 		if (metadata.type === 'Work' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
 			items["viewSettings"] = {name : 'Update View Settings'};
 		}
@@ -409,6 +413,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							target : resultObject
 						});
 						break;
+                    case "editCollectionDisplaySettings":
+                        self.collectionDisplaySettings(resultObject);
+                        break
 					case "editThumbnail":
 						self.editThumbnail(resultObject);
 						break;
@@ -655,6 +662,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		});
 		viewSettingsForm.open(resultObject);
 	}
+
+	ResultObjectActionMenu.prototype.collectionDisplaySettings = function(resultObject) {
+		var collectionDisplaySettingsForm = new CollectionDisplaySettingsForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler,
+			targets: resultObject.metadata.id
+		});
+        collectionDisplaySettingsForm.open(resultObject);
+	}
+
 
 	ResultObjectActionMenu.prototype.editStreamingProperties = function(resultObject) {
 		var editStreamingPropertiesForm = new EditStreamingPropertiesForm({

@@ -283,6 +283,21 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getCollectionDefaultSort() {
+        return this.representative.getCollectionDefaultSort();
+    }
+
+    @Override
+    public boolean getCollectionShowWorksOnly() {
+        return this.representative.getCollectionShowWorksOnly();
+    }
+
+    @Override
+    public String getCollectionDefaultViewType() {
+        return this.representative.getCollectionDefaultViewType();
+    }
+
+    @Override
     public String getAspaceRefId() {
         return this.representative.getAspaceRefId();
     }

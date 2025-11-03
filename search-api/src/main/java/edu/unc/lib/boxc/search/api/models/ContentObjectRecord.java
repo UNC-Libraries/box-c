@@ -122,6 +122,12 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 
     List<String> getPublisher();
 
+    String getCollectionDefaultSort();
+
+    boolean getCollectionShowWorksOnly();
+
+    String getCollectionDefaultViewType();
+
     Date getDateCreated();
 
     String getDateCreatedYear();
