@@ -532,7 +532,7 @@ public class AccessCopiesServiceTest  {
         var searchState = searchRequestCaptor.getValue().getSearchState();
         assertEquals(1, searchState.getRowsPerPage());
     }
-    
+
     @Test
     public void hasMatchingChildTest() {
         var mdObjectPdf = createPdfObject(ResourceType.Work);

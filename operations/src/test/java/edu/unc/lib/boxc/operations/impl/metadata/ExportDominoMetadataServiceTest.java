@@ -19,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -107,23 +108,24 @@ public class ExportDominoMetadataServiceTest {
     }
 
     @Test
-    public void exportDominoMetadataVideoAndStreamingAudioTest() throws Exception {
+    public void exportDominoMetadataAudioAndVideoTest() throws Exception {
+        var audioDatastream = Collections.singletonList(ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
         var videoDatastream = Collections.singletonList(ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
                 "Collection", new Date(), null);
-        var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, videoDatastream);
-        var workRecord2 = makeWorkRecord(UUID2, "Work 2", REF_ID_2, null);
-        var streamingAudioFileObject = createStreamingAudioObject();
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, audioDatastream);
+        var workRecord2 = makeWorkRecord(UUID2, "Work 2", REF_ID_2, videoDatastream);
 
         mockParentResults(collectionRecord);
         mockChildrenResults(workRecord1, workRecord2);
-        when(accessCopiesService.hasViewableFiles(any(),any())).thenReturn(true).thenReturn(false);
-        when(accessCopiesService.getFirstStreamingChild(eq(workRecord2), any())).thenReturn(streamingAudioFileObject);
+        when(accessCopiesService.getFirstViewableFile(any(), any())).thenReturn(searchResultResponse);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(workRecord1)).thenReturn(List.of(workRecord2));
+        when(searchResultResponse.getResultCount()).thenReturn(1L).thenReturn(1L);
 
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(resultPath);
-        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", VIDEO);
-        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", STREAMING_AUDIO);
+        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", AUDIO);
+        assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", VIDEO);
         assertNumberOfEntries(2, csvRecords);
 
         verify(solrSearchService).getSearchResults(searchRequest.capture());
@@ -135,22 +137,24 @@ public class ExportDominoMetadataServiceTest {
     }
 
     @Test
-    public void exportDominoMetadataAudioAndStreamingVideoTest() throws Exception {
-        var audioDatastream = Collections.singletonList(ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
+    public void exportDominoMetadataStreamingAudioAndStreamingVideoTest() throws Exception {
         var collectionRecord = makeRecord(COLLECTION_UUID, ADMIN_UNIT_UUID, ResourceType.Collection,
                 "Collection", new Date(), null);
-        var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, audioDatastream);
+        var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, null);
         var workRecord2 = makeWorkRecord(UUID2, "Work 2", REF_ID_2, null);
+        var streamingAudioFileObject = createStreamingAudioObject();
         var streamingVideoFileObject = createStreamingVideoObject();
 
         mockParentResults(collectionRecord);
         mockChildrenResults(workRecord1, workRecord2);
-        when(accessCopiesService.hasViewableFiles(any(),any())).thenReturn(true).thenReturn(false);
+        when(accessCopiesService.getFirstViewableFile(any(), any())).thenReturn(searchResultResponse);
+        when(searchResultResponse.getResultCount()).thenReturn(0L).thenReturn(0L);
+        when(accessCopiesService.getFirstStreamingChild(eq(workRecord1), any())).thenReturn(streamingAudioFileObject);
         when(accessCopiesService.getFirstStreamingChild(eq(workRecord2), any())).thenReturn(streamingVideoFileObject);
 
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent, "*", "*");
         var csvRecords = parseCsv(resultPath);
-        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", AUDIO);
+        assertContainsEntry(csvRecords, UUID1, REF_ID_1, "Work 1", STREAMING_AUDIO);
         assertContainsEntry(csvRecords, UUID2, REF_ID_2, "Work 2", STREAMING_VIDEO);
         assertNumberOfEntries(2, csvRecords);
 
@@ -171,10 +175,12 @@ public class ExportDominoMetadataServiceTest {
                 "Collection", new Date(), null);
         var workRecord1 = makeWorkRecord(UUID1, "Work 1", REF_ID_1, pdfDatastreams);
         var workRecord2 = makeWorkRecord(UUID2, "Work 2", REF_ID_2, null);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(workRecord1));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
 
         mockParentResults(collectionRecord);
         mockChildrenResults(workRecord1, workRecord2);
-        when(accessCopiesService.hasViewableFiles(any(),any())).thenReturn(false).thenReturn(false);
+        when(accessCopiesService.getFirstViewableFile(any(), any())).thenReturn(searchResultResponse);
         when(accessCopiesService.getFirstStreamingChild(any(), any())).thenReturn(null).thenReturn(null);
         when(accessCopiesService.isPdf(workRecord1)).thenReturn(true);
 
@@ -249,7 +255,9 @@ public class ExportDominoMetadataServiceTest {
 
         mockParentResults(collectionRecord1, collectionRecord2);
         mockChildrenResults(workRecord1);
-        when(accessCopiesService.hasViewableFiles(any(),any())).thenReturn(true);
+        when(accessCopiesService.getFirstViewableFile(any(),any())).thenReturn(searchResultResponse);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(workRecord1));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
 
         var resultPath = csvService.exportCsv(asPidList(COLLECTION_UUID), agent,
                 "2020-00-00T00:00:00Z", "*");
@@ -338,10 +346,8 @@ public class ExportDominoMetadataServiceTest {
 
     private ContentObjectSolrRecord createStreamingAudioObject() {
         var uuid = UUID.randomUUID().toString();
-        List<String> audioDatastream = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
         var mdObjectAudio = (ContentObjectSolrRecord) makeRecord(uuid, UUID1, ResourceType.File,
-                "title", new Date(), audioDatastream);
+                "title", new Date(), null);
         mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
         mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
         mdObjectAudio.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0003");
@@ -351,10 +357,8 @@ public class ExportDominoMetadataServiceTest {
 
     private ContentObjectSolrRecord createStreamingVideoObject() {
         var uuid = UUID.randomUUID().toString();
-        List<String> videoDatastream = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
         var mdObject = (ContentObjectSolrRecord) makeRecord(uuid, UUID1, ResourceType.File,
-                "title", new Date(), videoDatastream);
+                "title", new Date(), null);
         mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
         mdObject.setFileFormatType(Collections.singletonList("video/mp4"));
         mdObject.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001");
