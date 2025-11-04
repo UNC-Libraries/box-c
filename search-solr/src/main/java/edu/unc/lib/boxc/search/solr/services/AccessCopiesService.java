@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.services;
+package edu.unc.lib.boxc.search.solr.services;
 
 import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
@@ -18,13 +18,12 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+import edu.unc.lib.boxc.search.solr.utils.DatastreamUtil;
+import edu.unc.lib.boxc.search.solr.utils.PermissionsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public class AccessCopiesService {
             return Collections.emptyList();
         }
 
-        var resp = performQuery(briefObj, principals, MAX_FILES);
+        var resp = queryViewableFiles(briefObj, principals, MAX_FILES);
         List<ContentObjectRecord> mdObjs = resp.getResultList();
         mdObjs.add(0, briefObj);
         return mdObjs;
@@ -90,8 +89,18 @@ public class AccessCopiesService {
             return false;
         }
 
-        var resp = performQuery(briefObj, principals, 0);
+        var resp = queryViewableFiles(briefObj, principals, 0);
         return resp.getResultCount() > 0;
+    }
+
+    /**
+     * Finds the first viewable FileObject
+     * @param briefObj
+     * @param principals
+     * @return
+     */
+    public SearchResultResponse getFirstViewableFile(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        return queryViewableFiles(briefObj, principals, 1);
     }
 
     public ContentObjectRecord getFirstStreamingChild(ContentObjectRecord briefObj, AccessGroupSet principals) {
@@ -106,9 +115,9 @@ public class AccessCopiesService {
         searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.STREAMING_TYPE));
         var resp = solrSearchService.getSearchResults(request);
         if (resp.getResultCount() > 0) {
-            var id = resp.getResultList().get(0).getId();
+            var id = resp.getResultList().getFirst().getId();
             log.debug("Found streaming content {} for work {}", id, briefObj.getId());
-            return resp.getResultList().get(0);
+            return resp.getResultList().getFirst();
         }
         return null;
     }
@@ -126,9 +135,9 @@ public class AccessCopiesService {
         var resp = solrSearchService.getSearchResults(request);
 
         if (resp.getResultCount() > 0) {
-            var id = resp.getResultList().get(0).getId();
+            var id = resp.getResultList().getFirst().getId();
             log.debug("Found {} content {} for work {}", fileType, id, briefObj.getId());
-            return resp.getResultList().get(0);
+            return resp.getResultList().getFirst();
         }
         return null;
     }
@@ -205,7 +214,7 @@ public class AccessCopiesService {
 
         var resp = solrSearchService.getSearchResults(request);
         if (resp.getResultCount() > 0) {
-            var result = resp.getResultList().get(0);
+            var result = resp.getResultList().getFirst();
             log.debug("Found thumbnail object {} for work {}", result.getId(), contentObjectRecord.getId());
             return result;
         } else {
@@ -254,10 +263,10 @@ public class AccessCopiesService {
         return searchRequest;
     }
 
-    private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
+    private SearchResultResponse queryViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
-            searchState.setPermissionLimits(Arrays.asList(Permission.viewAccessCopies));
+            searchState.setPermissionLimits(List.of(Permission.viewAccessCopies));
         }
         searchState.setIgnoreMaxRows(true);
         searchState.setRowsPerPage(rows);
@@ -268,6 +277,11 @@ public class AccessCopiesService {
 
         var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest);
+    }
+
+    public boolean isPdf(ContentObjectRecord briefObject) {
+        return ResourceType.Work.nameEquals(briefObject.getResourceType()) && briefObject.getFileFormatType() != null
+                && briefObject.getFileFormatType().stream().anyMatch(format -> format.matches(PDF_MIMETYPE_REGEX));
     }
 
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {

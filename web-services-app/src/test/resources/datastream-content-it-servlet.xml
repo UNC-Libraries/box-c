@@ -37,7 +37,7 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
     </bean>
 
-    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.search.solr.services.AccessCopiesService">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="solrSearchService" ref="solrSearchService" />
     </bean>

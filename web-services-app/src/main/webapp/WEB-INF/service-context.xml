@@ -511,6 +511,7 @@
     <bean id="exportDominoMetadataService" class="edu.unc.lib.boxc.operations.impl.metadata.ExportDominoMetadataService">
         <property name="aclService" ref="aclService" />
         <property name="solrSearchService" ref="queryLayer" />
+        <property name="accessCopiesService" ref="accessCopiesService" />
     </bean>
 
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">

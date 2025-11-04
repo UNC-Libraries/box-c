@@ -19,7 +19,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;

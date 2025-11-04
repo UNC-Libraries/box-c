@@ -30,7 +30,7 @@
 
     <!-- Utils -->
 
-    <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
+    <bean id="permsHelper" class="edu.unc.lib.boxc.search.solr.utils.PermissionsHelper">
         <property name="accessControlService" ref="aclService" />
     </bean>
 

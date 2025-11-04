@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.services;
+package edu.unc.lib.boxc.search.solr.utils;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;

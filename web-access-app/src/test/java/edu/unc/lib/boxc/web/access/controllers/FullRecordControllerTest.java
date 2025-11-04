@@ -18,7 +18,7 @@ import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
@@ -45,7 +45,7 @@ import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREA
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_URL;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_PID;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_TYPE;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

@@ -94,7 +94,7 @@
         <property name="solrSettings" ref="solrSettings" />
     </bean>
     
-    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.search.solr.services.AccessCopiesService">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="permissionsHelper" ref="permsHelper" />
         <property name="solrSearchService" ref="queryLayer" />
