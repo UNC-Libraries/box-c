@@ -615,6 +615,7 @@
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.collectionDisplay</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.aspace</camel:package>
     </camel:camelContext>
 </beans>
