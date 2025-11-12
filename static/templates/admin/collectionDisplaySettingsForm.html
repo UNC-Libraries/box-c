@@ -1,0 +1,44 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="edit_collection_display_settings" class="edit_form edit_collection_display_settings_form">
+    <div class="form_field">
+        <label for="sort_type">Sort Type:</label>
+        <select id="sort_type" name="sort_type">
+            <option value="default,normal" <%= (metadata.sort === undefined || metadata.sort === 'default,normal') ? "selected" : "" %>>Sort by Relevance</option>
+            <option value="title,normal" <%= (metadata.sort == 'title,normal') ? "selected" : "" %>>Title A-Z</option>
+            <option value="title,reverse" <%= (metadata.sort == 'title,reverse') ? "selected" : "" %>>Title Z-A</option>
+            <option value="dateCreated,normal" <%= (metadata.sort == 'dateCreated,normal') ? "selected" : "" %>>Date Created (newest)</option>
+            <option value="dateCreated,reverse" <%= (metadata.sort == 'dateCreated,reverse') ? "selected" : "" %>>Date Created (oldest)</option>
+            <option value="dateAdded,normal" <%= (metadata.sort == 'dateAdded,normal') ? "selected" : "" %>>Date Deposited (newest)</option>
+            <option value="dateAdded,reverse" <≈>Date Deposited (oldest)</option>
+        </select>
+    </div>
+    <div class="form_field">
+        <fieldset>
+            <legend>Display Type:</legend>
+            <p>
+                <input type="radio" id="list_view" name="display_type" value="list" <%= (metadata.viewType === undefined || metadata.viewType == 'list') ? "checked" : "" %> />
+                <label for="list_view">List View</label>
+
+                <input type="radio" id="gallery_view" name="display_type" value="gallery" <%= (metadata.viewType == 'gallery') ? "checked" : "" %> />
+                <label for="gallery_view">Gallery View</label>
+            </p>
+        </fieldset>
+    </div>
+    <div class="form_field">
+        <fieldset>
+            <legend>Display Works Only:</legend>
+            <p>
+                <input type="checkbox" id="display_works_only" name="display_works_only" <%= (metadata.showWorksOnly == 'true') ? "checked" : "" %> />
+                <label for="display_works_only">Works only?</label>
+            </p>
+        </fieldset>
+    </div>
+    <input type="hidden" value="<%= metadata.id %>" id="collection_id" name="collection_id"/>
+    <div class="update_field">
+        <input type="submit" id="edit_collection_display_settings_submit_button" class="update_button" value="Save Changes" />
+    </div>
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack"></div>
+    </div>
+</form>
