@@ -11,7 +11,10 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequest;
+import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesSerializationHelper;
 import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -186,6 +189,10 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         var recordProperties = new HashMap<String, Object>();
         recordProperties.put("resourceType", resourceType);
+
+        if (ResourceType.Collection.nameEquals(resourceType)) {
+            recordProperties.put("collectionDisplaySettings", getCollectionDisplaySettings(pid, principals));
+        }
 
         // Get parent id
         if (ResourceType.File.nameEquals(resourceType)) {
@@ -394,6 +401,21 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 exhibitList.put(exhibitValues[0], exhibitValues[1]);
             }
             return exhibitList;
+        }
+
+        return null;
+    }
+
+    private CollectionDisplayPropertiesRequest getCollectionDisplaySettings(PID pid, AccessGroupSet principals) {
+        try {
+            ContentObject contentObj = (ContentObject) repositoryObjectLoader.getRepositoryObject(pid);
+            var displaySettings = contentObj.getResource().getProperty(Cdr.collectionDefaultDisplaySettings);
+            if (displaySettings != null) {
+                return CollectionDisplayPropertiesSerializationHelper.toRequest(displaySettings.getString());
+            }
+        } catch (FedoraException | IOException e) {
+            SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+            LOG.error("Failed to retrieve object {} from fedora", idRequest.getId(), e);
         }
 
         return null;

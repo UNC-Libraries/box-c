@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.collectionDisplay;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -10,20 +11,18 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesSerializationHelper;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class CollectionDisplayPropertiesRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private AccessControlService aclService;
-    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws IOException {
@@ -39,15 +38,14 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
 
         var collection = repositoryObjectLoader.getCollectionObject(pid);
 
-        repositoryObjectFactory.createExclusiveRelationship(
-                collection, Cdr.collectionDefaultSort, request.getSortType());
-        repositoryObjectFactory.createExclusiveRelationship(
-                collection, Cdr.collectionDefaultViewType, request.getDisplayType());
-        repositoryObjectFactory.createExclusiveRelationship(
-                collection, Cdr.collectionShowWorksOnly, request.getWorksOnly());
+        var collectionSettings = new HashMap<>();
+        collectionSettings.put("sortType", request.getSortType());
+        collectionSettings.put("displayType", request.getDisplayType());
+        collectionSettings.put("worksOnly", request.getWorksOnly());
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid,
-                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
+        repositoryObjectFactory.createExclusiveRelationship(
+                collection, Cdr.collectionDefaultDisplaySettings, objectMapper.writeValueAsString(collectionSettings));
     }
 
     private String validate(CollectionDisplayPropertiesRequest request, PID pid) {
@@ -82,9 +80,5 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
-    }
-
-    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
-        this.indexingMessageSender = indexingMessageSender;
     }
 }

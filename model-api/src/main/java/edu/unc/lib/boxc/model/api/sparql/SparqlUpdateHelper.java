@@ -183,7 +183,11 @@ public class SparqlUpdateHelper {
         } else if (object instanceof Literal) {
             Literal literal = (Literal) object;
             RDFDatatype type = literal.getDatatype();
-            return '"' + literal.getLexicalForm() + "\"^^<" + type.getURI() + ">";
+            if (type.getURI().equals("http://www.w3.org/2001/XMLSchema#string")) {
+                return '"' + escapeSparqlString(literal.getLexicalForm()) + '"';
+            } else {
+                return '"' + literal.getLexicalForm() + "\"^^<" + type.getURI() + ">";
+            }
         } else {
             RDFDatatype type = TypeMapper.getInstance().getTypeByClass(object.getClass());
             if (type == null) {

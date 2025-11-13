@@ -97,14 +97,10 @@ public class EditCollectionDisplayController {
 
     private Map<String, String> getProperties(String id, Resource resource) {
         Map<String, String> result = new HashMap<>();
-        var sort = getValue(resource, Cdr.collectionDefaultSort);
-        var worksOnly = getValue(resource, Cdr.collectionShowWorksOnly);
-        var viewType = getValue(resource, Cdr.collectionDefaultViewType);
+        var collectionDisplaySettings = getValue(resource, Cdr.collectionDefaultDisplaySettings);
 
         result.put("id", id);
-        result.put("sort", sort);
-        result.put("worksOnly", worksOnly);
-        result.put("viewType", viewType);
+        result.put("collectionDefaultDisplaySettings", collectionDisplaySettings);
         return result;
     }
 }

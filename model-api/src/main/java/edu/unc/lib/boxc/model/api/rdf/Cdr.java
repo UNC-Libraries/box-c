@@ -26,20 +26,8 @@ public class Cdr {
     public static final Resource NAMESPACE = createResource( NS );
 
     /** Default sort for the display of a collection. */
-    public static final Property collectionDefaultSort = createProperty(
-            "http://cdr.unc.edu/definitions/model#collectionDefaultSort" );
-
-    /** Default to show works only for a collection */
-    public static final Property collectionShowWorksOnly = createProperty(
-            "http://cdr.unc.edu/definitions/model#collectionShowWorksOnly" );
-
-    /** Default view type for a collection. (list or gallery) */
-    public static final Property collectionDefaultViewType = createProperty(
-            "http://cdr.unc.edu/definitions/model#collectionDefaultViewType" );
-
-    /** Name of the view to show by default on a collection record page. */
-    public static final Property collectionDefaultView = createProperty(
-            "http://cdr.unc.edu/definitions/model#collectionDefaultView" );
+    public static final Property collectionDefaultDisplaySettings = createProperty(
+            "http://cdr.unc.edu/definitions/model#collectionDefaultDisplaySettings" );
 
     /** Name of a view to show on this collections record page. Repeatable. */
     public static final Property collectionShowView = createProperty(
