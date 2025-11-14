@@ -16,10 +16,10 @@
         <fieldset>
             <legend>Display Type:</legend>
             <p>
-                <input type="radio" id="list_view" name="display_type" value="list" <%= (metadata.viewType === undefined || metadata.viewType == 'list') ? "checked" : "" %> />
+                <input type="radio" id="list_view" name="display_type" value="list-display" <%= (metadata.viewType === undefined || metadata.viewType == 'list-display') ? "checked" : "" %> />
                 <label for="list_view">List View</label>
 
-                <input type="radio" id="gallery_view" name="display_type" value="gallery" <%= (metadata.viewType == 'gallery') ? "checked" : "" %> />
+                <input type="radio" id="gallery_view" name="display_type" value="gallery-display" <%= (metadata.viewType == 'gallery-display') ? "checked" : "" %> />
                 <label for="gallery_view">Gallery View</label>
             </p>
         </fieldset>
