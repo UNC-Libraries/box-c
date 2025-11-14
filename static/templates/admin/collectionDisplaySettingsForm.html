@@ -1,25 +1,32 @@
 <iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<%
+// Settings, if present, are double encoded
+var settings = { sortType: 'default,normal', displayType: 'list-display', worksOnly: false };
+if (metadata.collectionDisplaySettings !== undefined) {
+    settings = JSON.parse(metadata.collectionDisplaySettings)
+}
+%>
 <form id="edit_collection_display_settings" class="edit_form edit_collection_display_settings_form">
     <div class="form_field">
         <label for="sort_type">Sort Type:</label>
         <select id="sort_type" name="sort_type">
-            <option value="default,normal" <%= (metadata.sort === undefined || metadata.sort === 'default,normal') ? "selected" : "" %>>Sort by Relevance</option>
-            <option value="title,normal" <%= (metadata.sort == 'title,normal') ? "selected" : "" %>>Title A-Z</option>
-            <option value="title,reverse" <%= (metadata.sort == 'title,reverse') ? "selected" : "" %>>Title Z-A</option>
-            <option value="dateCreated,normal" <%= (metadata.sort == 'dateCreated,normal') ? "selected" : "" %>>Date Created (newest)</option>
-            <option value="dateCreated,reverse" <%= (metadata.sort == 'dateCreated,reverse') ? "selected" : "" %>>Date Created (oldest)</option>
-            <option value="dateAdded,normal" <%= (metadata.sort == 'dateAdded,normal') ? "selected" : "" %>>Date Deposited (newest)</option>
-            <option value="dateAdded,reverse" <≈>Date Deposited (oldest)</option>
+            <option value="default,normal" <%= (settings.sortType === 'default,normal') ? "selected" : "" %>>Sort by Relevance</option>
+            <option value="title,normal" <%= (settings.sortType == 'title,normal') ? "selected" : "" %>>Title A-Z</option>
+            <option value="title,reverse" <%= (settings.sortType == 'title,reverse') ? "selected" : "" %>>Title Z-A</option>
+            <option value="dateCreated,normal" <%= (settings.sortType == 'dateCreated,normal') ? "selected" : "" %>>Date Created (newest)</option>
+            <option value="dateCreated,reverse" <%= (settings.sortType == 'dateCreated,reverse') ? "selected" : "" %>>Date Created (oldest)</option>
+            <option value="dateAdded,normal" <%= (settings.sortType == 'dateAdded,normal') ? "selected" : "" %>>Date Deposited (newest)</option>
+            <option value="dateAdded,reverse" <%= (settings.sortType == 'dateAdded,reverse') ? "selected" : "" %>>Date Deposited (oldest)</option>
         </select>
     </div>
     <div class="form_field">
         <fieldset>
             <legend>Display Type:</legend>
             <p>
-                <input type="radio" id="list_view" name="display_type" value="list-display" <%= (metadata.viewType === undefined || metadata.viewType == 'list-display') ? "checked" : "" %> />
+                <input type="radio" id="list_view" name="display_type" value="list-display" <%= (settings.displayType == 'list-display') ? "checked" : "" %> />
                 <label for="list_view">List View</label>
 
-                <input type="radio" id="gallery_view" name="display_type" value="gallery-display" <%= (metadata.viewType == 'gallery-display') ? "checked" : "" %> />
+                <input type="radio" id="gallery_view" name="display_type" value="gallery-display" <%= (settings.displayType == 'gallery-display') ? "checked" : "" %> />
                 <label for="gallery_view">Gallery View</label>
             </p>
         </fieldset>
@@ -28,7 +35,7 @@
         <fieldset>
             <legend>Display Works Only:</legend>
             <p>
-                <input type="checkbox" id="display_works_only" name="display_works_only" <%= (metadata.showWorksOnly == 'true') ? "checked" : "" %> />
+                <input type="checkbox" id="display_works_only" name="display_works_only" <%= (settings.worksOnly) ? "checked" : "" %> />
                 <label for="display_works_only">Works only?</label>
             </p>
         </fieldset>

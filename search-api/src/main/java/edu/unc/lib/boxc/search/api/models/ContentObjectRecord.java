@@ -108,6 +108,8 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 
     String getStreamingUrl();
 
+    String getCollectionDisplaySettings();
+
     List<String> getLocation();
 
     List<String> getGenre();

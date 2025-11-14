@@ -28,6 +28,7 @@
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setCollectionDisplayPropertiesFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
                 <ref bean="setAspaceRefIdFilter" />
                 <ref bean="setContentStatusFilter" />
@@ -164,6 +165,17 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
+                <ref bean="setContentStatusFilter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="solrCollectionDisplayUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setCollectionDisplayPropertiesFilter" />
                 <ref bean="setContentStatusFilter" />
             </list>
         </property>
@@ -330,6 +342,9 @@
     </bean>
 
     <bean id="setStreamingPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingPropertiesFilter">
+    </bean>
+
+    <bean id="setCollectionDisplayPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetCollectionDisplayPropertiesFilter">
     </bean>
 
     <bean id="setAspaceRefIdFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAspaceRefIdFilter">
@@ -541,6 +556,12 @@
         <property name="addDocumentMode" value="false" />
     </bean>
 
+    <bean id="updateCollectionDisplayPropertiesType"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrCollectionDisplayUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
     <bean id="updateAspaceRefIdAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAspaceRefIdUpdatePipeline" />
@@ -581,6 +602,7 @@
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
         <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesUrl" />
         <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesType" />
+        <entry key="UPDATE_COLLECTION_DISPLAY_PROPERTIES" value-ref="updateCollectionDisplayPropertiesType" />
     </util:map>
     
     <bean id="dipDataLoader"

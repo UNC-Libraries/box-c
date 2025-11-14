@@ -41,6 +41,7 @@ public class IndexingActionUtil {
             EnumSet.of(IndexingActionType.ADD,
                     IndexingActionType.UPDATE_DESCRIPTION,
                     IndexingActionType.UPDATE_ACCESS,
+                    IndexingActionType.UPDATE_COLLECTION_DISPLAY_PROPERTIES,
                     IndexingActionType.UPDATE_PATH,
                     IndexingActionType.UPDATE_DATASTREAMS,
                     IndexingActionType.UPDATE_WORK_FILES,
