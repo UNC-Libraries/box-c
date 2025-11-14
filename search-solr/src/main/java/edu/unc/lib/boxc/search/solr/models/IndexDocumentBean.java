@@ -6,6 +6,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_IDS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ASPACE_REF_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_DISPLAY_SETTINGS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
@@ -349,6 +350,15 @@ public class IndexDocumentBean {
 
     public List<String> getKeyword() {
         return (List<String>) fields.get(KEYWORD.getSolrField());
+    }
+
+    public String getCollectionDisplaySettings() {
+        return (String) fields.get(COLLECTION_DISPLAY_SETTINGS.getSolrField());
+    }
+
+    @Field
+    public void setCollectionDisplaySettings(String collectionDisplaySettings) {
+        fields.put(COLLECTION_DISPLAY_SETTINGS.getSolrField(), collectionDisplaySettings);
     }
 
     @Field

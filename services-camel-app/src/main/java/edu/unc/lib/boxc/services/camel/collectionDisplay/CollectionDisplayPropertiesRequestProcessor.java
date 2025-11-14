@@ -11,7 +11,8 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesSerializationHelper;
-
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private AccessControlService aclService;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws IOException {
@@ -46,6 +48,9 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
 
         repositoryObjectFactory.createExclusiveRelationship(
                 collection, Cdr.collectionDefaultDisplaySettings, objectMapper.writeValueAsString(collectionSettings));
+
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid,
+                IndexingActionType.UPDATE_COLLECTION_DISPLAY_PROPERTIES);
     }
 
     private String validate(CollectionDisplayPropertiesRequest request, PID pid) {
@@ -80,5 +85,9 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }
