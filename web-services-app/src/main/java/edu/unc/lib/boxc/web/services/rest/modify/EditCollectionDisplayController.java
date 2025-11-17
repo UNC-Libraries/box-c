@@ -50,7 +50,7 @@ public class EditCollectionDisplayController {
         accessControlService.assertHasAccess("Insufficient permissions to get collection display properties for " + id,
                 pid, principals, Permission.viewHidden);
 
-        // check if object is a FileObject
+        // check if object is a CollectionObject
         var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
         if (!(repositoryObject instanceof CollectionObject)) {
             throw new InvalidOperationForObjectType("Cannot get collection display properties of type " +

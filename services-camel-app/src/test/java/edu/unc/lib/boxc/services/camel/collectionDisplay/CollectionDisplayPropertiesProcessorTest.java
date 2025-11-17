@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.services.camel.collectionDisplay;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -15,6 +14,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesSerializationHelper;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +46,8 @@ public class CollectionDisplayPropertiesProcessorTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
 
     @BeforeEach
     public void init() throws IOException {
@@ -55,6 +56,7 @@ public class CollectionDisplayPropertiesProcessorTest {
         processor.setAclService(accessControlService);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
+        processor.setIndexingMessageSender(indexingMessageSender);
 
         collectionPid = TestHelper.makePid();
         collectionObject = mock(CollectionObject.class);
@@ -73,7 +75,7 @@ public class CollectionDisplayPropertiesProcessorTest {
 
         assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
-                    .assertHasAccess(any(), any(PID.class), any(), eq(Permission.editDescription));
+                    .assertHasAccess(any(), any(PID.class), any(), eq(Permission.viewHidden));
             processor.process(exchange);
         });
     }
@@ -85,7 +87,7 @@ public class CollectionDisplayPropertiesProcessorTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a collection object")).when(repositoryObjectLoader)
-                    .getFileObject(eq(anotherPid));
+                    .getCollectionObject(eq(anotherPid));
             processor.process(exchange);
         });
     }
@@ -96,7 +98,8 @@ public class CollectionDisplayPropertiesProcessorTest {
         processor.process(exchange);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(collectionObject), eq(Cdr.collectionDefaultDisplaySettings), eq("{displayType:gallery-display,sortType:default,normal,worksOnly:true}"));
+                eq(collectionObject), eq(Cdr.collectionDefaultDisplaySettings),
+                eq("{\"displayType\":\"gallery-display\",\"sortType\":\"default,normal\",\"worksOnly\":true}"));
     }
 
     @Test
@@ -111,7 +114,7 @@ public class CollectionDisplayPropertiesProcessorTest {
         processor.process(exchange_update);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(collectionObject), eq(Cdr.collectionDefaultDisplaySettings), eq("{displayType:list-display,sortType:title,reverse,worksOnly:false}"));
+                eq(collectionObject), eq(Cdr.collectionDefaultDisplaySettings), eq("{\"displayType\":\"list-display\",\"sortType\":\"title,reverse\",\"worksOnly\":false}"));
     }
 
     private Exchange createRequestExchange(String id, String displayType, String sortType, boolean worksOnly) throws IOException {

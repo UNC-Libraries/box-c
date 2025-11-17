@@ -222,6 +222,8 @@ public class SerializationUtilTest extends Assertions {
 
     @Test
     public void testMetadataToMapFileObject() throws Exception {
+        var collDisplaySettings = "{\"displayType\":\"gallery-display\",\"sortType\":\"default,normal\",\"worksOnly\":true}";
+
         md.setFileFormatCategory(List.of("image"));
         md.setFileFormatType(List.of("jpeg"));
         md.setFileFormatDescription(List.of("JPEG"));
@@ -234,6 +236,7 @@ public class SerializationUtilTest extends Assertions {
         md.setTimestamp(timestamp);
         md.setRollup("parentid");
         md.set_version_(1L);
+        md.setCollectionDisplaySettings(collDisplaySettings);
 
         String groupJson = SerializationUtil.metadataToJSON(md, new AccessGroupSetImpl("group1"));
         Map<String, Object> groupMap = getResultMap(groupJson);
@@ -248,6 +251,7 @@ public class SerializationUtilTest extends Assertions {
         assertEquals(timestamp.getTime(), groupMap.get(SearchFieldKey.TIMESTAMP.getUrlParam()));
         assertEquals("parentid", groupMap.get("rollup"));
         assertEquals(1, groupMap.get("_version_"));
+        assertEquals(collDisplaySettings, groupMap.get(SearchFieldKey.COLLECTION_DISPLAY_SETTINGS.getUrlParam()));
     }
 
     @SuppressWarnings("unchecked")
