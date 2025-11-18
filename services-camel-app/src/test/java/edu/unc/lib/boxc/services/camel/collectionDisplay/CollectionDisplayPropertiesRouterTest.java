@@ -3,40 +3,51 @@ package edu.unc.lib.boxc.services.camel.collectionDisplay;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesSerializationHelper;
-import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
-import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
-import edu.unc.lib.boxc.services.camel.streaming.StreamingPropertiesRequestProcessor;
-import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-public class CollectionDisplayPropertiesRouterTest extends CamelSpringTestSupport {
-    private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+@ExtendWith(MockitoExtension.class)
+public class CollectionDisplayPropertiesRouterTest extends CamelTestSupport {
+    private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Produce("direct:start")
     protected ProducerTemplate template;
 
-    @BeanInject("collectionDisplayPropertiesRequestProcessor")
+    @Mock
     private CollectionDisplayPropertiesRequestProcessor processor;
 
     @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/collection-display-context.xml");
+    protected RouteBuilder createRouteBuilder() {
+        var router = new CollectionDisplayPropertiesRouter();
+        router.setCollectionDisplayPropertiesRequestProcessor(processor);
+        String endpointUri = "direct:start";
+        router.setCollectionDisplayPropertiesRequestStream(endpointUri);
+        return router;
+    }
+
+    private void createContext(String routeName) throws Exception {
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
+        });
+        context.start();
     }
 
     @Test
     public void requestSentTest() throws Exception {
-        TestHelper.createContext(context, "DcrCollectionDisplayProperties");
+        createContext("DcrCollectionDisplayProperties");
         var pid = TestHelper.makePid();
 
         var request = new CollectionDisplayPropertiesRequest();

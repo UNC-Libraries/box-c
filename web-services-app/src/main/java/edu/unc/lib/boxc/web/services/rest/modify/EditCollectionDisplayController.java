@@ -31,6 +31,9 @@ import java.util.Map;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+/**
+ * Controller for setting default display properties on a CollectionObject
+ */
 @Controller
 public class EditCollectionDisplayController {
     private static final Logger log = LoggerFactory.getLogger(EditCollectionDisplayController.class);

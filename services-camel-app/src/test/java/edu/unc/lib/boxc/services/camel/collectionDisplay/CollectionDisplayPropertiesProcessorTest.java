@@ -73,9 +73,9 @@ public class CollectionDisplayPropertiesProcessorTest {
     public void testCollectionDisplayPropertiesUpdateNoPermission() throws IOException {
         var exchange = createRequestExchange(collectionPid.getId(), "gallery-display", "default,normal", false);
 
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(any(), any(PID.class), any(), eq(Permission.editViewSettings));
         assertThrows(AccessRestrictionException.class, () -> {
-            doThrow(new AccessRestrictionException()).when(accessControlService)
-                    .assertHasAccess(any(), any(PID.class), any(), eq(Permission.viewHidden));
             processor.process(exchange);
         });
     }

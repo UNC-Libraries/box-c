@@ -20,6 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.HashMap;
 
+/**
+ * Processing requests to edit default display properties on a CollectionObject
+ */
 public class CollectionDisplayPropertiesRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
@@ -33,8 +36,8 @@ public class CollectionDisplayPropertiesRequestProcessor implements Processor {
         var agent = request.getAgent();
         var pid = PIDs.get(request.getId());
 
-        aclService.assertHasAccess("User does not have permission to set streaming properties",
-                pid, agent.getPrincipals(), Permission.viewHidden);
+        aclService.assertHasAccess("User does not have permission to set default collection display properties",
+                pid, agent.getPrincipals(), Permission.editViewSettings);
 
         assertValid(request, pid);
 

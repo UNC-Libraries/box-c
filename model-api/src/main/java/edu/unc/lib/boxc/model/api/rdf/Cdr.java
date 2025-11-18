@@ -25,7 +25,7 @@ public class Cdr {
     /** The namespace of the vocabulary as a resource */
     public static final Resource NAMESPACE = createResource( NS );
 
-    /** Default sort for the display of a collection. */
+    /** JSON representation of settings for default sort, default view and show works only when displaying collection. */
     public static final Property collectionDefaultDisplaySettings = createProperty(
             "http://cdr.unc.edu/definitions/model#collectionDefaultDisplaySettings" );
 
