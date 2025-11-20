@@ -359,6 +359,16 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
+    <bean id="collectionDisplayPropertiesRequestSender" class="edu.unc.lib.boxc.operations.jms.collectionDisplay.CollectionDisplayPropertiesRequestSender">
+         <property name="jmsTemplate" ref="collectionDisplayPropertiesRequestJmsTemplate"/>
+    </bean>
+
+    <bean id="collectionDisplayPropertiesRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.collectiondisplayproperties.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
     <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="aclFactory" ref="uncachedInheritedAclFactory" />

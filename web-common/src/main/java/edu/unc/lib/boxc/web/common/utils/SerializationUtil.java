@@ -66,11 +66,11 @@ public class SerializationUtil {
         Map<String, Object> entryMap = new HashMap<>();
         Map<String, Object> metadataMap = metadataToMap(node.getMetadata(), groups);
         entryMap.put("entry", metadataMap);
-        if (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().size() == 0) {
+        if (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().isEmpty()) {
             entryMap.put("isTopLevel", "true");
         }
 
-        if (node.getChildren().size() > 0) {
+        if (!node.getChildren().isEmpty()) {
             List<Object> childrenList = new ArrayList<>(node.getChildren().size());
             entryMap.put("children", childrenList);
             for (int i = 0; i < node.getChildren().size(); i++) {
@@ -200,6 +200,10 @@ public class SerializationUtil {
 
         if (metadata.getCountMap() != null && !metadata.getCountMap().isEmpty()) {
             result.put("counts", metadata.getCountMap());
+        }
+
+        if (metadata.getCollectionDisplaySettings() != null) {
+            result.put("collectionDisplaySettings", metadata.getCollectionDisplaySettings());
         }
 
         if (metadata.getStreamingUrl() != null) {

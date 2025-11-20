@@ -19,6 +19,7 @@ public enum SearchFieldKey {
     ANCESTOR_PATH("ancestorPath", "path", "Folders"),
     ASPACE_REF_ID("aspaceRefId", "aspaceRefId", "ArchivesSpace Ref ID"),
     CITATION("citation", "citation", "Citation"),
+    COLLECTION_DISPLAY_SETTINGS("collectionDisplaySettings", "collectionDisplaySettings", "Collection Display Settings"),
     COLLECTION_ID("collectionId", "collectionId", "Archival Collection ID"),
     CONTENT_STATUS("contentStatus", "contentStatus", "Content Status"),
     CONTRIBUTOR("contributor", "contributor", "Contributor"),

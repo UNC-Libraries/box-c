@@ -283,6 +283,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getCollectionDisplaySettings() {
+        return this.representative.getCollectionDisplaySettings();
+    }
+
+    @Override
     public String getAspaceRefId() {
         return this.representative.getAspaceRefId();
     }
