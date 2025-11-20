@@ -52,7 +52,7 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
-    import { mapActions } from 'pinia';
+    import {mapActions} from 'pinia';
     import { useAccessStore } from '../stores/access';
     import adminUnit from '@/components/full_record/adminUnit.vue';
     import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
@@ -74,6 +74,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import notFound from '@/components/error_pages/notFound.vue';
     import get from 'axios';
     import analyticsUtils from '../mixins/analyticsUtils';
+    import displayUtils from '../mixins/displayUtils';
     import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
@@ -131,7 +132,7 @@ Top level component for full record pages with searching/browsing, including Adm
             notFound
         },
 
-        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, displayUtils, errorUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -181,6 +182,10 @@ Top level component for full record pages with searching/browsing, including Adm
             ...mapActions(useAccessStore, ['removePossibleFacetFields']),
 
             retrieveSearchResults() {
+                console.log('ding')
+                if (this.container_info.resourceType === 'Collection') {
+                    this.setCollectionDisplayDefaults();
+                }
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
                 get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
@@ -237,6 +242,29 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
             },
 
+            setCollectionDisplayDefaults() {
+                const collSettings = this.container_info.briefObject.collectionDisplaySettings;
+                if (collSettings !== undefined) {
+                    const settings = JSON.parse(collSettings);
+                    const userSetBrowseType = sessionStorage.getItem('user-set-browse-type');
+                    const browseType = sessionStorage.getItem('browse-type');
+                    let displayType = (userSetBrowseType === 'true' && browseType != null) ? browseType : settings.displayType;
+
+                    this.$router.replace({
+                        path: this.$route.path,
+                        query: this.urlParams({
+                            sort: settings.sortType,
+                            browse_type: displayType,
+                            works_only: settings.worksOnly
+                        })
+                    }).catch((e) => {
+                        if (this.nonDuplicateNavigationError(e)) {
+                            throw e;
+                        }
+                    });
+                }
+            },
+
             hasSearchQuery() {
                 let query_params = this.$route.query;
                 return Object.keys(query_params).some(key => query_params[key]
@@ -272,11 +300,22 @@ Top level component for full record pages with searching/browsing, including Adm
 
         created() {
             this.getBriefObject().then(() => {
+               if (this.container_info.resourceType === 'Collection') {
+                    this.setCollectionDisplayDefaults();
+               }
+
                 if (this.needsSearchResults) {
                     this.retrieveSearchResults();
                 }
             });
-        }
+        },
+
+       /* updated() {
+            if (this.$route.params.id === this.container_metadata.id && this.container_metadata.type === 'Collection') {
+                console.log(this.$route.params.id);
+                this.setCollectionDisplayDefaults();
+            }
+        }*/
     }
 </script>
 

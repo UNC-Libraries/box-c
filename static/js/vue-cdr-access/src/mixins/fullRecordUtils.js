@@ -54,10 +54,8 @@ export default {
                 return false;
             }
             // For File objects, content is not restricted if the user can at least download low res files
-            if (this.resourceType === 'File' && this.hasDownloadAccess(record)) {
-                return false;
-            }
-            return true;
+            return !(this.resourceType === 'File' && this.hasDownloadAccess(record));
+
         },
 
         contentObjectRecord() {

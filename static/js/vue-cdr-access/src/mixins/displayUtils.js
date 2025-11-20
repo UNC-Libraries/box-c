@@ -14,6 +14,7 @@ export default {
                     browse_type = null;
                 }
             }
+
             if (browse_type) {
                 return `/record/${id}?browse_type=${browse_type}`;
             } else {
