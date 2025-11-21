@@ -97,6 +97,10 @@ export default {
             return `${param}` in params;
         },
 
+        /**
+         * Retrieves current UI display settings. Useful for comparing route with a collections default settings
+         * @returns {{sortType: *, displayType: string|*, worksOnly: *}}
+         */
         getCurrentDisplayParams() {
             return {
                 sortType: this.$route.query.sort,
