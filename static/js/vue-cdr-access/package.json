@@ -47,7 +47,7 @@
         "babel-jest": "^29.7.0",
         "babel-plugin-transform-import-meta": "^2.3.2",
         "babel-plugin-transform-vite-meta-env": "^1.0.3",
-        "caniuse-lite": "^1.0.30001717",
+        "caniuse-lite": "^1.0.30001756",
         "jest-environment-jsdom": "^29.7.0",
         "jest-localstorage-mock": "^2.4.26",
         "moxios": "^0.4.0",

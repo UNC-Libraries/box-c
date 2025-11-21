@@ -189,6 +189,8 @@ Top level component for full record pages with searching/browsing, including Adm
 
             retrieveSearchResults() {
                 if (this.container_info.resourceType === 'Collection') {
+                    // If there are custom settings they should replace the current route before search results
+                    // are retrieved, avoiding a double API call.
                     this.setCollectionDisplayDefaults();
                 }
 
@@ -251,7 +253,6 @@ Top level component for full record pages with searching/browsing, including Adm
 
             setCollectionDisplayDefaults() {
                 const collSettings = this.container_info.briefObject.collectionDisplaySettings;
-
                 if (collSettings === undefined) {
                     console.log('no collection display settings. Skipping');
                     return;
@@ -261,18 +262,16 @@ Top level component for full record pages with searching/browsing, including Adm
                 const userSetBrowseType = sessionStorage.getItem('user-set-browse-type');
                 const browseType = sessionStorage.getItem('browse-type');
 
+                // Override collection settings with user setting
                 if (userSetBrowseType === 'true' && browseType != null) {
                     console.log('has user settings browseType');
                     collSettingsObj.displayType = browseType;
-                    console.log(collSettingsObj.displayType);
                 }
 
                 if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
                     console.log('skipping collection display settings');
                     return;
                 }
-
-                console.log('Updating collection display settings and routing');
 
                 this.$router.replace({
                     path: this.$route.path,
