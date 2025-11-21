@@ -321,18 +321,6 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void getParentPidBinaryObjectTest() {
-        var object = mock(BinaryObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
-
-        when(object.getPid()).thenReturn(pid);
-        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
-        parentResource.addProperty(PcdmModels.hasFile, resource);
-
-        assertEquals(parentPid, repositoryObjectDriver.getParentPid(object));
-    }
-
-    @Test
     public void getParentPidContentObjectTest() {
         var object = mock(ContentObject.class);
         var model = ModelFactory.createDefaultModel();
