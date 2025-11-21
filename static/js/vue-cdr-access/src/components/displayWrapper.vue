@@ -197,7 +197,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
                 get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
-                    console.log('getting results');
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.facet_list = response.data.facetFields;
@@ -254,7 +253,6 @@ Top level component for full record pages with searching/browsing, including Adm
             setCollectionDisplayDefaults() {
                 const collSettings = this.container_info.briefObject.collectionDisplaySettings;
                 if (collSettings === undefined) {
-                    console.log('no collection display settings. Skipping');
                     return;
                 }
 
@@ -264,12 +262,10 @@ Top level component for full record pages with searching/browsing, including Adm
 
                 // Override collection settings with user setting
                 if (userSetBrowseType === 'true' && browseType != null) {
-                    console.log('has user settings browseType');
                     collSettingsObj.displayType = browseType;
                 }
 
                 if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
-                    console.log('skipping collection display settings');
                     return;
                 }
 
