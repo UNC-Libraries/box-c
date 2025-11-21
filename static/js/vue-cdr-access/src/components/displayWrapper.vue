@@ -52,6 +52,7 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
+    import isEqual from 'lodash.isequal';
     import {mapActions} from 'pinia';
     import { useAccessStore } from '../stores/access';
     import adminUnit from '@/components/full_record/adminUnit.vue';
@@ -82,6 +83,11 @@ Top level component for full record pages with searching/browsing, including Adm
     const FACETS_REMOVE_ADMIN_UNIT = [ 'unit' ];
     const FACETS_REMOVE_COLLECTION_AND_CHILDREN = [ 'unit', 'collection' ];
     const GET_SEARCH_RESULTS = ['AdminUnit', 'Collection', 'Folder'];
+    const DEFAULT_COLLECTION_SETTINGS = {
+        displayType: 'list-display',
+        sortType: 'default,normal',
+        worksOnly: false,
+    };
 
     export default {
         name: 'displayWrapper',
@@ -182,13 +188,14 @@ Top level component for full record pages with searching/browsing, including Adm
             ...mapActions(useAccessStore, ['removePossibleFacetFields']),
 
             retrieveSearchResults() {
-                console.log('ding')
                 if (this.container_info.resourceType === 'Collection') {
                     this.setCollectionDisplayDefaults();
                 }
+
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
                 get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
+                    console.log('getting results');
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.facet_list = response.data.facetFields;
@@ -244,25 +251,41 @@ Top level component for full record pages with searching/browsing, including Adm
 
             setCollectionDisplayDefaults() {
                 const collSettings = this.container_info.briefObject.collectionDisplaySettings;
-                if (collSettings !== undefined) {
-                    const settings = JSON.parse(collSettings);
-                    const userSetBrowseType = sessionStorage.getItem('user-set-browse-type');
-                    const browseType = sessionStorage.getItem('browse-type');
-                    let displayType = (userSetBrowseType === 'true' && browseType != null) ? browseType : settings.displayType;
 
-                    this.$router.replace({
-                        path: this.$route.path,
-                        query: this.urlParams({
-                            sort: settings.sortType,
-                            browse_type: displayType,
-                            works_only: settings.worksOnly
-                        })
-                    }).catch((e) => {
-                        if (this.nonDuplicateNavigationError(e)) {
-                            throw e;
-                        }
-                    });
+                if (collSettings === undefined) {
+                    console.log('no collection display settings. Skipping');
+                    return;
                 }
+
+                let collSettingsObj = JSON.parse(collSettings);
+                const userSetBrowseType = sessionStorage.getItem('user-set-browse-type');
+                const browseType = sessionStorage.getItem('browse-type');
+
+                if (userSetBrowseType === 'true' && browseType != null) {
+                    console.log('has user settings browseType');
+                    collSettingsObj.displayType = browseType;
+                    console.log(collSettingsObj.displayType);
+                }
+
+                if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
+                    console.log('skipping collection display settings');
+                    return;
+                }
+
+                console.log('Updating collection display settings and routing');
+
+                this.$router.replace({
+                    path: this.$route.path,
+                    query: this.urlParams({
+                        sort: collSettingsObj.sortType,
+                        browse_type: collSettingsObj.displayType,
+                        works_only: collSettingsObj.worksOnly
+                    })
+                }).catch((e) => {
+                    if (this.nonDuplicateNavigationError(e)) {
+                        throw e;
+                    }
+                });
             },
 
             hasSearchQuery() {
@@ -300,10 +323,6 @@ Top level component for full record pages with searching/browsing, including Adm
 
         created() {
             this.getBriefObject().then(() => {
-               if (this.container_info.resourceType === 'Collection') {
-                    this.setCollectionDisplayDefaults();
-               }
-
                 if (this.needsSearchResults) {
                     this.retrieveSearchResults();
                 }
