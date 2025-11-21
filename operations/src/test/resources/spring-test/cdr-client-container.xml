@@ -148,11 +148,6 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="destroyProxyService" class="edu.unc.lib.boxc.operations.impl.destroy.DestroyProxyService" >
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-    
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
