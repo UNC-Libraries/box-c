@@ -191,9 +191,13 @@ public class DepositStatusFactory extends AbstractJedisFactory {
      */
     public void queueDeposit(String depositUUID) {
         connectWithRetries((jedis) -> {
-            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
-                    DepositState.queued.name());
-            jedis.zadd(RedisWorkerConstants.DEPOSIT_QUEUE, System.nanoTime(), depositUUID);
+            if (jedis.zscore(RedisWorkerConstants.DEPOSIT_QUEUE, depositUUID) == null) {
+                jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
+                        DepositState.queued.name());
+                jedis.zadd(RedisWorkerConstants.DEPOSIT_QUEUE, System.nanoTime(), depositUUID);
+            } else {
+                log.warn("Deposit {} already exists in the deposit queue", depositUUID);
+            }
         });
     }
 
