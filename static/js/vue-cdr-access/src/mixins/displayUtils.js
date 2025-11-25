@@ -19,6 +19,11 @@ export default {
             } else {
                 return `/record/${id}`;
             }
+        },
+
+        getBrowseSettings() {
+            const settings = sessionStorage.getItem('browse_settings');
+            return (settings != null) ? JSON.parse(settings) : null;
         }
     }
 }

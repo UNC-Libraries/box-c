@@ -1,12 +1,13 @@
 import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import { createTestingPinia } from '@pinia/testing';
+import cloneDeep from 'lodash.clonedeep';
 import { useAccessStore } from '@/stores/access';
 import displayWrapper from '@/components/displayWrapper.vue';
-import moxios from "moxios";
-import {createI18n} from "vue-i18n";
-import translations from "@/translations";
-import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
+import moxios from 'moxios';
+import {createI18n} from 'vue-i18n';
+import translations from '@/translations';
+import { response, briefObjectData } from '../fixtures/displayWrapperFixtures';
 
 let wrapper, router, store;
 
@@ -34,6 +35,7 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         store.$reset();
+        sessionStorage.clear();
     });
 
     function mountApp(data_overrides = {}) {
@@ -320,6 +322,234 @@ describe('displayWrapper.vue', () => {
         expect(store.possibleFacetFields.length).toEqual(num_facets);
         expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
+    });
+
+    it("uses the custom display settings for collection's with custom display settings", async () => {
+        const mockRoute = {
+            path: '/test',
+            query: { rows: 20 }
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+
+        const collDisplayBriefObject = cloneDeep(briefObjectData);
+        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"dateAdded,normal","worksOnly":true}';
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: collDisplayBriefObject,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).toHaveBeenCalledWith({
+            path: '/test',
+            query: {
+                browse_type: "gallery-display",
+                facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher",
+                rows: 20,
+                sort: "dateAdded,normal",
+                start: 0,
+                works_only: true
+            }
+        });
+    });
+
+    it("overrides the custom display settings for collection with user specified view settings", async () => {
+        const mockRoute = {
+            path: '/test',
+            query: { rows: 20 }
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+
+        const collDisplayBriefObject = cloneDeep(briefObjectData);
+        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"dateAdded,normal","worksOnly":true}';
+
+        // User specified setting, saved to session storage.
+        sessionStorage.setItem('browse_settings', JSON.stringify({
+            user_set: true,
+            browse_type: 'list-display'
+        }));
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: collDisplayBriefObject,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).toHaveBeenCalledWith({
+            path: '/test',
+            query: {
+                browse_type: "list-display",
+                facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher",
+                rows: 20,
+                sort: "dateAdded,normal",
+                start: 0,
+                works_only: true
+            }
+        });
+    });
+
+    it("does not update the display if the collection settings are the same as the system default settings", async () => {
+        const mockRoute = {
+            query: {}
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+
+        const collDisplayBriefObject = cloneDeep(briefObjectData);
+        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"list-display","sortType":"default,normal","worksOnly":false}';
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: collDisplayBriefObject,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).not.toHaveBeenCalled();
+    });
+
+    it("does not update the display if the collection settings are the same as the current route's settings", async () => {
+        const mockRoute = {
+            query: {
+                browse_type: 'gallery-display',
+                sort: 'default,normal',
+                works_only: true
+            }
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+        const collDisplayBriefObject = cloneDeep(briefObjectData);
+        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"default,normal","worksOnly":true}';
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: collDisplayBriefObject,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).not.toHaveBeenCalled();
+    });
+
+    it("uses the application default settings for displaying collection's without custom display settings", async () => {
+        const mockRoute = {
+            query: {}
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: briefObjectData,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).not.toHaveBeenCalled();
     });
 
     it("shows a 'not found' message if no data is returned", async () => {
