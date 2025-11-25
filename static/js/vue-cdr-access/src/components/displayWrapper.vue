@@ -52,6 +52,7 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
+    import isEqual from 'lodash.isequal';
     import { mapActions } from 'pinia';
     import { useAccessStore } from '../stores/access';
     import adminUnit from '@/components/full_record/adminUnit.vue';
@@ -78,9 +79,14 @@ Top level component for full record pages with searching/browsing, including Adm
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
 
-    const FACETS_REMOVE_ADMIN_UNIT = [ 'unit' ];
-    const FACETS_REMOVE_COLLECTION_AND_CHILDREN = [ 'unit', 'collection' ];
+    const FACETS_REMOVE_ADMIN_UNIT = ['unit'];
+    const FACETS_REMOVE_COLLECTION_AND_CHILDREN = ['unit', 'collection'];
     const GET_SEARCH_RESULTS = ['AdminUnit', 'Collection', 'Folder'];
+    const DEFAULT_COLLECTION_SETTINGS = {
+        displayType: 'list-display',
+        sortType: 'default,normal',
+        worksOnly: false,
+    };
 
     export default {
         name: 'displayWrapper',
@@ -159,7 +165,10 @@ Top level component for full record pages with searching/browsing, including Adm
             isBrowseDisplay() {
                 let browse_type = this.urlParams().browse_type;
                 if (browse_type === undefined) {
-                    browse_type = sessionStorage.getItem('browse-type');
+                    const displaySettings = sessionStorage.getItem('browse_type');
+                    if (displaySettings != null) {
+                        browse_type = displaySettings;
+                    }
                 }
                 return browse_type === 'gallery-display';
             },
@@ -181,6 +190,12 @@ Top level component for full record pages with searching/browsing, including Adm
             ...mapActions(useAccessStore, ['removePossibleFacetFields']),
 
             retrieveSearchResults() {
+                if (this.container_info.resourceType === 'Collection') {
+                    // If there are custom settings they should replace the current route before search results
+                    // are retrieved, avoiding a double API call.
+                    this.setCollectionDisplayDefaults();
+                }
+
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
                 get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
@@ -235,6 +250,38 @@ Top level component for full record pages with searching/browsing, including Adm
                 } else {
                     return '(no collection)';
                 }
+            },
+
+            setCollectionDisplayDefaults() {
+                const collSettings = this.container_info.briefObject.collectionDisplaySettings;
+                if (collSettings === undefined) {
+                    return;
+                }
+
+                let collSettingsObj = JSON.parse(collSettings);
+                const displaySettings = sessionStorage.getItem('browse_type');
+
+                // Override collection settings with user setting
+                if (displaySettings != null) {
+                    collSettingsObj.displayType = displaySettings;
+                }
+
+                if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
+                    return;
+                }
+
+                this.$router.replace({
+                    path: this.$route.path,
+                    query: this.urlParams({
+                        sort: collSettingsObj.sortType,
+                        browse_type: collSettingsObj.displayType,
+                        works_only: collSettingsObj.worksOnly
+                    })
+                }).catch((e) => {
+                    if (this.nonDuplicateNavigationError(e)) {
+                        throw e;
+                    }
+                });
             },
 
             hasSearchQuery() {

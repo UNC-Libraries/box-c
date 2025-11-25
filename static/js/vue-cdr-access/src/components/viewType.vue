@@ -17,7 +17,8 @@ Buttons for switching display modes in a search result between gallery and list 
 </template>
 
 <script>
-    import routeUtils from "../mixins/routeUtils";
+    import routeUtils from '../mixins/routeUtils';
+
     export default {
         name: 'viewType',
 
@@ -32,7 +33,7 @@ Buttons for switching display modes in a search result between gallery and list 
         watch: {
             '$route.query': {
                 handler(params) {
-                    this.browse_type = params.browse_type;
+                    this.setBrowseType(params);
                 },
                 deep: true
             }
@@ -61,19 +62,23 @@ Buttons for switching display modes in a search result between gallery and list 
                         throw e;
                     }
                 });
-                sessionStorage.setItem('browse-type', this.browse_type);
-            }
+
+                sessionStorage.setItem('browse_type',  this.browse_type);
+            },
+
+            setBrowseType(params) {
+                if (this.paramExists('browse_type', params)) {
+                    this.browse_type = params.browse_type;
+                } else {
+                    const stored_browse_type = sessionStorage.getItem('browse_type');
+                    this.browse_type = (stored_browse_type != null) ? stored_browse_type : 'list-display';
+                }
+            },
         },
 
         mounted() {
             let current_url_params = this.urlParams();
-
-            if (this.paramExists('browse_type', current_url_params)) {
-                this.browse_type = current_url_params.browse_type;
-                sessionStorage.setItem('browse-type', this.browse_type);
-            } else {
-                this.browse_type = sessionStorage.getItem('browse-type');
-            }
+            this.setBrowseType(current_url_params);
         }
     }
 </script>

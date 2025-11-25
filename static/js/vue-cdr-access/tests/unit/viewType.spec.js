@@ -42,6 +42,7 @@ describe('viewType.vue', () => {
 
     afterEach(() => {
         store.$reset();
+        sessionStorage.clear();
         wrapper = null;
         router = null;
     });
@@ -59,14 +60,13 @@ describe('viewType.vue', () => {
 
     it("sets the browse type in sessionStorage when clicked", async () => {
         await router.push('/record/1234?browse_type=list-display');
-        const KEY = 'browse-type';
         await btns[1].trigger('click');
         await flushPromises();
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'gallery-display');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith('browse_type', 'gallery-display');
 
         await btns[0].trigger('click');
         await flushPromises();
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith("browse_type", 'list-display');
     });
 
     it("highlights the correct selected browse type", async () => {
