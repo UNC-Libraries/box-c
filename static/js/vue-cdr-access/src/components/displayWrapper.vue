@@ -75,7 +75,6 @@ Top level component for full record pages with searching/browsing, including Adm
     import notFound from '@/components/error_pages/notFound.vue';
     import get from 'axios';
     import analyticsUtils from '../mixins/analyticsUtils';
-    import displayUtils from '../mixins/displayUtils';
     import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
@@ -138,7 +137,7 @@ Top level component for full record pages with searching/browsing, including Adm
             notFound
         },
 
-        mixins: [analyticsUtils, displayUtils, errorUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -166,9 +165,9 @@ Top level component for full record pages with searching/browsing, including Adm
             isBrowseDisplay() {
                 let browse_type = this.urlParams().browse_type;
                 if (browse_type === undefined) {
-                    const displaySettings = this.getBrowseSettings();
-                    if (displaySettings != null && displaySettings.user_set) {
-                        browse_type = displaySettings.browse_type;
+                    const displaySettings = sessionStorage.getItem('browse_type');
+                    if (displaySettings != null) {
+                        browse_type = displaySettings;
                     }
                 }
                 return browse_type === 'gallery-display';
@@ -260,11 +259,11 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
 
                 let collSettingsObj = JSON.parse(collSettings);
-                const displaySettings = this.getBrowseSettings();
+                const displaySettings = sessionStorage.getItem('browse_type');
 
                 // Override collection settings with user setting
-                if (displaySettings != null && displaySettings.user_set) {
-                    collSettingsObj.displayType = displaySettings. browse_type;
+                if (displaySettings != null) {
+                    collSettingsObj.displayType = displaySettings;
                 }
 
                 if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {

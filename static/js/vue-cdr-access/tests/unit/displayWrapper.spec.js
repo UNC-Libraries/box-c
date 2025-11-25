@@ -388,10 +388,7 @@ describe('displayWrapper.vue', () => {
         collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"dateAdded,normal","worksOnly":true}';
 
         // User specified setting, saved to session storage.
-        sessionStorage.setItem('browse_settings', JSON.stringify({
-            user_set: true,
-            browse_type: 'list-display'
-        }));
+        sessionStorage.setItem('browse_type', 'list-display');
 
         wrapper = mount(displayWrapper, {
             global: {

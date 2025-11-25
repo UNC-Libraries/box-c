@@ -18,11 +18,11 @@ Buttons for switching display modes in a search result between gallery and list 
 
 <script>
     import routeUtils from '../mixins/routeUtils';
-    import displayUtils from '../mixins/displayUtils';
+
     export default {
         name: 'viewType',
 
-        mixins: [displayUtils, routeUtils],
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -63,20 +63,15 @@ Buttons for switching display modes in a search result between gallery and list 
                     }
                 });
 
-                sessionStorage.setItem('browse_settings', JSON.stringify({
-                    browse_type: this.browse_type,
-                    user_set: true
-                }));
+                sessionStorage.setItem('browse_type',  this.browse_type);
             },
 
             setBrowseType(params) {
                 if (this.paramExists('browse_type', params)) {
                     this.browse_type = params.browse_type;
                 } else {
-                    const stored_browse_settings = this.getBrowseSettings();
-                    if (stored_browse_settings != null) {
-                        this.browse_type = stored_browse_settings.browse_type;
-                    }
+                    const stored_browse_type = sessionStorage.getItem('browse_type');
+                    this.browse_type = (stored_browse_type != null) ? stored_browse_type : 'list-display';
                 }
             },
         },

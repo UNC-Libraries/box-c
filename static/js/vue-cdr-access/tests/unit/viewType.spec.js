@@ -62,17 +62,11 @@ describe('viewType.vue', () => {
         await router.push('/record/1234?browse_type=list-display');
         await btns[1].trigger('click');
         await flushPromises();
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith("browse_settings", JSON.stringify({
-            browse_type: 'gallery-display',
-            user_set: true
-        }));
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith('browse_type', 'gallery-display');
 
         await btns[0].trigger('click');
         await flushPromises();
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith("browse_settings", JSON.stringify({
-            browse_type: 'list-display',
-            user_set: true
-        }));
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith("browse_type", 'list-display');
     });
 
     it("highlights the correct selected browse type", async () => {
