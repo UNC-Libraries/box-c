@@ -107,7 +107,7 @@ public class DepositCoordinator implements MessageListener {
                 LOG.debug("No next deposit to start");
             } else {
                 if (activeDeposits.isDepositActive(nextDepositId) ||
-                        depositStatusFactory.getState(nextDepositId).equals(DepositState.running)) {
+                        DepositState.running.equals(depositStatusFactory.getState(nextDepositId))) {
                     LOG.warn("Skipping deposit {}, deposit is already running", nextDepositId);
                 } else {
                     LOG.info("Starting next deposit: {}", nextDepositId);
