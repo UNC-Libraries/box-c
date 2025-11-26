@@ -61,6 +61,7 @@
         <cdr.version>6.0-SNAPSHOT</cdr.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         <jp24u.version>1.0-SNAPSHOT</jp24u.version>
+        <mp44u.version>1.0-SNAPSHOT</mp44u.version>
         
         <spring.version>6.2.11</spring.version>
         <spring.ws.version>4.1.0</spring.ws.version>
@@ -160,6 +161,7 @@
         <module>web-services-app</module>
         <module>integration</module>
         <module>jp24u</module>
+        <module>mp44u</module>
     </modules>
 
     <reporting>
@@ -512,6 +514,11 @@
                 <groupId>edu.unc.lib</groupId>
                 <artifactId>jp24u</artifactId>
                 <version>${jp24u.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib</groupId>
+                <artifactId>mp44u</artifactId>
+                <version>${mp44u.version}</version>
             </dependency>
             <dependency>
                 <groupId>fi.solita.clamav</groupId>
