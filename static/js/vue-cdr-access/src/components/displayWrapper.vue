@@ -164,12 +164,6 @@ Top level component for full record pages with searching/browsing, including Adm
         computed: {
             isBrowseDisplay() {
                 let browse_type = this.urlParams().browse_type;
-                if (browse_type === undefined) {
-                    const displaySettings = sessionStorage.getItem('browse_type');
-                    if (displaySettings != null) {
-                        browse_type = displaySettings;
-                    }
-                }
                 return browse_type === 'gallery-display';
             },
 
@@ -258,15 +252,9 @@ Top level component for full record pages with searching/browsing, including Adm
                     return;
                 }
 
-                let collSettingsObj = JSON.parse(collSettings);
-                const displaySettings = sessionStorage.getItem('browse_type');
-
-                // Override collection settings with user setting
-                if (displaySettings != null) {
-                    collSettingsObj.displayType = displaySettings;
-                }
-
-                if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) || isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
+                const collSettingsObj = JSON.parse(collSettings);
+                if (isEqual(collSettingsObj, DEFAULT_COLLECTION_SETTINGS) ||
+                    isEqual(collSettingsObj, this.getCurrentDisplayParams())) {
                     return;
                 }
 

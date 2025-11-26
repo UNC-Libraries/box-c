@@ -35,7 +35,6 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         store.$reset();
-        sessionStorage.clear();
     });
 
     function mountApp(data_overrides = {}) {
@@ -366,60 +365,6 @@ describe('displayWrapper.vue', () => {
             path: '/test',
             query: {
                 browse_type: "gallery-display",
-                facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher",
-                rows: 20,
-                sort: "dateAdded,normal",
-                start: 0,
-                works_only: true
-            }
-        });
-    });
-
-    it("overrides the custom display settings for collection with user specified view settings", async () => {
-        const mockRoute = {
-            path: '/test',
-            query: { rows: 20 }
-        }
-        const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
-        }
-
-        const collDisplayBriefObject = cloneDeep(briefObjectData);
-        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"dateAdded,normal","worksOnly":true}';
-
-        // User specified setting, saved to session storage.
-        sessionStorage.setItem('browse_type', 'list-display');
-
-        wrapper = mount(displayWrapper, {
-            global: {
-                plugins: [i18n, createTestingPinia({
-                    stubActions: false
-                })],
-                mocks: {
-                    $route: mockRoute,
-                    $router: mockRouter
-                }
-            },
-            data() {
-                return {
-                    container_name: '',
-                    container_info: collDisplayBriefObject,
-                    record_count: 0,
-                    record_list: [],
-                    uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    filter_parameters: {}
-                }
-            }
-        });
-        store = useAccessStore();
-
-        wrapper.vm.retrieveSearchResults();
-        await flushPromises();
-
-        expect(mockRouter.replace).toHaveBeenCalledWith({
-            path: '/test',
-            query: {
-                browse_type: "list-display",
                 facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher",
                 rows: 20,
                 sort: "dateAdded,normal",

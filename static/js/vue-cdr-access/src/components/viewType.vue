@@ -62,16 +62,12 @@ Buttons for switching display modes in a search result between gallery and list 
                         throw e;
                     }
                 });
-
-                sessionStorage.setItem('browse_type',  this.browse_type);
             },
 
             setBrowseType(params) {
+                this.browse_type = 'list-display';
                 if (this.paramExists('browse_type', params)) {
                     this.browse_type = params.browse_type;
-                } else {
-                    const stored_browse_type = sessionStorage.getItem('browse_type');
-                    this.browse_type = (stored_browse_type != null) ? stored_browse_type : 'list-display';
                 }
             },
         },
