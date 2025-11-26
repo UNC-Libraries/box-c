@@ -19,12 +19,10 @@ public class DepositRegisterHandler implements DepositOperationHandler {
         String depositId = opMessage.getDepositId();
         LOG.info("Registering deposit {}", depositId);
 
-        if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
-            try {
-                depositStatusFactory.queueDeposit(depositId);
-            } finally {
-                depositStatusFactory.removeSupervisorLock(depositId);
-            }
+        try {
+            depositStatusFactory.queueDeposit(depositId);
+        } finally {
+            depositStatusFactory.removeSupervisorLock(depositId);
         }
     }
 

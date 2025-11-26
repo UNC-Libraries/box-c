@@ -55,18 +55,20 @@ public class DepositCoordinator implements MessageListener {
         try {
             opMessage = depositOperationMessageService.fromJson(message);
             LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
-            switch(opMessage.getAction()) {
-            case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
-            case PAUSE -> depositPauseHandler.handleMessage(opMessage);
-            case RESUME -> depositResumeHandler.handleMessage(opMessage);
-            case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
-            case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
-            case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
-            default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
+            if (depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), opMessage.getUsername())) {
+                switch(opMessage.getAction()) {
+                    case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
+                    case PAUSE -> depositPauseHandler.handleMessage(opMessage);
+                    case RESUME -> depositResumeHandler.handleMessage(opMessage);
+                    case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
+                    case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
+                    case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
+                    default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
+                }
+                var depositState = depositStatusFactory.getState(opMessage.getDepositId());
+                updateActiveDeposits(opMessage.getDepositId(), depositState);
+                startNextDepositIfNeeded(opMessage.getDepositId(), depositState);
             }
-            var depositState = depositStatusFactory.getState(opMessage.getDepositId());
-            updateActiveDeposits(opMessage.getDepositId(), depositState);
-            startNextDepositIfNeeded(opMessage.getDepositId(), depositState);
         } catch (Exception e) {
             LOG.error("Error processing deposit operation message", e);
             if (opMessage != null) {

@@ -20,12 +20,10 @@ public class DepositPauseHandler implements DepositOperationHandler {
         String depositId = opMessage.getDepositId();
         LOG.info("Pausing deposit {}", depositId);
 
-        if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
-            try {
-                depositStatusFactory.setState(depositId, DepositState.paused);
-            } finally {
-                depositStatusFactory.removeSupervisorLock(depositId);
-            }
+        try {
+            depositStatusFactory.setState(depositId, DepositState.paused);
+        } finally {
+            depositStatusFactory.removeSupervisorLock(depositId);
         }
     }
 
