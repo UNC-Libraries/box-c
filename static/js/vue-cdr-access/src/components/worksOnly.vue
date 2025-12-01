@@ -69,7 +69,7 @@ and including all types with hierarchy retained.
             showWorks() {
                 this.works_only = !this.works_only;
 
-                let params = this.urlParams();
+                let params = this.urlParams({ user_set_params: true });
                 params.types = this.updateWorkType(this.works_only).types;
                 params.works_only = this.works_only;
 

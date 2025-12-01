@@ -56,7 +56,7 @@ Buttons for switching display modes in a search result between gallery and list 
             setMode(e) {
                 e.preventDefault();
                 this.browse_type = e.target.closest('button').id;
-                let update_params = { browse_type: encodeURIComponent(this.browse_type) };
+                let update_params = this.urlParams({ browse_type: this.browse_type, user_set_params: true });
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) }).catch((e) => {
                     if (e.name !== 'NavigationDuplicated') {
                         throw e;

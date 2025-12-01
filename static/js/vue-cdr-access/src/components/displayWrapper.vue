@@ -247,6 +247,10 @@ Top level component for full record pages with searching/browsing, including Adm
             },
 
             setCollectionDisplayDefaults() {
+                if (this.paramExists('user_set_params', this.urlParams())) {
+                    return
+                }
+
                 const collSettings = this.container_info.briefObject.collectionDisplaySettings;
                 if (collSettings === undefined) {
                     return;

@@ -374,6 +374,47 @@ describe('displayWrapper.vue', () => {
         });
     });
 
+    it("uses user specified settings for collection's with custom display settings", async () => {
+        const mockRoute = {
+            path: '/test',
+            query: { rows: 20, user_set_params: true }
+        }
+        const mockRouter = {
+            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+        }
+
+        const collDisplayBriefObject = cloneDeep(briefObjectData);
+        collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"dateAdded,normal","worksOnly":true}';
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: {
+                    $route: mockRoute,
+                    $router: mockRouter
+                }
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_info: collDisplayBriefObject,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+                    filter_parameters: {}
+                }
+            }
+        });
+        store = useAccessStore();
+
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
+
+        expect(mockRouter.replace).not.toHaveBeenCalled()
+    });
+
     it("does not update the display if the collection settings are the same as the system default settings", async () => {
         const mockRoute = {
             query: {}

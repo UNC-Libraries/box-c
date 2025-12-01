@@ -51,10 +51,12 @@ describe('viewType.vue', () => {
         await btns[1].trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
 
         await btns[0].trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.browse_type).toEqual(encodeURIComponent('list-display'));
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
     it("highlights the correct selected browse type", async () => {
@@ -73,8 +75,10 @@ describe('viewType.vue', () => {
     it("sets browse_type from url, if present", async () => {
         await router.push('/record/1234?browse_type=list-display');
         expect(wrapper.vm.browse_type).toEqual('list-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
 
         await router.push('/record/1234?browse_type=gallery-display');
         expect(wrapper.vm.browse_type).toEqual('gallery-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
     });
 });
