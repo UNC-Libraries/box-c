@@ -17,7 +17,8 @@ Buttons for switching display modes in a search result between gallery and list 
 </template>
 
 <script>
-    import routeUtils from "../mixins/routeUtils";
+    import routeUtils from '../mixins/routeUtils';
+
     export default {
         name: 'viewType',
 
@@ -32,7 +33,7 @@ Buttons for switching display modes in a search result between gallery and list 
         watch: {
             '$route.query': {
                 handler(params) {
-                    this.browse_type = params.browse_type;
+                    this.setBrowseType(params);
                 },
                 deep: true
             }
@@ -55,25 +56,25 @@ Buttons for switching display modes in a search result between gallery and list 
             setMode(e) {
                 e.preventDefault();
                 this.browse_type = e.target.closest('button').id;
-                let update_params = { browse_type: encodeURIComponent(this.browse_type) };
+                let update_params = this.urlParams({ browse_type: this.browse_type, user_set_params: true });
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) }).catch((e) => {
                     if (e.name !== 'NavigationDuplicated') {
                         throw e;
                     }
                 });
-                sessionStorage.setItem('browse-type', this.browse_type);
-            }
+            },
+
+            setBrowseType(params) {
+                this.browse_type = 'list-display';
+                if (this.paramExists('browse_type', params)) {
+                    this.browse_type = params.browse_type;
+                }
+            },
         },
 
         mounted() {
             let current_url_params = this.urlParams();
-
-            if (this.paramExists('browse_type', current_url_params)) {
-                this.browse_type = current_url_params.browse_type;
-                sessionStorage.setItem('browse-type', this.browse_type);
-            } else {
-                this.browse_type = sessionStorage.getItem('browse-type');
-            }
+            this.setBrowseType(current_url_params);
         }
     }
 </script>

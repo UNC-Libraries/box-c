@@ -58,6 +58,7 @@ describe('browseSort.vue', () => {
 
     it("shows the default, 'Relevance', option when mounted with no sort specified", () => {
         expect(wrapper.vm.sort_order).toEqual('default,normal');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
     });
 
     it("updates the url when the dropdown changes for browsing", async () => {
@@ -65,6 +66,7 @@ describe('browseSort.vue', () => {
         wrapper.findAll('option')[2].setSelected();
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.sort).toEqual('title,reverse');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
         expect(wrapper.vm.sort_order).toEqual('title,reverse');
     });
 
@@ -73,6 +75,7 @@ describe('browseSort.vue', () => {
         wrapper_search.findAll('option')[2].setSelected();
         await flushPromises();
         expect(wrapper_search.vm.$router.currentRoute.value.query.sort).toEqual('title,reverse');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
         expect(wrapper_search.vm.sort_order).toEqual('title,reverse');
     });
 
@@ -84,6 +87,7 @@ describe('browseSort.vue', () => {
         await flushPromises();
         expect(wrapper_search.vm.sort_order).toEqual('title,reverse');
         expect(wrapper_search.vm.$route.path).toEqual('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
     afterEach(() => {
