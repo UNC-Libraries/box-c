@@ -115,7 +115,7 @@
         <jsp-api.version>4.0.0</jsp-api.version>
 
         <jedis.version>5.1.5</jedis.version>
-        <solr.version>9.8.0</solr.version>
+        <solr.version>9.8.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>5.5.0</jena.version>
 
@@ -824,11 +824,6 @@
             <dependency>
                 <groupId>org.apache.solr</groupId>
                 <artifactId>solr-solrj</artifactId>
-                <version>${solr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.solr</groupId>
-                <artifactId>solr-api</artifactId>
                 <version>${solr.version}</version>
             </dependency>
             
