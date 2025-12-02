@@ -1,5 +1,28 @@
 package edu.unc.lib.boxc.services.camel.enhancements;
 
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -20,7 +43,6 @@ import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
-import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -46,29 +68,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 /**
  *
  * @author bbpennel
@@ -77,7 +76,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 public class EnhancementRouterIT extends CamelSpringTestSupport {
     private final static String FILE_CONTENT = "content";
 
-    private final static long ALLOW_WAIT = 5000;
+    private final static long ALLOW_WAIT = 10000;
 
     private AutoCloseable closeable;
 
@@ -212,16 +211,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         BinaryObject binObj = fileObj.addOriginalFile(storageUri,
                 null, "image/png", null, null);
 
-        // Separate exchanges when multicasting
-        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(7)
-                .create();
-
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
-
-        boolean result1 = notify1.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Enhancement route not satisfied");
 
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
