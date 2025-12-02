@@ -64,7 +64,7 @@ public class FedoraContentController {
     private AccessControlService accessControlService;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
-    @CrossOrigin(originPatterns = "https://*.lib.unc.edu")
+    @CrossOrigin(origins = "*")
     public void getDefaultDatastream(@PathVariable("pid") String pid,
                                      @RequestParam(value = "dl", defaultValue = "false") boolean download,
                                      HttpServletRequest request, HttpServletResponse response) {
