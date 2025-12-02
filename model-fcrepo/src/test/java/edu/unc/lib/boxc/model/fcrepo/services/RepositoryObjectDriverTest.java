@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
@@ -320,18 +321,6 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void getParentPidBinaryObjectTest() {
-        var object = mock(BinaryObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
-
-        when(object.getPid()).thenReturn(pid);
-        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
-        parentResource.addProperty(PcdmModels.hasFile, resource);
-
-        assertEquals(parentPid, repositoryObjectDriver.getParentPid(object));
-    }
-
-    @Test
     public void getParentPidContentObjectTest() {
         var object = mock(ContentObject.class);
         var model = ModelFactory.createDefaultModel();
@@ -364,36 +353,23 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void getParentObjectTest() {
+    public void getParentObjectOriginalFileTest() {
         var object = mock(BinaryObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
-
-        when(object.getPid()).thenReturn(pid);
-        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
-        parentResource.addProperty(PcdmModels.hasFile, resource);
+        PID binPid = DatastreamPids.getOriginalFilePid(pid);
+        when(object.getPid()).thenReturn(binPid);
 
         repositoryObjectDriver.getParentObject(object);
-        verify(repoObjLoader).getRepositoryObject(eq(parentPid));
+        verify(repoObjLoader).getRepositoryObject(eq(pid));
     }
 
     @Test
-    public void fetchContainerTest() {
+    public void getParentObjectDepositManifestTest() {
         var object = mock(BinaryObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
+        PID binPid = DatastreamPids.getDepositManifestPid(pid, "manifest.xml");
+        when(object.getPid()).thenReturn(binPid);
 
-        when(object.getPid()).thenReturn(pid);
-        var parentResource = sparqlModel.getResource(parentPid.getRepositoryPath());
-        parentResource.addProperty(PcdmModels.hasFile, resource);
-
-        assertEquals(parentPid, repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
-    }
-
-    @Test
-    public void fetchContainerNullTest() {
-        var object = mock(BinaryObject.class);
-        when(object.getPid()).thenReturn(pid);
-
-        assertNull(repositoryObjectDriver.fetchContainer(object, PcdmModels.hasFile));
+        repositoryObjectDriver.getParentObject(object);
+        verify(repoObjLoader).getRepositoryObject(eq(pid));
     }
 
     @Test

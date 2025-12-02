@@ -12,9 +12,6 @@ import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.fcrepo.sparql.SparqlListingHelper;
 import org.apache.http.HttpStatus;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -180,36 +177,6 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     * Retrieves the parent container of the provided object following a parent to child relationship
-     *
-     * @param child repository object to retrieve the parent of.
-     * @param membershipRelation parent to child membership relation to use to
-     *            find the parent container.
-     * @return PID for the parent container
-     * @throws OrphanedObjectException thrown if the object does not have a
-     *             parent container.
-     */
-    public PID fetchContainer(RepositoryObject child, Property membershipRelation) {
-        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                membershipRelation, child.getPid().getRepositoryPath());
-
-        try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
-            ResultSet results = qexec.execSelect();
-
-            while (results.hasNext()) {
-                QuerySolution soln = results.nextSolution();
-                Resource res = soln.getResource("pid");
-
-                if (res != null) {
-                    return PIDs.get(res.getURI());
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Produces a list of PIDs for objects which are members of the provided object.
      *
      * @param obj the object
@@ -254,7 +221,11 @@ public class RepositoryObjectDriver {
      */
     public PID getParentPid(RepositoryObject obj) {
         if (obj instanceof BinaryObject) {
-            return fetchContainer(obj, PcdmModels.hasFile);
+            // Get the parent by removing the binary component from the path
+            PID binPid = obj.getPid();
+            String componentPath = binPid.getComponentPath();
+            String binPath = obj.getPid().getRepositoryPath();
+            return PIDs.get(binPath.substring(0, binPath.length() - componentPath.length() - 1));
         }
         if (obj instanceof ContentObject) {
             // For resources in the membership hierarchy, use reverse membership
