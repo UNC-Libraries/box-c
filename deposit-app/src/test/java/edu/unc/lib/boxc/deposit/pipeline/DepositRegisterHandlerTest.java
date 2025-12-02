@@ -41,24 +41,10 @@ public class DepositRegisterHandlerTest {
 
     @Test
     public void testSuccessfulRegistration() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
-
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testRegistrationFailsToAcquireLock() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(depositStatusFactory, never()).queueDeposit(anyString());
-        verify(depositStatusFactory, never()).removeSupervisorLock(anyString());
     }
 
     @Test

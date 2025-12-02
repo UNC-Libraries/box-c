@@ -68,15 +68,12 @@ public class DepositResumeHandlerTest {
     }
 
     public void testSuccessfulResumeFromAcceptableState(DepositState state) {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
-
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.state.name(), state.name());
         when(depositStatusFactory.get(DEPOSIT_ID)).thenReturn(depositStatus);
 
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(jobStatusFactory).clearStale(DEPOSIT_ID);
         verify(depositStatusFactory).deleteField(DEPOSIT_ID, DepositField.errorMessage);
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
@@ -85,32 +82,16 @@ public class DepositResumeHandlerTest {
 
     @Test
     public void testResumeFromInvalidState() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
-
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.state.name(), DepositState.running.name());
         when(depositStatusFactory.get(DEPOSIT_ID)).thenReturn(depositStatus);
 
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(jobStatusFactory, never()).clearStale(DEPOSIT_ID);
         verify(depositStatusFactory, never()).deleteField(DEPOSIT_ID, DepositField.errorMessage);
         verify(depositStatusFactory, never()).queueDeposit(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testResumeFailsToAcquireLock() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(jobStatusFactory, never()).clearStale(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).deleteField(DEPOSIT_ID, DepositField.errorMessage);
-        verify(depositStatusFactory, never()).queueDeposit(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

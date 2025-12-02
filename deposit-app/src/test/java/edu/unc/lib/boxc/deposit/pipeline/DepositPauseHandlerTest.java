@@ -41,24 +41,10 @@ public class DepositPauseHandlerTest {
 
     @Test
     public void testSuccessfulPause() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
-
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.paused);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testPauseFailsToAcquireLock() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.paused);
-        verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

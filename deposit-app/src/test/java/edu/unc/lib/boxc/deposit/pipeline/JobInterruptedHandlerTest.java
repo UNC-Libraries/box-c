@@ -45,7 +45,6 @@ public class JobInterruptedHandlerTest {
 
     @Test
     public void testJobInterruptedRunningDeposit() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
 
         handler.handleMessage(operationMessage);
@@ -56,25 +55,12 @@ public class JobInterruptedHandlerTest {
 
     @Test
     public void testJobInterruptedNonRunningDeposit() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.paused);
 
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testFailsToAcquireLock() {
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(depositStatusFactory, never()).getState(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

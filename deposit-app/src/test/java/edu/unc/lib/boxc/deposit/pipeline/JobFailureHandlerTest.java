@@ -60,7 +60,6 @@ public class JobFailureHandlerTest {
     @Test
     public void testJobFailedExceptionWithDuration() {
         operationMessage.setExceptionClassName(JobFailedException.class.getName());
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
 
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.startTime.name(), "1234567890");
@@ -68,7 +67,6 @@ public class JobFailureHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -78,7 +76,6 @@ public class JobFailureHandlerTest {
     @Test
     public void testJobFailedExceptionWithoutStartTime() {
         operationMessage.setExceptionClassName(JobFailedException.class.getName());
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
 
         Map<String, String> depositStatus = new HashMap<>();
         // No start time in status
@@ -86,7 +83,6 @@ public class JobFailureHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory, never()).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
@@ -96,7 +92,6 @@ public class JobFailureHandlerTest {
     @Test
     public void testOtherExceptionWithFullyQualifiedClassName() {
         operationMessage.setExceptionClassName("java.lang.IllegalArgumentException");
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
 
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.startTime.name(), "1234567890");
@@ -104,24 +99,10 @@ public class JobFailureHandlerTest {
 
         handler.handleMessage(operationMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
         verify(depositStatusFactory).fail(DEPOSIT_ID, "Failed while performing service IllegalArgumentException");
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
-    }
-
-    @Test
-    public void testFailsToAcquireLock() {
-        operationMessage.setExceptionClassName(JobFailedException.class.getName());
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
-
-        handler.handleMessage(operationMessage);
-
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
-        verify(depositStatusFactory, never()).fail(eq(DEPOSIT_ID), any());
-        verify(depositEmailHandler, never()).sendDepositResults(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
