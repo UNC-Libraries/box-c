@@ -41,9 +41,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -62,11 +64,12 @@ import java.util.Properties;
  * @author bbpennel
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = {
-        "file:src/main/webapp/WEB-INF/service-context.xml",
-        "file:src/main/webapp/WEB-INF/fcrepo-clients-context.xml",
-        "file:src/main/webapp/WEB-INF/deposit-jobs-context.xml",
-        "classpath:spring-test/full-pipeline-it-context.xml"
+@ContextHierarchy({
+        @ContextConfiguration("src/main/webapp/WEB-INF/service-context.xml"),
+        @ContextConfiguration("src/main/webapp/WEB-INF/fcrepo-clients-context.xml"),
+        @ContextConfiguration("src/main/webapp/WEB-INF/deposit-jobs-context.xml"),
+        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+        @ContextConfiguration("/spring-test/full-pipeline-it-context.xml")
 })
 public class FullPipelineIT {
     @TempDir
@@ -84,7 +87,7 @@ public class FullPipelineIT {
     private DepositStatusFactory depositStatusFactory;
     @Autowired
     private JobStatusFactory jobStatusFactory;
-    @Autowired
+    @Mock
     private PIDMinter pidminter;
     @Autowired
     private JedisPool jedisPool;

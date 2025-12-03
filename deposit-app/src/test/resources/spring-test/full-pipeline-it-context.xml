@@ -27,4 +27,49 @@
         <property name="depositJobMessageService" ref="depositJobMessageService" />
         <property name="pipelineStatusFactory" ref="pipelineStatusFactory" />
     </bean>
+
+    <bean id="jobSuccessHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.JobSuccessHandler" />
+    </bean>
+
+    <bean id="depositResumeHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.DepositResumeHandler" />
+    </bean>
+
+    <bean id="depositRegisterHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.DepositRegisterHandler" />
+    </bean>
+
+    <bean id="depositPauseHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.DepositPauseHandler" />
+    </bean>
+
+    <bean id="jobFailureHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.JobFailureHandler" />
+    </bean>
+
+    <bean id="jobInterruptedHandler" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.JobInterruptedHandler" />
+    </bean>
+
+    <bean id="activeDeposits" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.pipeline.ActiveDepositsService" />
+    </bean>
+
+    <bean id="depositStatusFactory" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory"/>
+    </bean>
+
+    <bean id="depositJobMessageFactory" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.jms.DepositJobMessageFactory"/>
+    </bean>
+
+    <bean id="depositJobMessageService" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService"/>
+    </bean>
+
+    <bean id="pipelineStatusFactory" class="org.mockito.Mockito" factory-method="mock" primary="true">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory"/>
+    </bean>
+
 </beans>
