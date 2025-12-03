@@ -22,12 +22,8 @@ public class JobInterruptedHandler implements DepositOperationHandler {
         LOG.info("Handling interruption for job {} in deposit {}: {}",
                 jobId, depositId, opMessage.getExceptionClassName());
 
-        try {
-            if (DepositState.running.equals(depositStatusFactory.getState(depositId))) {
-                depositStatusFactory.setState(depositId, DepositState.quieted);
-            }
-        } finally {
-            depositStatusFactory.removeSupervisorLock(depositId);
+        if (DepositState.running.equals(depositStatusFactory.getState(depositId))) {
+            depositStatusFactory.setState(depositId, DepositState.quieted);
         }
     }
 

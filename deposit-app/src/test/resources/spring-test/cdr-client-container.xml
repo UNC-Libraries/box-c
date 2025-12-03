@@ -198,25 +198,4 @@
     <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
-
-    <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.springframework.jms.core.JmsTemplate" />
-    </bean>
-
-    <bean id="depositJobMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessageService"/>
-
-    <bean id="activeDeposits" class="edu.unc.lib.boxc.deposit.pipeline.ActiveDepositsService"/>
-
-    <bean id="depositOperationMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService">
-        <property name="jmsTemplate" ref="jmsTemplate" />
-        <property name="destinationName" value="0" />
-    </bean>
-
-    <bean id="jobCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.JobCoordinator">
-        <property name="depositJobMessageService" ref="depositJobMessageService" />
-        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
-        <property name="depositPipelineStatusFactory" ref="pipelineStatusFactory" />
-        <property name="activeDeposits" ref="activeDeposits" />
-        <property name="jobStatusFactory" ref="jobStatusFactory" />
-    </bean>
 </beans>

@@ -45,7 +45,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -64,9 +63,11 @@ import java.util.Properties;
  * @author bbpennel
  */
 @ExtendWith(SpringExtension.class)
-@ContextHierarchy({
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/full-pipeline-it-context.xml")
+@ContextConfiguration(locations = {
+        "file:src/main/webapp/WEB-INF/service-context.xml",
+        "file:src/main/webapp/WEB-INF/fcrepo-clients-context.xml",
+        "file:src/main/webapp/WEB-INF/deposit-jobs-context.xml",
+        "classpath:spring-test/full-pipeline-it-context.xml"
 })
 public class FullPipelineIT {
     @TempDir
@@ -84,7 +85,7 @@ public class FullPipelineIT {
     private DepositStatusFactory depositStatusFactory;
     @Autowired
     private JobStatusFactory jobStatusFactory;
-    @Mock
+    @Autowired
     private PIDMinter pidminter;
     @Autowired
     private JedisPool jedisPool;

@@ -56,14 +56,14 @@ public class DepositCoordinator implements MessageListener {
             opMessage = depositOperationMessageService.fromJson(message);
             LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
             if (depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), opMessage.getUsername())) {
-                switch(opMessage.getAction()) {
-                    case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
-                    case PAUSE -> depositPauseHandler.handleMessage(opMessage);
-                    case RESUME -> depositResumeHandler.handleMessage(opMessage);
-                    case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
-                    case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
-                    case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
-                    default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
+                switch (opMessage.getAction()) {
+                case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
+                case PAUSE -> depositPauseHandler.handleMessage(opMessage);
+                case RESUME -> depositResumeHandler.handleMessage(opMessage);
+                case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
+                case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
+                case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
+                default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
                 }
                 var depositState = depositStatusFactory.getState(opMessage.getDepositId());
                 updateActiveDeposits(opMessage.getDepositId(), depositState);
@@ -76,6 +76,9 @@ public class DepositCoordinator implements MessageListener {
                 activeDeposits.markInactive(opMessage.getDepositId());
             }
         } finally {
+            if (opMessage != null) {
+                depositStatusFactory.removeSupervisorLock(opMessage.getDepositId());
+            }
             try {
                 message.acknowledge();
             } catch (JMSException e) {
@@ -89,7 +92,7 @@ public class DepositCoordinator implements MessageListener {
             LOG.debug("Marking deposit {} as active", depositId);
             activeDeposits.markActive(depositId);
         } else {
-            LOG.debug("Marking deposit {} as inactive", depositId);
+            LOG.debug("Marking deposit {} as inactive due to its state {}", depositId, depositState);
             activeDeposits.markInactive(depositId);
         }
     }
@@ -121,22 +124,17 @@ public class DepositCoordinator implements MessageListener {
 
     private void startDeposit(String depositId) {
         var depositStatus = depositStatusFactory.get(depositId);
-        var depositUser = depositStatus.get(DepositField.depositorName.name());
-        if (depositStatusFactory.addSupervisorLock(depositId, depositUser)) {
-            try {
-                activeDeposits.markActive(depositId);
-                depositStatusFactory.setState(depositId, DepositState.running);
-                assignStartTime(depositId, depositStatus);
+        try {
+            activeDeposits.markActive(depositId);
+            depositStatusFactory.setState(depositId, DepositState.running);
+            assignStartTime(depositId, depositStatus);
 
-                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
-                depositJobMessageService.sendDepositJobMessage(jobMessage);
-            } catch (Exception e) {
-                LOG.error("Error sending deposit job message for {}", depositId, e);
-                depositStatusFactory.fail(depositId);
-                activeDeposits.markInactive(depositId);
-            } finally {
-                depositStatusFactory.removeSupervisorLock(depositId);
-            }
+            var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
+            depositJobMessageService.sendDepositJobMessage(jobMessage);
+        } catch (Exception e) {
+            LOG.error("Error sending deposit job message for {}", depositId, e);
+            depositStatusFactory.fail(depositId);
+            activeDeposits.markInactive(depositId);
         }
     }
 
