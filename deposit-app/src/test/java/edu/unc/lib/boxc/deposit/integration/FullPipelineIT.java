@@ -65,9 +65,6 @@ import java.util.Properties;
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-        @ContextConfiguration("src/main/webapp/WEB-INF/service-context.xml"),
-        @ContextConfiguration("src/main/webapp/WEB-INF/fcrepo-clients-context.xml"),
-        @ContextConfiguration("src/main/webapp/WEB-INF/deposit-jobs-context.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/full-pipeline-it-context.xml")
 })
