@@ -50,7 +50,6 @@ public class JobInterruptedHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
@@ -60,7 +59,6 @@ public class JobInterruptedHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

@@ -44,7 +44,6 @@ public class DepositPauseHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.paused);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

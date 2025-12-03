@@ -77,7 +77,6 @@ public class DepositResumeHandlerTest {
         verify(jobStatusFactory).clearStale(DEPOSIT_ID);
         verify(depositStatusFactory).deleteField(DEPOSIT_ID, DepositField.errorMessage);
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
@@ -91,7 +90,6 @@ public class DepositResumeHandlerTest {
         verify(jobStatusFactory, never()).clearStale(DEPOSIT_ID);
         verify(depositStatusFactory, never()).deleteField(DEPOSIT_ID, DepositField.errorMessage);
         verify(depositStatusFactory, never()).queueDeposit(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

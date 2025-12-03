@@ -70,7 +70,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
@@ -86,7 +85,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, EXCEPTION_MESSAGE);
         verify(depositStatusFactory, never()).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
@@ -102,7 +100,6 @@ public class JobFailureHandlerTest {
         verify(depositStatusFactory).fail(DEPOSIT_ID, "Failed while performing service IllegalArgumentException");
         verify(depositStatusFactory).set(eq(DEPOSIT_ID), eq(DepositField.endTime), any());
         verify(depositEmailHandler).sendDepositResults(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test

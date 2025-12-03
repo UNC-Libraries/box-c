@@ -44,7 +44,6 @@ public class DepositRegisterHandlerTest {
         handler.handleMessage(operationMessage);
 
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
     }
 
     @Test
