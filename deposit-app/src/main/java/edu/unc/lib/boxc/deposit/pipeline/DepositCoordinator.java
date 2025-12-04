@@ -124,17 +124,20 @@ public class DepositCoordinator implements MessageListener {
 
     private void startDeposit(String depositId) {
         var depositStatus = depositStatusFactory.get(depositId);
-        try {
-            activeDeposits.markActive(depositId);
-            depositStatusFactory.setState(depositId, DepositState.running);
-            assignStartTime(depositId, depositStatus);
+        var depositUser = depositStatus.get(DepositField.depositorName.name());
+        if (depositStatusFactory.addSupervisorLock(depositId, depositUser)) {
+            try {
+                activeDeposits.markActive(depositId);
+                depositStatusFactory.setState(depositId, DepositState.running);
+                assignStartTime(depositId, depositStatus);
 
-            var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
-            depositJobMessageService.sendDepositJobMessage(jobMessage);
-        } catch (Exception e) {
-            LOG.error("Error sending deposit job message for {}", depositId, e);
-            depositStatusFactory.fail(depositId);
-            activeDeposits.markInactive(depositId);
+                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
+                depositJobMessageService.sendDepositJobMessage(jobMessage);
+            } catch (Exception e) {
+                LOG.error("Error sending deposit job message for {}", depositId, e);
+                depositStatusFactory.fail(depositId);
+                activeDeposits.markInactive(depositId);
+            }
         }
     }
 

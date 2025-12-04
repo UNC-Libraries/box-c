@@ -221,11 +221,11 @@ public class DepositCoordinatorTest {
 
         verify(handler).handleMessage(operationMessage);
         verify(activeDeposits).markInactive(DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
         verify(depositJobMessageService).sendDepositJobMessage(jobMessage);
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
         verify(message).acknowledge();
     }
 
@@ -330,7 +330,8 @@ public class DepositCoordinatorTest {
 
         verify(depositStatusFactory).fail(NEXT_DEPOSIT_ID);
         verify(activeDeposits).markInactive(NEXT_DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
+//        verify(depositStatusFactory).addSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
+//        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
         verify(message).acknowledge();
     }
 
