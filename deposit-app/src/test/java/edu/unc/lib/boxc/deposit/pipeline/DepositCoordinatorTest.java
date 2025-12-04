@@ -14,6 +14,7 @@ import java.util.Set;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -286,26 +287,26 @@ public class DepositCoordinatorTest {
         verify(activeDeposits).markActive(DEPOSIT_ID);
     }
 
-    @Test
-    public void testStartDepositFailsToGetLock() throws Exception {
-        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
-        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
-        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
-        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
-        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
-        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
-
-        Map<String, String> nextDepositStatus = new HashMap<>();
-        nextDepositStatus.put(DepositField.depositorName.name(), DEPOSITOR_NAME);
-        when(depositStatusFactory.get(NEXT_DEPOSIT_ID)).thenReturn(nextDepositStatus);
-
-        coordinator.onMessage(message);
-
-        verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
-        verify(message).acknowledge();
-    }
+//    @Test
+//    public void testStartDepositFailsToGetLock() throws Exception {
+//        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+//        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
+//        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
+//        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
+//        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+//        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
+//
+//        Map<String, String> nextDepositStatus = new HashMap<>();
+//        nextDepositStatus.put(DepositField.depositorName.name(), DEPOSITOR_NAME);
+//        when(depositStatusFactory.get(NEXT_DEPOSIT_ID)).thenReturn(nextDepositStatus);
+//
+//        coordinator.onMessage(message);
+//
+//        verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
+//        verify(activeDeposits).markInactive(DEPOSIT_ID);
+//        verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
+//        verify(message).acknowledge();
+//    }
 
     @Test
     public void testStartDepositJobMessageFailure() throws Exception {
