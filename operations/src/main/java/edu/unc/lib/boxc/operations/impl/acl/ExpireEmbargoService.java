@@ -4,14 +4,17 @@ import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.parseUTCToDate;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +22,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
@@ -29,12 +34,18 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -51,8 +62,14 @@ public class ExpireEmbargoService {
     private RepositoryObjectLoader repoObjLoader;
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
-    private SparqlQueryService sparqlQueryService;
+    private SolrSearchService searchService;
+    private AgentPrincipals agentPrincipals;
     private PremisLoggerFactory premisLoggerFactory;
+
+    private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.STATUS.name());
+    private static final int DEFAULT_PAGE_SIZE = 10000;
+    public static final String AGENT_NAME = "EmbargoExpirationAgent";
 
     private static final Timer timer = TimerFactory.createTimerForClass(ExpireEmbargoService.class);
 
@@ -70,7 +87,7 @@ public class ExpireEmbargoService {
         Collection<PID> pids = new ArrayList<>();
         PID currentPid = null;
 
-        if (resourceList.size() > 0) {
+        if (!resourceList.isEmpty()) {
             // remove all expired embargoes
             for (String rescUri: resourceList) {
                 FedoraTransaction tx = txManager.startTransaction();
@@ -113,36 +130,37 @@ public class ExpireEmbargoService {
         }
     }
 
-    private final static String EMBARGO_QUERY =
-            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
-                    "select ?resource\n" +
-                    "where {\n" +
-                    "  ?resource <http://cdr.unc.edu/definitions/acl#embargoUntil> ?date .\n" +
-                    "  FILTER (?date < \"%s\"^^xsd:dateTime)\n" +
-                    "}";
-
     private List<String> getEmbargoInfo() {
-        String today = DateTimeUtil.formatDateToUTC(new Date());
-        String query = String.format(EMBARGO_QUERY, today);
+        SearchState searchState = new SearchState();
+        searchState.setResultFields(SEARCH_FIELDS);
+        searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
+        searchState.setIgnoreMaxRows(true);
+        searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.STATUS, List.of(FacetConstants.EMBARGOED)));
+        SearchRequest request = new SearchRequest(searchState, agentPrincipals.getPrincipals());
+        request.setApplyCutoffs(false);
 
-        try (QueryExecution exec = sparqlQueryService.executeQuery(query)) {
-            ResultSet resultSet = exec.execSelect();
-            List<String> embargoedRescList = new ArrayList<>();
+        var response = searchService.getSearchResults(request);
+        List<ContentObjectRecord> embargoes = response.getResultList();
 
-            for (; resultSet.hasNext() ;) {
-                QuerySolution soln = resultSet.nextSolution();
-                Resource resc = soln.getResource("resource");
-                embargoedRescList.add(resc.getURI());
+        var today = new Date();
+        List<String> embargoedRescList = new ArrayList<>();
+
+        for (ContentObjectRecord contentObj : embargoes) {
+            var repoObj = repoObjLoader.getRepositoryObject(contentObj.getPid());
+            var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
+            var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString(),
+                    DateTimeFormatter.ISO_DATE_TIME);
+
+            ZonedDateTime zonedDateTime = embargoDate.atZone(ZoneId.systemDefault());
+            Instant embargoDateInstant = zonedDateTime.toInstant();
+            Date date = Date.from(embargoDateInstant);
+
+            if (today.after(date)) {
+                embargoedRescList.add(contentObj.getId());
             }
-            return embargoedRescList;
         }
-    }
 
-    /**
-     * @param sparqlQueryService the sparqlQueryService to set
-     */
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
+        return embargoedRescList;
     }
 
     /**
@@ -157,6 +175,18 @@ public class ExpireEmbargoService {
      */
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     *
+     * @param searchService the search service to set
+     */
+    public void setSearchService(SolrSearchService searchService) {
+        this.searchService = searchService;
+    }
+
+    public void setAccessGroups(AccessGroupSet accessGroups) {
+        this.agentPrincipals = new AgentPrincipalsImpl(AGENT_NAME, accessGroups);
     }
 
     /**
