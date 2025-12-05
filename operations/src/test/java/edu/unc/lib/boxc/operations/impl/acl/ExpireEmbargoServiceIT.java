@@ -8,14 +8,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -32,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -44,7 +49,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
@@ -54,6 +58,10 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -71,10 +79,12 @@ public class ExpireEmbargoServiceIT {
     private RepositoryObjectFactory repoObjFactory;
     @Mock
     private OperationsMessageSender operationsMessageSender;
+    @Mock
+    private SolrSearchService searchService;
     @Autowired
     private TransactionManager txManager;
     @Autowired
-    private SparqlQueryService sparqlQueryService;
+    private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -88,6 +98,8 @@ public class ExpireEmbargoServiceIT {
 
     private ContentRootObject contentRoot;
 
+    private SearchResultResponse results;
+
     @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
@@ -98,12 +110,15 @@ public class ExpireEmbargoServiceIT {
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setRepositoryObjectFactory(repoObjFactory);
         service.setTransactionManager(txManager);
-        service.setSparqlQueryService(sparqlQueryService);
         service.setPremisLoggerFactory(premisLoggerFactory);
+        service.setSearchService(searchService);
+        service.setAccessGroups(new AccessGroupSetImpl("agroup"));
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+
+        results = mock(SearchResultResponse.class);
     }
 
     @AfterEach
@@ -121,6 +136,11 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
+        md.setId(pid.getId());
+        md.setStatus(List.of(FacetConstants.EMBARGOED));
+        when(results.getResultList()).thenReturn(List.of(md));
+
         service.expireEmbargoes();
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -133,7 +153,6 @@ public class ExpireEmbargoServiceIT {
 
         assertMessageSent(pid);
     }
-
 
     @Test
     public void expireMultipleEmbargoesTest() throws Exception {
@@ -149,6 +168,14 @@ public class ExpireEmbargoServiceIT {
                 .model);
         PID pid2 = collObj2.getPid();
         treeIndexer.indexAll(baseAddress);
+
+        ContentObjectSolrRecord md1 = new ContentObjectSolrRecord();
+        md1.setId(pid1.getId());
+        md1.setStatus(List.of(FacetConstants.EMBARGOED));
+        ContentObjectSolrRecord md2 = new ContentObjectSolrRecord();
+        md2.setId(pid2.getId());
+        md2.setStatus(List.of(FacetConstants.EMBARGOED));
+        when(results.getResultList()).thenReturn(List.of(md1, md2));
 
         service.expireEmbargoes();
 
@@ -177,6 +204,8 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        when(results.getResultList()).thenReturn(Collections.emptyList());
+
         service.expireEmbargoes();
 
         // collection was not created with an embargo and should not have one
@@ -199,6 +228,12 @@ public class ExpireEmbargoServiceIT {
                 .model);
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
+
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
+        md.setId(pid.getId());
+        md.setStatus(List.of(FacetConstants.EMBARGOED));
+
+        when(results.getResultList()).thenReturn(List.of(md));
 
         service.expireEmbargoes();
 
