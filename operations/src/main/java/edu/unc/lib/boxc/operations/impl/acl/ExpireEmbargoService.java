@@ -185,6 +185,10 @@ public class ExpireEmbargoService {
         this.searchService = searchService;
     }
 
+    /**
+     *
+     * @param accessGroups groups for the embargo user
+     */
     public void setAccessGroups(AccessGroupSet accessGroups) {
         this.agentPrincipals = new AgentPrincipalsImpl(AGENT_NAME, accessGroups);
     }
