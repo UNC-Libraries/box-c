@@ -10,10 +10,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -54,6 +56,9 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -77,6 +82,8 @@ public class ExpireEmbargoServiceIT {
     @Autowired
     private TransactionManager txManager;
     @Autowired
+    private RepositoryObjectFactory repositoryObjectFactory;
+    @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private RepositoryInitializer repoInitializer;
@@ -88,6 +95,8 @@ public class ExpireEmbargoServiceIT {
     private ExpireEmbargoService service;
 
     private ContentRootObject contentRoot;
+
+    private SearchResultResponse results;
 
     @BeforeEach
     public void init() throws Exception {
@@ -123,6 +132,11 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
+        md.setId(pid.getId());
+        md.setStatus(List.of(FacetConstants.EMBARGOED));
+        when(results.getResultList()).thenReturn(List.of(md));
+
         service.expireEmbargoes();
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -151,6 +165,14 @@ public class ExpireEmbargoServiceIT {
         PID pid2 = collObj2.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        ContentObjectSolrRecord md1 = new ContentObjectSolrRecord();
+        md1.setId(pid1.getId());
+        md1.setStatus(List.of(FacetConstants.EMBARGOED));
+        ContentObjectSolrRecord md2 = new ContentObjectSolrRecord();
+        md2.setId(pid2.getId());
+        md2.setStatus(List.of(FacetConstants.EMBARGOED));
+        when(results.getResultList()).thenReturn(List.of(md1, md2));
+
         service.expireEmbargoes();
 
         RepositoryObject target1 = repoObjLoader.getRepositoryObject(pid1);
@@ -178,6 +200,8 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        when(results.getResultList()).thenReturn(Collections.emptyList());
+
         service.expireEmbargoes();
 
         // collection was not created with an embargo and should not have one
@@ -200,6 +224,12 @@ public class ExpireEmbargoServiceIT {
                 .model);
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
+
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
+        md.setId(pid.getId());
+        md.setStatus(List.of(FacetConstants.EMBARGOED));
+
+        when(results.getResultList()).thenReturn(List.of(md));
 
         service.expireEmbargoes();
 
