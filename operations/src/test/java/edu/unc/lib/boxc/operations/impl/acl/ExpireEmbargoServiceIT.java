@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -115,6 +117,8 @@ public class ExpireEmbargoServiceIT {
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+
+        results = mock(SearchResultResponse.class);
     }
 
     @AfterEach
