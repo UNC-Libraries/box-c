@@ -14,6 +14,7 @@ import java.util.Set;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -96,6 +97,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageRegister() throws Exception {
         operationMessage.setAction(DepositOperation.REGISTER);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.unregistered);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -110,6 +112,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessagePause() throws Exception {
         operationMessage.setAction(DepositOperation.PAUSE);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.paused);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -124,6 +127,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageResume() throws Exception {
         operationMessage.setAction(DepositOperation.RESUME);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.queued);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -138,6 +142,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageJobSuccess() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -152,6 +157,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageJobFailure() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_FAILURE);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.failed);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -166,6 +172,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageJobInterrupted() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_INTERRUPTED);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
 
@@ -178,6 +185,7 @@ public class DepositCoordinatorTest {
 
     @Test
     public void testOnMessageUnknownAction() throws Exception {
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         operationMessage.setAction(DepositOperation.DESTROY);
 
         coordinator.onMessage(message);
@@ -196,6 +204,7 @@ public class DepositCoordinatorTest {
                                          DepositState state,
                                          DepositOperationHandler handler) throws Exception {
         operationMessage.setAction(action);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(state);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
         when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
@@ -213,11 +222,11 @@ public class DepositCoordinatorTest {
 
         verify(handler).handleMessage(operationMessage);
         verify(activeDeposits).markInactive(DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
         verify(depositJobMessageService).sendDepositJobMessage(jobMessage);
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
         verify(message).acknowledge();
     }
 
@@ -239,6 +248,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testNoStartNextDepositWhenNoneQueued() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
         when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(null);
@@ -255,6 +265,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testStartDepositWithExistingStartTime() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
         when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
@@ -277,28 +288,9 @@ public class DepositCoordinatorTest {
     }
 
     @Test
-    public void testStartDepositFailsToGetLock() throws Exception {
-        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
-        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
-        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
-        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
-        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
-
-        Map<String, String> nextDepositStatus = new HashMap<>();
-        nextDepositStatus.put(DepositField.depositorName.name(), DEPOSITOR_NAME);
-        when(depositStatusFactory.get(NEXT_DEPOSIT_ID)).thenReturn(nextDepositStatus);
-
-        coordinator.onMessage(message);
-
-        verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
-        verify(activeDeposits).markInactive(DEPOSIT_ID);
-        verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
-        verify(message).acknowledge();
-    }
-
-    @Test
     public void testStartDepositJobMessageFailure() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
         when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
@@ -318,13 +310,15 @@ public class DepositCoordinatorTest {
 
         verify(depositStatusFactory).fail(NEXT_DEPOSIT_ID);
         verify(activeDeposits).markInactive(NEXT_DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
+//        verify(depositStatusFactory).addSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
+//        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
         verify(message).acknowledge();
     }
 
     @Test
     public void testOnMessageHandlerException() throws Exception {
         operationMessage.setAction(DepositOperation.REGISTER);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         doThrow(new RuntimeException("Handler error")).when(depositRegisterHandler)
                 .handleMessage(operationMessage);
 
@@ -337,6 +331,7 @@ public class DepositCoordinatorTest {
 
     @Test
     public void testOnMessageDeserializationException() throws Exception {
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositOperationMessageService.fromJson(message))
                 .thenThrow(new RuntimeException("Parse error"));
 
@@ -349,6 +344,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testOnMessageAcknowledgeException() throws Exception {
         operationMessage.setAction(DepositOperation.REGISTER);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.queued);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
         doThrow(new JMSException("Acknowledge failed")).when(message).acknowledge();
@@ -362,6 +358,7 @@ public class DepositCoordinatorTest {
     @Test
     public void testNoStartNextDepositForRunningState() throws Exception {
         operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
         when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.running);
         when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
 

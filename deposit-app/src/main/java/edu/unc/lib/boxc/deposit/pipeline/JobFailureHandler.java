@@ -28,22 +28,16 @@ public class JobFailureHandler implements DepositOperationHandler {
         String depositId = opMessage.getDepositId();
         String jobId = opMessage.getJobId();
 
-        if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
-            try {
-                LOG.debug("Job {} in deposit {} failed with exception: {}\n{}",
-                        jobId, depositId, opMessage.getExceptionMessage(), opMessage.getExceptionStackTrace());
-                if (isExceptionOfType(opMessage, JobFailedException.class)) {
-                    depositStatusFactory.fail(depositId, opMessage.getExceptionMessage());
-                } else {
-                    String serviceName = StringUtils.substringAfterLast(opMessage.getExceptionClassName(), ".");
-                    depositStatusFactory.fail(depositId, "Failed while performing service " + serviceName);
-                }
-                depositDuration(depositId, getDepositStatus(depositId));
-                depositEmailHandler.sendDepositResults(depositId);
-            } finally {
-                depositStatusFactory.removeSupervisorLock(depositId);
-            }
+        LOG.debug("Job {} in deposit {} failed with exception: {}\n{}",
+                jobId, depositId, opMessage.getExceptionMessage(), opMessage.getExceptionStackTrace());
+        if (isExceptionOfType(opMessage, JobFailedException.class)) {
+            depositStatusFactory.fail(depositId, opMessage.getExceptionMessage());
+        } else {
+            String serviceName = StringUtils.substringAfterLast(opMessage.getExceptionClassName(), ".");
+            depositStatusFactory.fail(depositId, "Failed while performing service " + serviceName);
         }
+        depositDuration(depositId, getDepositStatus(depositId));
+        depositEmailHandler.sendDepositResults(depositId);
     }
 
     private boolean isExceptionOfType(DepositOperationMessage opMessage, Class<?> exceptionType) {

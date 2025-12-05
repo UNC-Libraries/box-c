@@ -30,25 +30,20 @@ public class DepositResumeHandler implements DepositOperationHandler {
     public void handleMessage(DepositOperationMessage opMessage) {
         String depositId = opMessage.getDepositId();
         LOG.info("Resuming deposit {}", depositId);
-        if (depositStatusFactory.addSupervisorLock(depositId, opMessage.getUsername())) {
-            try {
-                var depositStatus = depositStatusFactory.get(depositId);
-                DepositState state = DepositState.valueOf(depositStatus.get(DepositField.state.name()));
 
-                if (!VALID_STATES.contains(state)) {
-                    LOG.warn("Cannot resume deposit {} from non-resumable state {}", depositId, state);
-                    return;
-                }
+        var depositStatus = depositStatusFactory.get(depositId);
+        DepositState state = DepositState.valueOf(depositStatus.get(DepositField.state.name()));
 
-                // Clear out the previous failed job if there was one
-                jobStatusFactory.clearStale(depositId);
-                depositStatusFactory.deleteField(depositId, DepositField.errorMessage);
-
-                depositStatusFactory.queueDeposit(depositId);
-            } finally {
-                depositStatusFactory.removeSupervisorLock(depositId);
-            }
+        if (!VALID_STATES.contains(state)) {
+            LOG.warn("Cannot resume deposit {} from non-resumable state {}", depositId, state);
+            return;
         }
+
+        // Clear out the previous failed job if there was one
+        jobStatusFactory.clearStale(depositId);
+        depositStatusFactory.deleteField(depositId, DepositField.errorMessage);
+
+        depositStatusFactory.queueDeposit(depositId);
     }
 
     @Override
