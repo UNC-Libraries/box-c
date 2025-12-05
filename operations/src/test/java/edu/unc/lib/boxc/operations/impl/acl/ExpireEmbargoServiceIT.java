@@ -44,7 +44,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
@@ -54,6 +53,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -71,10 +71,10 @@ public class ExpireEmbargoServiceIT {
     private RepositoryObjectFactory repoObjFactory;
     @Mock
     private OperationsMessageSender operationsMessageSender;
+    @Mock
+    private SolrSearchService searchService;
     @Autowired
     private TransactionManager txManager;
-    @Autowired
-    private SparqlQueryService sparqlQueryService;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -98,8 +98,8 @@ public class ExpireEmbargoServiceIT {
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setRepositoryObjectFactory(repoObjFactory);
         service.setTransactionManager(txManager);
-        service.setSparqlQueryService(sparqlQueryService);
         service.setPremisLoggerFactory(premisLoggerFactory);
+        service.setSearchService(searchService);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
@@ -133,7 +133,6 @@ public class ExpireEmbargoServiceIT {
 
         assertMessageSent(pid);
     }
-
 
     @Test
     public void expireMultipleEmbargoesTest() throws Exception {
