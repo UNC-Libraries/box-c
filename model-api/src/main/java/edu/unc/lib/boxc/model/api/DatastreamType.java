@@ -23,7 +23,8 @@ public enum DatastreamType {
     MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL),
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA("techmd_fits", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
-    TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL);
+    TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
+    VIDEO_ACCESS_COPY("video", "video/mp4", "mp4", null, EXTERNAL);
 
     private final String id;
     private final String mimetype;

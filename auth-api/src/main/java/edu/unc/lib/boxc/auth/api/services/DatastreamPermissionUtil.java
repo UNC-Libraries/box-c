@@ -24,6 +24,7 @@ public class DatastreamPermissionUtil {
         DS_PERMISSION_MAP.put(DatastreamType.FULLTEXT_EXTRACTION, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.JP2_ACCESS_COPY, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.AUDIO_ACCESS_COPY, Permission.viewAccessCopies);
+        DS_PERMISSION_MAP.put(DatastreamType.VIDEO_ACCESS_COPY, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.ACCESS_SURROGATE, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.ALT_TEXT, Permission.viewMetadata);
         DS_PERMISSION_MAP.put(DatastreamType.ALT_TEXT_HISTORY, Permission.viewHidden);

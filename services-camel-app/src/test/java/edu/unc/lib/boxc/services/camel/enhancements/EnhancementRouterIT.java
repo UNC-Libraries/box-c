@@ -106,6 +106,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private PdfImageProcessor pdfImageProcessor;
 
+    private AddDerivativeProcessor addVideoAccessCopyProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -128,10 +130,14 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
         cdrEnhancements = applicationContext.getBean(CamelContext.class);
-        addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
+        addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor",
+                AddDerivativeProcessor.class);
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
-        addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor", AddDerivativeProcessor.class);
+        addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor",
+                AddDerivativeProcessor.class);
+        addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
+                AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
@@ -149,6 +155,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         File audioScriptFile = new File("target/convertAudio.sh");
         FileUtils.writeStringToFile(audioScriptFile, "exit 0", "utf-8");
         audioScriptFile.deleteOnExit();
+
+        File videoScriptFile = new File("target/convertVideo.sh");
+        FileUtils.writeStringToFile(videoScriptFile, "exit 0", "utf-8");
+        videoScriptFile.deleteOnExit();
 
         doAnswer((Answer<Void>) invocation -> {
             Exchange exchange = (Exchange) invocation.getArguments()[0];
@@ -191,6 +201,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -202,6 +213,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -227,6 +239,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         // Indexing triggered for binary parent
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -254,6 +267,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -279,6 +293,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -327,6 +342,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -372,6 +388,30 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(pdfImageProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testVideoFile() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "video/mp4", null, null);
+
+        // Separate exchanges when multicasting
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(12)
+                .create();
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 

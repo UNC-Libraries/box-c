@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
@@ -33,6 +34,9 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject("destroyAudioProcessor")
     private DestroyDerivativesProcessor destroyAudioProcessor;
 
+    @BeanInject("destroyVideoProcessor")
+    private DestroyDerivativesProcessor destroyVideoProcessor;
+
     private String destroyDerivativesStreamCamel;
     private long errorRetryDelay;
     private int errorMaxRedeliveries;
@@ -58,6 +62,8 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                         .to("direct:fulltext.derivatives.destroy")
                     .when(method(AudioDerivativeProcessor.class, "allowedAudioType"))
                         .to("direct:audio.derivatives.destroy")
+                    .when(method(VideoDerivativeProcessor.class, "allowedVideoType"))
+                        .to("direct:video.derivatives.destroy")
                 .end();
 
         from("direct:fulltext.derivatives.destroy")
@@ -77,6 +83,12 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .startupOrder(199)
                 .log(LoggingLevel.DEBUG, log, "Destroying derivative audio files")
                 .bean(destroyAudioProcessor);
+
+        from("direct:video.derivatives.destroy")
+                .routeId("CdrDestroyVideo")
+                .startupOrder(198)
+                .log(LoggingLevel.DEBUG, log, "Destroying derivative video files")
+                .bean(destroyVideoProcessor);
     }
 
     public void setDestroyedMsgProcessor(DestroyedMsgProcessor destroyedMsgProcessor) {
@@ -93,6 +105,10 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
     public void setDestroyAudioProcessor(DestroyDerivativesProcessor destroyAudioProcessor) {
         this.destroyAudioProcessor = destroyAudioProcessor;
+    }
+
+    public void setDestroyVideoProcessor(DestroyDerivativesProcessor destroyVideoProcessor) {
+        this.destroyVideoProcessor = destroyVideoProcessor;
     }
 
     @PropertyInject("cdr.destroy.derivatives.stream.camel")

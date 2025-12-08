@@ -40,6 +40,22 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor" />
     </bean>
 
+    <bean id="mp44uAudioProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor" />
+    </bean>
+
+    <bean id="audioDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor" />
+    </bean>
+
+    <bean id="mp44uVideoProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor" />
+    </bean>
+
+    <bean id="videoDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor" />
+    </bean>
+
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
@@ -69,12 +85,17 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
+    <bean id="addVideoAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
+    </bean>
+
     <camel:camelContext id="cdrEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
     </camel:camelContext>
 
 </beans>

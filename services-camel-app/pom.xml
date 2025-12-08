@@ -210,6 +210,10 @@
         <groupId>edu.unc.lib</groupId>
         <artifactId>jp24u</artifactId>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib</groupId>
+        <artifactId>mp44u</artifactId>
+    </dependency>
 
     <dependency>
         <groupId>jakarta.annotation</groupId>
