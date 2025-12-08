@@ -17,6 +17,10 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
+    <bean id="mp44uAudioProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor" />
+    </bean>
+
     <camel:camelContext id="CdrServiceEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
     </camel:camelContext>
