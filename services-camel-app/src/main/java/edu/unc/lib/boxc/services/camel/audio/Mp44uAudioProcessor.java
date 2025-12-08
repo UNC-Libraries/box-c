@@ -15,6 +15,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 
+/**
+ * Processor that runs mp44u to generate m4a derivatives
+ * @author krwong
+ */
 public class Mp44uAudioProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(Mp44uAudioProcessor.class);
 

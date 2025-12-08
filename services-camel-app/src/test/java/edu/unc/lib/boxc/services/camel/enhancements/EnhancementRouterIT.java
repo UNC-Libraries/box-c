@@ -15,11 +15,15 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+import edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor;
+import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -100,6 +104,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
+    private AudioDerivativeProcessor audioDerivativeProcessor;
+
+    private Mp44uAudioProcessor mp44uAudioProcessor;
+
     private UpdateDescriptionService updateDescriptionService;
 
     private ImageDerivativeProcessor imageDerivativeProcessor;
@@ -107,6 +115,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
     private PdfImageProcessor pdfImageProcessor;
 
     private AddDerivativeProcessor addVideoAccessCopyProcessor;
+
+    private VideoDerivativeProcessor videoDerivativeProcessor;
+
+    private Mp44uVideoProcessor mp44uVideoProcessor;
 
     @TempDir
     public Path tmpFolder;
@@ -136,8 +148,14 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
         addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor",
                 AddDerivativeProcessor.class);
+        mp44uAudioProcessor = applicationContext.getBean("mp44uAudioProcessor", Mp44uAudioProcessor.class);
+        audioDerivativeProcessor = applicationContext.getBean("audioDerivativeProcessor",
+                AudioDerivativeProcessor.class);
         addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
                 AddDerivativeProcessor.class);
+        mp44uVideoProcessor = applicationContext.getBean("mp44uVideoProcessor", Mp44uVideoProcessor.class);
+        videoDerivativeProcessor = applicationContext.getBean("videoDerivativeProcessor",
+                VideoDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
