@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.services.camel.audio;
 
-import JP2ImageConverter.CLIMain;
+import mp44u.CLIMain;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -34,8 +34,7 @@ public class Mp44uAudioProcessor implements Processor {
         log.debug("Run mp44u command {} for type {}", command, mimetype);
         int exitCode = CLIMain.runCommand(command);
 
-        Mp44uAudioProcessor.Result result = new Mp44uAudioProcessor.Result(
-                new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
+        Result result = new Result(new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
         in.setBody(result);
     }
 
