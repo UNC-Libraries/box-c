@@ -44,6 +44,12 @@ body {
     display: inline-flex;
     align-items: center;
     max-width: 550px;
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: white;
+    }
   }
   img {
     display: inline-block;
@@ -157,6 +163,15 @@ body {
 }
 
 header {
+  .search-row {
+    a:hover,
+    a:active,
+    a:focus {
+      background-color: white;
+      color: $unc-blue !important;
+    }
+  }
+
   .search-row-large {
     background-color: $unc-navy;
   }
@@ -240,7 +255,6 @@ header {
   font-size: 1rem;
 
   a {
-    color: white;
     padding: 0 16px 0 0;
     background-color: #3e2b4e;
     display: flex;
