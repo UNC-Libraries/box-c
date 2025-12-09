@@ -25,11 +25,11 @@ public class Mp44uAudioProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
-        String videoPath = (String) in.getHeader(CdrFcrepoHeaders.CdrImagePath);
+        String audioPath = (String) in.getHeader(CdrFcrepoHeaders.CdrAudioPath);
         String tempPath = (String) in.getHeader(CdrFcrepoHeaders.CdrTempPath);
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
 
-        String[] command = new String[]{"mp44u", "audio", "-i", videoPath,
+        String[] command = new String[]{"mp44u", "audio", "-i", audioPath,
                 "-o", tempPath};
         log.debug("Run mp44u command {} for type {}", command, mimetype);
         int exitCode = CLIMain.runCommand(command);

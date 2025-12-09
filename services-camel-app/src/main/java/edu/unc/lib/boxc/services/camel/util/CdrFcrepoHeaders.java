@@ -19,13 +19,13 @@ public abstract class CdrFcrepoHeaders {
     // URI identifying the location of content for a binary
     public static final String CdrBinaryPath = "CdrBinaryPath";
 
-    // URI identifying the location
+    // URI identifying the location for an image file
     public static final String CdrImagePath = "CdrImagePath";
 
-    // URI identifying the location
+    // URI identifying the location for an audio file
     public static final String CdrAudioPath = "CdrAudioPath";
 
-    // URI identifying the location
+    // URI identifying the location for a video file
     public static final String CdrVideoPath = "CdrVideoPath";
 
     // File path for a temp file

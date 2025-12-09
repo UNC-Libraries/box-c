@@ -9,10 +9,12 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrAudioPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrVideoPath;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -104,10 +106,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
-    private AudioDerivativeProcessor audioDerivativeProcessor;
-
-    private Mp44uAudioProcessor mp44uAudioProcessor;
-
     private UpdateDescriptionService updateDescriptionService;
 
     private ImageDerivativeProcessor imageDerivativeProcessor;
@@ -115,10 +113,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
     private PdfImageProcessor pdfImageProcessor;
 
     private AddDerivativeProcessor addVideoAccessCopyProcessor;
-
-    private VideoDerivativeProcessor videoDerivativeProcessor;
-
-    private Mp44uVideoProcessor mp44uVideoProcessor;
 
     @TempDir
     public Path tmpFolder;
@@ -148,35 +142,18 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
         addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor",
                 AddDerivativeProcessor.class);
-        mp44uAudioProcessor = applicationContext.getBean("mp44uAudioProcessor", Mp44uAudioProcessor.class);
-        audioDerivativeProcessor = applicationContext.getBean("audioDerivativeProcessor",
-                AudioDerivativeProcessor.class);
         addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
                 AddDerivativeProcessor.class);
-        mp44uVideoProcessor = applicationContext.getBean("mp44uVideoProcessor", Mp44uVideoProcessor.class);
-        videoDerivativeProcessor = applicationContext.getBean("videoDerivativeProcessor",
-                VideoDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
 
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addVideoAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
-
-        File jp2ScriptFile = new File("target/convertJp2.sh");
-        FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
-        jp2ScriptFile.deleteOnExit();
-
-        File audioScriptFile = new File("target/convertAudio.sh");
-        FileUtils.writeStringToFile(audioScriptFile, "exit 0", "utf-8");
-        audioScriptFile.deleteOnExit();
-
-        File videoScriptFile = new File("target/convertVideo.sh");
-        FileUtils.writeStringToFile(videoScriptFile, "exit 0", "utf-8");
-        videoScriptFile.deleteOnExit();
 
         doAnswer((Answer<Void>) invocation -> {
             Exchange exchange = (Exchange) invocation.getArguments()[0];

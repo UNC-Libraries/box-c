@@ -102,7 +102,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
     public void testVideoAccessCopyRouteNoForceFileExists() throws Exception {
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".m4a");
-        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        FileUtils.writeStringToFile(existingFile, "video body", "utf-8");
 
         createContext(videoAccessCopy);
 
@@ -120,7 +120,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addVideoAccessCopyProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp4");
-        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        FileUtils.writeStringToFile(existingFile, "video body", "utf-8");
 
         createContext(videoAccessCopy);
 

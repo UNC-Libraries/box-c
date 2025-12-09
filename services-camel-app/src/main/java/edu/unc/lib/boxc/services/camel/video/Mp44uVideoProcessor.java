@@ -25,7 +25,7 @@ public class Mp44uVideoProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
-        String videoPath = (String) in.getHeader(CdrFcrepoHeaders.CdrImagePath);
+        String videoPath = (String) in.getHeader(CdrFcrepoHeaders.CdrVideoPath);
         String tempPath = (String) in.getHeader(CdrFcrepoHeaders.CdrTempPath);
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
 

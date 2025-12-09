@@ -7,8 +7,7 @@
     </encoder>
   </appender>
   <logger name="JP2ImageConverter.services.KakaduService" level="OFF"/>
-  <logger name="mp44u.services.AudioService" level="OFF"/>
-  <logger name="mp44u.services.VideoService" level="OFF"/>
+  <logger name="mp44u" level="OFF"/>
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>
   </root>
