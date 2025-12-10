@@ -147,7 +147,9 @@ public class ExpireEmbargoService {
 
         for (ContentObjectRecord contentObj : embargoes) {
             var repoObj = repoObjLoader.getRepositoryObject(contentObj.getPid());
+            log.warn("Found embargo for {}", contentObj.getPid());
             var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
+            log.warn("Found embargo property {}", embargoProperty);
             var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString(),
                     DateTimeFormatter.ISO_DATE_TIME);
 
