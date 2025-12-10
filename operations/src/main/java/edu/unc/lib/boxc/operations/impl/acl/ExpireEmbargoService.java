@@ -79,7 +79,7 @@ public class ExpireEmbargoService {
     }
 
     // run service every day 1 minute after midnight
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 1 0 * * *")
     public void expireEmbargoes() {
         log.info("running ExpireEmbargoService");
         // get list of expired embargoes
