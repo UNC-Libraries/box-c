@@ -149,7 +149,7 @@ public class ExpireEmbargoService {
             var repoObj = repoObjLoader.getRepositoryObject(contentObj.getPid());
             var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
             if (embargoProperty == null) {
-                log.warn("Record listed as having an embargo, but no was found embargo for {}", contentObj.getPid());
+                log.warn("Record listed as having an embargo, but no embargo was found for {}", contentObj.getPid());
                 continue;
             }
 
