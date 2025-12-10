@@ -148,7 +148,12 @@ public class ExpireEmbargoService {
         for (ContentObjectRecord contentObj : embargoes) {
             var repoObj = repoObjLoader.getRepositoryObject(contentObj.getPid());
             var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
-            var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString(),
+            if (embargoProperty == null) {
+                log.warn("Record listed as having an embargo, but no was found embargo for {}", contentObj.getPid());
+                continue;
+            }
+
+            var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString().trim(),
                     DateTimeFormatter.ISO_DATE_TIME);
 
             ZonedDateTime zonedDateTime = embargoDate.atZone(ZoneId.systemDefault());
