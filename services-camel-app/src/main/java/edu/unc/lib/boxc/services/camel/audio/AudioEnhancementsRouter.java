@@ -22,6 +22,9 @@ public class AudioEnhancementsRouter extends RouteBuilder {
     @BeanInject("addAudioAccessCopyProcessor")
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
+    @BeanInject("mp44uAudioProcessor")
+    private Mp44uAudioProcessor mp44uAudioProcessor;
+
     private UuidGenerator uuidGenerator;
 
     /**
@@ -33,30 +36,34 @@ public class AudioEnhancementsRouter extends RouteBuilder {
 
         uuidGenerator = new DefaultUuidGenerator();
 
+        onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+            .maximumRedeliveries(0)
+            .log(LoggingLevel.ERROR, "${exception.message}");
+
         onException(RepositoryException.class)
-                .redeliveryDelay("{{error.retryDelay}}")
-                .maximumRedeliveries("{{error.maxRedeliveries}}")
-                .backOffMultiplier("{{error.backOffMultiplier}}")
-                .retryAttemptedLogLevel(LoggingLevel.WARN);
+            .redeliveryDelay("{{error.retryDelay}}")
+            .maximumRedeliveries("{{error.maxRedeliveries}}")
+            .backOffMultiplier("{{error.backOffMultiplier}}")
+            .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct:process.enhancement.audioAccessCopy")
-                .routeId("AudioAccessCopy")
-                .startupOrder(25)
-                .log(LoggingLevel.DEBUG, log, "Access copy triggered")
-                .filter().method(addAudioAccessCopyProcessor, "needsRun")
-                .filter().method(audioDerivProcessor, "allowedAudioType")
-                    .bean(audioDerivProcessor)
-                    .log(LoggingLevel.INFO, log, "Creating/Updating AAC access copy for ${headers[CdrAudioPath]}")
-                    // Generate an random identifier to avoid derivative collisions
-                    .setBody(exchange -> uuidGenerator.generateUuid())
-                    .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-audio"))
-                    .doTry()
-                        .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertAudio.sh "
-                                + "${headers[CdrAudioPath]} ${headers[CdrTempPath]}"))
-                        .bean(addAudioAccessCopyProcessor)
-                    .endDoTry()
-                    .doFinally()
-                        .bean(addAudioAccessCopyProcessor, "cleanupTempFile")
-                .end();
+            .routeId("AudioAccessCopy")
+            .startupOrder(25)
+            .log(LoggingLevel.DEBUG, log, "Access copy triggered")
+            .filter().method(addAudioAccessCopyProcessor, "needsRun")
+            .filter().method(audioDerivProcessor, "allowedAudioType")
+                .bean(audioDerivProcessor)
+                .log(LoggingLevel.INFO, log, "Creating/Updating AAC access copy for ${headers[CdrAudioPath]}")
+                // Generate an random identifier to avoid derivative collisions
+                .setBody(exchange -> uuidGenerator.generateUuid())
+                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-audio"))
+                .doTry()
+                    .bean(mp44uAudioProcessor)
+                    .bean(addAudioAccessCopyProcessor)
+                .endDoTry()
+                .doFinally()
+                    .bean(addAudioAccessCopyProcessor, "cleanupTempFile")
+                .end()
+            .end();
     }
 }
