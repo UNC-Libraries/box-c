@@ -150,19 +150,18 @@ public class ExpireEmbargoService {
             var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
             if (embargoProperty == null) {
                 log.warn("Record listed as having an embargo, but none was found embargo for {}", contentObj.getPid());
+                continue;
             }
 
-            if (embargoProperty != null) {
-                var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString().trim(),
-                        DateTimeFormatter.ISO_DATE_TIME);
+            var embargoDate = LocalDateTime.parse(embargoProperty.getLiteral().getString().trim(),
+                    DateTimeFormatter.ISO_DATE_TIME);
 
-                ZonedDateTime zonedDateTime = embargoDate.atZone(ZoneId.systemDefault());
-                Instant embargoDateInstant = zonedDateTime.toInstant();
-                Date date = Date.from(embargoDateInstant);
+            ZonedDateTime zonedDateTime = embargoDate.atZone(ZoneId.systemDefault());
+            Instant embargoDateInstant = zonedDateTime.toInstant();
+            Date date = Date.from(embargoDateInstant);
 
-                if (today.after(date)) {
-                    embargoedRescList.add(contentObj.getId());
-                }
+            if (today.after(date)) {
+                embargoedRescList.add(contentObj.getId());
             }
         }
 
