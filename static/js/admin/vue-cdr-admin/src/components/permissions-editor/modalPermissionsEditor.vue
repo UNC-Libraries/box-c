@@ -109,8 +109,8 @@
     .modal-header {
         background-image: linear-gradient(to bottom, #FAFAFA, #EBF5FA);
         border-radius: 5px 5px 0 0;
-        margin: -20px 0 -20px -30px;
-        padding: 20px 30px;
+        margin-top: -20px;
+        padding: 20px 0;
 
         button {
             background: #e6e6e6 50% 50% repeat-x;
@@ -135,7 +135,7 @@
 
     .modal-container {
         background-color: white;
-        max-width: 620px;
+        padding: 20px 0;
 
         h3 {
             color: $unc-blue;
@@ -144,9 +144,7 @@
         .modal-body {
             background-color: white;
             border-radius: 0 0 5px 5px;
-            margin: 10px -30px -20px -30px;
-            max-height: 550px;
-            padding: 20px 0;
+            padding: 20px;
         }
     }
 </style>
