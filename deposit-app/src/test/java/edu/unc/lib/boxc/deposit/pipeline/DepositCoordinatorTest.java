@@ -107,6 +107,7 @@ public class DepositCoordinatorTest {
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
         verify(message).acknowledge();
         verify(activeDeposits).markInactive(DEPOSIT_ID);
+        verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
     }
 
     @Test
@@ -222,7 +223,11 @@ public class DepositCoordinatorTest {
 
         verify(handler).handleMessage(operationMessage);
         verify(activeDeposits).markInactive(DEPOSIT_ID);
+        // Should acquire locks for both the finishing deposit and the next deposit
+        verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
         verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
+        verify(depositStatusFactory).addSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
+        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
