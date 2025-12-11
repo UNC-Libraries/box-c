@@ -475,13 +475,18 @@
 
     <!-- Service operates via spring scheduling -->
     <bean id="expireEmbargoService" class="edu.unc.lib.boxc.operations.impl.acl.ExpireEmbargoService">
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="searchService" ref="queryLayer" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="accessGroups" ref="accessGroups" />
     </bean>
+
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
+        <value>${access.group.admin}</value>
+    </util:set>
     
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.boxc.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />

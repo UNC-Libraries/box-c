@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.acl;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,6 +15,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -21,6 +23,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +34,10 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -44,7 +50,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
@@ -54,13 +59,16 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
+import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
-public class ExpireEmbargoServiceIT {
+public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     private AutoCloseable closeable;
 
     @Autowired
@@ -71,10 +79,9 @@ public class ExpireEmbargoServiceIT {
     private RepositoryObjectFactory repoObjFactory;
     @Mock
     private OperationsMessageSender operationsMessageSender;
+    private SolrSearchService searchService;
     @Autowired
     private TransactionManager txManager;
-    @Autowired
-    private SparqlQueryService sparqlQueryService;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -88,18 +95,32 @@ public class ExpireEmbargoServiceIT {
 
     private ContentRootObject contentRoot;
 
+    @Mock
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
+
     @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
         TestHelper.setContentBase(baseAddress);
+
+        AccessRestrictionUtil restrictionUtil = new AccessRestrictionUtil();
+        restrictionUtil.setDisablePermissionFiltering(true);
+        restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        restrictionUtil.setSearchSettings(searchSettings);
+
+        searchService = new SolrSearchService();
+        searchService.setSolrSettings(solrSettings);
+        searchService.setAccessRestrictionUtil(restrictionUtil);
+        setField(searchService, "solrClient", server);
 
         service = new ExpireEmbargoService();
         service.setOperationsMessageSender(operationsMessageSender);
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setRepositoryObjectFactory(repoObjFactory);
         service.setTransactionManager(txManager);
-        service.setSparqlQueryService(sparqlQueryService);
         service.setPremisLoggerFactory(premisLoggerFactory);
+        service.setSearchService(searchService);
+        service.setAccessGroups(new AccessGroupSetImpl("agroup"));
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
@@ -121,6 +142,10 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        var doc = makeContainerDocument(pid, List.of(FacetConstants.EMBARGOED));
+        server.add(doc);
+        server.commit();
+
         service.expireEmbargoes();
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -133,7 +158,6 @@ public class ExpireEmbargoServiceIT {
 
         assertMessageSent(pid);
     }
-
 
     @Test
     public void expireMultipleEmbargoesTest() throws Exception {
@@ -149,6 +173,12 @@ public class ExpireEmbargoServiceIT {
                 .model);
         PID pid2 = collObj2.getPid();
         treeIndexer.indexAll(baseAddress);
+
+        var doc1 = makeContainerDocument(pid1, List.of(FacetConstants.EMBARGOED));
+        var doc2 = makeContainerDocument(pid2, List.of(FacetConstants.EMBARGOED));
+        server.add(doc1);
+        server.add(doc2);
+        server.commit();
 
         service.expireEmbargoes();
 
@@ -177,6 +207,10 @@ public class ExpireEmbargoServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
+        var doc = makeContainerDocument(pid, Collections.emptyList());
+        server.add(doc);
+        server.commit();
+
         service.expireEmbargoes();
 
         // collection was not created with an embargo and should not have one
@@ -199,6 +233,11 @@ public class ExpireEmbargoServiceIT {
                 .model);
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
+
+        var doc = makeContainerDocument(pid, List.of(FacetConstants.EMBARGOED));
+
+        server.add(doc);
+        server.commit();
 
         service.expireEmbargoes();
 
@@ -273,5 +312,15 @@ public class ExpireEmbargoServiceIT {
     private void assertMessageNotSent(PID pid) {
         verify(operationsMessageSender, never()).sendOperationMessage(
                 anyString(), any(JMSMessageUtil.CDRActions.class), anyCollection());
+    }
+
+    private SolrInputDocument makeContainerDocument(PID pid, List<String> statuses) {
+        SolrInputDocument newDoc = new SolrInputDocument();
+        newDoc.addField("id", pid.getId());
+        newDoc.addField("rollup", pid.getId());
+        newDoc.addField("title", "test");
+        newDoc.addField("resourceType", "Work");
+        newDoc.addField("status", statuses);
+        return newDoc;
     }
 }
