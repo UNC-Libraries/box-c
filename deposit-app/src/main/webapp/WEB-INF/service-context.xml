@@ -161,7 +161,6 @@
     </bean>
 
     <bean id="depositCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.DepositCoordinator" init-method="init">
-        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
         <property name="jobSuccessHandler" ref="jobSuccessHandler" />
         <property name="depositResumeHandler" ref="depositResumeHandler" />
         <property name="depositRegisterHandler" ref="depositRegisterHandler" />

@@ -135,7 +135,6 @@ public class IngestSourceControllerIT {
         depositStatusFactory.setJedisPool(jedisPool);
 
         fileServerDepositHandler = new FileServerDepositHandler();
-        fileServerDepositHandler.setDepositStatusFactory(depositStatusFactory);
         fileServerDepositHandler.setPidMinter(pidMinter);
         fileServerDepositHandler.setDepositOperationMessageService(depositOperationMessageService);
 
