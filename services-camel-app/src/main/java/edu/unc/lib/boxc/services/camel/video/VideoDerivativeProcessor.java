@@ -16,8 +16,9 @@ import java.util.regex.Pattern;
 public class VideoDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(VideoDerivativeProcessor.class);
 
-    //video/mp4, model/vnd.mts,
-    private static final Pattern MIMETYPE_PATTERN = Pattern.compile("^(video.(mp4))$");
+    private static final Pattern MIMETYPE_PATTERN = Pattern.compile(
+        "^(video.(mp4|quicktime|m2ts|mpeg|mpg|x-ms-wmv|x-msvideo|x-matroska|x-flv|x-m4v|webm|x-ms-asf|3gpp))" +
+                "|(application.x-shockwave-flash)$");
 
     /**
      * Returns true if the subject of the exchange is a binary which
