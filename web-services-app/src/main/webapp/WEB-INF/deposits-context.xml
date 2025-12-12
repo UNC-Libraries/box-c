@@ -29,21 +29,18 @@
     <!-- Deposit Handlers -->
     <bean id="cdrMetsDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
-        <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
         <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
     
     <bean id="simpleObjectDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
-        <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
         <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
     
     <bean id="fileServerDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
-        <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
         <property name="depositOperationMessageService" ref="depositOperationMessageService" />
     </bean>
@@ -59,7 +56,7 @@
     <bean id="depositsDirectory" class="java.io.File">
         <constructor-arg value="${batch.ingest.dir}" />
     </bean>
-    
+
     <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>

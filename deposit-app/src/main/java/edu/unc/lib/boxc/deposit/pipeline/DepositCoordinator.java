@@ -30,7 +30,6 @@ public class DepositCoordinator implements MessageListener {
     private ActiveDepositsService activeDeposits;
     private DepositStatusFactory depositStatusFactory;
 
-    private DepositOperationMessageService depositOperationMessageService;
     private JobSuccessHandler jobSuccessHandler;
     private DepositResumeHandler depositResumeHandler;
     private DepositRegisterHandler depositRegisterHandler;
@@ -53,7 +52,7 @@ public class DepositCoordinator implements MessageListener {
         // Inspect the message to determine what event occurred
         DepositOperationMessage opMessage = null;
         try {
-            opMessage = depositOperationMessageService.fromJson(message);
+            opMessage = DepositOperationMessageService.fromJson(message);
             LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
             if (depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), opMessage.getUsername())) {
                 switch (opMessage.getAction()) {
@@ -185,10 +184,6 @@ public class DepositCoordinator implements MessageListener {
 
     public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
-    }
-
-    public void setDepositOperationMessageService(DepositOperationMessageService depositOperationMessageService) {
-        this.depositOperationMessageService = depositOperationMessageService;
     }
 
     public void setJobSuccessHandler(JobSuccessHandler jobSuccessHandler) {

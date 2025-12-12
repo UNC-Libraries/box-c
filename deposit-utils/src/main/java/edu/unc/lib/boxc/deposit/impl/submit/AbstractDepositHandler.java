@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import org.slf4j.Logger;
@@ -23,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Abstract handler for processing a deposit type and submitting it to the
@@ -38,13 +35,8 @@ public abstract class AbstractDepositHandler implements DepositHandler {
     private static final Logger log = LoggerFactory.getLogger(AbstractDepositHandler.class);
 
     protected PIDMinter pidMinter;
-    private DepositStatusFactory depositStatusFactory;
     private DepositOperationMessageService depositOperationMessageService;
     private File depositsDirectory;
-
-    public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
-        this.depositStatusFactory = depositStatusFactory;
-    }
 
     public File getDepositsDirectory() {
         return depositsDirectory;
@@ -143,20 +135,14 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.state.name(), DepositState.unregistered.name());
 
         // Clean out any null deposit details
-        Iterator<Entry<String, String>> it = status.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, String> entry = it.next();
-            if (entry.getValue() == null) {
-                it.remove();
-            }
-        }
+        status.entrySet().removeIf(entry -> entry.getValue() == null);
 
-        depositStatusFactory.save(depositPid.getId(), status);
         // Send a message to the JMS queue to register the deposit
         var registerMessage = new DepositOperationMessage();
         registerMessage.setDepositId(depositPid.getId());
         registerMessage.setAction(DepositOperation.REGISTER);
         registerMessage.setUsername(agent.getUsername());
+        registerMessage.setAdditionalInfo(status);
         depositOperationMessageService.sendDepositOperationMessage(registerMessage);
 
         if (log.isInfoEnabled()) {

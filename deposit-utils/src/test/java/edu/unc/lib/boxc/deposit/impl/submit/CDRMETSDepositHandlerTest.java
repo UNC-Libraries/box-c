@@ -4,8 +4,6 @@ import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -21,7 +19,6 @@ import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -62,10 +59,8 @@ public class CDRMETSDepositHandlerTest {
 
     @Mock
     private PIDMinter pidMinter;
-    @Mock
-    private DepositStatusFactory depositStatusFactory;
     @Captor
-    private ArgumentCaptor<Map<String, String>> statusCaptor;
+    private ArgumentCaptor<DepositOperationMessage> operationCaptor;
     @Mock
     private DepositOperationMessageService operationMessageService;
 
@@ -96,7 +91,6 @@ public class CDRMETSDepositHandlerTest {
         depositHandler = new CDRMETSDepositHandler();
         depositHandler.setDepositsDirectory(depositsDir);
         depositHandler.setPidMinter(pidMinter);
-        depositHandler.setDepositStatusFactory(depositStatusFactory);
         depositHandler.setDepositOperationMessageService(operationMessageService);
     }
 
@@ -123,11 +117,9 @@ public class CDRMETSDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
-        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -139,11 +131,9 @@ public class CDRMETSDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
-        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test

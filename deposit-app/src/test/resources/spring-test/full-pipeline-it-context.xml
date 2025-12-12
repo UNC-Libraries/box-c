@@ -14,7 +14,6 @@
 
     <!-- Duplicating depositCoordinator without the init method call so that it can be triggered manually in tests -->
     <bean id="depositCoordinator" class="edu.unc.lib.boxc.deposit.pipeline.DepositCoordinator" primary="true">
-        <property name="depositOperationMessageService" ref="depositOperationMessageService" />
         <property name="jobSuccessHandler" ref="jobSuccessHandler" />
         <property name="depositResumeHandler" ref="depositResumeHandler" />
         <property name="depositRegisterHandler" ref="depositRegisterHandler" />

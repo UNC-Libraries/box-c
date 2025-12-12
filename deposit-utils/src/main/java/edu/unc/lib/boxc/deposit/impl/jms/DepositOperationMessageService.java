@@ -31,16 +31,19 @@ public class DepositOperationMessageService {
     private String destinationName;
 
     public void sendDepositOperationMessage(DepositOperationMessage message) {
+        LOG.debug("Sending deposit operation message {} for {}", message.getAction(), message.getDepositId());
+        jmsTemplate.convertAndSend(destinationName, toJson(message));
+    }
+
+    public static String toJson(DepositOperationMessage message) throws DepositMessageException {
         try {
-            LOG.debug("Sending deposit operation message {} for {}", message.getAction(), message.getDepositId());
-            String json = REQUEST_WRITER.writeValueAsString(message);
-            jmsTemplate.convertAndSend(destinationName, json);
+            return REQUEST_WRITER.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             throw new DepositMessageException("Failed to serialize deposit message for " + message.getDepositId(), e);
         }
     }
 
-    public DepositOperationMessage fromJson(Message message) throws IOException, JMSException {
+    public static DepositOperationMessage fromJson(Message message) throws IOException, JMSException {
         return REQUEST_READER.readValue(message.getBody(String.class));
     }
 
