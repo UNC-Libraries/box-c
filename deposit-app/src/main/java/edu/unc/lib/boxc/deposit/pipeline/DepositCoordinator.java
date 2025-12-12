@@ -116,25 +116,35 @@ public class DepositCoordinator implements MessageListener {
                     LOG.warn("Skipping deposit {}, deposit is already running", nextDepositId);
                 } else {
                     LOG.info("Starting next deposit: {}", nextDepositId);
-                    startDeposit(nextDepositId);
+                    // start the next deposit, locking the next deposit if it's different from the
+                    // current one, which is already locked
+                    startDeposit(nextDepositId, !depositId.equals(nextDepositId));
                 }
             }
         }
     }
 
-    private void startDeposit(String depositId) {
+    private void startDeposit(String depositId, boolean lockDeposit) {
         var depositStatus = depositStatusFactory.get(depositId);
-        try {
-            activeDeposits.markActive(depositId);
-            depositStatusFactory.setState(depositId, DepositState.running);
-            assignStartTime(depositId, depositStatus);
+        var depositUser = depositStatus.get(DepositField.depositorName.name());
+        // Try to acquire the lock if needed, otherwise proceed
+        if (!lockDeposit || depositStatusFactory.addSupervisorLock(depositId, depositUser)) {
+            try {
+                activeDeposits.markActive(depositId);
+                depositStatusFactory.setState(depositId, DepositState.running);
+                assignStartTime(depositId, depositStatus);
 
-            var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
-            depositJobMessageService.sendDepositJobMessage(jobMessage);
-        } catch (Exception e) {
-            LOG.error("Error sending deposit job message for {}", depositId, e);
-            depositStatusFactory.fail(depositId);
-            activeDeposits.markInactive(depositId);
+                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
+                depositJobMessageService.sendDepositJobMessage(jobMessage);
+            } catch (Exception e) {
+                LOG.error("Error sending deposit job message for {}", depositId, e);
+                depositStatusFactory.fail(depositId);
+                activeDeposits.markInactive(depositId);
+            } finally {
+                if (lockDeposit) {
+                    depositStatusFactory.removeSupervisorLock(depositId);
+                }
+            }
         }
     }
 
