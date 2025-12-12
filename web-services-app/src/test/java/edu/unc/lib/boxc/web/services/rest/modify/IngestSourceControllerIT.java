@@ -24,6 +24,48 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.common.test.TestHelpers;
+import edu.unc.lib.boxc.common.util.ZipFileUtil;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
+import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.persist.api.PackagingType;
+import edu.unc.lib.boxc.persist.api.sources.IngestSource;
+import edu.unc.lib.boxc.persist.api.sources.IngestSourceCandidate;
+import edu.unc.lib.boxc.persist.impl.sources.FilesystemIngestSource;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import edu.unc.lib.boxc.web.services.rest.modify.IngestSourceController.IngestPackageDetails;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,61 +74,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.common.test.TestHelpers;
-import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
-import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
-import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
-import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
-import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.persist.api.PackagingType;
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
-import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.common.util.ZipFileUtil;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.persist.api.sources.IngestSource;
-import edu.unc.lib.boxc.persist.api.sources.IngestSourceCandidate;
-import edu.unc.lib.boxc.persist.impl.sources.FilesystemIngestSource;
-import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
-import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
-import edu.unc.lib.boxc.web.services.rest.modify.IngestSourceController.IngestPackageDetails;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import redis.clients.jedis.JedisPool;
-
 /**
  *
  * @author bbpennel
  *
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration("/spring-test/redis-server-context.xml")
 public class IngestSourceControllerIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
@@ -103,7 +95,6 @@ public class IngestSourceControllerIT {
 
     @InjectMocks
     private IngestSourceController controller;
-    private DepositStatusFactory depositStatusFactory;
     private IngestSourceManagerImpl sourceManager;
     private DepositSubmissionService depositSubmissionService;
     private FileServerDepositHandler fileServerDepositHandler;
@@ -114,8 +105,8 @@ public class IngestSourceControllerIT {
     private RepositoryPIDMinter pidMinter;
     @Mock
     private DepositOperationMessageService depositOperationMessageService;
-    @Autowired
-    private JedisPool jedisPool;
+    @Captor
+    private ArgumentCaptor<DepositOperationMessage> operationCaptor;
     private MockMvc mvc;
     private AutoCloseable closeable;
 
@@ -130,9 +121,6 @@ public class IngestSourceControllerIT {
         sourceFolderPath = tmpFolder.resolve("sourceFolder").toString();
         Files.createDirectory(tmpFolder.resolve("sourceFolder"));
         mappingList = new ArrayList<>();
-
-        depositStatusFactory = new DepositStatusFactory();
-        depositStatusFactory.setJedisPool(jedisPool);
 
         fileServerDepositHandler = new FileServerDepositHandler();
         fileServerDepositHandler.setPidMinter(pidMinter);
@@ -165,7 +153,6 @@ public class IngestSourceControllerIT {
 
     @AfterEach
     public void teardownLocal() throws Exception {
-        jedisPool.getResource().flushAll();
         closeable.close();
         GroupsThreadStore.clearStore();
     }
@@ -341,9 +328,10 @@ public class IngestSourceControllerIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<String> depositIds = verifySuccessResponse(result, destPid);
+        verifySuccessResponse(result, destPid);
+        verify(depositOperationMessageService).sendDepositOperationMessage(operationCaptor.capture());
 
-        Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
+        Map<String, String> candStatus1 = operationCaptor.getValue().getAdditionalInfo();
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
         assertEquals("candidate", candStatus1.get(DepositField.depositSlug.name()));
@@ -485,16 +473,17 @@ public class IngestSourceControllerIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<String> depositIds = verifySuccessResponse(result, destPid);
+        verifySuccessResponse(result, destPid);
+        verify(depositOperationMessageService, times(2)).sendDepositOperationMessage(operationCaptor.capture());
 
-        Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
+        Map<String, String> candStatus1 = operationCaptor.getAllValues().getFirst().getAdditionalInfo();
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
         assertTrue(Boolean.parseBoolean(candStatus1.get(DepositField.staffOnly.name())));
         assertFalse(Boolean.parseBoolean(candStatus1.get(DepositField.createParentFolder.name())));
         assertDepositorDetailsStored(candStatus1);
 
-        Map<String, String> candStatus2 = getDepositStatusByPath(depositIds, candPath2);
+        Map<String, String> candStatus2 = operationCaptor.getAllValues().get(1).getAdditionalInfo();
         assertEquals(destPid.getId(), candStatus2.get(DepositField.containerId.name()));
         assertEquals(DIRECTORY.getUri(), candStatus2.get(DepositField.packagingType.name()));
         assertFalse(Boolean.parseBoolean(candStatus2.get(DepositField.staffOnly.name())));
@@ -523,9 +512,10 @@ public class IngestSourceControllerIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<String> depositIds = verifySuccessResponse(result, destPid);
+        verifySuccessResponse(result, destPid);
+        verify(depositOperationMessageService).sendDepositOperationMessage(operationCaptor.capture());
 
-        Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
+        Map<String, String> candStatus1 = operationCaptor.getValue().getAdditionalInfo();
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
         assertFalse(Boolean.parseBoolean(candStatus1.get(DepositField.staffOnly.name())));
@@ -564,8 +554,10 @@ public class IngestSourceControllerIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<String> depositIds = verifySuccessResponse(ingestResult, destPid);
-        Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
+        verifySuccessResponse(ingestResult, destPid);
+
+        verify(depositOperationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        Map<String, String> candStatus1 = operationCaptor.getValue().getAdditionalInfo();
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(candidate.getPackagingType().getUri(), candStatus1.get(DepositField.packagingType.name()));
     }
@@ -578,17 +570,6 @@ public class IngestSourceControllerIT {
         List<String> depositIds = (List<String>) resp.get("depositIds");
         assertNotNull(depositIds);
         return depositIds;
-    }
-
-    private Map<String, String> getDepositStatusByPath(List<String> depositIds, Path candPath) {
-        for (String depositId: depositIds) {
-            Map<String, String> status = depositStatusFactory.get(depositId);
-
-            if (status.get(DepositField.sourceUri.name()).equals(candPath.toUri().toString())) {
-                return status;
-            }
-        }
-        return null;
     }
 
     private void assertDepositorDetailsStored(Map<String, String> status) {
