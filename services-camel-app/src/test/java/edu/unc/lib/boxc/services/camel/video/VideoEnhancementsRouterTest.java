@@ -141,7 +141,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         videoEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        headers.put(CdrBinaryMimeType, "video/3gpp");
+        headers.put(CdrBinaryMimeType, "audio/3gpp");
 
         template.sendBodyAndHeaders("", headers);
 
