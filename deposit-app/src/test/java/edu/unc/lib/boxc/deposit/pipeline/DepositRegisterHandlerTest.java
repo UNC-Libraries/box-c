@@ -1,12 +1,11 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 public class DepositRegisterHandlerTest {
@@ -41,8 +42,13 @@ public class DepositRegisterHandlerTest {
 
     @Test
     public void testSuccessfulRegistration() {
+        var additionalInfo = Map.of(RedisWorkerConstants.DepositField.packagingType.name(), "BagIt",
+                RedisWorkerConstants.DepositField.state.name(), RedisWorkerConstants.DepositState.unregistered.name(),
+                RedisWorkerConstants.DepositField.containerId.name(), "destinationPid");
+        operationMessage.setAdditionalInfo(additionalInfo);
         handler.handleMessage(operationMessage);
 
+        verify(depositStatusFactory).save(eq(DEPOSIT_ID), eq(additionalInfo));
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
     }
 

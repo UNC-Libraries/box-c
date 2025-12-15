@@ -174,7 +174,6 @@ public class FullPipelineIT {
         depositCoordinator.init();
         depositHandler = new FileServerDepositHandler();
         depositHandler.setDepositsDirectory(depositsDir.toFile());
-        depositHandler.setDepositStatusFactory(depositStatusFactory);
         depositHandler.setDepositOperationMessageService(messageService);
         depositHandler.setPidMinter(pidminter);
         ScanResult defaultScanResult = Mockito.mock(ScanResult.class);

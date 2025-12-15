@@ -4,8 +4,6 @@ import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -39,7 +37,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
 import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -65,10 +62,8 @@ public class SimpleObjectDepositHandlerTest {
 
     @Mock
     private PIDMinter pidMinter;
-    @Mock
-    private DepositStatusFactory depositStatusFactory;
     @Captor
-    private ArgumentCaptor<Map<String, String>> statusCaptor;
+    private ArgumentCaptor<DepositOperationMessage> operationCaptor;
     @Mock
     private DepositOperationMessageService operationMessageService;
 
@@ -99,7 +94,6 @@ public class SimpleObjectDepositHandlerTest {
         depositHandler = new SimpleObjectDepositHandler();
         depositHandler.setDepositsDirectory(depositsDir);
         depositHandler.setPidMinter(pidMinter);
-        depositHandler.setDepositStatusFactory(depositStatusFactory);
         depositHandler.setDepositOperationMessageService(operationMessageService);
     }
 
@@ -127,11 +121,9 @@ public class SimpleObjectDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
-        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test
@@ -144,11 +136,9 @@ public class SimpleObjectDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
-        verify(operationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test

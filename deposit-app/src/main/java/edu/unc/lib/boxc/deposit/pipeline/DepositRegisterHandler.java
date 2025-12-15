@@ -19,6 +19,7 @@ public class DepositRegisterHandler implements DepositOperationHandler {
         String depositId = opMessage.getDepositId();
         LOG.info("Registering deposit {}", depositId);
 
+        depositStatusFactory.save(depositId, opMessage.getAdditionalInfo());
         depositStatusFactory.queueDeposit(depositId);
     }
 
