@@ -15,8 +15,6 @@ import edu.unc.lib.boxc.search.solr.filters.IIIFv3ViewableFilter;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.utils.PermissionsHelper;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.jupiter.api.AfterEach;
@@ -39,6 +37,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -131,17 +130,17 @@ public class AccessCopiesServiceTest  {
     }
 
     private ContentObjectSolrRecord createVideoObject(ResourceType resourceType) {
-        var mdObjectAudio = new ContentObjectSolrRecord();
-        mdObjectAudio.setResourceType(resourceType.name());
-        mdObjectAudio.setId(UUID.randomUUID().toString());
+        var mdObjectVideo = new ContentObjectSolrRecord();
+        mdObjectVideo.setResourceType(resourceType.name());
+        mdObjectVideo.setId(UUID.randomUUID().toString());
         List<String> audioDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
-        mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
-        mdObjectAudio.setFileFormatType(Collections.singletonList("video/mp4"));
-        mdObjectAudio.setDatastream(audioDatastreams);
-        mdObjectAudio.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001");
-        mdObjectAudio.setStreamingType("video");
-        return mdObjectAudio;
+        mdObjectVideo.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
+        mdObjectVideo.setFileFormatType(Collections.singletonList("video/mp4"));
+        mdObjectVideo.setDatastream(audioDatastreams);
+        mdObjectVideo.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001");
+        mdObjectVideo.setStreamingType("video");
+        return mdObjectVideo;
     }
 
     private ContentObjectSolrRecord createPdfObject(ResourceType resourceType) {
@@ -266,6 +265,20 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         assertNull(accessCopiesService.getDatastreamPid(mdObjectImg, principals, AUDIO_MIMETYPE_REGEX),
                 "Playable audio file pid found");
+    }
+
+    @Test
+    public void hasPlayableVideoFile() {
+        hasPermissions(mdObjectVideo, true);
+        assertEquals(mdObjectVideo.getId(),
+                accessCopiesService.getDatastreamPid(mdObjectVideo, principals, VIDEO_MIMETYPE_REGEX));
+    }
+
+    @Test
+    public void doesNotHavePlayableVideoFile() {
+        hasPermissions(mdObjectImg, true);
+        assertNull(accessCopiesService.getDatastreamPid(mdObjectImg, principals, VIDEO_MIMETYPE_REGEX),
+                "Playable video file pid found");
     }
 
     @Test
@@ -458,6 +471,14 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectAudio, true);
         when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertFalse(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
+    }
+
+    @Test
+    public void hasViewableFilesVideoFileTest() {
+        var mdObjectVideo = createVideoObject(ResourceType.File);
+        hasPermissions(mdObjectVideo, true);
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+        assertFalse(accessCopiesService.hasViewableFiles(mdObjectVideo, principals));
     }
 
     @Test
