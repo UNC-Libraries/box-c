@@ -7,12 +7,15 @@ import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatNotFoundMessage;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
@@ -25,6 +28,7 @@ import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.computeDup
  * @author bbpennel
  */
 public class SetOrderValidator implements OrderValidator {
+    private static final Logger LOG = LoggerFactory.getLogger(SetOrderValidator.class);
     private RepositoryObjectLoader repositoryObjectLoader;
     private MembershipService membershipService;
     private OrderRequest request;
@@ -58,6 +62,10 @@ public class SetOrderValidator implements OrderValidator {
             }
 
             var members = membershipService.listMembers(request.getParentPid());
+            var formattedMembers = members.stream().map(PID::getId).sorted().collect(Collectors.joining(", "));
+            LOG.error("Parent pid is {}", parentId);
+            LOG.error("Members are {}", formattedMembers);
+            LOG.error("Requested Pids are {}", requestPidSet);
             var membersNotInRequest = difference(members, requestPidSet);
             if (!membersNotInRequest.isEmpty()) {
                 errors.add(formatErrorMessage(OrderOperationType.SET, parentId,
