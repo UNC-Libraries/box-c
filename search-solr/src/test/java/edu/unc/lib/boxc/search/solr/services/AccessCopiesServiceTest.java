@@ -407,7 +407,7 @@ public class AccessCopiesServiceTest  {
         var queryFilter = (IIIFv3ViewableFilter) searchState.getFilters().get(0);
         assertEquals("((fileFormatType:video/mp4 OR fileFormatType:video/mpeg" +
                         " OR fileFormatType:video/quicktime OR fileFormatType:video/mp4 OR fileFormatType:audio/mpeg)" +
-                        " OR (datastream:jp2|*) OR (datastream:audio|*)) AND !fileFormatType:\"application/pdf\"",
+                        " OR (datastream:jp2|*) OR (datastream:audio|*) OR (datastream:video|*)) AND !fileFormatType:\"application/pdf\"",
                 queryFilter.toFilterString());
     }
 
