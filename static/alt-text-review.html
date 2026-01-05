@@ -6,11 +6,13 @@
     <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/versions/bulma-no-dark-mode.min.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/plug-ins/2.3.5/features/searchHighlight/dataTables.searchHighlight.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/fixedheader/4.0.5/css/fixedHeader.dataTables.min.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.bulma.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://bartaz.github.io/sandbox.js/jquery.highlight.js"></script>
     <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/searchHighlight/dataTables.searchHighlight.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/4.0.5/js/dataTables.fixedHeader.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.5/js/dataTables.bulma.js"></script>
     <style>
         .notification {
@@ -38,6 +40,9 @@
         .filename {
             width: 5%;
         }
+        table.dataTable {
+            margin-top: 0 !important
+        }
     </style>
 </head>
 <body>
@@ -56,7 +61,17 @@
             <tr>
                 <th>Thumbnail</th>
                 <th>Filename</th>
-                <th>Full Description</th>
+                <th>Full Description (AI)</th>
+                <th>Alt Text (AI)</th>
+                <th>Transcript (AI)</th>
+                <th>Safety Review (AI)</th>
+                <th>Safety Review Assessment (AI)</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Filename</th>
+                <th>Full Description (AI)</th>
                 <th>Alt Text (AI)</th>
                 <th>Transcript (AI)</th>
                 <th>Safety Review (AI)</th>
@@ -65,6 +80,9 @@
             </tr>
             </thead>
             <tbody></tbody>
+            <tfoot>
+
+            </tfoot>
         </table>
     </div>
 </section>
@@ -96,6 +114,7 @@
         ajax: { url: 'alt-text.json', dataSrc: '' },
         searchHighlight: true,
         order: [[1, 'asc']],
+        fixedHeader: true,
         pageLength: 25,
         columnDefs: [
             { width: '10%', targets: 0 },
@@ -120,28 +139,28 @@
             {
                 data: 'full_desc',
                 orderable: false,
-                render: function ( data, type, row ) {
+                render: function (data, type, row) {
                     return longText(data, 'full_desc');
                 }
             },
             {
                 data: 'alt_text',
                 orderable: false,
-                render: function ( data, type, row ) {
+                render: function (data, type, row) {
                     return longText(data, 'alt_text');
                 }
             },
             {
                 data: 'transcript',
                 orderable: false,
-                render: function ( data, type, row ) {
+                render: function (data, type, row) {
                     return longText(data, 'transcript')
                 }
             },
             {
                 data: 'safety_review',
                 orderable: false,
-                render: function ( data, type, row ) {
+                render: function (data, type, row) {
                     let text = '<ul class="is-capitalized">';
                     for (let field in data) {
                         let fieldText = (field === 'concerns_for_review') ? formatSafetyReview(data[field]) : data[field];
@@ -169,11 +188,36 @@
                 data: 'filename',
                 orderable: false,
                 searchable: false,
-                render: function (data, type, row ) {
+                render: function (data, type, row) {
                     return `<button class="button is-dark">Rerun</button>`;
                 }
             },
-        ]
+        ],
+
+        initComplete: function () {
+            this.api()
+                .columns()
+                .every(function () {
+                    let column = this;
+                    let title = column.header().textContent;
+                    if (title === '' || title === 'Thumbnail') {
+                        return true;
+                    }
+
+                    // Create input element
+                    let input = document.createElement('input');
+                    input.placeholder = title;
+                    column.header().replaceChildren(input);
+
+                    // Event listener for user input
+                    input.addEventListener('keyup', () => {
+                        if (column.search() !== this.value) {
+                            column.search(input.value).draw();
+                        }
+                    });
+                });
+        }
+
     });
 
     let show_edit = $('.is-danger, .button.is-success, .modal-edit-wrapper');
