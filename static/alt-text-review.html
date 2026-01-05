@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alt Text Review</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/versions/bulma-no-dark-mode.min.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/plug-ins/2.3.5/features/searchHighlight/dataTables.searchHighlight.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.bulma.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://bartaz.github.io/sandbox.js/jquery.highlight.js"></script>
+    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/searchHighlight/dataTables.searchHighlight.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.bulma.js"></script>
+    <style>
+        .notification {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 4444;
+            width: 400px;
+        }
+        #example_wrapper {
+            padding: 2%;
+        }
+        .filename a {
+            /* Forces the URL to wrap */
+            overflow-wrap: break-word;
+            word-break: break-all; /* Alternative for stricter breaking */
+        }
+        div.dt-container div.dt-length select {
+            min-width: 70px;
+        }
+        table.dataTable tbody tr {
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+        .filename {
+            width: 5%;
+        }
+    </style>
+</head>
+<body>
+<div class="notification is-success is-light is-hidden">
+    <button class="delete"></button>
+    Yay! You successfully updated the <span class="updated-field is-capitalized is-italic"></span> for
+    <span class="updated-image is-italic"></span>, but not really. This is just
+    a demo after all. :)
+</div>
+<table id="example" class="display table is-bordered is-striped is-fullwidth">
+    <thead>
+    <tr>
+        <th>Thumbnail</th>
+        <th>Filename</th>
+        <th>Full Description</th>
+        <th>Alt Text (AI)</th>
+        <th>Transcript (AI)</th>
+        <th>Safety Review (AI)</th>
+        <th>Safety Review Assessment (AI)</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<div class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title is-capitalized">Modal title</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-text"></p>
+            <div class="control modal-edit-wrapper is-hidden">
+                <textarea class="modal-edit textarea" rows="20" aria-label="Edit"></textarea>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons">
+                <button class="button is-info">Edit Text</button>
+                <button class="button is-success is-hidden">Save changes</button>
+                <button class="button is-danger is-hidden">Cancel</button>
+            </div>
+        </footer>
+    </div>
+</div>
+<script>
+    const table = new DataTable('#example', {
+        ajax: { url: 'alt-text.json', dataSrc: '' },
+        searchHighlight: true,
+        order: [[1, 'asc']],
+        columnDefs: [
+            { width: '10%', targets: 0 },
+            { width: '17%', targets: [2, 3, 4, 5, 6] }
+        ],
+        columns: [
+            {
+                data: 'filename',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row, meta) {
+                    return `<figure class="thumbnail"><a href="${data}" target="_blank"><img src="${data}" alt=""></a></figure>`;
+                }
+            },
+            {
+                data: 'filename',
+                className: 'filename',
+                render: function (data, type, row, meta) {
+                    return `<a href="${data}" target="_blank">${imageName(data)}</a>`;
+                }
+            },
+            {
+                data: 'full_desc',
+                orderable: false,
+                render: function ( data, type, row ) {
+                    return longText(data, 'full_desc');
+                }
+            },
+            {
+                data: 'alt_text',
+                orderable: false,
+                render: function ( data, type, row ) {
+                    return longText(data, 'alt_text');
+                }
+            },
+            {
+                data: 'transcript',
+                orderable: false,
+                render: function ( data, type, row ) {
+                    return longText(data, 'transcript')
+                }
+            },
+            {
+                data: 'safety_review',
+                orderable: false,
+                render: function ( data, type, row ) {
+                    let text = '<ul class="is-capitalized">';
+                    for (let field in data) {
+                        let fieldText = (field === 'concerns_for_review') ? formatSafetyReview(data[field]) : data[field];
+                        text += `<li><span class="has-text-weight-semibold">${fieldName(field)}</span>: ${fieldText.toLowerCase()}</li>`;
+                    }
+                    text += '</ul>';
+                    return text;
+                }
+            },
+            {
+                data: 'safety_form',
+                orderable: false,
+                render: function (data, type, row) {
+                    let text = '<ul class="is-capitalized">';
+                    for (let field in data) {
+                        let fieldText = (field === 'text_characteristics' || field === 'symbols_present' || field === 'open_ai_output_content_filter_results') ? formatSafetyInfo(data[field]) : data[field];
+                        text += `<li><span class="has-text-weight-semibold">${fieldName(field)}</span>: ${fieldText.toLowerCase()}</li>`;
+                    }
+                    text += '</ul>';
+
+                    return text;
+                }
+            },
+            {
+                data: 'filename',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row ) {
+                    return `<button class="button is-dark">Rerun</button>`;
+                }
+            },
+        ]
+    });
+
+    let show_edit = $('.is-danger, .button.is-success, .modal-edit-wrapper');
+    let show_text = $('.is-info, .modal-text');
+    let active_row_data, active_field;
+
+    // Activate an inline edit on click of a table cell
+    table.on('click', 'tbody tr', function (e) {
+        const allowed_classes = ['full_desc', 'alt_text', 'transcript', 'button is-dark'];
+        if (allowed_classes.includes(e.target.className)) {
+            e.preventDefault();
+            active_row_data = table.row(this).data();
+            active_field = e.target.className;
+
+            $('.modal').addClass('is-active');
+
+            // Rerun alt text generation
+            if (active_field.includes('button is-dark')) {
+                $('.modal-card-title').text('Additional prompt information');
+                $('.button.is-success').text('Rerun');
+            } else {
+                $('.modal-card-title').text(fieldName(e.target.className));
+                $('.modal-text, .modal-edit').text(active_row_data[active_field]);
+                $('.button.is-success').text('Save Changes');
+            }
+
+            if (e.target.innerText === 'Edit' || active_field.includes('button is-dark')) {
+                show_text.addClass('is-hidden');
+                show_edit.removeClass('is-hidden');
+            }
+        }
+    });
+
+    // Close the modal and reset everything
+    $('.delete').on('click', function() {
+        $('.modal').removeClass('is-active');
+        show_edit.addClass('is-hidden');
+        $('.is-info, .modal-text').removeClass('is-hidden');
+    });
+
+    // Switch modal text to edit mode
+    $('.is-info').on('click', function() {
+        show_text.addClass('is-hidden');
+        show_edit.removeClass('is-hidden');
+    });
+
+    // Reset modal text to view only, but leave it open
+    $('.is-danger').on('click', function() {
+        $(this).addClass('is-hidden');
+        $('.button.is-success, .modal-edit-wrapper').addClass('is-hidden');
+        show_text.removeClass('is-hidden');
+    });
+
+    // Save modal text, but leave it open unless it's rerunning alt text generation
+    $('.button.is-success').on('click', function() {
+        let that = $(this);
+        let has_updated_prompt = $('.modal-edit').val() !== ''
+
+
+        if (that.text() === 'Rerun') {
+            if (!has_updated_prompt) {
+                alert('You must provide additional prompt information');
+            } else {
+                $('.updated-field').text('system prompt');
+            }
+        } else {
+            $('.updated-field').text(fieldName(active_field));
+        }
+
+        if (has_updated_prompt) {
+            $('.notification').removeClass('is-hidden');
+            that.addClass('is-loading');
+            $('.updated-image').text(imageName(active_row_data.filename));
+
+            setTimeout(function () {
+                that.removeClass('is-loading');
+                $('.notification').addClass('is-hidden');
+
+                if (that.text() === 'Rerun') {
+                    $('.modal').removeClass('is-active');
+                }
+            }, 5000);
+        }
+    });
+
+    function fieldName(field) {
+        let parts = field.split('_')
+        return parts.join(' ');
+    }
+    function imageName(data) {
+        let text = data.split('/');
+        return text[text.length - 1]
+    }
+
+    function longText(data, class_name) {
+        let has_long_text = data.length > 250;
+        let text = (has_long_text) ? `${data.substring(0, 250)}... ` : data;
+        let sub_text = '<div class="mt-2">';
+        if (has_long_text) {
+            sub_text += `<a class="${class_name}" href="#">View All</a><br/>`
+        }
+        return `${text}${sub_text}<a class="${class_name}" href="#">Edit</a></div>`;
+    }
+
+    function formatSafetyInfo(data) {
+        let text = '<ul>';
+        if (typeof data === "object") {
+            for (let field in data) {
+                if (Array.isArray(data[field])) {
+                    text += `<li class="pl-2 has-text-weight-medium">${field}: <span class="has-text-weight-normal">${data[field].join(', ')}</span></li>`
+                } else if (typeof data[field] === 'object') {
+                    let base_text = '';
+                    for (let sub_field in data[field]) {
+                        base_text += `${sub_field}: ${data[field][sub_field]}<br/>`;
+                    }
+                    text += `<li class="pl-2 has-text-weight-medium">${field}: <div class="pl-4 has-text-weight-normal">${base_text}</div></li>`
+                } else {
+                    text += `<li class="pl-2 has-text-weight-medium">${field}: <span class="has-text-weight-normal">${data[field]}</span></li>`;
+                }
+
+            }
+        } else {
+            text += `<li>${data.toLowerCase()}</li>`;
+        }
+        text += '</ul>';
+
+        return text;
+    }
+
+    function formatSafetyReview(data) {
+        if (data.length === 0) {
+            return 'None';
+        }
+
+        let text = '</br><div class="content"><ul>';
+        data.forEach(item => {
+            text += `<li>${item}</li>`;
+        });
+        text += '</ul></div>';
+
+        return text;
+    }
+</script>
+</body>
+</html>
