@@ -47,21 +47,28 @@
     <span class="updated-image is-italic"></span>, but not really. This is just
     a demo after all. :)
 </div>
-<table id="example" class="display table is-bordered is-striped is-fullwidth">
-    <thead>
-    <tr>
-        <th>Thumbnail</th>
-        <th>Filename</th>
-        <th>Full Description</th>
-        <th>Alt Text (AI)</th>
-        <th>Transcript (AI)</th>
-        <th>Safety Review (AI)</th>
-        <th>Safety Review Assessment (AI)</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+
+<section class="section">
+    <div class="container">
+        <h1 class="title is-2 has-text-centered">Alt Text Editing Interface</h1>
+        <table id="example" class="display table is-bordered is-striped is-fullwidth">
+            <thead>
+            <tr>
+                <th>Thumbnail</th>
+                <th>Filename</th>
+                <th>Full Description</th>
+                <th>Alt Text (AI)</th>
+                <th>Transcript (AI)</th>
+                <th>Safety Review (AI)</th>
+                <th>Safety Review Assessment (AI)</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
 <div class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -89,6 +96,7 @@
         ajax: { url: 'alt-text.json', dataSrc: '' },
         searchHighlight: true,
         order: [[1, 'asc']],
+        pageLength: 25,
         columnDefs: [
             { width: '10%', targets: 0 },
             { width: '17%', targets: [2, 3, 4, 5, 6] }
