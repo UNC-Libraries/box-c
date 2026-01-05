@@ -195,8 +195,10 @@
                 $('.modal-card-title').text('Additional prompt information');
                 $('.button.is-success').text('Rerun');
             } else {
+                console.log(active_row_data[active_field]);
                 $('.modal-card-title').text(fieldName(e.target.className));
-                $('.modal-text, .modal-edit').text(active_row_data[active_field]);
+                $('.modal-text').text(active_row_data[active_field]);
+                $('.modal-edit').val(active_row_data[active_field]);
                 $('.button.is-success').text('Save Changes');
             }
 
