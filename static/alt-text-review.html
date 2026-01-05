@@ -64,8 +64,8 @@
                 <th>Full Description (AI)</th>
                 <th>Alt Text (AI)</th>
                 <th>Transcript (AI)</th>
-                <th>Safety Review (AI)</th>
-                <th>Safety Review Assessment (AI)</th>
+                <th>Safety Assessment (AI)</th>
+                <th>Output Assessment (AI)</th>
                 <th></th>
             </tr>
             <tr>
@@ -74,8 +74,8 @@
                 <th>Full Description (AI)</th>
                 <th>Alt Text (AI)</th>
                 <th>Transcript (AI)</th>
-                <th>Safety Review (AI)</th>
-                <th>Safety Review Assessment (AI)</th>
+                <th>Safety Assessment (AI)</th>
+                <th>Output Assessment (AI)</th>
                 <th></th>
             </tr>
             </thead>
@@ -237,9 +237,10 @@
             // Rerun alt text generation
             if (active_field.includes('button is-dark')) {
                 $('.modal-card-title').text('Additional prompt information');
+                $('.modal-text').text('');
+                $('.modal-edit').val('');
                 $('.button.is-success').text('Rerun');
             } else {
-                console.log(active_row_data[active_field]);
                 $('.modal-card-title').text(fieldName(e.target.className));
                 $('.modal-text').text(active_row_data[active_field]);
                 $('.modal-edit').val(active_row_data[active_field]);
