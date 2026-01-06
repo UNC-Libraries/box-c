@@ -317,6 +317,9 @@
         let text = (has_long_text) ? `${data.substring(0, 250)}... ` : data;
         let sub_text = '<div class="mt-2">';
         if (has_long_text) {
+            // Add a hidden div with the full text so that searching works correctly
+            sub_text += `<div class="is-hidden">${data}</div>`;
+            // Add a view all text button
             sub_text += `<a class="${class_name}" href="#">View All</a><br/>`
         }
         return `${text}${sub_text}<a class="${class_name}" href="#">Edit</a></div>`;
