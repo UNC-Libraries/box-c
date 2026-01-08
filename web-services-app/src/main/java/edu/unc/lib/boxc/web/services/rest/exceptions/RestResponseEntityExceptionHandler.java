@@ -52,7 +52,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
         if (ex.getMessage().contains("Server returned HTTP response code: 403 for URL")) {
             message = "User {} requested a pixel area for an image that exceeds the maximum number of allowed " +
-                    "of pixels set in the configuration for {}";
+                    "pixels set in the configuration for {}";
             bodyOfResponse = "The requested pixel area exceeds the maximum number of allowed pixels";
         }
         log.warn(message, agent.getUsername(), getRequestUri(request));
