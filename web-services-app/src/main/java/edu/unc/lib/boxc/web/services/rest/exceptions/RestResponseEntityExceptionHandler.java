@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.exceptions;
 import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import java.io.EOFException;
+import java.io.IOException;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
@@ -39,6 +40,23 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         log.warn("User {} has insufficient permissions to perform requested action {}",
                 agent.getUsername(), getRequestUri(request));
         String bodyOfResponse = "Insufficient permissions";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = { IOException.class })
+    protected ResponseEntity<Object> handleIOException(Exception ex, WebRequest request) {
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
+
+        var bodyOfResponse = "Insufficient permissions";
+        var message = "User {} has insufficient permissions to perform requested action {}";
+
+        if (ex.getMessage().contains("Server returned HTTP response code: 403 for URL")) {
+            message = "User {} requested a pixel area for an image that exceeds the maximum number of allowed " +
+                    "of pixels set in the configuration for {}";
+            bodyOfResponse = "The requested pixel area exceeds the maximum number of allowed pixels";
+        }
+        log.warn(message, agent.getUsername(), getRequestUri(request));
+
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
