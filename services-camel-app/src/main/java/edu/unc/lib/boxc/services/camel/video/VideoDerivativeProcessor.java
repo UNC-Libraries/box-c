@@ -17,7 +17,7 @@ public class VideoDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(VideoDerivativeProcessor.class);
 
     private static final Pattern MIMETYPE_PATTERN = Pattern.compile(
-        "^(video.(mp4|quicktime|m2ts|mpeg|mpg|x-ms-wmv|x-msvideo|x-matroska|x-flv|x-m4v|webm|x-ms-asf|3gpp))" +
+        "^(video.(mp4|quicktime|m2ts|mpeg|mpg|x-ms-wmv|x-msvideo|avi|x-matroska|x-flv|x-m4v|webm|x-ms-asf|3gpp))" +
                 "|(application.x-shockwave-flash)$");
 
     /**
