@@ -35,6 +35,7 @@ import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_RANGE;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+
 
 public class FedoraContentServiceTest {
     private AutoCloseable closeable;
@@ -94,12 +96,11 @@ public class FedoraContentServiceTest {
     }
 
     @Test
-    public void streamDataWithExternalDatastream() {
+    public void streamDataWithExternalDatastream() throws IOException {
         var pid = makePid();
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            fedoraContentService.streamData(pid, "fulltext", false, response, null);
-        });
+        fedoraContentService.streamData(pid, "fulltext", false, response, null);
+        verify(response).setStatus(SC_BAD_REQUEST);
     }
 
     @Test

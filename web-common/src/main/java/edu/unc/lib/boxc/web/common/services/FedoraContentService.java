@@ -81,7 +81,9 @@ public class FedoraContentService {
             throw new NotFoundException("Provided value is not the name of a known datastream type");
         }
         if (dsType.getStoragePolicy().equals(StoragePolicy.EXTERNAL)) {
-            throw new IllegalArgumentException("Cannot stream external datastream " + datastream);
+            LOG.warn("Trying to stream external resource from fcrepo for {}.", pid.getId());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
 
         LOG.debug("Streaming datastream {} from object {}", datastream, pid);
