@@ -47,15 +47,20 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleIOException(Exception ex, WebRequest request) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
-        var bodyOfResponse = "Insufficient permissions";
-        var message = "User {} has insufficient permissions to perform requested action {}";
+        var bodyOfResponse =  "The requested pixel area exceeds the maximum number of allowed pixels";
+        var logMessage = "User {} has insufficient permissions to perform requested action {}";
 
-        if (ex.getMessage().contains("Server returned HTTP response code: 403 for URL")) {
-            message = "User {} requested a pixel area for an image that exceeds the maximum number of allowed " +
+        var serverMessage = ex.getMessage();
+        if (serverMessage.contains("Server returned HTTP response code: 403 for URL")) {
+            logMessage = "User {} requested a pixel area for an image that exceeds the maximum number of allowed " +
                     "pixels set in the configuration for {}";
-            bodyOfResponse = "The requested pixel area exceeds the maximum number of allowed pixels";
         }
-        log.warn(message, agent.getUsername(), getRequestUri(request));
+
+        log.warn(logMessage, agent.getUsername(), getRequestUri(request));
+
+        if (!serverMessage.contains("Server returned HTTP response code")) {
+            return handleUncaught(ex, request);
+        }
 
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
