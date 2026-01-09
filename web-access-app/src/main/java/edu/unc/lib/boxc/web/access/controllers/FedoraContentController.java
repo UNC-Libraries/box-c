@@ -111,6 +111,9 @@ public class FedoraContentController {
         } catch (IOException e) {
             handleIOException(pid, datastream, e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        } catch (IllegalArgumentException e) {
+            log.warn("Trying to stream external resource from fcrepo for {}.", pid.getId());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
