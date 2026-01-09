@@ -47,13 +47,19 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleIOException(Exception ex, WebRequest request) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
-        var bodyOfResponse =  "The requested pixel area exceeds the maximum number of allowed pixels";
-        var logMessage = "User {} has insufficient permissions to perform requested action {}";
-
         var serverMessage = ex.getMessage();
+        var bodyOfResponse =  "Error retrieving streaming JP2 content";
+        var logMessage = "Error retrieving streaming JP2 content for {} from {}";
+
         if (serverMessage.contains("Server returned HTTP response code: 403 for URL")) {
+            bodyOfResponse =  "The requested pixel area exceeds the maximum number of allowed pixels";
             logMessage = "User {} requested a pixel area for an image that exceeds the maximum number of allowed " +
                     "pixels set in the configuration for {}";
+        }
+
+        if (serverMessage.contains("Server returned HTTP response code: 400 for URL")) {
+            bodyOfResponse =  "The request contains invalid syntax";
+            logMessage = "User {} issued request for {} which contains invalid request syntax";
         }
 
         log.warn(logMessage, agent.getUsername(), getRequestUri(request));
