@@ -55,12 +55,12 @@ public class DownloadImageController {
 
         var contentObjectRecord = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         if (contentObjectRecord == null) {
-            log.error("No content object found for {}", pidString);
+            log.warn("No content object found for {}", pidString);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         if (downloadImageService.isInvalidJP2Datastream(contentObjectRecord)) {
-            log.error("No valid JP2 datastream for {}", pidString);
+            log.warn("No valid JP2 datastream for {}", pidString);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 

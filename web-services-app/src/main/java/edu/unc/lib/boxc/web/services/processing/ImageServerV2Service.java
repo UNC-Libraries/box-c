@@ -169,8 +169,8 @@ public class ImageServerV2Service {
                     streamJP2(simplepid, region, size, rotation, quality,
                             format, outStream, response, retryServerError - 1);
                 } else {
-                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
-                    LOG.error("Path was: {}", method.getURI());
+                    LOG.warn("Unexpected response streaming JP2 for path {}: {}",
+                            method.getURI(), httpResp.getStatusLine());
                 }
             }
         } catch (ClientAbortException e) {
