@@ -2,320 +2,321 @@
 <!--
      Solr schema for the CDR public UI.  Includes metadata for direct display to the user interface,
      as well as search indexes, facets and basic access control metadata.
-     See full field documentation here:
-     https://intranet.lib.unc.edu/wikis/staff/index.php/Solr_Schema
      -->
 <schema name="ir" version="1.6">
-  <!-- attribute "name" is the name of this schema and is only used for display purposes.
-       Applications should change this to reflect the nature of the search collection.
-       version="1.1" is Solr's version number for the schema syntax and semantics.  It should
-       not normally be changed by applications.
-       1.0: multiValued attribute did not exist, all fields are multiValued by nature
-       1.1: multiValued attribute introduced, false by default -->
+    <!-- attribute "name" is the name of this schema and is only used for display purposes.
+         Applications should change this to reflect the nature of the search collection.
+         version="1.1" is Solr's version number for the schema syntax and semantics.  It should
+         not normally be changed by applications.
+         1.0: multiValued attribute did not exist, all fields are multiValued by nature
+         1.1: multiValued attribute introduced, false by default -->
 
-  <types>
-    <!-- field type definitions. The "name" attribute is
-       just a label to be used by field definitions.  The "class"
-       attribute and any other attributes determine the real
-       behavior of the fieldType.
-         Class names starting with "solr" refer to java classes in the
-       org.apache.solr.analysis package.
-       -->
-    <!-- The StrField type is not analyzed, but indexed/stored verbatim.
-       - StrField and TextField support an optional compressThreshold which
-       limits compression (if enabled in the derived fields) to values which
-       exceed a certain size (in characters).
-       -->
-    <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+    <types>
+        <!-- field type definitions. The "name" attribute is
+           just a label to be used by field definitions.  The "class"
+           attribute and any other attributes determine the real
+           behavior of the fieldType.
+             Class names starting with "solr" refer to java classes in the
+           org.apache.solr.analysis package.
+           -->
+        <!-- The StrField type is not analyzed, but indexed/stored verbatim.
+           - StrField and TextField support an optional compressThreshold which
+           limits compression (if enabled in the derived fields) to values which
+           exceed a certain size (in characters).
+           -->
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
 
-    <!-- numeric field types that store and index the text
-         value verbatim (and hence don't support range queries, since the
-         lexicographic ordering isn't equal to the numeric ordering) -->
-    <fieldType name="int" class="solr.IntPointField" positionIncrementGap="0"/>
-    <fieldType name="float" class="solr.FloatPointField" positionIncrementGap="0"/>
-    <fieldType name="long" class="solr.LongPointField" positionIncrementGap="0"/>
-    <fieldType name="double" class="solr.DoublePointField" positionIncrementGap="0"/>
+        <!-- numeric field types that store and index the text
+             value verbatim (and hence don't support range queries, since the
+             lexicographic ordering isn't equal to the numeric ordering) -->
+        <fieldType name="int" class="solr.IntPointField" positionIncrementGap="0"/>
+        <fieldType name="float" class="solr.FloatPointField" positionIncrementGap="0"/>
+        <fieldType name="long" class="solr.LongPointField" positionIncrementGap="0"/>
+        <fieldType name="double" class="solr.DoublePointField" positionIncrementGap="0"/>
 
-    <!-- boolean type: "true" or "false" -->
-    <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+        <!-- boolean type: "true" or "false" -->
+        <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
 
-    <!-- The format for this date field is of the form 1995-12-31T23:59:59Z -->
-    <fieldType name="date" class="solr.DatePointField" positionIncrementGap="0"/>
-    <!-- https://solr.apache.org/guide/8_11/working-with-dates.html#date-range-formatting -->
-    <fieldType name="dateRange" class="solr.DateRangeField"/>
-    <!-- https://solr.apache.org/guide/8_11/field-types-included-with-solr.html -->
-    <fieldType name="sortableText" class="solr.SortableTextField">
-      <analyzer>
-        <tokenizer class="solr.KeywordTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-    </fieldType>
+        <!-- The format for this date field is of the form 1995-12-31T23:59:59Z -->
+        <fieldType name="date" class="solr.DatePointField" positionIncrementGap="0"/>
+        <!-- https://solr.apache.org/guide/8_11/working-with-dates.html#date-range-formatting -->
+        <fieldType name="dateRange" class="solr.DateRangeField"/>
+        <!-- https://solr.apache.org/guide/8_11/field-types-included-with-solr.html -->
+        <fieldType name="sortableText" class="solr.SortableTextField">
+            <analyzer>
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+        </fieldType>
 
-    <!-- The "RandomSortField" is not used to store or search any
-         data.  You can declare fields of this type it in your schema
-         to generate pseudo-random orderings of your docs for sorting
-         purposes.  The ordering is generated based on the field name
-         and the version of the index, As long as the index version
-         remains unchanged, and the same field name is reused,
-         the ordering of the docs will be consistent.
-         If you want different psuedo-random orderings of documents,
-         for the same version of the index, use a dynamicField and
-         change the name
-     -->
-    <fieldType name="random" class="solr.RandomSortField" indexed="true" />
+        <!-- The "RandomSortField" is not used to store or search any
+             data.  You can declare fields of this type it in your schema
+             to generate pseudo-random orderings of your docs for sorting
+             purposes.  The ordering is generated based on the field name
+             and the version of the index, As long as the index version
+             remains unchanged, and the same field name is reused,
+             the ordering of the docs will be consistent.
+             If you want different psuedo-random orderings of documents,
+             for the same version of the index, use a dynamicField and
+             change the name
+         -->
+        <fieldType name="random" class="solr.RandomSortField" indexed="true" />
 
-    <!-- Text field with full stemming and stopword support -->
-    <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
-      <analyzer type="index">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
-        <!-- <filter class="solr.LimitTokenCountFilterFactory" maxTokenCount="10000"/> -->
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.EnglishPossessiveFilterFactory"/>
-        <filter class="solr.EnglishMinimalStemFilterFactory"/>
-        <filter class="solr.WordDelimiterGraphFilterFactory"/>
-        <filter class="solr.FlattenGraphFilterFactory"/>
-      </analyzer>
-      <analyzer type="query">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.EnglishPossessiveFilterFactory"/>
-        <filter class="solr.EnglishMinimalStemFilterFactory"/>
-        <filter class="solr.WordDelimiterGraphFilterFactory" preserveOriginal="1"/>
-      </analyzer>
-    </fieldType>
+        <!-- Text field with full stemming and stopword support -->
+        <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
+                <!-- <filter class="solr.LimitTokenCountFilterFactory" maxTokenCount="10000"/> -->
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.EnglishPossessiveFilterFactory"/>
+                <filter class="solr.EnglishMinimalStemFilterFactory"/>
+                <filter class="solr.WordDelimiterGraphFilterFactory"/>
+                <filter class="solr.FlattenGraphFilterFactory"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.EnglishPossessiveFilterFactory"/>
+                <filter class="solr.EnglishMinimalStemFilterFactory"/>
+                <filter class="solr.WordDelimiterGraphFilterFactory" preserveOriginal="1"/>
+            </analyzer>
+        </fieldType>
 
-    <!-- Text field with stemming and stopwords disabled -->
-    <fieldType name="text_ns" class="solr.TextField" positionIncrementGap="100">
-      <analyzer type="index">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-      <analyzer type="query">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-    </fieldType>
+        <!-- Text field with stemming and stopwords disabled -->
+        <fieldType name="text_ns" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+        </fieldType>
 
-    <!-- Text field with stemming and stopwords disabled -->
-    <fieldType name="text_tl" class="solr.TextField" positionIncrementGap="100">
-      <analyzer>
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-    </fieldType>
-  </types>
-  <fields>
-    <!-- Used for partial updating -->
-    <field name="_version_" type="long" indexed="true" stored="true"/>
-    <!-- Abstract for this item, for display purposes only -->
-    <field name="abstract" type="string" indexed="false" stored="true"/>
-    <!-- Groups which have administrative viewing rights to this object -->
-    <field name="adminGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
-    <field name="altText" type="string" indexed="false" stored="true"/>
-    <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
-    <field name="ancestorIds" type="string" indexed="true" stored="true" docValues="true"/>
-    <!--
-    Hierarchical path facet up to, but not including, this object
+        <!-- Text field with stemming and stopwords disabled -->
+        <fieldType name="text_tl" class="solr.TextField" positionIncrementGap="100">
+            <analyzer>
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+        </fieldType>
+    </types>
+    <fields>
+        <!-- Used for partial updating -->
+        <field name="_version_" type="long" indexed="true" stored="true"/>
+        <!-- Abstract for this item, for display purposes only -->
+        <field name="abstract" type="string" indexed="false" stored="true"/>
+        <!-- Groups which have administrative viewing rights to this object -->
+        <field name="adminGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
+        <field name="altText" type="string" indexed="false" stored="true"/>
+        <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
+        <field name="ancestorIds" type="string" indexed="true" stored="true" docValues="true"/>
+        <!--
+        Hierarchical path facet up to, but not including, this object
 
-    Supports a single hierarchy per object with depth range filtering, and the option to only show
-    the next tier of facets after the current one.
-    Syntax, one entry per tier in the hierarchy:
-    <tier #>,<pid>
+        Supports a single hierarchy per object with depth range filtering, and the option to only show
+        the next tier of facets after the current one.
+        Syntax, one entry per tier in the hierarchy:
+        <tier #>,<pid>
 
-    <str>1,uuid:76240153-300b-4e90-9c55-94c64f4a24de</str>
-    <str>2,uuid:702378ab-c65c-45bb-8bdf-49f1fc73f9b6</str>
-    <str>3,uuid:a6e05ec3-ab2a-496b-aad7-cdb6fb590659</str>
+        <str>1,uuid:76240153-300b-4e90-9c55-94c64f4a24de</str>
+        <str>2,uuid:702378ab-c65c-45bb-8bdf-49f1fc73f9b6</str>
+        <str>3,uuid:a6e05ec3-ab2a-496b-aad7-cdb6fb590659</str>
 
-    Example query, retrieve items in the next 3 tiers under folder 'test'
-      fq=ancestorPath:(1,test,* AND !ancestorPath:5,*)
-    Example, get the next tier of facets with folder 'test' selected:
-      fq=ancestorPath:1,test,*&f.ancestorPath.facet.prefix=2,
-    -->
-    <field name="ancestorPath" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- ArchivesSpace Ref ID -->
-    <field name="aspaceRefId" type="string" indexed="true" stored="true"/>
-    <!-- Combined citation field -->
-    <field name="citation" type="string" indexed="false" stored="true"/>
-    <!-- Archival Collection number -->
-    <field name="collectionId" type="string" indexed="true" stored="true"/>
-    <!-- Status information related to the content of an object, such as if it is described or not -->
-    <field name="contentStatus" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- All names, searchable, and used in copy indexes -->
-    <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
-    <field name="creator" type="sortableText" indexed="true" stored="true" multiValued="true"/>
-    <!-- Used for faceting creators and contributors as a single facet -->
-    <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- DS name|mimetype|extension|filesize|checksum|owner -->
-    <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Date when the object was added to the repository -->
-    <field name="dateAdded" type="date" indexed="true" stored="true" docValues="true"/>
-    <!-- Date when this object was originally created -->
-    <field name="dateCreated" type="date" indexed="true" stored="true" docValues="true"/>
-    <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
-    <!-- Date when the object was last updated in the repository -->
-    <field name="dateUpdated" type="date" indexed="true" stored="true" docValues="true"/>
-    <!-- Name and link to an external digital exhibit -->
-    <field name="exhibit" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- High level category for the content of binaries, values like Image, Audio, Text, etc. -->
-    <field name="fileFormatCategory" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Specific format of binary content, represented as a file extension -->
-    <field name="fileFormatType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Specific format of binary content, represented as a file extension -->
-    <field name="fileFormatDescription" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- Filesize of the default web data for this object, used for sorting -->
-    <field name="filesizeSort" type="long" indexed="true" stored="true" docValues="true"/>
-    <!-- Sum of all datastreams filesizes for this object -->
-    <field name="filesizeTotal" type="long" indexed="true" stored="true"/>
-    <!-- Full text field, tokenized but not indexed so that it can be used for highlighting purposes -->
-    <field name="fullText" type="text_tl" indexed="false" stored="true"/>
-    <!-- Descriptive genre facet -->
-    <field name="genre" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- ArchivesSpace Hook ID -->
-    <field name="hookId" type="string" indexed="true" stored="true"/>
-    <!-- Primary key -->
-    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
-    <!-- identifiers, prefixed with the identifier type, such as doi|10.1186/1471-2458-11-702 -->
-    <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
-    <field name="identifierSort" type="sortableText" indexed="true" stored="true"/>
-    <!-- Other keywords, for use in copy indexes -->
-    <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>
-    <!-- Languages presented in the resource, in human readable form-->
-    <field name="language" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Timestamp when this record was fully indexed -->
-    <field name="lastIndexed" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
-    <field name="location" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Sort order of members within their parent container, if custom ordering is specified -->
-    <field name="memberOrderId" type="int" indexed="true" stored="true" docValues="true" sortMissingLast="true"/>
-    <!-- Alternative subjects, not searchable, for use in copy indexes -->
-    <field name="otherSubject" type="string" indexed="false" stored="true" multiValued="true"/>
-    <!-- Alternative titles, not searchable, for use in copy indexes -->
-    <field name="otherTitle" type="string" indexed="false" stored="true" multiValued="true"/>
-    <!-- PID of the collection in this objects ancestry -->
-    <field name="parentCollection" type="string" indexed="true" stored="true" docValues="true"/>
-    <!-- PID of the admin unit in this objects ancestry -->
-    <field name="parentUnit" type="string" indexed="true" stored="true" docValues="true"/>
-    <!-- Publisher of an object -->
-    <field name="publisher" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Groups which have metadata viewing rights to this object, and should be able to retrieve this item in normal searches -->
-    <field name="readGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
-    <!-- Computed, representative resource type for this object, such as Collection or Item -->
-    <field name="resourceType" type="string" indexed="true" stored="true" required="true" docValues="true"/>
-    <!-- Sort order for this item based on resource type -->
-    <field name="resourceTypeSort" type="int" indexed="true" stored="true" docValues="true"/>
-    <!-- Rights statement text. Used in copy indexes -->
-    <field name="rights" type="string" indexed="false" stored="true" multiValued="true"/>
-    <field name="rightsOaiPmh" type="string" indexed="false" stored="true" multiValued="true"/>
-    <!-- Rights statement URI. Used in copy indexes -->
-    <field name="rightsUri" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- Contains role|group pairings describing all access control group assignments for this object -->
-    <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
-    <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->
-    <field name="rollup" type="string" indexed="true" stored="true" required="true" docValues="true"/>
-    <!-- Stores publication status and other statuses that affect viewing of this object outside of group ACLs -->
-    <field name="status" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- Stores streaming type "Sound" or "Video" for files with streaming property -->
-    <field name="streamingType" type="string" indexed="true" stored="true"/>
-    <!-- Stores streaming URL for files with streaming property -->
-    <field name="streamingUrl" type="string" indexed="true" stored="true"/>
-    <field name="subject" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Timestamp when this record was updated -->
-    <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
-    <!-- Descriptive Fields -->
-    <field name="title" type="sortableText" indexed="true" stored="true" required="true"/>
-    <!-- View behavior for Clover -->
-    <field name="viewBehavior" type="string" indexed="true" stored="true" />
+        Example query, retrieve items in the next 3 tiers under folder 'test'
+          fq=ancestorPath:(1,test,* AND !ancestorPath:5,*)
+        Example, get the next tier of facets with folder 'test' selected:
+          fq=ancestorPath:1,test,*&f.ancestorPath.facet.prefix=2,
+        -->
+        <field name="ancestorPath" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- ArchivesSpace Ref ID -->
+        <field name="aspaceRefId" type="string" indexed="true" stored="true"/>
+        <!-- Combined citation field -->
+        <field name="citation" type="string" indexed="false" stored="true"/>
+        <!-- Archival Collection number -->
+        <field name="collectionId" type="string" indexed="true" stored="true"/>
+        <!-- Stores default viewing options for collections -->
+        <field name="collectionDisplaySettings" type="string" indexed="true" stored="true"/>
+        <!-- Status information related to the content of an object, such as if it is described or not -->
+        <field name="contentStatus" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- All names, searchable, and used in copy indexes -->
+        <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
+        <field name="creator" type="sortableText" indexed="true" stored="true" multiValued="true"/>
+        <!-- Used for faceting creators and contributors as a single facet -->
+        <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- DS name|mimetype|extension|filesize|checksum|owner -->
+        <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Date when the object was added to the repository -->
+        <field name="dateAdded" type="date" indexed="true" stored="true" docValues="true"/>
+        <!-- Date when this object was originally created -->
+        <field name="dateCreated" type="date" indexed="true" stored="true" docValues="true"/>
+        <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
+        <!-- Date when the object was last updated in the repository -->
+        <field name="dateUpdated" type="date" indexed="true" stored="true" docValues="true"/>
+        <!-- Name and link to an external digital exhibit -->
+        <field name="exhibit" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- High level category for the content of binaries, values like Image, Audio, Text, etc. -->
+        <field name="fileFormatCategory" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Specific format of binary content, represented as a file extension -->
+        <field name="fileFormatType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Specific format of binary content, represented as a file extension -->
+        <field name="fileFormatDescription" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- Filesize of the default web data for this object, used for sorting -->
+        <field name="filesizeSort" type="long" indexed="true" stored="true" docValues="true"/>
+        <!-- Sum of all datastreams filesizes for this object -->
+        <field name="filesizeTotal" type="long" indexed="true" stored="true"/>
+        <!-- Full text field, tokenized but not indexed so that it can be used for highlighting purposes -->
+        <field name="fullText" type="text_tl" indexed="false" stored="true"/>
+        <!-- Descriptive genre facet -->
+        <field name="genre" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- ArchivesSpace Hook ID -->
+        <field name="hookId" type="string" indexed="true" stored="true"/>
+        <!-- Primary key -->
+        <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+        <!-- identifiers, prefixed with the identifier type, such as doi|10.1186/1471-2458-11-702 -->
+        <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
+        <field name="identifierSort" type="sortableText" indexed="true" stored="true"/>
+        <!-- Other keywords, for use in copy indexes -->
+        <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>
+        <!-- Languages presented in the resource, in human readable form-->
+        <field name="language" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Timestamp when this record was fully indexed -->
+        <field name="lastIndexed" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
+        <field name="location" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Sort order of members within their parent container, if custom ordering is specified -->
+        <field name="memberOrderId" type="int" indexed="true" stored="true" docValues="true" sortMissingLast="true"/>
+        <!-- Alternative subjects, not searchable, for use in copy indexes -->
+        <field name="otherSubject" type="string" indexed="false" stored="true" multiValued="true"/>
+        <!-- Alternative titles, not searchable, for use in copy indexes -->
+        <field name="otherTitle" type="string" indexed="false" stored="true" multiValued="true"/>
+        <!-- PID of the collection in this objects ancestry -->
+        <field name="parentCollection" type="string" indexed="true" stored="true" docValues="true"/>
+        <!-- PID of the admin unit in this objects ancestry -->
+        <field name="parentUnit" type="string" indexed="true" stored="true" docValues="true"/>
+        <!-- Publisher of an object -->
+        <field name="publisher" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Groups which have metadata viewing rights to this object, and should be able to retrieve this item in normal searches -->
+        <field name="readGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
+        <!-- Computed, representative resource type for this object, such as Collection or Item -->
+        <field name="resourceType" type="string" indexed="true" stored="true" required="true" docValues="true"/>
+        <!-- Sort order for this item based on resource type -->
+        <field name="resourceTypeSort" type="int" indexed="true" stored="true" docValues="true"/>
+        <!-- Rights statement text. Used in copy indexes -->
+        <field name="rights" type="string" indexed="false" stored="true" multiValued="true"/>
+        <field name="rightsOaiPmh" type="string" indexed="false" stored="true" multiValued="true"/>
+        <!-- Rights statement URI. Used in copy indexes -->
+        <field name="rightsUri" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- Contains role|group pairings describing all access control group assignments for this object -->
+        <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
+        <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->
+        <field name="rollup" type="string" indexed="true" stored="true" required="true" docValues="true"/>
+        <!-- Stores publication status and other statuses that affect viewing of this object outside of group ACLs -->
+        <field name="status" type="string" indexed="true" stored="true" multiValued="true"/>
+        <!-- Stores streaming type "Sound" or "Video" for files with streaming property -->
+        <field name="streamingType" type="string" indexed="true" stored="true"/>
+        <!-- Stores streaming URL for files with streaming property -->
+        <field name="streamingUrl" type="string" indexed="true" stored="true"/>
+        <field name="subject" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <!-- Timestamp when this record was updated -->
+        <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
+        <!-- Descriptive Fields -->
+        <field name="title" type="sortableText" indexed="true" stored="true" required="true"/>
+        <!-- View behavior for Clover -->
+        <field name="viewBehavior" type="string" indexed="true" stored="true" />
 
-    <!-- Index fields -->
-    <!-- Specific field indexes -->
-    <field name="contributorIndex" type="text_ns" indexed="true" stored="false" multiValued="true"/>
-    <field name="identifierIndex" type="text" indexed="true" stored="false" multiValued="true"/>
-    <!-- Index for most fields, except full text -->
-    <field name="keywordIndex" type="text" indexed="true" stored="false" multiValued="true"/>
-    <!-- Default, primary search field, includes everything from keyword index, plus full text -->
-    <field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
-    <field name="titleIndex" type="text" indexed="true" stored="false" multiValued="true"/>
-    <field name="subjectIndex" type="text" indexed="true" stored="false" multiValued="true"/>
+        <!-- Index fields -->
+        <!-- Specific field indexes -->
+        <field name="contributorIndex" type="text_ns" indexed="true" stored="false" multiValued="true"/>
+        <field name="identifierIndex" type="text" indexed="true" stored="false" multiValued="true"/>
+        <!-- Index for most fields, except full text -->
+        <field name="keywordIndex" type="text" indexed="true" stored="false" multiValued="true"/>
+        <!-- Default, primary search field, includes everything from keyword index, plus full text -->
+        <field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
+        <field name="titleIndex" type="text" indexed="true" stored="false" multiValued="true"/>
+        <field name="subjectIndex" type="text" indexed="true" stored="false" multiValued="true"/>
 
-    <!-- Dynamic field definitions.  If a field name is not found, dynamicFields
-        will be used if the name matches any of the patterns.
-        RESTRICTION: the glob-like pattern in the name attribute must have
-        a "*" only at the start or the end.
-        EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
-        Longer patterns will be matched first.  if equal size patterns
-        both match, the first appearing in the schema will be used.  -->
-    <dynamicField name="*_i_d"  type="int"    indexed="true"  stored="true"/>
-    <dynamicField name="*_is_d" type="int"    indexed="true"  stored="true"  multiValued="true"/>
-    <!-- String, the "Default" dynamic type, to keep down ugliness in urls -->
-    <dynamicField name="*_d"  type="string"  indexed="true"  stored="true" />
-    <dynamicField name="*_ss_d" type="string"  indexed="true"  stored="true" multiValued="true"/>
-    <dynamicField name="*_l_d"  type="long"   indexed="true"  stored="true"/>
-    <dynamicField name="*_ls_d" type="long"   indexed="true"  stored="true"  multiValued="true"/>
-    <dynamicField name="*_t_d"  type="text"    indexed="true"  stored="true"/>
-    <dynamicField name="*_ts_d" type="text"   indexed="true"  stored="true" multiValued="true"/>
-    <dynamicField name="*_b_d"  type="boolean" indexed="true" stored="true"/>
-    <dynamicField name="*_bs_d" type="boolean" indexed="true" stored="true"  multiValued="true"/>
-    <dynamicField name="*_f_d"  type="float"  indexed="true"  stored="true"/>
-    <dynamicField name="*_fs_d" type="float"  indexed="true"  stored="true"  multiValued="true"/>
-    <dynamicField name="*_d_d"  type="double" indexed="true"  stored="true"/>
-    <dynamicField name="*_ds_d" type="double" indexed="true"  stored="true"  multiValued="true"/>
-    <dynamicField name="random*" type="random" indexed="true" stored="false"/>
-  </fields>
-  <!-- The unique id -->
-  <uniqueKey>id</uniqueKey>
+        <!-- Dynamic field definitions.  If a field name is not found, dynamicFields
+            will be used if the name matches any of the patterns.
+            RESTRICTION: the glob-like pattern in the name attribute must have
+            a "*" only at the start or the end.
+            EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
+            Longer patterns will be matched first.  if equal size patterns
+            both match, the first appearing in the schema will be used.  -->
+        <dynamicField name="*_i_d"  type="int"    indexed="true"  stored="true"/>
+        <dynamicField name="*_is_d" type="int"    indexed="true"  stored="true"  multiValued="true"/>
+        <!-- String, the "Default" dynamic type, to keep down ugliness in urls -->
+        <dynamicField name="*_d"  type="string"  indexed="true"  stored="true" />
+        <dynamicField name="*_ss_d" type="string"  indexed="true"  stored="true" multiValued="true"/>
+        <dynamicField name="*_l_d"  type="long"   indexed="true"  stored="true"/>
+        <dynamicField name="*_ls_d" type="long"   indexed="true"  stored="true"  multiValued="true"/>
+        <dynamicField name="*_t_d"  type="text"    indexed="true"  stored="true"/>
+        <dynamicField name="*_ts_d" type="text"   indexed="true"  stored="true" multiValued="true"/>
+        <dynamicField name="*_b_d"  type="boolean" indexed="true" stored="true"/>
+        <dynamicField name="*_bs_d" type="boolean" indexed="true" stored="true"  multiValued="true"/>
+        <dynamicField name="*_f_d"  type="float"  indexed="true"  stored="true"/>
+        <dynamicField name="*_fs_d" type="float"  indexed="true"  stored="true"  multiValued="true"/>
+        <dynamicField name="*_d_d"  type="double" indexed="true"  stored="true"/>
+        <dynamicField name="*_ds_d" type="double" indexed="true"  stored="true"  multiValued="true"/>
+        <dynamicField name="random*" type="random" indexed="true" stored="false"/>
+    </fields>
+    <!-- The unique id -->
+    <uniqueKey>id</uniqueKey>
 
-  <!-- Copy to index fields.  Duplicate copies are for boosting -->
-  <copyField source="title" dest="titleIndex"/>
-  <copyField source="title" dest="titleIndex"/>
-  <copyField source="otherTitle" dest="titleIndex"/>
+    <!-- Copy to index fields.  Duplicate copies are for boosting -->
+    <copyField source="title" dest="titleIndex"/>
+    <copyField source="title" dest="titleIndex"/>
+    <copyField source="otherTitle" dest="titleIndex"/>
 
-  <copyField source="subject" dest="subjectIndex"/>
-  <copyField source="otherSubject" dest="subjectIndex"/>
-  <copyField source="contributor" dest="contributorIndex"/>
-  <copyField source="creator" dest="contributorIndex"/>
+    <copyField source="subject" dest="subjectIndex"/>
+    <copyField source="otherSubject" dest="subjectIndex"/>
+    <copyField source="contributor" dest="contributorIndex"/>
+    <copyField source="creator" dest="contributorIndex"/>
 
-  <copyField source="identifier" dest="identifierIndex"/>
+    <copyField source="aspaceRefId" dest="identifierIndex"/>
+    <copyField source="identifier" dest="identifierIndex"/>
 
-  <copyField source="title" dest="keywordIndex"/>
-  <copyField source="title" dest="keywordIndex"/>
-  <copyField source="otherTitle" dest="keywordIndex"/>
-  <copyField source="contributor" dest="keywordIndex"/>
-  <copyField source="creator" dest="keywordIndex"/>
-  <copyField source="subject" dest="keywordIndex"/>
-  <copyField source="otherSubject" dest="keywordIndex"/>
-  <copyField source="abstract" dest="keywordIndex"/>
-  <copyField source="keyword" dest="keywordIndex"/>
-  <copyField source="publisher" dest="keywordIndex"/>
-  <copyField source="id" dest="keywordIndex"/>
-  <copyField source="identifier" dest="keywordIndex"/>
-  <copyField source="rights" dest="keywordIndex"/>
-  <copyField source="rightsOaiPmh" dest="keywordIndex"/>
-  <copyField source="rightsUri" dest="keywordIndex"/>
-  <copyField source="genre" dest="keywordIndex"/>
-  <copyField source="altText" dest="keywordIndex"/>
+    <copyField source="title" dest="keywordIndex"/>
+    <copyField source="title" dest="keywordIndex"/>
+    <copyField source="otherTitle" dest="keywordIndex"/>
+    <copyField source="contributor" dest="keywordIndex"/>
+    <copyField source="creator" dest="keywordIndex"/>
+    <copyField source="subject" dest="keywordIndex"/>
+    <copyField source="otherSubject" dest="keywordIndex"/>
+    <copyField source="abstract" dest="keywordIndex"/>
+    <copyField source="keyword" dest="keywordIndex"/>
+    <copyField source="publisher" dest="keywordIndex"/>
+    <copyField source="id" dest="keywordIndex"/>
+    <copyField source="identifier" dest="keywordIndex"/>
+    <copyField source="rights" dest="keywordIndex"/>
+    <copyField source="rightsOaiPmh" dest="keywordIndex"/>
+    <copyField source="rightsUri" dest="keywordIndex"/>
+    <copyField source="genre" dest="keywordIndex"/>
+    <copyField source="altText" dest="keywordIndex"/>
 
-  <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
-  <copyField source="title" dest="text"/>
-  <copyField source="title" dest="text"/>
-  <copyField source="otherTitle" dest="text"/>
-  <copyField source="contributor" dest="text"/>
-  <copyField source="creator" dest="text"/>
-  <copyField source="subject" dest="text"/>
-  <copyField source="otherSubject" dest="text"/>
-  <copyField source="abstract" dest="text"/>
-  <copyField source="keyword" dest="text"/>
-  <copyField source="publisher" dest="text"/>
-  <copyField source="id" dest="text"/>
-  <copyField source="identifier" dest="text"/>
-  <copyField source="rights" dest="text"/>
-  <copyField source="rightsOaiPmh" dest="text"/>
-  <copyField source="rightsUri" dest="text"/>
-  <copyField source="fullText" dest="text"/>
-  <copyField source="genre" dest="text"/>
-  <copyField source="altText" dest="text"/>
+    <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
+    <copyField source="title" dest="text"/>
+    <copyField source="title" dest="text"/>
+    <copyField source="otherTitle" dest="text"/>
+    <copyField source="contributor" dest="text"/>
+    <copyField source="creator" dest="text"/>
+    <copyField source="subject" dest="text"/>
+    <copyField source="otherSubject" dest="text"/>
+    <copyField source="abstract" dest="text"/>
+    <copyField source="keyword" dest="text"/>
+    <copyField source="publisher" dest="text"/>
+    <copyField source="id" dest="text"/>
+    <copyField source="identifier" dest="text"/>
+    <copyField source="rights" dest="text"/>
+    <copyField source="rightsOaiPmh" dest="text"/>
+    <copyField source="rightsUri" dest="text"/>
+    <copyField source="fullText" dest="text"/>
+    <copyField source="genre" dest="text"/>
+    <copyField source="altText" dest="text"/>
 </schema>
