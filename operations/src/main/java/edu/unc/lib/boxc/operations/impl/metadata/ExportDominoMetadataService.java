@@ -65,7 +65,7 @@ public class ExportDominoMetadataService {
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
 
     private static final List<String> METADATA_FIELDS = asList(SearchFieldKey.ID.name(),
-            SearchFieldKey.TITLE.name(), SearchFieldKey.ASPACE_REF_ID.name());
+            SearchFieldKey.TITLE.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ASPACE_REF_ID.name());
 
     private static final List<ResourceType> ALLOWED_TYPES = Arrays.asList(ResourceType.ContentRoot,
             ResourceType.AdminUnit, ResourceType.Collection, ResourceType.Folder);
