@@ -6,14 +6,15 @@
         "dev": "vite",
         "serve": "vite preview",
         "build": "vite build",
-        "test": "jest"
+        "test": "jest",
+        "postinstall": "patch-package"
     },
     "dependencies": {
         "@samvera/clover-iiif": "~3.0.3",
         "@unhead/vue": "^2.0.11",
         "@vue-pdf-viewer/viewer": "^2.3.0",
         "axios": "^1.13.2",
-        "canvas": "^2.11.2",
+        "canvas": "^3.2.1",
         "datatables.net": "^2.1.8",
         "datatables.net-bm": "^2.1.8",
         "datatables.net-buttons-bm": "^3.1.2",
@@ -47,16 +48,18 @@
         "babel-jest": "^29.7.0",
         "babel-plugin-transform-import-meta": "^2.3.2",
         "babel-plugin-transform-vite-meta-env": "^1.0.3",
-        "caniuse-lite": "^1.0.30001757",
-        "jest-environment-jsdom": "^29.7.0",
+        "caniuse-lite": "^1.0.30001765",
+        "jest-environment-jsdom": "^30.2.0",
         "jest-localstorage-mock": "^2.4.26",
+        "jest-location-mock": "^2.0.0",
         "moxios": "^0.4.0",
+        "patch-package": "^8.0.1",
         "pretty": "^2.0.0",
         "sass": "^1.87.0",
         "vite": "6.4.1"
     },
     "peerDependencies": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     }
 }
