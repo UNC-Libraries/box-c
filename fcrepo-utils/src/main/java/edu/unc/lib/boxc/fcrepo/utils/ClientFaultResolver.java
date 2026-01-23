@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.fcrepo.utils;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.BadGatewayException;
+import edu.unc.lib.boxc.fcrepo.exceptions.GoneException;
 import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -25,18 +27,21 @@ public abstract class ClientFaultResolver {
      * @return
      */
     public static FedoraException resolve(Exception ex) {
-        if (ex instanceof FcrepoOperationFailedException) {
-            FcrepoOperationFailedException e = (FcrepoOperationFailedException) ex;
+        if (ex instanceof FcrepoOperationFailedException e) {
 
             switch(e.getStatusCode()) {
             case HttpStatus.SC_FORBIDDEN:
                 return new AuthorizationException(ex);
             case HttpStatus.SC_NOT_FOUND:
                 return new NotFoundException(ex);
+            case HttpStatus.SC_GONE:
+                return new GoneException(ex);
             case HttpStatus.SC_CONFLICT:
                 return new ConflictException(ex);
             case HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE:
                 return new RangeNotSatisfiableException(ex);
+            case HttpStatus.SC_BAD_GATEWAY:
+                return new BadGatewayException(ex);
             }
         }
         return new FedoraException(ex);
