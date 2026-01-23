@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.services.camel.video;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.BeanInject;
@@ -50,7 +49,7 @@ public class VideoEnhancementsRouter extends RouteBuilder {
                 .backOffMultiplier("{{error.backOffMultiplier}}")
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct:process.enhancement.videoAccessCopy")
+        from("{{cdr.enhancement.video.stream.camel}}")
             .routeId("VideoAccessCopy")
             .startupOrder(21)
             .log(LoggingLevel.DEBUG, log, "Access copy triggered")
