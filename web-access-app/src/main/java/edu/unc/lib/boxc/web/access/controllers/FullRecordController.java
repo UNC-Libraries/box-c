@@ -385,6 +385,10 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             exhibitObj = queryLayer.getObjectById(collIdRequest);
         }
 
+        if (exhibitObj == null) {
+            return null;
+        }
+
         List<String> collExhibits = exhibitObj.getExhibit();
         if (collExhibits != null) {
             Map<String, String> exhibitList = new HashMap<>();

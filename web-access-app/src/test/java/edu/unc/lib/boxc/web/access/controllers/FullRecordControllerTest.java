@@ -108,6 +108,8 @@ public class FullRecordControllerTest {
     @Mock
     private ContentObjectRecord briefObject;
     @Mock
+    private ContentObjectRecord exhibitObject;
+    @Mock
     private ContentObjectRecord childBriefObject;
 
     @BeforeEach
@@ -325,6 +327,21 @@ public class FullRecordControllerTest {
         assertEquals("clover", respMap.get(VIEWER_TYPE));
         assertNull(respMap.get(STREAMING_TYPE));
         assertNull(respMap.get(STREAMING_URL));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithNullExhibitObj() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject).thenReturn(null);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get("exhibits"));
         assertNotNull(respMap.get("briefObject"));
     }
 
