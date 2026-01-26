@@ -95,7 +95,7 @@ public class EnhancementRouter extends RouteBuilder {
                 .split(simple("${headers[CdrEnhancementSet]}"))
                     .shareUnitOfWork()
                     .log(LoggingLevel.INFO, log, "Calling enhancement direct:process.enhancement.${body}")
-                    .toD("direct:process.enhancement.${body}")
+                    .to("direct:process.enhancement.${body}")
                 .end()
             .endDoTry()
             .doCatch(IllegalStateException.class)
@@ -103,5 +103,7 @@ public class EnhancementRouter extends RouteBuilder {
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
                 .to(ExchangePattern.InOnly, "{{cdr.enhancement.perform.camel}}");
 
+        from("direct:process.enhancement.audioAccessCopy")
+                .toD("{{cdr.enhancement.audio.stream.camel}}");
     }
 }

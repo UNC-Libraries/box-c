@@ -97,10 +97,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     @Produce("{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
-    @Produce("{{cdr.enhancement.audio.stream.camel}}")
-    private ProducerTemplate audioTemplate;
-    @Produce("{{cdr.enhancement.video.stream.camel}}")
-    private ProducerTemplate videoTemplate;
 
     private AddDerivativeProcessor addAccessCopyProcessor;
 
@@ -349,7 +345,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 .create();
 
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
-        audioTemplate.sendBodyAndHeaders("", headers);
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
@@ -395,7 +391,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 .create();
 
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
-        videoTemplate.sendBodyAndHeaders("", headers);
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
