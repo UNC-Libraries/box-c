@@ -13,8 +13,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.BadGatewayException;
+import edu.unc.lib.boxc.fcrepo.exceptions.GoneException;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
@@ -77,22 +80,27 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     public void run() {
         FedoraTransaction tx = txManager.startTransaction();
         FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
-        try (Timer.Context context = timer.time()) {
+        try (Timer.Context ignored = timer.time()) {
             txRefresher.start();
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
-                RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-                assertCanDestroy(agent, repoObj, aclService);
-                if (!inheritedAclFactory.isMarkedForDeletion(pid)) {
-                    log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
-                    continue;
-                }
-                if (repoObj instanceof Tombstone) {
-                    log.debug("Skipping destruction of tombstone {}", pid);
-                    continue;
-                }
+                try {
+                    RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+                    assertCanDestroy(agent, repoObj, aclService);
+                    if (!inheritedAclFactory.isMarkedForDeletion(pid)) {
+                        log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
+                        continue;
+                    }
+                    if (repoObj instanceof Tombstone) {
+                        log.debug("Skipping destruction of tombstone {}", pid);
+                        continue;
+                    }
 
-                destroyObject(repoObj);
+                    destroyObject(repoObj);
+                } catch (GoneException | NotFoundException | BadGatewayException e) {
+                    log.warn("Failed to destroy object {} because it is already gone: {}", pid, e.getMessage());
+                    log.debug(e.getMessage(), e);
+                }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
             }
             txRefresher.stop();
@@ -111,8 +119,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     private void destroyObject(RepositoryObject repoObj) throws IOException, FcrepoOperationFailedException {
         RepositoryObject parentObj = repoObj.getParent();
         // If the object being deleted is the primary object of a work, then clear the relation
-        if (parentObj instanceof WorkObject && repoObj instanceof FileObject) {
-            var parentWork = (WorkObject) parentObj;
+        if (parentObj instanceof WorkObject parentWork && repoObj instanceof FileObject) {
             var primaryObj = parentWork.getPrimaryObject();
             if (primaryObj != null && primaryObj.getPid().equals(repoObj.getPid())) {
                 parentWork.clearPrimaryObject();
