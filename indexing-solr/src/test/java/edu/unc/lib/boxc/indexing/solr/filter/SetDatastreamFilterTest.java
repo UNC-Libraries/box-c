@@ -452,6 +452,7 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
+        // Find the duration rounded to nearest second (19.12 -> 20) as part of the extent subfield
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
                 FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x20");
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
@@ -479,6 +480,7 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
+        // Find the duration rounded to nearest second (0.47 -> 1) as part of the extent subfield
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
                 FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x1");
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
