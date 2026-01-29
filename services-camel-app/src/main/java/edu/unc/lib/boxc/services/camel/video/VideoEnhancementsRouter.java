@@ -66,6 +66,8 @@ public class VideoEnhancementsRouter extends RouteBuilder {
                 .endDoTry()
                 .doFinally()
                     .bean(addVideoAccessCopyProcessor, "cleanupTempFile")
+                .end()
+                .to("direct:solrIndexing")
             .end();
     }
 }

@@ -78,11 +78,15 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -92,10 +96,14 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -106,12 +114,16 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(audioAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uAudioProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -123,12 +135,16 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(audioAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -139,6 +155,9 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         var audioEndpoint = getMockEndpoint("mock:process.enhancement.audioAccessCopy");
         audioEndpoint.expectedMessageCount(0);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "audio/aac");
 
@@ -147,6 +166,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(mp44uAudioProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         audioEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {

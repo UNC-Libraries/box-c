@@ -76,6 +76,9 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addVideoAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(videoAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
@@ -83,6 +86,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(mp44uVideoProcessor).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -90,12 +94,16 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addVideoAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(videoAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uVideoProcessor).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor).process(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -106,6 +114,9 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(videoAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
@@ -113,6 +124,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(mp44uVideoProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -124,12 +136,16 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(videoAccessCopy);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
         verify(mp44uVideoProcessor).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor).process(any(Exchange.class));
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -140,6 +156,9 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         var videoEndpoint = getMockEndpoint("mock:process.enhancement.videoAccessCopy");
         videoEndpoint.expectedMessageCount(0);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "audio/3gpp");
 
@@ -148,6 +167,7 @@ public class VideoEnhancementsRouterTest extends CamelSpringTestSupport {
         verify(mp44uVideoProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
         videoEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {

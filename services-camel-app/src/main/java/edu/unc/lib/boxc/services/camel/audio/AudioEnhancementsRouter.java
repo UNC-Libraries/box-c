@@ -64,6 +64,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                 .doFinally()
                     .bean(addAudioAccessCopyProcessor, "cleanupTempFile")
                 .end()
+                .to("direct:solrIndexing")
             .end();
     }
 }

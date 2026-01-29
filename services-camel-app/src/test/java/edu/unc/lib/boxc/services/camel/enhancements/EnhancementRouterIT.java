@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -351,7 +352,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        // Happens twice due to audio route causing a second indexing
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT).times(2)).process(any(Exchange.class));
     }
 
     @Test
@@ -398,7 +400,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        // Happens twice due to video route causing a second indexing
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT).times(2)).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {
