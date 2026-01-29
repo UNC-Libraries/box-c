@@ -58,6 +58,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     // Check for hours, minutes, seconds. Plus a check for optional milliseconds separated from seconds
     // by a "." or a ":" via a non-capturing block followed by a capture group for the milliseconds.
     private final Pattern TIMING_REGEX = Pattern.compile("(\\d+):(\\d+):(\\d+)(?:[.:](\\d+))?");
+    private final Pattern TIMING_TRAILING_TEXT_REGEX = Pattern.compile("[a-zA-Z()][\\w()\\s]*$");
     private final String FITS_VIDEO_NAME = "video";
 
     @Override
@@ -210,20 +211,20 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private String normalizeTime(String duration) {
         Matcher matcher = TIMING_REGEX.matcher(duration);
-        boolean matchFound = matcher.find();
-        var trailingTextRegex = "[a-zA-Z]+$";
-
-        if (matchFound) {
+        if (matcher.find()) {
             var hoursToSeconds = Integer.parseInt(matcher.group(1)) * 60 * 60;
             var minutesToSeconds = Integer.parseInt(matcher.group(2)) * 60;
             var seconds =  Integer.parseInt(matcher.group(3));
             var millisecondsToSeconds = (matcher.group(4) != null) ? millisecondsToSeconds(matcher.group(4)) : 0;
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
-        } else if (Pattern.compile(trailingTextRegex).matcher(duration).find()) {
-            // Treat timing as seconds if it ends in an a-z character
-            var seconds = duration.replaceAll(trailingTextRegex, "").trim();
-            return  Integer.toString((int) Math.ceil(Double.parseDouble(seconds)));
+        } else {
+            Matcher trailingMatcher = TIMING_TRAILING_TEXT_REGEX.matcher(duration);
+            if (trailingMatcher.find()) {
+                // Treat timing as seconds if it ends in trailing non-numerical text
+                var seconds = trailingMatcher.replaceAll("").trim();
+                return Integer.toString((int) Math.ceil(Double.parseDouble(seconds)));
+            }
         }
 
         return Integer.toString(millisecondsToSeconds(duration));
