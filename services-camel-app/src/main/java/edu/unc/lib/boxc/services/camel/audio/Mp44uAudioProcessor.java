@@ -21,6 +21,11 @@ import java.util.Arrays;
  */
 public class Mp44uAudioProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(Mp44uAudioProcessor.class);
+    private String mp44uThreads;
+
+    public Mp44uAudioProcessor(String mp44uThreads) {
+        this.mp44uThreads = mp44uThreads;
+    }
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -30,7 +35,7 @@ public class Mp44uAudioProcessor implements Processor {
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
 
         String[] command = new String[]{"mp44u", "audio", "-i", audioPath,
-                "-o", tempPath};
+                "-o", tempPath, "-t", mp44uThreads};
         log.debug("Run mp44u command {} for type {}", command, mimetype);
         int exitCode = CLIMain.runCommand(command);
 

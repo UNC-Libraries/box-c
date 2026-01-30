@@ -24,6 +24,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class Mp44uAudioProcessorTest {
     private final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private final String mp44uThreads = "8";
     private String derivTmpPath;
 
     private Mp44uAudioProcessor processor;
@@ -43,7 +44,7 @@ public class Mp44uAudioProcessorTest {
     public void init() {
         closeable = openMocks(this);
 
-        processor = new Mp44uAudioProcessor();
+        processor = new Mp44uAudioProcessor(mp44uThreads);
 
         // Path to file from exec result not expected to have extension
         derivTmpPath = tmpFolder.resolve(fileName).toString();
@@ -72,7 +73,7 @@ public class Mp44uAudioProcessorTest {
             processor.process(exchange);
 
             mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"mp44u", "audio",
-                    "-i", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc", "-o",  derivTmpPath}));
+                    "-i", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc", "-o",  derivTmpPath, "-t", "8"}));
         }
     }
 
@@ -84,7 +85,7 @@ public class Mp44uAudioProcessorTest {
             processor.process(exchange);
 
             mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"mp44u", "audio", "-i", null,
-                    "-o", derivTmpPath}));
+                    "-o", derivTmpPath, "-t", "8"}));
         }
     }
 }
