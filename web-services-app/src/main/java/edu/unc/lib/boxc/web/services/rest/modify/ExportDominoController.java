@@ -50,7 +50,7 @@ public class ExportDominoController {
                     .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
                     .header("Content-Type", "text/csv")
                     .body(pathResource);
-        } catch (NotFoundException e) {
+        } catch (NotFoundException | ExportDominoMetadataService.NoRecordsExportedException e) {
             log.warn("Object not found for domino: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (IOException | RepositoryException e) {
