@@ -237,19 +237,19 @@ describe('thumbnail.vue', () => {
 
     it('sets the src for the image', () => {
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small");');
     });
 
     it('sets the src to large for large thumbnail', async () => {
         await wrapper.setProps({ thumbnailData: recordData, size: 'large' });
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large");');
     });
 
     it('sets the src to small for small thumbnail', async () => {
         await wrapper.setProps({ thumbnailData: recordData, size: 'small' });
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small");');
     });
 
     it('sets the url for the image', () => {

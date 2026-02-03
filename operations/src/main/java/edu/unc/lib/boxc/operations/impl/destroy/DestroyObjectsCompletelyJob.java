@@ -10,6 +10,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.BadGatewayException;
+import edu.unc.lib.boxc.fcrepo.exceptions.GoneException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -51,8 +54,12 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
     @Override
     public void run() {
         for (PID pid : objsToDestroy) {
-            RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-            destroyTree(repoObj);
+            try {
+                RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+                destroyTree(repoObj);
+            } catch (GoneException | NotFoundException | BadGatewayException e) {
+                log.warn("Failed to destroy object {} because it is already gone: {}", pid, e.getMessage());
+            }
 
             indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
         }

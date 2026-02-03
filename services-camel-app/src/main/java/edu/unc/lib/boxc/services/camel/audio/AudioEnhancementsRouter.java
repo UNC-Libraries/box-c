@@ -46,7 +46,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
             .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct:process.enhancement.audioAccessCopy")
+        from("{{cdr.enhancement.audio.stream.camel}}")
             .routeId("AudioAccessCopy")
             .startupOrder(25)
             .log(LoggingLevel.DEBUG, log, "Access copy triggered")
@@ -64,6 +64,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                 .doFinally()
                     .bean(addAudioAccessCopyProcessor, "cleanupTempFile")
                 .end()
+                .to("direct:solrIndexing")
             .end();
     }
 }

@@ -80,10 +80,11 @@ public class AccessCopiesService {
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType) &&
-                ((briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null
-                    && briefObj.getFileFormatType().stream().noneMatch(s -> s.matches(PDF_MIMETYPE_REGEX))) ||
-                    briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null)) {
-                return true;
+                ((briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null &&
+                        briefObj.getFileFormatType().stream().noneMatch(s -> s.matches(PDF_MIMETYPE_REGEX))) ||
+                        briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null ||
+                        briefObj.getDatastreamObject(DatastreamType.VIDEO_ACCESS_COPY.getId()) != null)) {
+            return true;
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return false;

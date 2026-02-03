@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
@@ -97,15 +96,15 @@ public class IiifV3ManifestServiceTest {
         closeable.close();
     }
 
-    private ContentObjectRecord createFileRecord(String id, String type, boolean isValidImage) {
+    private ContentObjectRecord createFileRecord(String id, String type, boolean isValidDerivative) {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(id);
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object " + id);
         if (Objects.equals(type, VIDEO)) {
-            setAsVideo(fileObj);
+            setAsVideo(fileObj, isValidDerivative);
         } else {
-            setAsImage(fileObj, isValidImage);
+            setAsImage(fileObj, isValidDerivative);
         }
         return fileObj;
     }
@@ -120,9 +119,14 @@ public class IiifV3ManifestServiceTest {
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
     }
 
-    private void setAsVideo(ContentObjectSolrRecord fileObj) {
+    private void setAsVideo(ContentObjectSolrRecord fileObj, boolean isValidDerivative) {
         var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
-        fileObj.setDatastream(List.of(originalDs.toString()));
+        var derivativeInfo = "video|video/mp4|video.mp4|mp4|8075604|||";
+        if (isValidDerivative) {
+            derivativeInfo = "video|video/mp4|video.mp4|mp4|8075604|||240x750x500";
+        }
+        var videoDs = new DatastreamImpl(derivativeInfo);
+        fileObj.setDatastream(List.of(originalDs.toString(), videoDs.toString()));
     }
 
     @Test

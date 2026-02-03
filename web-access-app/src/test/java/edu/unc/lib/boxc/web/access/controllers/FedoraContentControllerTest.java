@@ -106,6 +106,17 @@ public class FedoraContentControllerTest {
     }
 
     @Test
+    public void getIllegalArgumentExceptionTest() throws Exception {
+        PID pid = TestHelper.makePid();
+        doThrow(new IllegalArgumentException())
+                .when(fedoraContentService)
+                .streamData(any(), any(), anyBoolean(), any(), any());
+        mvc.perform(get("/content/" + pid.getId()))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
     public void getContentUncaughtExceptionTest() throws Exception {
         PID pid = TestHelper.makePid();
         doThrow(new RuntimeException("Uncaught"))

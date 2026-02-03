@@ -103,5 +103,11 @@ public class EnhancementRouter extends RouteBuilder {
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
                 .to(ExchangePattern.InOnly, "{{cdr.enhancement.perform.camel}}");
 
+        from("direct:process.enhancement.audioAccessCopy")
+                .to("{{cdr.enhancement.audio.stream.camel}}");
+
+        from("direct:process.enhancement.videoAccessCopy")
+                .to("{{cdr.enhancement.video.stream.camel}}");
+
     }
 }

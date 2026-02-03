@@ -51,8 +51,6 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
     protected List<PID> objsToDestroy;
     protected AgentPrincipals agent;
 
-    protected MultiDestinationTransferSession transferSession;
-
     protected List<URI> cleanupBinaryUris;
 
     protected RepositoryObjectFactory repoObjFactory;
@@ -78,8 +76,7 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         Map<String, String> metadata = new HashMap<>();
         PID pid;
 
-        if (repoObj instanceof FileObject) {
-            FileObject fileObj = (FileObject) repoObj;
+        if (repoObj instanceof FileObject fileObj) {
             BinaryObject binaryObj = fileObj.getOriginalFile();
             String mimetype = binaryObj.getMimetype();
             metadata.put("mimeType", mimetype);
@@ -94,12 +91,10 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         binaryDestroyedMessageSender.sendMessage(destroyMsg);
     }
 
-    private Map<String, String> setCommonMetadata(Map<String, String> metadata, RepositoryObject repoObj, PID pid) {
+    private void setCommonMetadata(Map<String, String> metadata, RepositoryObject repoObj, PID pid) {
         String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
         metadata.put("objType", objType);
         metadata.put("pid", pid.getQualifiedId());
-
-        return metadata;
     }
 
     protected void destroyBinaries() {
@@ -107,20 +102,19 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
             return;
         }
 
-        if (transferSession == null) {
-            transferSession = transferService.getSession();
+        try (var transferSession = transferService.getSession()) {
+            cleanupBinaryUris.forEach(contentUri -> {
+                try {
+                    log.debug("Deleting destroyed binary {}", contentUri);
+                    StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
+                    transferSession.forDestination(storageLoc)
+                            .delete(contentUri);
+                } catch (BinaryTransferException e) {
+                    String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
+                    log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
+                }
+            });
         }
-        cleanupBinaryUris.forEach(contentUri -> {
-            try {
-                log.debug("Deleting destroyed binary {}", contentUri);
-                StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
-                transferSession.forDestination(storageLoc)
-                        .delete(contentUri);
-            } catch (BinaryTransferException e) {
-                String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
-                log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
-            }
-        });
     }
 
     /**
@@ -129,13 +123,13 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
      */
     protected void purgeObject(String objUri) {
         log.debug("Deleting object {} from fedora", objUri);
-        try (FcrepoResponse resp = fcrepoClient.delete(URI.create(objUri)).perform()) {
+        try (FcrepoResponse ignored = fcrepoClient.delete(URI.create(objUri)).perform()) {
         } catch (FcrepoOperationFailedException | IOException e) {
             throw new ServiceException("Unable to clean up child object " + objUri, e);
         }
 
         URI tombstoneUri = URI.create(URIUtil.join(objUri, FCR_TOMBSTONE));
-        try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
+        try (FcrepoResponse ignored = fcrepoClient.delete(tombstoneUri).perform()) {
         } catch (FcrepoOperationFailedException | IOException e) {
             throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
         }

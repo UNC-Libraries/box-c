@@ -24,6 +24,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -36,8 +37,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -449,8 +452,37 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
+        // Find the duration rounded to nearest second (19.12 -> 20) as part of the extent subfield
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
                 FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x20");
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoDurationTrailingWordAndParenCharacterBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME,
+                        FILE_MPEG_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        String originalBody = IOUtils.toString(getClass().getResourceAsStream(
+                "/datastream/techmd_mp4_seconds_specifier.xml"), StandardCharsets.UTF_8);
+        String modifiedBody = originalBody.replace(">19.12 s<", ">0.47 s (approx)<");
+        when(binObj2.getBinaryStream()).thenReturn(
+                new ByteArrayInputStream(modifiedBody.getBytes(StandardCharsets.UTF_8)));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        // Find the duration rounded to nearest second (0.47 -> 1) as part of the extent subfield
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x1");
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
                 FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
     }
