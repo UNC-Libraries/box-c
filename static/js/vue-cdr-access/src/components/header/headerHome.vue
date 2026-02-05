@@ -3,8 +3,7 @@
         <div class="logo-row">
             <div class="logo logo-large container">
                 <router-link to="/">
-                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
-                    <h1>Digital Collections Repository</h1>
+                    <h1>University Library <span>Digital Collections Repository</span></h1>
                 </router-link>
             </div>
         </div>
