@@ -3,7 +3,7 @@
         <div class="logo-row-small">
             <div class="logo-small container">
                 <router-link to="/">
-                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
+                    <img :src="'/static/front/University_Library_Signature_White_rgb_h.png'" alt="University Libraries Logo">
                     <h1>Digital Collections Repository</h1>
                 </router-link>
                 <span class="info-btns">
