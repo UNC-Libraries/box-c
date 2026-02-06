@@ -116,6 +116,10 @@
             <version>${jakarta.annotation.version}</version>
         </dependency>
         <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>fcrepo-utils</artifactId>
         </dependency>
