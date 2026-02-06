@@ -3,11 +3,11 @@ package edu.unc.lib.boxc.deposit.http;
 import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.common.errors.CommandException;
 import edu.unc.lib.boxc.common.util.CLIUtil;
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -25,6 +25,7 @@ import java.util.List;
  *
  * @author snluong
  */
+@Controller
 public class HealthCheckController {
     private static final Logger log = LoggerFactory.getLogger(HealthCheckController.class);
     private static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
