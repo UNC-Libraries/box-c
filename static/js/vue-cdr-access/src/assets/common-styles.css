@@ -40,3 +40,17 @@ a.button.is-link span {
 .clover-viewer-media-wrapper div + button {
     display: none !important;
 }
+
+/* Match UNC nav bar to the max-width specified in Bulma breakpoints */
+@media screen and (min-width: 1024px) {
+    body { --unc-utility-bar-width: 960px }
+}
+
+@media screen and (min-width: 1216px) {
+    body { --unc-utility-bar-width: 1152px }
+}
+
+@media screen and (min-width: 1408px) {
+    body { --unc-utility-bar-width: 1344px;
+    }
+}

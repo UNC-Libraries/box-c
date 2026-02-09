@@ -3,8 +3,7 @@
         <div class="logo-row-small">
             <div class="logo-small container">
                 <router-link to="/">
-                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
-                    <h1>Digital Collections Repository</h1>
+                    <h1>University Library <span>Digital Collections Repository</span></h1>
                 </router-link>
                 <span class="info-btns">
                     <a href="https://library.unc.edu/contact-us/">Contact Us</a>
