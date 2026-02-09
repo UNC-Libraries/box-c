@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.deposit.http;
 
-import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.common.errors.CommandException;
 import edu.unc.lib.boxc.common.util.CLIUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,7 @@ import java.util.List;
 @Controller
 public class HealthCheckController {
     private static final Logger log = LoggerFactory.getLogger(HealthCheckController.class);
-    private static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
+    public static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
     private String fitsHomePath;
     private Path fitsCommandPath;
 
