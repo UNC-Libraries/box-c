@@ -92,7 +92,7 @@ body {
   }
 
   h1 {
-    padding: 25px 25px 25px 0;
+    padding: 20px 20px 20px 5px;
   }
 }
 
@@ -350,5 +350,18 @@ header {
 
   p.footer-menu {
     line-height: 25px;
+  }
+}
+
+@media only screen and (max-width: 586px) {
+  .logo, .logo-small {
+    a {
+      text-align: center;
+    }
+
+    span {
+      display: inline-block;
+      width: 100%;
+    }
   }
 }
