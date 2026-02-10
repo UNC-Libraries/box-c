@@ -10,14 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import static edu.unc.lib.boxc.deposit.http.HealthCheckController.FITS_CLI_TIMEOUT_SECONDS;
 import static edu.unc.lib.boxc.deposit.http.HealthCheckController.HealthStatus.DOWN;
@@ -26,11 +24,9 @@ import static edu.unc.lib.boxc.deposit.http.HealthCheckController.HealthStatus.O
 import static edu.unc.lib.boxc.deposit.http.HealthCheckController.HealthStatus.SERVER_PROBLEM;
 import static edu.unc.lib.boxc.deposit.http.HealthCheckController.HealthStatus.UP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
