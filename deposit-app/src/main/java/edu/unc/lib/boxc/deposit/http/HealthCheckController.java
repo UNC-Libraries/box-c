@@ -30,7 +30,6 @@ public class HealthCheckController {
     private static final Logger log = LoggerFactory.getLogger(HealthCheckController.class);
     public static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
     private String fitsHomePath;
-    private Path fitsCommandPath;
 
     /**
      * API endpoint which checks if the deposit app is reachable.
@@ -38,19 +37,26 @@ public class HealthCheckController {
      */
     @RequestMapping(value = "/health/depositAppUp", method = RequestMethod.GET)
     public @ResponseBody ResponseEntity<Object> isDepositAppUpCheck() {
+        var healthStatus = new HealthStatus();
         try {
             if (!isFitsAvailable()) {
-                return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+                healthStatus.setStatus(HealthStatus.DOWN);
+                healthStatus.setMessage(HealthStatus.FITS_UNAVAILABLE);
+                return new ResponseEntity<>(healthStatus, HttpStatus.SERVICE_UNAVAILABLE);
             }
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            healthStatus.setStatus(HealthStatus.DOWN);
+            healthStatus.setMessage(HealthStatus.SERVER_PROBLEM);
+            return new ResponseEntity<>(healthStatus, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        healthStatus.setStatus(HealthStatus.UP);
+        healthStatus.setMessage(HealthStatus.OK);
+        return new ResponseEntity<>(healthStatus, HttpStatus.OK);
     }
 
     private boolean isFitsAvailable() throws IOException {
         var tempFilePath = createTempFile();
-        fitsCommandPath = Paths.get(fitsHomePath, "fits.sh");
+        var fitsCommandPath = Paths.get(fitsHomePath, "fits.sh");
         String[] command = new String[] { fitsCommandPath.toString(), "-i", tempFilePath.toString()};
 
         try {
@@ -82,5 +88,31 @@ public class HealthCheckController {
 
     public void setFitsHomePath(String fitsHomePath) {
         this.fitsHomePath = fitsHomePath;
+    }
+
+    public static class HealthStatus {
+        public static final String UP = "UP";
+        public static final String DOWN = "DOWN";
+        public static final String OK = "OK";
+        public static final String FITS_UNAVAILABLE = "FITS service unavailable";
+        public static final String SERVER_PROBLEM = "Something went wrong";
+        private String status;
+        private String message;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }
