@@ -74,7 +74,7 @@ public class HealthCheckControllerTest {
     public void depositAppDownFitsUnavailableTest() throws Exception {
         try (MockedStatic<CLIUtil> mockedStatic = mockStatic(CLIUtil.class)) {
             mockedStatic.when(() -> CLIUtil.executeCommand(anyList(), eq(FITS_CLI_TIMEOUT_SECONDS)))
-                    .thenReturn(List.of("", ""));
+                    .thenReturn(List.of("", "bad stuff"));
 
             var result = mvc.perform(get("/health/depositAppUp"))
                     .andExpect(status().isServiceUnavailable())
