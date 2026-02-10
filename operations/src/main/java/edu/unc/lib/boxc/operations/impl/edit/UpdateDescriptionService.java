@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.description;
+package edu.unc.lib.boxc.operations.impl.edit;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
