@@ -298,7 +298,8 @@
         <property name="mappingPath" value="${storageLocationMappings.path}" />
     </bean>
 
-    <bean id="healthCheckController" class="edu.unc.lib.boxc.deposit.http.HealthCheckController">
-        <property name="fitsHomePath" value="${fits.homePath}" />
+    <bean id="fitsHomePath" class="java.lang.System"
+          factory-method="getProperty">
+        <constructor-arg index="0" value="fits.homePath" />
     </bean>
 </beans>
