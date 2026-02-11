@@ -299,6 +299,6 @@
     </bean>
 
     <bean id="fitsHomePath" class="java.lang.String">
-        <constructor-arg index="0" value="fits.homePath" />
+        <constructor-arg index="0" value="${fits.homePath}" />
     </bean>
 </beans>
