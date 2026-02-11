@@ -297,4 +297,9 @@
         <property name="configPath" value="${storageLocations.path}" />
         <property name="mappingPath" value="${storageLocationMappings.path}" />
     </bean>
+
+    <bean id="fitsHomePath" class="java.lang.System"
+          factory-method="getProperty">
+        <constructor-arg index="0" value="fits.homePath" />
+    </bean>
 </beans>
