@@ -354,7 +354,7 @@ public class IiifV3ManifestServiceTest {
         assertEquals("University of North Carolina Libraries, Digital Collections Repository - Part of Image Collection",
                 manifest.getRequiredStatement().getValue().getString());
         var abstractMd = manifest.getMetadata().get(0);
-        assertEquals("description", abstractMd.getLabel().getString());
+        assertEquals("edu/unc/lib/boxc/operations/jms/description", abstractMd.getLabel().getString());
         assertEquals("This is a test work", abstractMd.getValue().getString());
 
         var creatorsMd = manifest.getMetadata().get(1);
