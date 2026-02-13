@@ -119,6 +119,20 @@ public class ImageServerProxyControllerTest {
     }
 
     @Test
+    void testIllegalArgumentException() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        imageServerProxyService = mock(ImageServerProxyService.class);
+        controller.setImageServerProxyService(imageServerProxyService);
+        doThrow(new IllegalArgumentException()).when(imageServerProxyService)
+                .streamJP2(pidString, "full", "max", "0", "default", null);
+
+        mvc.perform(get("/iiif/v3/" + pidString + "/full/max/0/default"))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
     void testGetMetadataNoAccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();

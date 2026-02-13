@@ -26,7 +26,7 @@ jobs:
           - ${{ github.workspace }}/it_config:/config
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
-          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+          CATALINA_OPTS: "-XX:-UseContainerSupport -Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
       activemq:
         image: apache/activemq-artemis:latest-alpine
         ports:

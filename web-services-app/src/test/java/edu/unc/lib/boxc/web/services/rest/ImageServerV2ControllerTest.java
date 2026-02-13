@@ -173,6 +173,14 @@ public class ImageServerV2ControllerTest {
     }
 
     @Test
+    public void testGetRegionInvalidRegionFormat() throws Exception {
+        // Valid value would be /full/full/0/default.jpg
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/full/full/0/default")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void testGetMetadata() throws Exception {
         mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/info.json")
                         .contentType(MediaType.APPLICATION_JSON))

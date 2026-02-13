@@ -73,7 +73,11 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object
         assertHasAccess(pid);
         try {
+            // A valid value would be something like default.jpg
             String[] qualityFormatArray = qualityFormat.split("\\.");
+            if (qualityFormatArray.length != 2) {
+                throw new IllegalArgumentException("Invalid value specified for quality/format. Value given was: " + qualityFormat);
+            }
             String quality = qualityFormatArray[0];
             String format = qualityFormatArray[1];
             imageServerV2Service.streamJP2(
