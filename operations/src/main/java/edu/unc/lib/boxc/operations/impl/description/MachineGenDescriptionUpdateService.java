@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Service for updating the machine generated description datastream
  *
- * @author bbpennel
+ * @author snluong
  */
 public class MachineGenDescriptionUpdateService {
     private static final Logger log = LoggerFactory.getLogger(MachineGenDescriptionUpdateService.class);
@@ -26,7 +26,7 @@ public class MachineGenDescriptionUpdateService {
         var pid = PIDs.get(request.getPidString());
 
         aclService.assertHasAccess("User does not have permission to update machine generated descriptions",
-                pid, agent.getPrincipals(), Permission.viewMetadata);
+                pid, agent.getPrincipals(), Permission.editDescription);
 
         try {
             var file = repositoryObjectLoader.getFileObject(pid);

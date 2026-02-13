@@ -73,7 +73,7 @@ public class MachineGenDescriptionUpdateServiceTest {
     public void noAccessToViewMetadataTest() {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
-                    anyString(), eq(filePid), any(), eq(Permission.viewMetadata));
+                    anyString(), eq(filePid), any(), eq(Permission.editDescription));
             service.updateMachineGenDescription(request);
         });
     }

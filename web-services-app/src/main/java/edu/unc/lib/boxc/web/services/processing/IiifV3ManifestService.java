@@ -99,7 +99,7 @@ public class IiifV3ManifestService {
         var metadataList = new ArrayList<Metadata>();
         String abstractText = rootObj.getAbstractText();
         if (abstractText != null) {
-            metadataList.add(new Metadata("edu/unc/lib/boxc/operations/jms/description", abstractText));
+            metadataList.add(new Metadata("description", abstractText));
         }
         addMultiValuedMetadataField(metadataList, "Creators", rootObj.getCreator());
         addMultiValuedMetadataField(metadataList, "Subjects", rootObj.getSubject());

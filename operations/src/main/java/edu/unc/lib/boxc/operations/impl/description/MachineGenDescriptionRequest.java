@@ -4,6 +4,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
+/**
+ * Request object for updating machine generated descriptions
+ *
+ * @author snluong
+ */
 public class MachineGenDescriptionRequest {
     private String pidString;
     @JsonDeserialize(as = AgentPrincipalsImpl.class)

@@ -21,7 +21,7 @@ public enum DatastreamType {
     MD_DESCRIPTIVE("md_descriptive", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     MD_DESCRIPTIVE_HISTORY("md_descriptive_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL),
-    MG_GENERATED_DESCRIPTION("machine_gen_description", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
+    GENERATED_DESCRIPTION("machine_gen_description", "text/plain", "txt", METADATA_CONTAINER, EXTERNAL),
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA("techmd_fits", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
