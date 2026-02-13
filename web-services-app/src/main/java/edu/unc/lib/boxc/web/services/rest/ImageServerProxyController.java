@@ -56,11 +56,15 @@ public class ImageServerProxyController {
                 pid, principals, Permission.viewAccessCopies);
 
         try {
+            // A valid value would be something like default.jpg
             String[] qualityFormatArray = qualityFormat.split("\\.");
+            if (qualityFormatArray.length != 2) {
+                throw new IllegalArgumentException("Invalid value specified for quality/format. Value given was: " + qualityFormat);
+            }
             String quality = qualityFormatArray[0];
             String format = qualityFormatArray[1];
             return imageServerProxyService.streamJP2(id, region, size, rotation, quality, format);
-        } catch (IOException|ArrayIndexOutOfBoundsException e) {
+        } catch (IOException e) {
             LOG.error("Error retrieving streaming JP2 content for {}", id, e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
