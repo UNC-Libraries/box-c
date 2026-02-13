@@ -44,10 +44,26 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Debug - List all containers
+      run: |
+        echo "All running containers:"
+        docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}"
+        echo "Filtering by ancestor:"
+        docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1-multiplatform"
+
+    - name: Debug - Check fedora container logs
+      run: |
+        CONTAINER_ID=$(docker ps -a --format "{{.ID}}" -f "name=fcrepofcrepo")
+        echo "Container ID: $CONTAINER_ID"
+        echo "Container status:"
+        docker ps -a -f "id=$CONTAINER_ID"
+        echo "Container logs:"
+        docker logs "$CONTAINER_ID"
+
     - name: Get Container ID of fedora service
       id: get_container_id
       run: |
-        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "label=com.docker.compose.service=fedora")
+        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "publish=48085")
         echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
 
     - name: Restart fedora now that the repository has been checked out so config files are available
