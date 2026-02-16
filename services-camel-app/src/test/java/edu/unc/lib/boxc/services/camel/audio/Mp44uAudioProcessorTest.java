@@ -44,7 +44,7 @@ public class Mp44uAudioProcessorTest {
     public void init() {
         closeable = openMocks(this);
 
-        processor = new Mp44uAudioProcessor(mp44uThreads);
+        processor = new Mp44uAudioProcessor(mp44uThreads, 60);
 
         // Path to file from exec result not expected to have extension
         derivTmpPath = tmpFolder.resolve(fileName).toString();
@@ -73,7 +73,10 @@ public class Mp44uAudioProcessorTest {
             processor.process(exchange);
 
             mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"mp44u", "audio",
-                    "-i", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc", "-o",  derivTmpPath, "-t", "8"}));
+                    "-i", "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc",
+                    "-o",  derivTmpPath,
+                    "-t", "8",
+                    "-T", "60"}));
         }
     }
 
@@ -84,8 +87,11 @@ public class Mp44uAudioProcessorTest {
                     .thenThrow(IllegalArgumentException.class);
             processor.process(exchange);
 
-            mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"mp44u", "audio", "-i", null,
-                    "-o", derivTmpPath, "-t", "8"}));
+            mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"mp44u", "audio",
+                    "-i", null,
+                    "-o", derivTmpPath,
+                    "-t", "8",
+                    "-T", "60"}));
         }
     }
 }
