@@ -56,12 +56,12 @@ and including all types with hierarchy retained.
             offButtonClasses() {
                 return !this.works_only
                     ? "is-selected has-text-white has-background-primary"
-                    : "has-text-grey-lighter";
+                    : "has-text-grey";
             },
             onButtonClasses() {
                 return this.works_only
                     ? "is-selected has-text-white has-background-primary"
-                    : "has-text-grey-lighter";
+                    : "has-text-grey";
             }
         },
 
