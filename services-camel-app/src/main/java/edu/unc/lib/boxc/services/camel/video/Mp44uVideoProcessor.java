@@ -22,9 +22,11 @@ import java.util.Arrays;
 public class Mp44uVideoProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(Mp44uVideoProcessor.class);
     private String mp44uThreads;
+    private int mp44uTimeout;
 
-    public Mp44uVideoProcessor(String mp44uThreads) {
+    public Mp44uVideoProcessor(String mp44uThreads, int mp44uTimeout) {
         this.mp44uThreads = mp44uThreads;
+        this.mp44uTimeout = mp44uTimeout;
     }
 
     @Override
@@ -35,21 +37,20 @@ public class Mp44uVideoProcessor implements Processor {
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
 
         String[] command = new String[]{"mp44u", "video", "-i", videoPath,
-                "-o", tempPath, "-t", mp44uThreads};
+                "-o", tempPath, "-t", mp44uThreads, "-T", Integer.toString(mp44uTimeout)};
         log.debug("Run mp44u command {} for type {}", command, mimetype);
         int exitCode = CLIMain.runCommand(command);
 
-        Result result = new Result(new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
+        Result result = new Result(command, new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
         in.setBody(result);
     }
 
     public static class Result extends ExecResult {
-        private static final ExecCommand command = new ExecCommand("mp44u",
-                Arrays.asList("video"), null, Long.valueOf(60), null,
-                null, null, false, LoggingLevel.OFF);
-
-        public Result(InputStream stdout, InputStream stderr, int exitCode) {
-            super(command, stdout, stderr, exitCode);
+        public Result(String[] command, InputStream stdout, InputStream stderr, int exitCode) {
+            super(new ExecCommand(command[0],
+                            Arrays.asList(command), null, 0L, null,
+                            null, null, false, LoggingLevel.OFF),
+                    stdout, stderr, exitCode);
         }
     }
 }
