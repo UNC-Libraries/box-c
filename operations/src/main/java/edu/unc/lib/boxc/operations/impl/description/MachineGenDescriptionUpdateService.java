@@ -7,8 +7,17 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Service for updating the machine generated description datastream
@@ -20,6 +29,7 @@ public class MachineGenDescriptionUpdateService {
     private AccessControlService aclService;
     private RepositoryObjectFactory repositoryObjectFactory;
     private RepositoryObjectLoader repositoryObjectLoader;
+    private String derivativeBasePath;
 
     public void updateMachineGenDescription(MachineGenDescriptionRequest request) {
         var agent = request.getAgent();
@@ -30,11 +40,26 @@ public class MachineGenDescriptionUpdateService {
 
         try {
             var file = repositoryObjectLoader.getFileObject(pid);
-            repositoryObjectFactory.createExclusiveRelationship(file, Cdr.hasMachineGenDescription,
-                    request.getDescription());
+            file.
+            Path derivativePath = Paths.get(derivativeBasePath, "machine_generated_description.txt");
+            File derivative = derivativePath.toFile();
+            File parentDir = derivative.getParentFile();
+
+            // Create missing parent directories if necessary
+            if (parentDir != null) {
+                try {
+                    Files.createDirectories(parentDir.toPath());
+                } catch (IOException e) {
+                    throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
+                }
+
+                FileUtils.write(derivative, request.getDescription(), UTF_8);
+            }
         } catch (ObjectTypeMismatchException e) {
             log.debug("Object {} is not a file object", request.getPidString(), e);
             throw new IllegalArgumentException("Object is not a file object", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -49,5 +74,9 @@ public class MachineGenDescriptionUpdateService {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setDerivativeBasePath(String derivativeBasePath) {
+        this.derivativeBasePath = derivativeBasePath;
     }
 }
