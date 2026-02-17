@@ -234,6 +234,12 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
+    <bean id="machineGenDescriptionUpdateService" class="edu.unc.lib.boxc.operations.impl.description.MachineGenDescriptionUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
+    </bean>
+
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
         <constructor-arg value="${mp44u.threads}" />
         <constructor-arg value="${mp44u.timeout}" />

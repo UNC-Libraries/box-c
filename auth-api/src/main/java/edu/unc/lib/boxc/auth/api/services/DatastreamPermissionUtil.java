@@ -21,19 +21,20 @@ public class DatastreamPermissionUtil {
     private final static Map<DatastreamType, Permission> DS_PERMISSION_MAP;
     static {
         DS_PERMISSION_MAP = new EnumMap<>(DatastreamType.class);
-        DS_PERMISSION_MAP.put(DatastreamType.FULLTEXT_EXTRACTION, Permission.viewHidden);
-        DS_PERMISSION_MAP.put(DatastreamType.JP2_ACCESS_COPY, Permission.viewAccessCopies);
-        DS_PERMISSION_MAP.put(DatastreamType.AUDIO_ACCESS_COPY, Permission.viewAccessCopies);
-        DS_PERMISSION_MAP.put(DatastreamType.VIDEO_ACCESS_COPY, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.ACCESS_SURROGATE, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.ALT_TEXT, Permission.viewMetadata);
         DS_PERMISSION_MAP.put(DatastreamType.ALT_TEXT_HISTORY, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.AUDIO_ACCESS_COPY, Permission.viewAccessCopies);
+        DS_PERMISSION_MAP.put(DatastreamType.FULLTEXT_EXTRACTION, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.GENERATED_DESCRIPTION, Permission.viewMetadata);
+        DS_PERMISSION_MAP.put(DatastreamType.JP2_ACCESS_COPY, Permission.viewAccessCopies);
         DS_PERMISSION_MAP.put(DatastreamType.MD_DESCRIPTIVE, Permission.viewMetadata);
         DS_PERMISSION_MAP.put(DatastreamType.MD_DESCRIPTIVE_HISTORY, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.MD_EVENTS, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.ORIGINAL_FILE, Permission.viewOriginal);
         DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA_HISTORY, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.VIDEO_ACCESS_COPY, Permission.viewAccessCopies);
     }
 
     private DatastreamPermissionUtil() {
