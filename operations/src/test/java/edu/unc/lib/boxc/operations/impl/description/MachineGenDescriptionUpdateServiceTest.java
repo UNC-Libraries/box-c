@@ -5,24 +5,36 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -32,26 +44,29 @@ public class MachineGenDescriptionUpdateServiceTest {
     private PID filePid;
     private MachineGenDescriptionUpdateService service;
     private MachineGenDescriptionRequest request;
+    private String derivBasePath;
+    @TempDir
+    public Path tmpFolder;
     @Mock
     private AccessControlService aclService;
-    @Mock
-    private RepositoryObjectLoader repoObjLoader;
-    @Mock
-    private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
     private AccessGroupSet mockAccessSet;
     @Mock
     private AgentPrincipals mockAgent;
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
     @Mock
     private FileObject fileObject;
 
     @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
+        derivBasePath = tmpFolder.toString();
+
         service = new MachineGenDescriptionUpdateService();
         service.setAclService(aclService);
+        service.setDerivativeBasePath(derivBasePath);
         service.setRepositoryObjectLoader(repoObjLoader);
-        service.setRepositoryObjectFactory(repositoryObjectFactory);
         filePid = PIDs.get(FILE_UUID);
 
         request = new MachineGenDescriptionRequest();
@@ -88,9 +103,22 @@ public class MachineGenDescriptionUpdateServiceTest {
     }
 
     @Test
+    public void fileDirectoriesNotCreatedTest() {
+        try (MockedStatic<FileUtils> mockedStatic = mockStatic(FileUtils.class)) {
+            mockedStatic.when(() -> FileUtils.write(any(), any(), eq(UTF_8)))
+                    .thenThrow(new IOException());
+            Assertions.assertThrows(ServiceException.class, () -> {
+                service.updateMachineGenDescription(request);
+            });
+        }
+    }
+
+    @Test
     public void successTest() {
+        var id = filePid.getId();
+        var binaryPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         service.updateMachineGenDescription(request);
-        verify(repositoryObjectFactory).createExclusiveRelationship(eq(fileObject),
-                eq(Cdr.hasMachineGenDescription), anyString());
+        var path = Paths.get(derivBasePath, binaryPath, id + ".txt");
+        assertTrue(Files.exists(path));
     }
 }
