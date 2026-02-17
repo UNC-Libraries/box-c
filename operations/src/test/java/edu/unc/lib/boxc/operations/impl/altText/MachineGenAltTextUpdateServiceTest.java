@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.description;
+package edu.unc.lib.boxc.operations.impl.altText;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -36,12 +36,13 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class MachineGenDescriptionUpdateServiceTest {
+public class MachineGenAltTextUpdateServiceTest {
+
     private static final String FILE_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private AutoCloseable closeable;
     private PID filePid;
-    private MachineGenDescriptionUpdateService service;
-    private MachineGenDescriptionRequest request;
+    private MachineGenAltTextUpdateService service;
+    private MachineGenAltTextRequest request;
     private String derivBasePath;
     @TempDir
     public Path tmpFolder;
@@ -61,15 +62,15 @@ public class MachineGenDescriptionUpdateServiceTest {
         closeable = openMocks(this);
         derivBasePath = tmpFolder.toString();
 
-        service = new MachineGenDescriptionUpdateService();
+        service = new MachineGenAltTextUpdateService();
         service.setAclService(aclService);
         service.setDerivativeBasePath(derivBasePath);
         service.setRepositoryObjectLoader(repoObjLoader);
         filePid = PIDs.get(FILE_UUID);
 
-        request = new MachineGenDescriptionRequest();
+        request = new MachineGenAltTextRequest();
         request.setAgent(mockAgent);
-        request.setDescription("Best machine generated words ever");
+        request.setAltText("Best machine generated words ever");
         request.setPidString(FILE_UUID);
 
         when(mockAgent.getUsername()).thenReturn("user");
@@ -87,7 +88,7 @@ public class MachineGenDescriptionUpdateServiceTest {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
                     anyString(), eq(filePid), any(), eq(Permission.editDescription));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenAltText(request);
         });
     }
 
@@ -96,7 +97,7 @@ public class MachineGenDescriptionUpdateServiceTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object"))
                     .when(repoObjLoader).getFileObject(eq(filePid));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenAltText(request);
         });
     }
 
@@ -106,7 +107,7 @@ public class MachineGenDescriptionUpdateServiceTest {
             mockedStatic.when(() -> FileUtils.write(any(), any(), eq(UTF_8)))
                     .thenThrow(new IOException());
             Assertions.assertThrows(ServiceException.class, () -> {
-                service.updateMachineGenDescription(request);
+                service.updateMachineGenAltText(request);
             });
         }
     }
@@ -114,11 +115,11 @@ public class MachineGenDescriptionUpdateServiceTest {
     @Test
     public void successTest() throws IOException {
         var id = filePid.getId();
-        var derivPath = service.updateMachineGenDescription(request);
         var path = getDerivativePath(derivBasePath, id);
+        var derivPath = service.updateMachineGenAltText(request);
 
         assertTrue(Files.exists(path));
         assertEquals(derivPath, path);
-        assertEquals(Files.readString(derivPath), request.getDescription());
+        assertEquals(Files.readString(derivPath), request.getAltText());
     }
 }

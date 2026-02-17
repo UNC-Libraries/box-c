@@ -240,6 +240,12 @@
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
     </bean>
 
+    <bean id="machineGenAltTextUpdateService" class="edu.unc.lib.boxc.operations.impl.altText.MachineGenAltTextUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
+    </bean>
+
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
         <constructor-arg value="${mp44u.threads}" />
         <constructor-arg value="${mp44u.timeout}" />
