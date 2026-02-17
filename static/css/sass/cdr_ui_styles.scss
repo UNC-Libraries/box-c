@@ -120,9 +120,6 @@ dl.property-grid {
   color: #bbb;
 }
 
-a.deleted {
-  text-decoration: line-through;
-}
 .deleted {
   display: inline-grid;
 
@@ -132,13 +129,6 @@ a.deleted {
 
   img {
     opacity: .5;
-  }
-
-  .fa-folder,
-  .fa-file,
-  .fa-archive,
-  .fa-university {
-    color: #8CB4C6;
   }
 }
 
