@@ -120,16 +120,14 @@ dl.property-grid {
   color: #bbb;
 }
 
+a.deleted {
+  text-decoration: line-through;
+}
 .deleted {
-  color: #8CB4C6;
   display: inline-grid;
 
   label {
     color: black;
-  }
-
-  &:hover, a {
-    color: #8CB4C6;
   }
 
   img {
