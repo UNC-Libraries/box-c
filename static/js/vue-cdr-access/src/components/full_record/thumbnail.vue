@@ -86,8 +86,14 @@ export default {
             return this.permissionData(this.thumbnailData);
         },
 
+        // List display items don't have a markedForDeletion field, so check there status
+        isDeleted() {
+            return this.thumbnailData.markedForDeletion ||
+                (this.objectData.status !== undefined && this.objectData.status.includes("Marked For Deletion"))
+        },
+
         badgeIcon() {
-            if (this.thumbnailData.markedForDeletion) {
+            if (this.isDeleted) {
                 return 'fa-trash';
             } else if (this.objectData.type !== 'AdminUnit' && !this.publicAccess(this.objectData)) {
                 return 'fa-lock';
@@ -100,7 +106,7 @@ export default {
             let class_list = [
                 `thumbnail-size-${this.size}`
             ];
-            if (this.thumbnailData.markedForDeletion) {
+            if (this.isDeleted) {
                 class_list.push('deleted');
             }
             if (this.tooltip !== '') {
