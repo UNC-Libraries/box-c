@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
@@ -30,7 +31,7 @@ public class MachineGenDescriptionUpdateService {
     private RepositoryObjectLoader repositoryObjectLoader;
     private String derivativeBasePath;
 
-    public void updateMachineGenDescription(MachineGenDescriptionRequest request) {
+    public Path updateMachineGenDescription(MachineGenDescriptionRequest request) {
         var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
 
@@ -49,17 +50,13 @@ public class MachineGenDescriptionUpdateService {
 
             // Create missing parent directories if necessary
             if (parentDir != null) {
-                try {
-                    Files.createDirectories(parentDir.toPath());
-                } catch (IOException e) {
-                    throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
-                }
-
+                Files.createDirectories(parentDir.toPath());
                 FileUtils.write(derivative, request.getDescription(), UTF_8);
             }
+            return derivativePath;
         } catch (ObjectTypeMismatchException e) {
             log.debug("Object {} is not a file object", request.getPidString(), e);
-            throw new IllegalArgumentException("Object is not a file object", e);
+            throw new IllegalArgumentException("Object" + request.getPidString() + "is not a file object");
         } catch (IOException e) {
             throw new ServiceException("Unable to write to gen description file for: " + binaryId, e);
         }

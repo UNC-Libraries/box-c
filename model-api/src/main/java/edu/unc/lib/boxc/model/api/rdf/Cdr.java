@@ -55,10 +55,6 @@ public class Cdr {
     public static final Property hasManifest = createProperty(
             "http://cdr.unc.edu/definitions/model#hasManifest" );
 
-    public static final Property hasMachineGenDescription = createProperty(
-            "http://cdr.unc.edu/definitions/model#hasMachineGenDescription"
-    );
-
     /** Relationship indicating a checksum on this binary object */
     public static final Property hasMessageDigest = createProperty(
             "http://cdr.unc.edu/definitions/model#hasMessageDigest" );

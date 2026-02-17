@@ -235,6 +235,8 @@
     </bean>
 
     <bean id="machineGenDescriptionUpdateService" class="edu.unc.lib.boxc.operations.impl.description.MachineGenDescriptionUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
     </bean>
 

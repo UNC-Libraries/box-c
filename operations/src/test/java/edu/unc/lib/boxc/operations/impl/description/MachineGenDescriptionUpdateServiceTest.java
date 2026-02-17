@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +31,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -114,11 +117,13 @@ public class MachineGenDescriptionUpdateServiceTest {
     }
 
     @Test
-    public void successTest() {
+    public void successTest() throws IOException {
         var id = filePid.getId();
         var binaryPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        service.updateMachineGenDescription(request);
+        var derivPath = service.updateMachineGenDescription(request);
         var path = Paths.get(derivBasePath, binaryPath, id + ".txt");
         assertTrue(Files.exists(path));
+        assertEquals(derivPath, path);
+        assertEquals(Files.readString(derivPath), request.getDescription());
     }
 }
