@@ -46,17 +46,13 @@ public class MachineGenDescriptionUpdateService {
             repositoryObjectLoader.getFileObject(pid);
             var derivativePath = Paths.get(derivativeBasePath, binaryPath, binaryId + ".txt");
             var derivative = derivativePath.toFile();
-            var parentDir = derivative.getParentFile();
 
-            // Create missing parent directories if necessary
-            if (parentDir != null) {
-                Files.createDirectories(parentDir.toPath());
-                FileUtils.write(derivative, request.getDescription(), UTF_8);
-            }
+            Files.createDirectories(derivative.getParentFile().toPath());
+            FileUtils.write(derivative, request.getDescription(), UTF_8);
             return derivativePath;
         } catch (ObjectTypeMismatchException e) {
             log.debug("Object {} is not a file object", request.getPidString(), e);
-            throw new IllegalArgumentException("Object" + request.getPidString() + "is not a file object");
+            throw new IllegalArgumentException("Object " + request.getPidString() + " is not a file object");
         } catch (IOException e) {
             throw new ServiceException("Unable to write to gen description file for: " + binaryId, e);
         }
