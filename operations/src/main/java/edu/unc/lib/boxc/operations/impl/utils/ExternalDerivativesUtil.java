@@ -12,7 +12,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class MachineGenUtil {
+public class ExternalDerivativesUtil {
 
     public static Path getDerivativePath(String basePath, String binaryId) {
         return Paths.get(basePath, getBinaryPath(binaryId), binaryId + ".txt");

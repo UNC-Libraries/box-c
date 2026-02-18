@@ -1,21 +1,19 @@
-package edu.unc.lib.boxc.operations.impl.altText;
-
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
- * Request object for updating machine generated alt text
+ * Request object for updating machine generated descriptions
  *
  * @author snluong
  */
-public class MachineGenAltTextRequest {
-
+public class MachineGenRequest {
     private String pidString;
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
-    private String altText;
+    private String text;
 
     public String getPidString() {
         return pidString;
@@ -33,11 +31,11 @@ public class MachineGenAltTextRequest {
         this.agent = agent;
     }
 
-    public String getAltText() {
-        return altText;
+    public String getText() {
+        return text;
     }
 
-    public void setAltText(String altText) {
-        this.altText = altText;
+    public void setText(String text) {
+        this.text = text;
     }
 }

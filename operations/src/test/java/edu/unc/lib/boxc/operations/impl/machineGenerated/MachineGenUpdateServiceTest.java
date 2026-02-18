@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.altText;
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static edu.unc.lib.boxc.operations.impl.utils.MachineGenUtil.getDerivativePath;
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.getDerivativePath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,13 +36,12 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class MachineGenAltTextUpdateServiceTest {
-
+public class MachineGenUpdateServiceTest {
     private static final String FILE_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private AutoCloseable closeable;
     private PID filePid;
-    private MachineGenAltTextUpdateService service;
-    private MachineGenAltTextRequest request;
+    private MachineGenUpdateService service;
+    private MachineGenRequest request;
     private String derivBasePath;
     @TempDir
     public Path tmpFolder;
@@ -62,15 +61,15 @@ public class MachineGenAltTextUpdateServiceTest {
         closeable = openMocks(this);
         derivBasePath = tmpFolder.toString();
 
-        service = new MachineGenAltTextUpdateService();
+        service = new MachineGenUpdateService();
         service.setAclService(aclService);
         service.setDerivativeBasePath(derivBasePath);
         service.setRepositoryObjectLoader(repoObjLoader);
         filePid = PIDs.get(FILE_UUID);
 
-        request = new MachineGenAltTextRequest();
+        request = new MachineGenRequest();
         request.setAgent(mockAgent);
-        request.setAltText("Best machine generated words ever");
+        request.setText("Best machine generated words ever");
         request.setPidString(FILE_UUID);
 
         when(mockAgent.getUsername()).thenReturn("user");
@@ -88,7 +87,7 @@ public class MachineGenAltTextUpdateServiceTest {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
                     anyString(), eq(filePid), any(), eq(Permission.editDescription));
-            service.updateMachineGenAltText(request);
+            service.updateMachineGenDescription(request);
         });
     }
 
@@ -97,7 +96,7 @@ public class MachineGenAltTextUpdateServiceTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object"))
                     .when(repoObjLoader).getFileObject(eq(filePid));
-            service.updateMachineGenAltText(request);
+            service.updateMachineGenDescription(request);
         });
     }
 
@@ -107,7 +106,7 @@ public class MachineGenAltTextUpdateServiceTest {
             mockedStatic.when(() -> FileUtils.write(any(), any(), eq(UTF_8)))
                     .thenThrow(new IOException());
             Assertions.assertThrows(ServiceException.class, () -> {
-                service.updateMachineGenAltText(request);
+                service.updateMachineGenDescription(request);
             });
         }
     }
@@ -115,11 +114,11 @@ public class MachineGenAltTextUpdateServiceTest {
     @Test
     public void successTest() throws IOException {
         var id = filePid.getId();
+        var derivPath = service.updateMachineGenDescription(request);
         var path = getDerivativePath(derivBasePath, id);
-        var derivPath = service.updateMachineGenAltText(request);
 
         assertTrue(Files.exists(path));
         assertEquals(derivPath, path);
-        assertEquals(Files.readString(derivPath), request.getAltText());
+        assertEquals(Files.readString(derivPath), request.getText());
     }
 }

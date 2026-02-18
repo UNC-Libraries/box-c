@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.altText;
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -12,21 +12,26 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static edu.unc.lib.boxc.operations.impl.utils.MachineGenUtil.getDerivativePath;
-import static edu.unc.lib.boxc.operations.impl.utils.MachineGenUtil.writeToFile;
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.getDerivativePath;
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.writeToFile;
 
-public class MachineGenAltTextUpdateService {
-
-    private static final Logger log = LoggerFactory.getLogger(MachineGenAltTextUpdateService.class);
+/**
+ * Service for updating the machine generated description datastream
+ *
+ * @author snluong
+ */
+public class MachineGenUpdateService {
+    private static final Logger log = LoggerFactory.getLogger(MachineGenUpdateService.class);
+    private String type;
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private String derivativeBasePath;
 
-    public Path updateMachineGenAltText(MachineGenAltTextRequest request) {
+    public Path updateMachineGenDescription(MachineGenRequest request) {
         var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
 
-        aclService.assertHasAccess("User does not have permission to update machine generated alt text",
+        aclService.assertHasAccess("User does not have permission to update machine generated " + type,
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         var binaryId = pid.getId();
@@ -35,19 +40,24 @@ public class MachineGenAltTextUpdateService {
             // check that object is a file object
             repositoryObjectLoader.getFileObject(pid);
             var derivativePath = getDerivativePath(derivativeBasePath, binaryId);
-            writeToFile(derivativePath, request.getAltText());
+            writeToFile(derivativePath, request.getDescription());
             return derivativePath;
         } catch (ObjectTypeMismatchException e) {
             log.debug("Object {} is not a file object", request.getPidString(), e);
             throw new IllegalArgumentException("Object " + request.getPidString() + " is not a file object");
         } catch (IOException e) {
-            throw new ServiceException("Unable to write to gen alt text file for: " + binaryId, e);
+            throw new ServiceException("Unable to write to machine generated " + type +  " file for: " + binaryId, e);
         }
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
     }
+
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
