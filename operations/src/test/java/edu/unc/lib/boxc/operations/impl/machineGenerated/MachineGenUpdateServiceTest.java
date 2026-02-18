@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.description;
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -23,11 +23,8 @@ import org.mockito.MockedStatic;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.getDerivativePath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,12 +36,12 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class MachineGenDescriptionUpdateServiceTest {
+public class MachineGenUpdateServiceTest {
     private static final String FILE_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private AutoCloseable closeable;
     private PID filePid;
-    private MachineGenDescriptionUpdateService service;
-    private MachineGenDescriptionRequest request;
+    private MachineGenUpdateService service;
+    private MachineGenRequest request;
     private String derivBasePath;
     @TempDir
     public Path tmpFolder;
@@ -64,15 +61,15 @@ public class MachineGenDescriptionUpdateServiceTest {
         closeable = openMocks(this);
         derivBasePath = tmpFolder.toString();
 
-        service = new MachineGenDescriptionUpdateService();
+        service = new MachineGenUpdateService();
         service.setAclService(aclService);
         service.setDerivativeBasePath(derivBasePath);
         service.setRepositoryObjectLoader(repoObjLoader);
         filePid = PIDs.get(FILE_UUID);
 
-        request = new MachineGenDescriptionRequest();
+        request = new MachineGenRequest();
         request.setAgent(mockAgent);
-        request.setDescription("Best machine generated words ever");
+        request.setText("Best machine generated words ever");
         request.setPidString(FILE_UUID);
 
         when(mockAgent.getUsername()).thenReturn("user");
@@ -86,11 +83,11 @@ public class MachineGenDescriptionUpdateServiceTest {
     }
 
     @Test
-    public void noAccessToViewMetadataTest() {
+    public void noAccessToEditDescriptionTest() {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
                     anyString(), eq(filePid), any(), eq(Permission.editDescription));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenText(request);
         });
     }
 
@@ -99,7 +96,7 @@ public class MachineGenDescriptionUpdateServiceTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object"))
                     .when(repoObjLoader).getFileObject(eq(filePid));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenText(request);
         });
     }
 
@@ -109,7 +106,7 @@ public class MachineGenDescriptionUpdateServiceTest {
             mockedStatic.when(() -> FileUtils.write(any(), any(), eq(UTF_8)))
                     .thenThrow(new IOException());
             Assertions.assertThrows(ServiceException.class, () -> {
-                service.updateMachineGenDescription(request);
+                service.updateMachineGenText(request);
             });
         }
     }
@@ -117,11 +114,11 @@ public class MachineGenDescriptionUpdateServiceTest {
     @Test
     public void successTest() throws IOException {
         var id = filePid.getId();
-        var binaryPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        var derivPath = service.updateMachineGenDescription(request);
-        var path = Paths.get(derivBasePath, binaryPath, id + ".txt");
+        var derivPath = service.updateMachineGenText(request);
+        var path = getDerivativePath(derivBasePath, id);
+
         assertTrue(Files.exists(path));
         assertEquals(derivPath, path);
-        assertEquals(Files.readString(derivPath), request.getDescription());
+        assertEquals(Files.readString(derivPath), request.getText());
     }
 }

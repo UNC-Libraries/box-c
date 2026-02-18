@@ -17,6 +17,7 @@ public enum DatastreamType {
     ALT_TEXT_HISTORY("alt_text_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     AUDIO_ACCESS_COPY("audio", "audio/aac", "m4a", null, EXTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
+    GENERATED_ALT_TEXT("machine_gen_alt_text", "text/plain", "txt", null, EXTERNAL),
     GENERATED_DESCRIPTION("machine_gen_description", "text/plain", "txt", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
     MD_DESCRIPTIVE("md_descriptive", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),

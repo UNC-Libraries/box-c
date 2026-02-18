@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.description;
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -9,11 +9,11 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
  *
  * @author snluong
  */
-public class MachineGenDescriptionRequest {
+public class MachineGenRequest {
     private String pidString;
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
-    private String description;
+    private String text;
 
     public String getPidString() {
         return pidString;
@@ -31,11 +31,11 @@ public class MachineGenDescriptionRequest {
         this.agent = agent;
     }
 
-    public String getDescription() {
-        return description;
+    public String getText() {
+        return text;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setText(String text) {
+        this.text = text;
     }
 }
