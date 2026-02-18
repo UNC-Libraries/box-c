@@ -12,6 +12,11 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Util for common methods for external derivative files
+ * 
+ * @author snluong
+ */
 public class ExternalDerivativesUtil {
 
     public static Path getDerivativePath(String basePath, String binaryId) {
