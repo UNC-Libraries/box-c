@@ -40,7 +40,7 @@ public class MachineGenUpdateService {
             // check that object is a file object
             repositoryObjectLoader.getFileObject(pid);
             var derivativePath = getDerivativePath(derivativeBasePath, binaryId);
-            writeToFile(derivativePath, request.getDescription());
+            writeToFile(derivativePath, request.getText());
             return derivativePath;
         } catch (ObjectTypeMismatchException e) {
             log.debug("Object {} is not a file object", request.getPidString(), e);
