@@ -226,6 +226,16 @@ describe('thumbnail.vue', () => {
             .toEqual('thumbnail thumbnail-size-medium deleted has_tooltip')
     });
 
+    it('displays a trash icon if an item has a status of "Marked For Deletion', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.markedForDeletion = null;
+        updatedRecordData.briefObject.status = ['Marked For Deletion'];
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.fa-trash').exists()).toBe(true);
+        expect(wrapper.find('a').attributes('class'))
+            .toEqual('thumbnail thumbnail-size-medium deleted has_tooltip')
+    });
+
     it('displays no icon if an item is not restricted or marked for deletion', async () => {
         // No lock icon if record has public access status
         let updatedRecordData = cloneDeep(recordData);
