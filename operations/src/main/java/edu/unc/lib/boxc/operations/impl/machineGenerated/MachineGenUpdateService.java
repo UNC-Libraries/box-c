@@ -16,7 +16,7 @@ import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.get
 import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.writeToFile;
 
 /**
- * Service for updating the machine generated description datastream
+ * Service for updating the machine generated datastreams
  *
  * @author snluong
  */
@@ -27,7 +27,7 @@ public class MachineGenUpdateService {
     private RepositoryObjectLoader repositoryObjectLoader;
     private String derivativeBasePath;
 
-    public Path updateMachineGenDescription(MachineGenRequest request) {
+    public Path updateMachineGenText(MachineGenRequest request) {
         var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
 

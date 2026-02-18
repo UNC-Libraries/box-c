@@ -87,7 +87,7 @@ public class MachineGenUpdateServiceTest {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
                     anyString(), eq(filePid), any(), eq(Permission.editDescription));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenText(request);
         });
     }
 
@@ -96,7 +96,7 @@ public class MachineGenUpdateServiceTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object"))
                     .when(repoObjLoader).getFileObject(eq(filePid));
-            service.updateMachineGenDescription(request);
+            service.updateMachineGenText(request);
         });
     }
 
@@ -106,7 +106,7 @@ public class MachineGenUpdateServiceTest {
             mockedStatic.when(() -> FileUtils.write(any(), any(), eq(UTF_8)))
                     .thenThrow(new IOException());
             Assertions.assertThrows(ServiceException.class, () -> {
-                service.updateMachineGenDescription(request);
+                service.updateMachineGenText(request);
             });
         }
     }
@@ -114,7 +114,7 @@ public class MachineGenUpdateServiceTest {
     @Test
     public void successTest() throws IOException {
         var id = filePid.getId();
-        var derivPath = service.updateMachineGenDescription(request);
+        var derivPath = service.updateMachineGenText(request);
         var path = getDerivativePath(derivBasePath, id);
 
         assertTrue(Files.exists(path));
