@@ -1,4 +1,5 @@
 import {mount, RouterLinkStub} from "@vue/test-utils";
+import { describe, it, expect, beforeEach } from 'vitest';
 import {createTestingPinia} from "@pinia/testing";
 import {useAccessStore} from '@/stores/access';
 import {createI18n} from 'vue-i18n';
@@ -93,7 +94,7 @@ describe('downloadOption.vue', () => {
             },
             props: {
                 recordData: record,
-                t: jest.fn()
+                t: vi.fn()
             }
         });
         store = useAccessStore();

@@ -1308,8 +1308,8 @@ describe('patronRoles.vue', () => {
 
     function mountApp(use_bulk = false, resultObjects = []) {
         let initial_permissions = {
-            actionHandler: { addEvent: jest.fn() },
-            alertHandler: { alertHandler: jest.fn() },
+            actionHandler: { addEvent: vi.fn() },
+            alertHandler: { alertHandler: vi.fn() },
             metadata: { id: UUID, type: 'Folder', deleted: false, embargo: null }
         }
         if (use_bulk) {
@@ -1329,7 +1329,7 @@ describe('patronRoles.vue', () => {
         });
 
         store = usePermissionsStore();
-        global.confirm = jest.fn().mockReturnValue(true);
+        global.confirm = vi.fn().mockReturnValue(true);
         selects = wrapper.findAll('select');
     }
 

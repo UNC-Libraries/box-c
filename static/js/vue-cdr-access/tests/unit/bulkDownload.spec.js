@@ -72,14 +72,14 @@ describe('bulkDownload.vue', () => {
 
     it ("prompts user for confirmation if there are more than 100 files", async () => {
         // Mock window.confirm
-        const confirmMock = jest.spyOn(window, 'confirm');
+        const confirmMock = vi.spyOn(window, 'confirm');
 
         // Mock return values for confirm
         confirmMock.mockImplementationOnce(() => false); // Simulate "No" click
         confirmMock.mockImplementationOnce(() => true);  // Simulate "Yes" click
 
         // Mock navigation
-        const locationMock = jest.spyOn(window, 'location', 'get');
+        const locationMock = vi.spyOn(window, 'location', 'get');
         const mockLocation = { href: '' };
         locationMock.mockReturnValue(mockLocation);
 

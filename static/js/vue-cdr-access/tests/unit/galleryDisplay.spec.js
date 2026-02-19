@@ -1,4 +1,5 @@
 import { shallowMount, RouterLinkStub } from '@vue/test-utils'
+import { describe, it, expect, beforeEach } from 'vitest';
 import galleryDisplay from '@/components/galleryDisplay.vue';
 
 let wrapper;

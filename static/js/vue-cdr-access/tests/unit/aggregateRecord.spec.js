@@ -1,4 +1,5 @@
 import { shallowMount, RouterLinkStub } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';

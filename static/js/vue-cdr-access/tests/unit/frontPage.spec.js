@@ -1,4 +1,5 @@
 import {shallowMount, RouterLinkStub} from '@vue/test-utils';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -19,8 +20,6 @@ describe('frontPage.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
-
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -52,7 +51,6 @@ describe('frontPage.vue', () => {
 
     afterEach(function () {
         store.$reset();
-        moxios.uninstall();
     });
 
     it("loads the frontPage", () => {

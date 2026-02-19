@@ -6,7 +6,7 @@ import { useFormsStore } from '@/stores/forms';
 let wrapper, store;
 
 describe('modalDepositForms.vue', () => {
-    const vueForm = jest.fn();
+    const vueForm = vi.fn();
 
     beforeEach(async () => {
         wrapper = mount(ModalDepositForms,
@@ -85,7 +85,7 @@ describe('modalDepositForms.vue', () => {
             $vueform: {
                 services: {
                     axios: {
-                        post: jest.fn(),
+                        post: vi.fn(),
                         CancelToken: {
                             source: () => ({
                                 token: 'mock-token'
@@ -100,7 +100,7 @@ describe('modalDepositForms.vue', () => {
         );
         expect(store.showFormsModal).toEqual(false);
         await store.setShowFormsModal(true);
-        await wrapper.vm.submitForm(jest.fn(), mockForm$);
+        await wrapper.vm.submitForm(vi.fn(), mockForm$);
         expect(axios_submit).toHaveBeenCalled();
     });
 
@@ -117,7 +117,7 @@ describe('modalDepositForms.vue', () => {
             status: 200,
             statusText: 'OK'
         }
-        await wrapper.vm.handleResponse(axios_response, jest.fn());
+        await wrapper.vm.handleResponse(axios_response, vi.fn());
         expect(store.showFormsModal).toEqual(false);
     });
 
@@ -131,9 +131,9 @@ describe('modalDepositForms.vue', () => {
             }, // The actual data returned by the server
             status: 503
         }
-        console.log = jest.fn();
+        console.log = vi.fn();
 
-        await wrapper.vm.handleResponse(axios_response, jest.fn());
+        await wrapper.vm.handleResponse(axios_response, vi.fn());
         expect(store.showFormsModal).toEqual(true);
         expect(console.log).toHaveBeenCalledWith(axios_response);
     });

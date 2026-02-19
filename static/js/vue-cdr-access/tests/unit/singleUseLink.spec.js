@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
@@ -87,7 +88,7 @@ describe('singleUseLink.vue', () => {
     it("copies single use links", async () => {
         Object.assign(window.navigator, {
             clipboard: {
-                writeText: jest.fn().mockImplementation(() => Promise.resolve()),
+                writeText: vi.fn().mockImplementation(() => Promise.resolve()),
             },
         });
 

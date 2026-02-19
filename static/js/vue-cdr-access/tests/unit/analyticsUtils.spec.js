@@ -1,4 +1,6 @@
 import {mount, RouterLinkStub} from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import mockAxios from "vitest-mock-axios";
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -7,7 +9,6 @@ import displayWrapper from '@/components/displayWrapper.vue';
 import analyticsUtils from "../../src/mixins/analyticsUtils";
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
-import moxios from "moxios";
 
 let wrapper, store;
 describe('analyticsUtils', () => {
@@ -28,17 +29,15 @@ describe('analyticsUtils', () => {
         ]
     });
 
-    const pageEvent = jest.spyOn(analyticsUtils.methods, 'pageEvent');
-    const pageView = jest.spyOn(analyticsUtils.methods, 'pageView');
+    const pageEvent = vi.spyOn(analyticsUtils.methods, 'pageEvent');
+    const pageView = vi.spyOn(analyticsUtils.methods, 'pageView');
 
     beforeEach(() => {
-        jest.resetAllMocks();
-        moxios.install();
+        vi.restoreAllMocks();
     });
 
     afterEach(() => {
         store.$reset();
-        moxios.uninstall();
     });
 
     it("sends pageviews to analytics platforms", () => {
@@ -56,7 +55,7 @@ describe('analyticsUtils', () => {
         expect(pageView).toHaveBeenCalledWith("Advanced Search");
     });
 
-    it("sends events to analytics platforms", (done) => {
+    it("sends events to analytics platforms", () => {
         const briefObj = {
             briefObject: {
                 filesize: 35845559,
@@ -133,10 +132,6 @@ describe('analyticsUtils', () => {
                 status: []
             }
         };
-        moxios.stubRequest(new RegExp(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`), {
-            status: 200,
-            response: JSON.stringify(briefObj)
-        });
 
         const $route = {
             path: '/record/1234',
@@ -155,10 +150,14 @@ describe('analyticsUtils', () => {
             }
         });
         store = useAccessStore();
-        moxios.wait(() => {
-            expect(pageEvent).toHaveBeenCalledWith(briefObj);
-            expect(pageView).toHaveBeenCalledWith(briefObj.title);
-            done();
-        })
+
+        mockAxios.mockResponse( {
+            status: 200,
+            data: briefObj,
+            url: new RegExp(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`)
+        });
+
+        expect(pageEvent).toHaveBeenCalledWith(briefObj);
+        expect(pageView).toHaveBeenCalledWith(briefObj.title);
     });
 });

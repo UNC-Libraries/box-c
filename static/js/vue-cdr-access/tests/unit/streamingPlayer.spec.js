@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach } from 'vitest';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 
 const STREAMING_URL_SOUND = 'https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=R1018_audio';

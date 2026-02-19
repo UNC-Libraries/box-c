@@ -46,7 +46,7 @@ describe('velocicroptorReport.vue', () => {
         // Push the desired route directly
         await router.push('/admin/chompb/project/file_source_test/processing_results/velocicroptor');
 
-        global.URL.createObjectURL = jest.fn();
+        global.URL.createObjectURL = vi.fn();
 
         wrapper = shallowMount(velocicroptorReport, {
             global: {
@@ -71,7 +71,7 @@ describe('velocicroptorReport.vue', () => {
     });
 
     it("marking entry as problematic adds entries to problem csv export", () => {
-        const mockBlobConstructor = jest.fn((content, options) => ({
+        const mockBlobConstructor = vi.fn((content, options) => ({
             content,
             options
         }));
@@ -81,9 +81,9 @@ describe('velocicroptorReport.vue', () => {
         const e = {
             target: {
                 classList: {
-                    contains: jest.fn().mockReturnValue(true),
-                    add: jest.fn(),
-                    remove: jest.fn()
+                    contains: vi.fn().mockReturnValue(true),
+                    add: vi.fn(),
+                    remove: vi.fn()
                 },
                 dataset: {
                     path: '/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif',

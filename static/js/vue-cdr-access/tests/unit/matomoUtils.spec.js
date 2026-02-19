@@ -1,4 +1,5 @@
 import {mount, RouterLinkStub} from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import { createTestingPinia } from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -28,7 +29,7 @@ describe('matomoUtils', () => {
         ]
     });
 
-    const matomoSetup = jest.spyOn(matomoUtils.methods, 'matomoSetup');
+
 
     beforeEach(() => {
         const div = document.createElement('div');
@@ -36,7 +37,7 @@ describe('matomoUtils', () => {
         div.appendChild(document.createElement('script'));
         document.body.appendChild(div);
 
-        jest.resetAllMocks();
+        vi.restoreAllMocks();
     });
 
     afterEach(() => {
@@ -44,6 +45,8 @@ describe('matomoUtils', () => {
     })
 
     it("loads the matamo script", () => {
+        const matomoSetup = vi.spyOn(matomoUtils.methods, 'matomoSetup');
+
         wrapper = mount(App, {
             attachTo: '#root',
             global: {

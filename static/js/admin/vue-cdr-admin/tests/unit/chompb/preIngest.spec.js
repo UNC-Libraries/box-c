@@ -48,7 +48,7 @@ const project_info = [
 describe('preIngest.vue', () => {
     function setupWrapper(dataSet) {
         mockRouter = {
-            push: jest.fn(),
+            push: vi.fn(),
         };
 
         wrapper = mount(preIngest, {

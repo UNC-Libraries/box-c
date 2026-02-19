@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import displayWrapper from '@/components/displayWrapper.vue';

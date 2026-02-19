@@ -1,10 +1,11 @@
 import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import { createTestingPinia } from '@pinia/testing';
+import { describe, it, expect } from 'vitest';
+import mockAxios from 'vitest-mock-axios';
 import cloneDeep from 'lodash.clonedeep';
 import { useAccessStore } from '@/stores/access';
 import displayWrapper from '@/components/displayWrapper.vue';
-import moxios from 'moxios';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import { response, briefObjectData } from '../fixtures/displayWrapperFixtures';
@@ -19,8 +20,6 @@ describe('displayWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
-
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -64,9 +63,10 @@ describe('displayWrapper.vue', () => {
     }
 
     function stubQueryResponse(url_pattern, response) {
-        moxios.stubRequest(new RegExp(url_pattern), {
+        mockAxios.mockResponse( {
             status: 200,
-            response: JSON.stringify(response)
+            data: response,
+            url: new RegExp(url_pattern)
         });
     }
 
@@ -329,7 +329,7 @@ describe('displayWrapper.vue', () => {
             query: { rows: 20 }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -380,7 +380,7 @@ describe('displayWrapper.vue', () => {
             query: { rows: 20, user_set_params: true }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -420,7 +420,7 @@ describe('displayWrapper.vue', () => {
             query: {}
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -464,7 +464,7 @@ describe('displayWrapper.vue', () => {
             }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
         }
         const collDisplayBriefObject = cloneDeep(briefObjectData);
         collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"default,normal","worksOnly":true}';
@@ -503,7 +503,7 @@ describe('displayWrapper.vue', () => {
             query: {}
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
         }
 
         wrapper = mount(displayWrapper, {
@@ -545,21 +545,23 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if a 4xx status code is returned", async () => {
-        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+        mockAxios.mockResponse({
             status: 404,
-            response: JSON.stringify({ message: 'Nothing to see here' })
+            response: { message: 'Nothing to see here' },
+            url: '/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json'
         });
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
         mountApp();
 
-        await wrapper.vm.getBriefObject()
+        await wrapper.vm.getBriefObject();
         expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
     });
 
     it("displays a '503 page' if JSON responds with an error", async () => {
-        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+        mockAxios.mockResponse({
             status: 503,
-            response: JSON.stringify({ message: 'bad stuff happened' })
+            response: { message: 'bad stuff happened' },
+            url: '/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json'
         });
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
         mountApp();
@@ -568,7 +570,6 @@ describe('displayWrapper.vue', () => {
     });
 
     afterEach(() => {
-        moxios.uninstall();
         store.$reset();
         wrapper = null;
         router = null;

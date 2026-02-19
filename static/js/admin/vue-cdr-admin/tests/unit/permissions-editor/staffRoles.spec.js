@@ -35,10 +35,10 @@ describe('staffRoles.vue', () => {
                     initialState: {
                         permissions: {
                             actionHandler: {
-                                addEvent: jest.fn()
+                                addEvent: vi.fn()
                             },
                             alertHandler: {
-                                alertHandler: jest.fn()
+                                alertHandler: vi.fn()
                             },
                             metadata: metadata()
                         }
@@ -54,7 +54,7 @@ describe('staffRoles.vue', () => {
             response: JSON.stringify(response)
         });
         wrapper.vm.getRoles();
-        global.confirm = jest.fn().mockReturnValue(true);
+        global.confirm = vi.fn().mockReturnValue(true);
     });
 
     it("retrieves current staff roles data from the server", (done) => {

@@ -1,8 +1,8 @@
 import { shallowMount, flushPromises } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
-import '@testing-library/jest-dom';
 import pagination from '@/components/pagination.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import searchWrapper from '@/components/searchWrapper.vue';

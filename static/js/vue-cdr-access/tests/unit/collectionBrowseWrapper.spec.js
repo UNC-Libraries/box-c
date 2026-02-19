@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach } from 'vitest';
 import collectionBrowseWrapper from '@/components/collectionBrowseWrapper.vue';
-import moxios from "moxios";
+import mockAxios from 'vitest-mock-axios';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 
@@ -63,8 +64,6 @@ describe('collectionBrowseWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
-
         wrapper = shallowMount(collectionBrowseWrapper, {
             global: {
                 plugins: [i18n]
@@ -72,33 +71,27 @@ describe('collectionBrowseWrapper.vue', () => {
         });
     });
 
-    it("retrieves data", (done) => {
-        moxios.stubRequest('api/collectionsJson', {
+    it("retrieves data", async () => {
+        mockAxios.mockResponse({
             status: 200,
-            response: JSON.stringify(response)
+            response: response,
+            url: 'api/collectionsJson'
         });
         wrapper.vm.retrieveData();
+        await wrapper.vm.$nextTick();
 
-        moxios.wait(() => {
-            expect(wrapper.vm.records).toEqual(response.metadata);
-            done();
-        });
+        expect(wrapper.vm.records).toEqual(response.metadata);
     });
 
-    it("displays a '503 page' if JSON responds with an error", (done) => {
-        moxios.stubRequest('api/collectionsJson', {
+    it("displays a '503 page' if JSON responds with an error", async () => {
+        mockAxios.mockResponse({
             status: 503,
-            response: JSON.stringify({ message: 'bad stuff happened' })
+            response: { message: 'bad stuff happened' },
+            url: 'api/collectionsJson'
         });
         wrapper.vm.retrieveData();
+        await wrapper.vm.$nextTick();
 
-        moxios.wait(() => {
-            expect(wrapper.findComponent({ name: 'notAvailable'}).exists()).toBe(true);
-            done();
-        });
-    });
-
-    afterEach(() => {
-        moxios.uninstall();
+        expect(wrapper.findComponent({ name: 'notAvailable'}).exists()).toBe(true);
     });
 });

@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { describe, it, expect } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import abstract from '@/components/full_record/abstract.vue';
 import displayWrapper from '@/components/displayWrapper.vue';

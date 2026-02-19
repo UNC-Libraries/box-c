@@ -1,4 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from "@/components/displayWrapper.vue";
 import facetModal from '@/components/facetModal.vue';
@@ -6,7 +7,6 @@ import searchWrapper from "@/components/searchWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import axios from 'axios';
-import moxios from "moxios";
 
 describe('modalMetadata.vue', () => {
     const i18n = createI18n({
@@ -58,7 +58,7 @@ describe('modalMetadata.vue', () => {
     });
 
     it("opens the modal when 'More' link is clicked", async () => {
-        jest.spyOn(axios, 'get').mockResolvedValueOnce(defaultData());
+        vi.spyOn(axios, 'get').mockResolvedValueOnce(defaultData());
         expect(wrapper.vm.show_modal).toBeFalsy();
         await openModal();
         expect(wrapper.vm.show_modal).toBeTruthy();
@@ -140,7 +140,7 @@ describe('modalMetadata.vue', () => {
             num_rows: 3,
             start_row: 2
         });
-        jest.spyOn(axios, 'get')
+        vi.spyOn(axios, 'get')
             .mockResolvedValueOnce(pageTwoData())
             .mockResolvedValueOnce(pageThreeData());
         await wrapper.find('a').trigger('click');
@@ -166,7 +166,7 @@ describe('modalMetadata.vue', () => {
             num_rows: 3,
             start_row: 4
         });
-        jest.spyOn(axios, 'get')
+        vi.spyOn(axios, 'get')
             .mockResolvedValueOnce( pageThreeData())
             .mockResolvedValueOnce(pageTwoData());
         await wrapper.find('a').trigger('click');
@@ -192,7 +192,7 @@ describe('modalMetadata.vue', () => {
             num_rows: 3,
             start_row: 4
         });
-        jest.spyOn(axios, 'get')
+        vi.spyOn(axios, 'get')
             .mockResolvedValueOnce( pageThreeData())
             .mockResolvedValueOnce(pageTwoData());
         await wrapper.find('a').trigger('click');
@@ -208,7 +208,7 @@ describe('modalMetadata.vue', () => {
     });
 
     it("sorts results alphabetically", async () => {
-        jest.spyOn(axios, 'get')
+        vi.spyOn(axios, 'get')
             .mockResolvedValueOnce(defaultData())
             .mockResolvedValueOnce(defaultDataAlpha());
         await wrapper.find('a').trigger('click');
@@ -238,7 +238,7 @@ describe('modalMetadata.vue', () => {
         wrapper.setData({
             sort: 'index'
         });
-        jest.spyOn(axios, 'get')
+        vi.spyOn(axios, 'get')
             .mockResolvedValueOnce(defaultDataAlpha())
             .mockResolvedValueOnce(defaultData());
         await wrapper.find('a').trigger('click');
@@ -298,7 +298,7 @@ describe('modalMetadata.vue', () => {
     });
 
     async function openModal(data = defaultData()) {
-        jest.spyOn(axios, 'get').mockResolvedValue(data);
+        vi.spyOn(axios, 'get').mockResolvedValue(data);
         await wrapper.find('a').trigger('click');
         await flushPromises();
     }

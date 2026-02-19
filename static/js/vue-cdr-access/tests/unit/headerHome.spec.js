@@ -1,4 +1,5 @@
 import {mount, RouterLinkStub} from '@vue/test-utils';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
 import dcrHeader from '@/components/header/headerHome.vue';

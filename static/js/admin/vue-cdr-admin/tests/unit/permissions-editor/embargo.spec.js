@@ -24,7 +24,7 @@ describe('embargo.vue', () => {
                     initialState: {
                         permissions: {
                             alertHandler: {
-                                alertHandler: jest.fn()
+                                alertHandler: vi.fn()
                             }
                         }
                     },
@@ -35,7 +35,7 @@ describe('embargo.vue', () => {
         store = usePermissionsStore();
         await wrapper.vm.$nextTick();
         inputs = wrapper.findAll('input');
-        global.confirm = jest.fn().mockReturnValue(true);
+        global.confirm = vi.fn().mockReturnValue(true);
     });
 
     afterEach(() => {

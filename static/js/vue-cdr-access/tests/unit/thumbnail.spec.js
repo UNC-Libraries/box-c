@@ -1,4 +1,5 @@
 import { mount, RouterLinkStub } from '@vue/test-utils'
+import { describe, it, expect, beforeEach } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import displayWrapper from '@/components/displayWrapper.vue';

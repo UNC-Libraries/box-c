@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import slider from '@/components/slider.vue';
 
 let wrapper;

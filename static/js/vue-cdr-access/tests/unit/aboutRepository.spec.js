@@ -1,4 +1,5 @@
 import {RouterLinkStub, shallowMount} from '@vue/test-utils';
+import { describe, it, expect } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import { createTestingPinia } from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -6,7 +7,6 @@ import aboutRepository from '@/components/aboutRepository.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import moxios from "moxios";
 
 let wrapper, router, store;
 
@@ -18,8 +18,6 @@ describe('aboutRepository.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
-
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -50,7 +48,6 @@ describe('aboutRepository.vue', () => {
 
     afterEach(function () {
         store.$reset();
-        moxios.uninstall();
     });
 
     it("loads the about repository page", () => {
