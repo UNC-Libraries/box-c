@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.video;
 
 import mp44u.CLIMain;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import mp44u.errors.CommandException;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -43,6 +45,10 @@ public class Mp44uVideoProcessor implements Processor {
 
         Result result = new Result(command, new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
         in.setBody(result);
+
+        if (exitCode != 0) {
+            throw new Exception("mp44u command " + Arrays.toString(command) + " failed to execute for " + videoPath);
+        }
     }
 
     public static class Result extends ExecResult {
