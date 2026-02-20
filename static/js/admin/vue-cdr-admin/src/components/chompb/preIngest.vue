@@ -40,7 +40,6 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bm';
-import axios from 'axios';
 
 DataTable.use(DataTablesCore);
 
@@ -129,7 +128,7 @@ export default {
     },
 
     methods: {
-        performAction(action_info, row_data) {
+        async performAction(action_info, row_data) {
             let projectName = row_data.projectProperties.name;
             // Action requires confirmation, exiting early if the user cancels
             if (action_info.confirm && !confirm(action_info.confirmMessage)) {
@@ -140,20 +139,25 @@ export default {
             }
             let actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
             if (action_info.method === 'post' || action_info.method === 'get') {
-                axios({
-                    method: action_info.method,
-                    url: actionUrl
-                }).then((response) => {
+                try {
+                    const response = await fetch(actionUrl, {
+                        method: action_info.method.toUpperCase()
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
                     console.log("Successfully triggered action", actionUrl);
                     this.copy_error = false;
                     this.copy_msg = `"${action_info.label}" action successfully triggered for project: ${projectName}`;
                     this.clearCopyMessage();
-                }).catch((error) => {
+                } catch (error) {
                     this.copy_error = true;
                     this.copy_msg = `Error encountered while performing action" ${action_info.label}" for project: ${projectName}`;
                     console.log("Error encountered while performing action", error);
                     this.clearCopyMessage();
-                });
+                }
             } else if (action_info.method === 'link') {
                 this.$router.push(actionUrl);
             }
