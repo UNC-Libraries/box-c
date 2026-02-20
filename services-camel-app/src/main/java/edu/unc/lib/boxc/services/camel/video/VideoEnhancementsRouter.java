@@ -43,6 +43,10 @@ public class VideoEnhancementsRouter extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .log(LoggingLevel.ERROR, "${exception.message}");
 
+        onException(Mp44uVideoProcessor.Mp44uExecutionException.class)
+                .maximumRedeliveries(0)
+                .log(LoggingLevel.ERROR, "${exception.message}");
+
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
                 .maximumRedeliveries("{{error.maxRedeliveries}}")

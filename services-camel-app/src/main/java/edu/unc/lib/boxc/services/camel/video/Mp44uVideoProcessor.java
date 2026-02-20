@@ -45,7 +45,7 @@ public class Mp44uVideoProcessor implements Processor {
         in.setBody(result);
 
         if (exitCode != 0) {
-            throw new Mp44uExecutionException("mp44u command " + Arrays.toString(command)
+            throw new Mp44uExecutionException("mp44u video command " + Arrays.toString(command)
                     + " failed to execute for " + videoPath);
         }
     }

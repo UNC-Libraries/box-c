@@ -40,6 +40,10 @@ public class AudioEnhancementsRouter extends RouteBuilder {
             .maximumRedeliveries(0)
             .log(LoggingLevel.ERROR, "${exception.message}");
 
+        onException(Mp44uAudioProcessor.Mp44uExecutionException.class)
+                .maximumRedeliveries(0)
+                .log(LoggingLevel.ERROR, "${exception.message}");
+
         onException(RepositoryException.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
