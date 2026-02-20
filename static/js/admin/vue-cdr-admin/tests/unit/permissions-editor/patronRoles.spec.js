@@ -50,6 +50,7 @@ let compacted_assigned_can_view_roles = [
     { principal: 'patron', role: 'canViewAccessCopies', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
 ];
 
+const mockConfirm = vi.fn().mockReturnValue(true);
 let wrapper, selects, store;
 
 describe('patronRoles.vue', () => {
@@ -59,6 +60,7 @@ describe('patronRoles.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        vi.unstubAllGlobals();
         wrapper = null;
     });
 
@@ -1071,7 +1073,7 @@ describe('patronRoles.vue', () => {
         });
 
         await wrapper.find('#is-canceling').trigger('click');
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
     it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays don't have the same values", async () => {
@@ -1100,7 +1102,7 @@ describe('patronRoles.vue', () => {
         });
 
         await wrapper.find('#is-canceling').trigger('click');
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
     it("prompts the user if 'Cancel' is clicked and an embargo has been added", async() => {
@@ -1112,7 +1114,7 @@ describe('patronRoles.vue', () => {
             embargo: '2099-12-31'
         });
         await wrapper.find('#is-canceling').trigger('click');
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
     it("prompts the user if 'Cancel' is clicked and an embargo has been removed", async() => {
@@ -1124,7 +1126,7 @@ describe('patronRoles.vue', () => {
             embargo: null
         });
         await wrapper.find('#is-canceling').trigger('click');
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
     it("prompts the user if 'Cancel' is clicked and a new user has been added", async() => {
@@ -1137,7 +1139,7 @@ describe('patronRoles.vue', () => {
             new_assignment_role: 'canViewOriginals'
         });
         await wrapper.find('#is-canceling').trigger('click');
-        expect(global.confirm).toHaveBeenCalled();
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
     it("Updates 'cancel' button text if there are unsaved changes", async () => {
@@ -1243,7 +1245,7 @@ describe('patronRoles.vue', () => {
                     skipEmbargo: true,
                     skipRoles: false
                 });
-                expect(global.confirm).toHaveBeenCalled();
+                expect(mockConfirm).toHaveBeenCalled();
                 expectSaveButtonDisabled();
                 done();
             });
@@ -1271,7 +1273,7 @@ describe('patronRoles.vue', () => {
                     skipEmbargo: false,
                     skipRoles: true
                 });
-                expect(global.confirm).toHaveBeenCalled();
+                expect(mockConfirm).toHaveBeenCalled();
                 expectSaveButtonDisabled();
                 let btn = wrapper.find('#is-canceling');
                 expect(btn.text()).toBe('Close');
@@ -1308,8 +1310,8 @@ describe('patronRoles.vue', () => {
 
     function mountApp(use_bulk = false, resultObjects = []) {
         let initial_permissions = {
-            actionHandler: { addEvent: jest.fn() },
-            alertHandler: { alertHandler: jest.fn() },
+            actionHandler: { addEvent: vi.fn() },
+            alertHandler: { alertHandler: vi.fn() },
             metadata: { id: UUID, type: 'Folder', deleted: false, embargo: null }
         }
         if (use_bulk) {
@@ -1329,7 +1331,7 @@ describe('patronRoles.vue', () => {
         });
 
         store = usePermissionsStore();
-        global.confirm = jest.fn().mockReturnValue(true);
+        vi.stubGlobal('confirm', mockConfirm);
         selects = wrapper.findAll('select');
     }
 

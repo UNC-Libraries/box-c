@@ -1,9 +1,8 @@
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import preIngest from '@/components/chompb/preIngest.vue';
 import moxios from 'moxios';
 import structuredClone from '@ungap/structured-clone';
-
-global.structuredClone = structuredClone;
 
 let wrapper;
 let mockRouter;
@@ -48,7 +47,7 @@ const project_info = [
 describe('preIngest.vue', () => {
     function setupWrapper(dataSet) {
         mockRouter = {
-            push: jest.fn(),
+            push: vi.fn(),
         };
 
         wrapper = mount(preIngest, {
@@ -72,8 +71,9 @@ describe('preIngest.vue', () => {
         moxios.install();
     });
 
-    afterEach(function () {
+    afterEach(() => {
         moxios.uninstall();
+        vi.unstubAllGlobals();
     });
 
     it("contains a table of projects", () => {
@@ -91,9 +91,13 @@ describe('preIngest.vue', () => {
     });
 
     it("shows link to report if job is completed", async () => {
+        vi.stubGlobal('structuredClone', structuredClone);
+
         let updatedInfo = structuredClone(project_info);
         updatedInfo[0].processingJobs['velocicroptor'] = { 'status' : 'completed' };
         setupWrapper(updatedInfo);
+
+        await nextTick();
 
         let rows = wrapper.findAll('.datatable tbody tr');
         let actions1 = rows[0].findAll('a');
@@ -107,44 +111,49 @@ describe('preIngest.vue', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/admin/chompb/project/file_source_test/processing_results/velocicroptor');
     });
 
-    it("clicking on the crop button causes request to be made", (done) => {
+    it("clicking on the crop button causes request to be made", async () => {
         // suppressing error spam from jsdom when making http requests with moxios/axios
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         setupWrapper(project_info);
 
+        // Mock window.confirm before any actions
+        const confirmMock = vi.fn().mockReturnValue(true);
+        vi.stubGlobal('confirm', confirmMock);
+
+        await nextTick();
+
+        // Stub the request BEFORE triggering the click
         moxios.stubRequest(`/admin/chompb/project/file_source_test/action/velocicroptor`, {
             status: 200,
             response: JSON.stringify({'action' : 'Start cropping for project file_source_test'})
         });
 
-        // Mock window.confirm
-        const confirmMock = jest.spyOn(window, 'confirm');
+        let rows = wrapper.findAll('.datatable tbody tr');
+        let actions1 = rows[0].findAll('a');
+        expect(actions1[1].text()).toBe('Crop color bars');
 
-        // Mock return values for confirm
-        confirmMock.mockImplementationOnce(() => true);  // Simulate "Yes" click
+        // Trigger the click
+        await actions1[1].trigger('click');
 
-
-        moxios.wait(async () => {
-            let rows = wrapper.findAll('.datatable tbody tr');
-            let actions1 = rows[0].findAll('a');
-            expect(actions1[1].text()).toBe('Crop color bars');
-            await actions1[1].trigger('click');
-
+        // Wait for moxios to process the request
+        await new Promise((resolve) => {
             moxios.wait(() => {
                 let request = moxios.requests.mostRecent();
-
                 expect(request.config.method).toEqual('post');
-                expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to crop color bars for this project?');
-                // crop option should have changed from a link to a span
-                rows = wrapper.findAll('.datatable tbody tr');
-                let actions2 = rows[0].findAll('span');
-                expect(actions2[0].text()).toBe('Crop in progress');
-
-                consoleErrorSpy.mockRestore();
-                confirmMock.mockRestore();
-                done();
+                resolve();
             });
         });
+
+        await nextTick();
+
+        expect(confirmMock).toHaveBeenCalledWith('Are you sure you want to crop color bars for this project?');
+
+        // crop option should have changed from a link to a span
+        rows = wrapper.findAll('.datatable tbody tr');
+        let actions2 = rows[0].findAll('span');
+        expect(actions2[0].text()).toBe('Crop in progress');
+
+        consoleErrorSpy.mockRestore();
     });
 });
