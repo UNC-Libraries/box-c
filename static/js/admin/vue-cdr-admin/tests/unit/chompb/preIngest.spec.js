@@ -1,7 +1,6 @@
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import preIngest from '@/components/chompb/preIngest.vue';
-import moxios from 'moxios';
 import structuredClone from '@ungap/structured-clone';
 
 let wrapper;
@@ -68,11 +67,12 @@ describe('preIngest.vue', () => {
     }
 
     beforeEach(() => {
-        moxios.install();
+        fetchMock.enableMocks();
+        fetchMock.resetMocks();
     });
 
     afterEach(() => {
-        moxios.uninstall();
+        fetchMock.disableMocks();
         vi.unstubAllGlobals();
     });
 
@@ -91,8 +91,7 @@ describe('preIngest.vue', () => {
     });
 
     it("shows link to report if job is completed", async () => {
-        vi.stubGlobal('structuredClone', structuredClone);
-
+        // Don't stub globally, just use the polyfill directly
         let updatedInfo = structuredClone(project_info);
         updatedInfo[0].processingJobs['velocicroptor'] = { 'status' : 'completed' };
         setupWrapper(updatedInfo);
@@ -112,7 +111,7 @@ describe('preIngest.vue', () => {
     });
 
     it("clicking on the crop button causes request to be made", async () => {
-        // suppressing error spam from jsdom when making http requests with moxios/axios
+        // suppressing error spam from jsdom when making http requests
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         setupWrapper(project_info);
@@ -123,29 +122,22 @@ describe('preIngest.vue', () => {
 
         await nextTick();
 
-        // Stub the request BEFORE triggering the click
-        moxios.stubRequest(`/admin/chompb/project/file_source_test/action/velocicroptor`, {
-            status: 200,
-            response: JSON.stringify({'action' : 'Start cropping for project file_source_test'})
+        // Mock the fetch response
+        fetchMock.mockResponseOnce(JSON.stringify({'action' : 'Start cropping for project file_source_test'}), {
+            status: 200
         });
 
         let rows = wrapper.findAll('.datatable tbody tr');
         let actions1 = rows[0].findAll('a');
         expect(actions1[1].text()).toBe('Crop color bars');
 
-        // Trigger the click
         await actions1[1].trigger('click');
+        await flushPromises();
 
-        // Wait for moxios to process the request
-        await new Promise((resolve) => {
-            moxios.wait(() => {
-                let request = moxios.requests.mostRecent();
-                expect(request.config.method).toEqual('post');
-                resolve();
-            });
-        });
-
-        await nextTick();
+        // Check the fetch call was made correctly
+        const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+        expect(lastCall[0]).toContain('/admin/chompb/project/file_source_test/action/velocicroptor');
+        expect(lastCall[1].method).toEqual('POST');
 
         expect(confirmMock).toHaveBeenCalledWith('Are you sure you want to crop color bars for this project?');
 

@@ -97,10 +97,9 @@
     import embargo from '@/components/permissions-editor/embargo.vue';
     import displayModal from '../../mixins/displayModal';
     import patronHelpers from '../../mixins/patronHelpers';
-    import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
-    import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '@/stores/permissions';
+    import {mapActions, mapState} from 'pinia';
+    import {usePermissionsStore} from '@/stores/permissions';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -289,36 +288,51 @@
                 this.user_type = type;
             },
 
-            getRoles() {
-                // No need to retrieve existing roles when performing bulk update
-                if (this.isBulkMode) {
-                    axios.get(`/services/api/acl/patron/allowedPrincipals`).then((response) => {
-                        this.allowed_principals = response.data;
+            async getRoles() {
+                try {
+                    // No need to retrieve existing roles when performing bulk update
+                    if (this.isBulkMode) {
+                        const response = await fetch(`/services/api/acl/patron/allowedPrincipals`);
+
+                        if (!response.ok) {
+                            const error = new Error('Network response was not ok');
+                            error.response = response;
+                            throw error;
+                        }
+
+                        this.allowed_principals = await response.json();
                         this._initializeSelectedAssignments([]);
                         this.bulk_has_saved = false;
                         this.user_type = ACCESS_TYPE_IGNORE;
-                    }).catch((error) => {
-                        let response_msg = 'Unable to load allowed principals';
-                        this.alertHandler.alertHandler('error', response_msg);
-                        console.log(error);
-                    });
-                    return;
-                }
-                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
+                        return;
+                    }
+
+                    const response = await fetch(`/services/api/acl/patron/${this.uuid}`);
+
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+
+                    const data = await response.json();
                     this.setEmbargoInfo({
-                        embargo: response.data.assigned.embargo,
+                        embargo: data.assigned.embargo,
                         skipEmbargo: true
                     });
-                    this._initializeInherited(response.data.inherited);
-                    this.deleted = response.data.assigned.deleted;
-                    this._initializeSelectedAssignments(response.data.assigned.roles);
-                    this.allowed_principals = response.data.allowedPrincipals;
+                    this._initializeInherited(data.inherited);
+                    this.deleted = data.assigned.deleted;
+                    this._initializeSelectedAssignments(data.assigned.roles);
+                    this.allowed_principals = data.allowedPrincipals;
                     this.saved_details = this.submissionAccessDetails();
-                }).catch((error) => {
-                    let response_msg = `Unable to load current patron roles for: ${this.title}`;
+
+                } catch (error) {
+                    let response_msg = this.isBulkMode
+                        ? 'Unable to load allowed principals'
+                        : `Unable to load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
             _initializeInherited(inherited) {
@@ -425,15 +439,24 @@
                 }
             },
 
-            _saveSingle() {
+            async _saveSingle() {
                 let submissionDetails = this.submissionAccessDetails();
 
-                axios({
-                    method: 'put',
-                    url: `/services/api/edit/acl/patron/${this.uuid}`,
-                    data: JSON.stringify(submissionDetails),
-                    headers: {'content-type': 'application/json; charset=utf-8'}
-                }).then((response) => {
+                try {
+                    const response = await fetch(`/services/api/edit/acl/patron/${this.uuid}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json; charset=utf-8'
+                        },
+                        body: JSON.stringify(submissionDetails)
+                    });
+
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
@@ -445,18 +468,19 @@
                         target : this.resultObject,
                         waitForUpdate : true
                     });
-                }).catch((error) => {
+                } catch (error) {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
-            _saveBulk() {
+            async _saveBulk() {
                 if (!window.confirm(`Are you sure you want to update ${this.title}?`)) {
                     return;
                 }
+
                 let submissionDetails = this.submissionAccessDetails();
                 let skipRoles = this.user_type === ACCESS_TYPE_IGNORE;
                 let bulkDetails = {
@@ -466,12 +490,21 @@
                     skipRoles: skipRoles
                 };
 
-                axios({
-                    method: 'put',
-                    url: `/services/api/edit/acl/patron`,
-                    data: JSON.stringify(bulkDetails),
-                    headers: {'content-type': 'application/json; charset=utf-8'}
-                }).then((response) => {
+                try {
+                    const response = await fetch(`/services/api/edit/acl/patron`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json; charset=utf-8'
+                        },
+                        body: JSON.stringify(bulkDetails)
+                    });
+
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+
                     let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
@@ -485,12 +518,12 @@
                             waitForUpdate : true
                         });
                     }
-                }).catch((error) => {
+                } catch (error) {
                     let response_msg = `Unable to bulk update patron roles`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
             /**
