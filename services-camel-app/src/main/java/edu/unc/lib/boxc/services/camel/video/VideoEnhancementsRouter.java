@@ -39,7 +39,9 @@ public class VideoEnhancementsRouter extends RouteBuilder {
 
         uuidGenerator = new DefaultUuidGenerator();
 
-        onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+        onException(AddDerivativeProcessor.DerivativeGenerationException.class,
+                Mp44uVideoProcessor.Mp44uExecutionException.class)
+                .handled(true)
                 .maximumRedeliveries(0)
                 .log(LoggingLevel.ERROR, "${exception.message}");
 

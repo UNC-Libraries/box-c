@@ -36,7 +36,9 @@ public class AudioEnhancementsRouter extends RouteBuilder {
 
         uuidGenerator = new DefaultUuidGenerator();
 
-        onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+        onException(AddDerivativeProcessor.DerivativeGenerationException.class,
+                Mp44uAudioProcessor.Mp44uExecutionException.class)
+            .handled(true)
             .maximumRedeliveries(0)
             .log(LoggingLevel.ERROR, "${exception.message}");
 

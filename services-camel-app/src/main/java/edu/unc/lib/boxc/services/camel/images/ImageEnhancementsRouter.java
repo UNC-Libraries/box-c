@@ -49,6 +49,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         uuidGenerator = new DefaultUuidGenerator();
 
         onException(AddDerivativeProcessor.DerivativeGenerationException.class)
+                .handled(true)
                 .maximumRedeliveries(0)
                 .log(LoggingLevel.ERROR, "${exception.message}");
 

@@ -43,6 +43,11 @@ public class Mp44uAudioProcessor implements Processor {
 
         Result result = new Result(command, new ByteArrayInputStream(tempPath.getBytes()), null, exitCode);
         in.setBody(result);
+
+        if (exitCode != 0) {
+            throw new Mp44uExecutionException("mp44u audio command " + Arrays.toString(command)
+                    + " failed to execute for " + audioPath);
+        }
     }
 
     public static class Result extends ExecResult {
@@ -51,6 +56,12 @@ public class Mp44uAudioProcessor implements Processor {
                             Arrays.asList(command), null, 0L, null,
                             null, null, false, LoggingLevel.OFF),
                     stdout, stderr, exitCode);
+        }
+    }
+
+    public static class Mp44uExecutionException extends RuntimeException {
+        public Mp44uExecutionException(String message) {
+            super(message);
         }
     }
 }
