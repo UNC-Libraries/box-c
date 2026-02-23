@@ -1,13 +1,21 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import { createTestingPinia } from '@pinia/testing';
 import cloneDeep from 'lodash.clonedeep';
 import { useAccessStore } from '@/stores/access';
 import displayWrapper from '@/components/displayWrapper.vue';
-import moxios from 'moxios';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import { response, briefObjectData } from '../fixtures/displayWrapperFixtures';
+
+const defaultSearchResponse = {
+    container: response.container,
+    metadata: [],
+    resultCount: 0,
+    facetFields: [],
+    filterParameters: {}
+};
 
 let wrapper, router, store;
 
@@ -19,7 +27,13 @@ describe('displayWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
+        fetchMock.resetMocks();
+        fetchMock.mockResponseIf(/\/api\//, (req) => {
+            if (req.url.endsWith('/json')) {
+                return JSON.stringify(briefObjectData);
+            }
+            return JSON.stringify(defaultSearchResponse);
+        });
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -33,9 +47,6 @@ describe('displayWrapper.vue', () => {
         });
     });
 
-    afterEach(() => {
-        store.$reset();
-    });
 
     function mountApp(data_overrides = {}) {
         const default_data = {
@@ -44,7 +55,8 @@ describe('displayWrapper.vue', () => {
             record_count: 0,
             record_list: [],
             uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
-            filter_parameters: {}
+            filter_parameters: {},
+            is_page_loading: false // Override to skip initial loading
         };
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
@@ -53,7 +65,23 @@ describe('displayWrapper.vue', () => {
                     stubActions: false
                 })],
                 stubs: {
-                    RouterLink: RouterLinkStub
+                    RouterLink: RouterLinkStub,
+                    'header-small': true,
+                    'admin-unit': true,
+                    'collection-record': true,
+                    'folder-record': true,
+                    'aggregate-record': true,
+                    'file-record': true,
+                    'bread-crumbs': true,
+                    'browse-search': true,
+                    'browse-sort': true,
+                    'clear-filters': true,
+                    // don't stub works-only so we can assert its DOM
+                    'view-type': true,
+                    'facets': true,
+                    'gallery-display': true,
+                    'list-display': true,
+                    'pagination': true
                 }
             },
             data() {
@@ -63,19 +91,15 @@ describe('displayWrapper.vue', () => {
         store = useAccessStore();
     }
 
-    function stubQueryResponse(url_pattern, response) {
-        moxios.stubRequest(new RegExp(url_pattern), {
-            status: 200,
-            response: JSON.stringify(response)
-        });
-    }
-
     it("retrieves data", async () => {
-        stubQueryResponse(`api/listJson/${response.container.id}?.+`, response);
+        fetchMock.mockResponseOnce(JSON.stringify(briefObjectData));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push(`/record/${response.container.id}`);
-        mountApp();
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
+        mountApp({
+            is_page_loading: false
+        });
+
         await flushPromises();
 
         expect(wrapper.vm.search_method).toEqual('listJson');
@@ -90,9 +114,7 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp();
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
-        await flushPromises();
+        wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('searchJson');
     });
 
@@ -100,9 +122,7 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp();
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
-        await flushPromises();
+        wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('listJson');
     });
 
@@ -112,9 +132,7 @@ describe('displayWrapper.vue', () => {
             filter_parameters: { "anywhere" : "search query"}
         });
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
-        await flushPromises();
+        wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('searchJson');
     });
 
@@ -124,53 +142,44 @@ describe('displayWrapper.vue', () => {
             filter_parameters: { "subject" : "subj value" }
         });
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
-        await flushPromises();
+        wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('searchJson');
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
-        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
-        mountApp({
-            container_info: {
-                briefObject: {
-                    type: 'AdminUnit',
-                    objectPath: {
-                        entries: [
-                            {
-                                pid: 'collections',
-                                name: 'Content Collections Root',
-                                container: true
-                            },
-                            {
-                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                                name: 'testAdminUnit',
-                                container: true
-                            }
-                        ]
-                    }
+        fetchMock.mockResponseOnce(JSON.stringify({
+            briefObject: {
+                type: 'AdminUnit',
+                objectPath: {
+                    entries: [
+                        { pid: 'collections', name: 'Content Collections Root', container: true },
+                        { pid: '353ee09f-a4ed-461e-a436-18a1bee77b01', name: 'testAdminUnit', container: true }
+                    ]
                 }
             },
-            resourceType: 'AdminUnit'
-        });
+            resourceType: 'AdminUnit',
+            markedForDeletion: false
+        }));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
+        mountApp();
+
         await flushPromises();
+
         expect(wrapper.vm.search_method).toEqual('listJson');
         expect(wrapper.find("#works-only-on").exists()).toBe(true);
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
-        stubQueryResponse(`api/searchJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
+        fetchMock.mockResponseOnce(JSON.stringify(briefObjectData));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp();
 
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
         await flushPromises();
+
         let works_only = wrapper.find('#works-only-on');
         expect(works_only.exists()).toBe(true);
     });
@@ -184,137 +193,131 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for admin unit", async () => {
-        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
-            {
-                'briefObject': {
-                    type: 'AdminUnit',
-                    objectPath: {
-                        entries: [
-                            {
-                                pid: 'collections',
-                                name: 'Content Collections Root',
-                                container: true
-                            },
-                            {
-                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                                name: 'testAdminUnit',
-                                container: true
-                            }
-                        ]
-                    }
-                },
-                'resourceType': 'AdminUnit',
-                'markedForDeletion': false
-            });
+        fetchMock.mockResponseOnce(JSON.stringify({
+            'briefObject': {
+                type: 'AdminUnit',
+                objectPath: {
+                    entries: [
+                        {
+                            pid: 'collections',
+                            name: 'Content Collections Root',
+                            container: true
+                        },
+                        {
+                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                            name: 'testAdminUnit',
+                            container: true
+                        }
+                    ]
+                }
+            },
+            'resourceType': 'AdminUnit',
+            'markedForDeletion': false
+        }));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
-        wrapper.vm.getBriefObject();
-        wrapper.vm.retrieveSearchResults();
+
         await flushPromises();
 
-        // Verify that there are still other facets, but that the unit facet has been removed
         expect(store.possibleFacetFields.length).toBeGreaterThan(0);
         expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        // Verify that record list is displaying, indicating that a request was made which did not include unit facet
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
 
     it("adjusts facets retrieved for collection object", async () => {
-        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
-            {
-                'briefObject': briefObjectData.briefObject,
-                'resourceType': 'Collection',
-                'markedForDeletion': false
-            });
+        fetchMock.mockResponseOnce(JSON.stringify({
+            'briefObject': briefObjectData.briefObject,
+            'resourceType': 'Collection',
+            'markedForDeletion': false
+        }));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
+
         await flushPromises();
 
-        // Verify that there are still other facets, but that the unit and collection facets have been removed
         expect(store.possibleFacetFields.length).toBeGreaterThan(0);
         expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
-        // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
 
     it("adjusts facets retrieved for folder object", async () => {
-        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
-            {
-                'briefObject': {
-                    type: 'Folder',
-                    objectPath: {
-                        entries: [
-                            {
-                                pid: 'collections',
-                                name: 'Content Collections Root',
-                                container: true
-                            },
-                            {
-                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                                name: 'testAdminUnit',
-                                container: true
-                            },
-                            {
-                                pid: '6d824655-b2a0-4d4b-9f8c-d304bbe20286',
-                                name: 'A Collection',
-                                container: true
-                            }
-                        ]
-                    }
-                },
-                'resourceType': 'Folder',
-                'markedForDeletion': false
-            });
+        fetchMock.mockResponseOnce(JSON.stringify({
+            'briefObject': {
+                type: 'Folder',
+                objectPath: {
+                    entries: [
+                        {
+                            pid: 'collections',
+                            name: 'Content Collections Root',
+                            container: true
+                        },
+                        {
+                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                            name: 'testAdminUnit',
+                            container: true
+                        },
+                        {
+                            pid: '6d824655-b2a0-4d4b-9f8c-d304bbe20286',
+                            name: 'A Collection',
+                            container: true
+                        }
+                    ]
+                }
+            },
+            'resourceType': 'Folder',
+            'markedForDeletion': false
+        }));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
+
         await flushPromises();
 
-        // Verify that there are still other facets, but that the unit and collection facets have been removed
         expect(store.possibleFacetFields.length).toBeGreaterThan(0);
         expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
-        // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
 
     it("adjusts facets retrieved for admin unit and maintains them after checking works only", async () => {
-        stubQueryResponse(`api/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        stubQueryResponse(`api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
-            {
-                'briefObject': {
-                    type: 'AdminUnit',
-                    objectPath: {
-                        entries: [
-                            {
-                                pid: 'collections',
-                                name: 'Content Collections Root',
-                                container: true
-                            },
-                            {
-                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                                name: 'testAdminUnit',
-                                container: true
-                            }
-                        ]
-                    }
-                },
-                'resourceType': 'AdminUnit',
-                'markedForDeletion': false
-            });
+        fetchMock.mockResponseOnce(JSON.stringify({
+            'briefObject': {
+                type: 'AdminUnit',
+                objectPath: {
+                    entries: [
+                        {
+                            pid: 'collections',
+                            name: 'Content Collections Root',
+                            container: true
+                        },
+                        {
+                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                            name: 'testAdminUnit',
+                            container: true
+                        }
+                    ]
+                }
+            },
+            'resourceType': 'AdminUnit',
+            'markedForDeletion': false
+        }));
+        fetchMock.mockResponseOnce(JSON.stringify(response));
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
         mountApp();
+
         await flushPromises();
 
-        // Verify that there are still other facets, but that the unit facet has been removed
         let num_facets = store.possibleFacetFields.length;
         expect(num_facets).toBeGreaterThan(0);
         expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
 
-        // Trigger works only filter and make sure that the set of facets does not change
         await wrapper.find('#works-only').trigger('click');
         await flushPromises();
 
@@ -329,7 +332,7 @@ describe('displayWrapper.vue', () => {
             query: { rows: 20 }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve())
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -380,7 +383,7 @@ describe('displayWrapper.vue', () => {
             query: { rows: 20, user_set_params: true }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve())
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -420,7 +423,7 @@ describe('displayWrapper.vue', () => {
             query: {}
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve())
         }
 
         const collDisplayBriefObject = cloneDeep(briefObjectData);
@@ -464,7 +467,7 @@ describe('displayWrapper.vue', () => {
             }
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve())
         }
         const collDisplayBriefObject = cloneDeep(briefObjectData);
         collDisplayBriefObject.briefObject.collectionDisplaySettings = '{"displayType":"gallery-display","sortType":"default,normal","worksOnly":true}';
@@ -503,7 +506,7 @@ describe('displayWrapper.vue', () => {
             query: {}
         }
         const mockRouter = {
-            replace: jest.fn(() => Promise.resolve('complete nonDuplicateNavigationError'))
+            replace: vi.fn(() => Promise.resolve())
         }
 
         wrapper = mount(displayWrapper, {
@@ -536,43 +539,85 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if no data is returned", async () => {
-        stubQueryResponse(`/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`, '');
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
-        mountApp();
+        fetchMock.mockResponseOnce('', { status: 200 });
 
-        await wrapper.vm.getBriefObject()
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [router, i18n, createTestingPinia({ stubActions: false })],
+                stubs: {
+                    RouterLink: RouterLinkStub,
+                    'header-small': true,
+                    'not-found': false, // Don't stub this one
+                    'not-available': false
+                }
+            }
+        });
+
+        store = useAccessStore();
+
+        await flushPromises();
+
         expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
     });
 
     it("shows a 'not found' message if a 4xx status code is returned", async () => {
-        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
-            status: 404,
-            response: JSON.stringify({ message: 'Nothing to see here' })
-        });
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
-        mountApp();
+        fetchMock.mockResponseOnce(JSON.stringify({ message: 'Nothing to see here' }), { status: 404 });
 
-        await wrapper.vm.getBriefObject()
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [router, i18n, createTestingPinia({ stubActions: false })],
+                stubs: {
+                    RouterLink: RouterLinkStub,
+                    'header-small': true,
+                    'not-found': false,
+                    'not-available': false
+                }
+            }
+        });
+
+        store = useAccessStore();
+
+        await flushPromises();
+
         expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
     });
 
     it("displays a '503 page' if JSON responds with an error", async () => {
-        moxios.stubRequest('/api/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
-            status: 503,
-            response: JSON.stringify({ message: 'bad stuff happened' })
-        });
+        fetchMock.mockResponseOnce(JSON.stringify({ message: 'bad stuff happened' }), { status: 503 });
+
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
-        mountApp();
-        await wrapper.vm.getBriefObject();
+
+        wrapper = mount(displayWrapper, {
+            global: {
+                plugins: [router, i18n, createTestingPinia({ stubActions: false })],
+                stubs: {
+                    RouterLink: RouterLinkStub,
+                    'header-small': true,
+                    'not-found': false,
+                    'not-available': false
+                }
+            }
+        });
+
+        store = useAccessStore();
+
+        await flushPromises();
+
         expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);
     });
 
     afterEach(() => {
-        moxios.uninstall();
-        store.$reset();
+        if (store) {
+            store.$reset();
+        }
         wrapper = null;
         router = null;
         // Reset the dom to avoid tags added persisting across tests
         document.getElementsByTagName('html')[0].innerHTML = '';
     });
 });
+

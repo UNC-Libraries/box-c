@@ -33,10 +33,9 @@ Displays the MODS descriptive record for an object inside of a modal
 </template>
 
 <script>
-    import get from 'axios';
-    import imageUtils from '../mixins/imageUtils';
+import imageUtils from '../mixins/imageUtils';
 
-    export default {
+export default {
         name: 'modalMetadata',
 
         props: {
@@ -74,15 +73,22 @@ Displays the MODS descriptive record for an object inside of a modal
         },
 
         methods: {
-            loadMetadata() {
-                get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                    this.metadata = response.data;
+            async loadMetadata() {
+                try {
+                    const response = await fetch(`/api/record/${this.uuid}/metadataView`);
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+
+                    this.metadata = await response.text();
                     this.hasLoaded = true;
-                }).catch((error) => {
+                } catch (error) {
                     console.log(error);
                     this.metadata = `<p>${this.$t('modal.error')}</p>`;
                     this.hasLoaded = true;
-                });
+                }
             },
 
             closeModal() {

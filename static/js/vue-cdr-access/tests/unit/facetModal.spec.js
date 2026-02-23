@@ -1,12 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from "@/components/displayWrapper.vue";
 import facetModal from '@/components/facetModal.vue';
 import searchWrapper from "@/components/searchWrapper.vue";
-import {createI18n} from "vue-i18n";
+import { createI18n } from "vue-i18n";
 import translations from "@/translations";
-import axios from 'axios';
-import moxios from "moxios";
 
 describe('modalMetadata.vue', () => {
     const i18n = createI18n({
@@ -18,6 +17,9 @@ describe('modalMetadata.vue', () => {
     let router, wrapper;
 
     beforeEach(async () => {
+        fetchMock.enableMocks();
+        fetchMock.resetMocks();
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -53,12 +55,14 @@ describe('modalMetadata.vue', () => {
     });
 
     afterEach(() => {
+        fetchMock.disableMocks();
         wrapper = null;
         router = null;
     });
 
     it("opens the modal when 'More' link is clicked", async () => {
-        jest.spyOn(axios, 'get').mockResolvedValueOnce(defaultData());
+        fetchMock.mockResponseOnce(JSON.stringify(defaultData()));
+
         expect(wrapper.vm.show_modal).toBeFalsy();
         await openModal();
         expect(wrapper.vm.show_modal).toBeTruthy();
@@ -67,7 +71,8 @@ describe('modalMetadata.vue', () => {
 
     it("displays facets in the modal", async () => {
         await openModal();
-        expect(axios.get).toHaveBeenCalledWith('/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0');
+
+        expect(fetchMock).toHaveBeenCalledWith('/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0');
 
         const facets = wrapper.findAll('li');
         expect(facets).toHaveLength(6);
@@ -83,7 +88,8 @@ describe('modalMetadata.vue', () => {
         const uuid = '05209c77-30a1-43a0-9c94-fbd58ebf104e';
         wrapper.vm.$route.params.id = uuid;
         await openModal();
-        expect(axios.get).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
+
+        expect(fetchMock).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
     });
 
     it("it appends some current url params, if present", async () => {
@@ -92,8 +98,9 @@ describe('modalMetadata.vue', () => {
             'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection,File';
         await router.push(route);
         await openModal();
+
         const query = '/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
-        expect(axios.get).toHaveBeenCalledWith(query);
+        expect(fetchMock).toHaveBeenCalledWith(query);
     });
 
     it("disables 'Previous/Next' buttons if there is only one page of results", async () => {
@@ -135,14 +142,15 @@ describe('modalMetadata.vue', () => {
         expect(paging[1].attributes()).not.toHaveProperty('disabled');
     });
 
-    it("shows the next page of results when 'Next' is clicked", async  () => {
+    it("shows the next page of results when 'Next' is clicked", async () => {
         wrapper.setData({
             num_rows: 3,
             start_row: 2
         });
-        jest.spyOn(axios, 'get')
-            .mockResolvedValueOnce(pageTwoData())
-            .mockResolvedValueOnce(pageThreeData());
+        fetchMock
+            .mockResponseOnce(JSON.stringify(pageTwoData()))
+            .mockResponseOnce(JSON.stringify(pageThreeData()));
+
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
@@ -160,15 +168,16 @@ describe('modalMetadata.vue', () => {
         expect(facets_next[0].text()).toContain('Estonian (1)');
     });
 
-    it("shows the previous page of results when 'Previous' is clicked", async  () => {
+    it("shows the previous page of results when 'Previous' is clicked", async () => {
         wrapper.setData({
             current_page: 3,
             num_rows: 3,
             start_row: 4
         });
-        jest.spyOn(axios, 'get')
-            .mockResolvedValueOnce( pageThreeData())
-            .mockResolvedValueOnce(pageTwoData());
+        fetchMock
+            .mockResponseOnce(JSON.stringify(pageThreeData()))
+            .mockResponseOnce(JSON.stringify(pageTwoData()));
+
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
@@ -192,9 +201,10 @@ describe('modalMetadata.vue', () => {
             num_rows: 3,
             start_row: 4
         });
-        jest.spyOn(axios, 'get')
-            .mockResolvedValueOnce( pageThreeData())
-            .mockResolvedValueOnce(pageTwoData());
+        fetchMock
+            .mockResponseOnce(JSON.stringify(pageThreeData()))
+            .mockResponseOnce(JSON.stringify(pageTwoData()));
+
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
@@ -208,9 +218,10 @@ describe('modalMetadata.vue', () => {
     });
 
     it("sorts results alphabetically", async () => {
-        jest.spyOn(axios, 'get')
-            .mockResolvedValueOnce(defaultData())
-            .mockResolvedValueOnce(defaultDataAlpha());
+        fetchMock
+            .mockResponseOnce(JSON.stringify(defaultData()))
+            .mockResponseOnce(JSON.stringify(defaultDataAlpha()));
+
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
@@ -224,6 +235,7 @@ describe('modalMetadata.vue', () => {
 
         const sort = wrapper.findAll('.sorting button');
         await sort[1].trigger('click');
+        await flushPromises(); // Wait for second fetch to complete
 
         const facets_alpha = wrapper.findAll('li');
         expect(facets_alpha[0].text()).toContain('Danish (1)');
@@ -238,9 +250,10 @@ describe('modalMetadata.vue', () => {
         wrapper.setData({
             sort: 'index'
         });
-        jest.spyOn(axios, 'get')
-            .mockResolvedValueOnce(defaultDataAlpha())
-            .mockResolvedValueOnce(defaultData());
+        fetchMock
+            .mockResponseOnce(JSON.stringify(defaultDataAlpha()))
+            .mockResponseOnce(JSON.stringify(defaultData()));
+
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
@@ -254,6 +267,7 @@ describe('modalMetadata.vue', () => {
 
         const sort = wrapper.findAll('.sorting button');
         await sort[0].trigger('click');
+        await flushPromises(); // Wait for second fetch to complete
 
         const facets = wrapper.findAll('li');
         expect(facets[0].text()).toContain('English (10)');
@@ -298,230 +312,221 @@ describe('modalMetadata.vue', () => {
     });
 
     async function openModal(data = defaultData()) {
-        jest.spyOn(axios, 'get').mockResolvedValue(data);
+        fetchMock.mockResponseOnce(JSON.stringify(data));
         await wrapper.find('a').trigger('click');
         await flushPromises();
     }
 
+    // Data now returns the unwrapped response (no .data wrapper)
     function defaultData() {
         return {
-            "data": {
-                "facetName": "LANGUAGE",
-                "facetRows": 21,
-                "filterParameters": {},
-                "facetSort": "count",
-                "values": [
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 10,
-                        "value": "English",
-                        "displayValue": "English",
-                        "searchValue": "English",
-                        "limitToValue": "English"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Danish",
-                        "displayValue": "Danish",
-                        "searchValue": "Danish",
-                        "limitToValue": "Danish"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Dinka",
-                        "displayValue": "Dinka",
-                        "searchValue": "Dinka",
-                        "limitToValue": "Dinka"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Efik",
-                        "displayValue": "Efik",
-                        "searchValue": "Efik",
-                        "limitToValue": "Efik"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Estonian",
-                        "displayValue": "Estonian",
-                        "searchValue": "Estonian",
-                        "limitToValue": "Estonian"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Ewe",
-                        "displayValue": "Ewe",
-                        "searchValue": "Ewe",
-                        "limitToValue": "Ewe"
-                    }
-                ],
-                "facetStart": 0
-            }
+            "facetName": "LANGUAGE",
+            "facetRows": 21,
+            "filterParameters": {},
+            "facetSort": "count",
+            "values": [
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 10,
+                    "value": "English",
+                    "displayValue": "English",
+                    "searchValue": "English",
+                    "limitToValue": "English"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Danish",
+                    "displayValue": "Danish",
+                    "searchValue": "Danish",
+                    "limitToValue": "Danish"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Dinka",
+                    "displayValue": "Dinka",
+                    "searchValue": "Dinka",
+                    "limitToValue": "Dinka"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Efik",
+                    "displayValue": "Efik",
+                    "searchValue": "Efik",
+                    "limitToValue": "Efik"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Estonian",
+                    "displayValue": "Estonian",
+                    "searchValue": "Estonian",
+                    "limitToValue": "Estonian"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Ewe",
+                    "displayValue": "Ewe",
+                    "searchValue": "Ewe",
+                    "limitToValue": "Ewe"
+                }
+            ],
+            "facetStart": 0
         };
     }
 
     function defaultDataAlpha() {
         return {
-            "data": {
-                "facetName": "LANGUAGE",
-                "facetRows": 21,
-                "filterParameters": {},
-                "facetSort": "index",
-                "values": [
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Danish",
-                        "displayValue": "Danish",
-                        "searchValue": "Danish",
-                        "limitToValue": "Danish"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Dinka",
-                        "displayValue": "Dinka",
-                        "searchValue": "Dinka",
-                        "limitToValue": "Dinka"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Efik",
-                        "displayValue": "Efik",
-                        "searchValue": "Efik",
-                        "limitToValue": "Efik"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 10,
-                        "value": "English",
-                        "displayValue": "English",
-                        "searchValue": "English",
-                        "limitToValue": "English"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Estonian",
-                        "displayValue": "Estonian",
-                        "searchValue": "Estonian",
-                        "limitToValue": "Estonian"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Ewe",
-                        "displayValue": "Ewe",
-                        "searchValue": "Ewe",
-                        "limitToValue": "Ewe"
-                    }
-                ],
-                "facetStart": 0
-            }
+            "facetName": "LANGUAGE",
+            "facetRows": 21,
+            "filterParameters": {},
+            "facetSort": "index",
+            "values": [
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Danish",
+                    "displayValue": "Danish",
+                    "searchValue": "Danish",
+                    "limitToValue": "Danish"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Dinka",
+                    "displayValue": "Dinka",
+                    "searchValue": "Dinka",
+                    "limitToValue": "Dinka"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Efik",
+                    "displayValue": "Efik",
+                    "searchValue": "Efik",
+                    "limitToValue": "Efik"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 10,
+                    "value": "English",
+                    "displayValue": "English",
+                    "searchValue": "English",
+                    "limitToValue": "English"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Estonian",
+                    "displayValue": "Estonian",
+                    "searchValue": "Estonian",
+                    "limitToValue": "Estonian"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Ewe",
+                    "displayValue": "Ewe",
+                    "searchValue": "Ewe",
+                    "limitToValue": "Ewe"
+                }
+            ],
+            "facetStart": 0
         };
     }
 
     function pageOneData() {
         return {
-            "data": {
-                "facetName": "LANGUAGE",
-                "facetRows": 3,
-                "filterParameters": {},
-                "facetSort": "count",
-                "values": [
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 10,
-                        "value": "English",
-                        "displayValue": "English",
-                        "searchValue": "English",
-                        "limitToValue": "English"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Danish",
-                        "displayValue": "Danish",
-                        "searchValue": "Danish",
-                        "limitToValue": "Danish"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Dinka",
-                        "displayValue": "Dinka",
-                        "searchValue": "Dinka",
-                        "limitToValue": "Dinka"
-                    }
-                ],
-                "facetStart": 0
-            }
-        }
+            "facetName": "LANGUAGE",
+            "facetRows": 3,
+            "filterParameters": {},
+            "facetSort": "count",
+            "values": [
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 10,
+                    "value": "English",
+                    "displayValue": "English",
+                    "searchValue": "English",
+                    "limitToValue": "English"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Danish",
+                    "displayValue": "Danish",
+                    "searchValue": "Danish",
+                    "limitToValue": "Danish"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Dinka",
+                    "displayValue": "Dinka",
+                    "searchValue": "Dinka",
+                    "limitToValue": "Dinka"
+                }
+            ],
+            "facetStart": 0
+        };
     }
 
     function pageTwoData() {
         return {
-            "data": {
-                "facetName": "LANGUAGE",
-                "facetRows": 3,
-                "filterParameters": {},
-                "facetSort": "count",
-                "values": [
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Dinka",
-                        "displayValue": "Dinka",
-                        "searchValue": "Dinka",
-                        "limitToValue": "Dinka"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Efik",
-                        "displayValue": "Efik",
-                        "searchValue": "Efik",
-                        "limitToValue": "Efik"
-                    },
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Estonian",
-                        "displayValue": "Estonian",
-                        "searchValue": "Estonian",
-                        "limitToValue": "Estonian"
-                    }
-                ],
-                "facetStart": 2
-            }
+            "facetName": "LANGUAGE",
+            "facetRows": 3,
+            "filterParameters": {},
+            "facetSort": "count",
+            "values": [
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Dinka",
+                    "displayValue": "Dinka",
+                    "searchValue": "Dinka",
+                    "limitToValue": "Dinka"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Efik",
+                    "displayValue": "Efik",
+                    "searchValue": "Efik",
+                    "limitToValue": "Efik"
+                },
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Estonian",
+                    "displayValue": "Estonian",
+                    "searchValue": "Estonian",
+                    "limitToValue": "Estonian"
+                }
+            ],
+            "facetStart": 2
         };
     }
 
     function pageThreeData() {
         return {
-            "data": {
-                "facetName": "LANGUAGE",
-                "facetRows": 3,
-                "filterParameters": {},
-                "facetSort": "count",
-                "values": [
-                    {
-                        "fieldName": "LANGUAGE",
-                        "count": 1,
-                        "value": "Estonian",
-                        "displayValue": "Estonian",
-                        "searchValue": "Estonian",
-                        "limitToValue": "Estonian"
-                    }
-                ],
-                "facetStart": 4
-            }
+            "facetName": "LANGUAGE",
+            "facetRows": 3,
+            "filterParameters": {},
+            "facetSort": "count",
+            "values": [
+                {
+                    "fieldName": "LANGUAGE",
+                    "count": 1,
+                    "value": "Estonian",
+                    "displayValue": "Estonian",
+                    "searchValue": "Estonian",
+                    "limitToValue": "Estonian"
+                }
+            ],
+            "facetStart": 4
         };
     }
 });

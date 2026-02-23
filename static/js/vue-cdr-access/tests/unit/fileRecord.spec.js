@@ -4,7 +4,6 @@ import fileRecord from '@/components/full_record/fileRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
-import moxios from 'moxios';
 import cloneDeep from 'lodash.clonedeep';
 
 const record = {
@@ -342,7 +341,6 @@ describe('fileRecord.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [

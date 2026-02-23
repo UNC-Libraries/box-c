@@ -22,7 +22,6 @@ Top level component used for the collection browse page
     import notFound from "@/components/error_pages/notFound.vue";
     import notAvailable from "@/components/error_pages/notAvailable.vue";
     import errorUtils from "../mixins/errorUtils";
-    import get from 'axios';
 
     export default {
         name: 'collectionBrowseWrapper',
@@ -45,15 +44,22 @@ Top level component used for the collection browse page
         },
 
         methods: {
-            retrieveData() {
-                get('api/collectionsJson').then((response) => {
-                    this.records = response.data.metadata;
+            async retrieveData() {
+                try {
+                    const response = await fetch('api/collectionsJson');
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+                    const data = await response.json();
+                    this.records = data.metadata;
                     this.is_loading = false;
-                }).catch((error) => {
+                } catch (error) {
                     this.setErrorResponse(error);
                     this.is_loading = false;
                     console.log(error);
-                });
+                }
             }
         },
 

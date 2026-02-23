@@ -22,28 +22,28 @@ Top level component for full record pages with searching/browsing, including Adm
         <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="has-background-white pt-5">
             <div class="container">
                 <div class="field is-horizontal is-tablet">
-                <div class="field-body">
-                    <browse-search :object-type="container_metadata.type"></browse-search>
-                    <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
-                    <works-only v-if="showWidget"></works-only>
-                    <view-type v-if="showWidget"></view-type>
+                    <div class="field-body">
+                        <browse-search :object-type="container_metadata.type"></browse-search>
+                        <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
+                        <works-only v-if="showWidget"></works-only>
+                        <view-type v-if="showWidget"></view-type>
+                    </div>
                 </div>
-            </div>
-            <div class="">
-                <clear-filters :filter-parameters="filter_parameters"></clear-filters>
-            </div>
+                <div class="">
+                    <clear-filters :filter-parameters="filter_parameters"></clear-filters>
+                </div>
 
-            <div v-if="showWidget" class="columns">
-                <div class="facet-list column is-one-quarter">
-                    <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
+                <div v-if="showWidget" class="columns">
+                    <div class="facet-list column is-one-quarter">
+                        <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
+                    </div>
+                    <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
+                        <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
+                        <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
+                    </div>
                 </div>
-                <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
-                    <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
-                    <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
-                </div>
-            </div>
-            <p v-else class="spacing">{{ $t('search.no_results') }}</p>
-            <pagination browse-type="display" :number-of-records="record_count"></pagination>
+                <p v-else class="spacing">{{ $t('search.no_results') }}</p>
+                <pagination browse-type="display" :number-of-records="record_count"></pagination>
             </div>
         </div>
     </div>
@@ -73,7 +73,6 @@ Top level component for full record pages with searching/browsing, including Adm
     import worksOnly from '@/components/worksOnly.vue';
     import notAvailable from "@/components/error_pages/notAvailable.vue";
     import notFound from '@/components/error_pages/notFound.vue';
-    import get from 'axios';
     import analyticsUtils from '../mixins/analyticsUtils';
     import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
@@ -93,7 +92,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
         watch: {
             '$route': {
-                handler(new_data, old_data) {
+                async handler(new_data, old_data) {
                     if (this.is_page_loading) {
                         return;
                     }
@@ -101,11 +100,10 @@ Top level component for full record pages with searching/browsing, including Adm
                     if (path_changed) {
                         // If the object being viewed has changed, then need to ensure search results
                         // are requested after it finishes loading.
-                        this.getBriefObject().then(() => {
-                            if (this.needsSearchResults) {
-                                this.retrieveSearchResults();
-                            }
-                        });
+                        await this.getBriefObject();
+                        if (this.needsSearchResults) {
+                            this.retrieveSearchResults();
+                        }
                     } else {
                         if (this.needsSearchResults) {
                             this.retrieveSearchResults();
@@ -183,7 +181,7 @@ Top level component for full record pages with searching/browsing, including Adm
         methods: {
             ...mapActions(useAccessStore, ['removePossibleFacetFields']),
 
-            retrieveSearchResults() {
+            async retrieveSearchResults() {
                 if (this.container_info.resourceType === 'Collection') {
                     // If there are custom settings they should replace the current route before search results
                     // are retrieved, avoiding a double API call.
@@ -192,45 +190,65 @@ Top level component for full record pages with searching/browsing, including Adm
 
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
-                get(`/api/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
-                    this.record_count = response.data.resultCount;
-                    this.record_list = response.data.metadata;
-                    this.facet_list = response.data.facetFields;
-                    this.container_name = response.data.container.title;
-                    this.container_metadata = response.data.container;
-                    this.min_created_year = response.data.minSearchYear;
-                    this.filter_parameters = response.data.filterParameters;
+
+                try {
+                    const response = await fetch(`/api/${this.search_method}/${this.uuid}${param_string}`);
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
+
+                    const data = await response.json();
+                    this.record_count = data.resultCount;
+                    this.record_list = data.metadata;
+                    this.facet_list = data.facetFields;
+                    this.container_name = data.container.title;
+                    this.container_metadata = data.container;
+                    this.min_created_year = data.minSearchYear;
+                    this.filter_parameters = data.filterParameters;
                     this.is_page_loading = false;
-                }).catch(error => {
+                } catch (error) {
                     this.setErrorResponse(error);
                     this.is_page_loading = false;
                     console.log(error);
-                });
+                }
             },
 
-            getBriefObject() {
+            async getBriefObject() {
                 let link = window.location.pathname;
                 if (!(/\/$/.test(link))) {
                     link += '/';
                 }
 
-               return get(`/api${link}json`).then((response) => {
-                   this.emptyJsonResponseCheck(response);
-                   this.container_info = response.data;
+                try {
+                    const response = await fetch(`/api${link}json`);
+                    if (!response.ok) {
+                        const error = new Error('Network response was not ok');
+                        error.response = response;
+                        throw error;
+                    }
 
-                   this.pageView(this.container_info.pageSubtitle)
-                   this.pageEvent(response.data);
+                    const responseText = await response.text();
+                    if (responseText.trim() === '') {
+                        throw new Error('ResponseEmpty');
+                    }
+                    const data = JSON.parse(responseText);
+                    this.container_info = data;
 
-                   if (this.needsSearchResults) {
-                       this.adjustFacetsForRetrieval();
-                   } else {
-                       this.is_page_loading = false;
-                   }
-                }).catch(error => {
-                   this.setErrorResponse(error);
-                   this.is_page_loading = false;
-                   console.log(error);
-               });
+                    this.pageView(this.container_info.pageSubtitle);
+                    this.pageEvent(data);
+
+                    if (this.needsSearchResults) {
+                        this.adjustFacetsForRetrieval();
+                    } else {
+                        this.is_page_loading = false;
+                    }
+                } catch (error) {
+                    this.setErrorResponse(error);
+                    this.is_page_loading = false;
+                    console.log(error);
+                }
             },
 
             getCollectionName(briefObject) {
@@ -309,12 +327,11 @@ Top level component for full record pages with searching/browsing, including Adm
             }
         },
 
-        created() {
-            this.getBriefObject().then(() => {
-                if (this.needsSearchResults) {
-                    this.retrieveSearchResults();
-                }
-            });
+        async created() {
+            await this.getBriefObject();
+            if (this.needsSearchResults) {
+                this.retrieveSearchResults();
+            }
         }
     }
 </script>

@@ -1,7 +1,6 @@
-import { shallowMount } from '@vue/test-utils'
+import {flushPromises, shallowMount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import searchWrapper from '@/components/searchWrapper.vue';
-import moxios from "moxios";
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
@@ -122,7 +121,8 @@ describe('searchWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
+        fetchMock.enableMocks();
+        fetchMock.resetMocks();
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -144,95 +144,83 @@ describe('searchWrapper.vue', () => {
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
-    it("retrieves data", (done) => {
-        loadFullData();
-        moxios.wait(() => {
-            expect(wrapper.vm.records).toEqual(response.metadata);
-            expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(false);
-            done();
-        });
-    });
-
-    it("displays facets for results", (done) => {
-        loadFullData();
-        moxios.wait(() => {
-            expect(wrapper.find('.facet-list').isVisible()).toBe(true);
-            expect(wrapper.vm.hasFacets).toBe(true);
-            done();
-        });
-    });
-
-    it("displays facets if facets but no results", (done) => {
-        moxios.stubRequest(`api/searchJson?anywhere=&getFacets=true`, {
-            status: 200,
-            response: JSON.stringify(facets_no_results)
-        });
-        wrapper.vm.retrieveData();
-        moxios.wait(() => {
-            expect(wrapper.find('.facet-list').isVisible()).toBe(true);
-            expect(wrapper.vm.hasFacets).toBe(true);
-            done();
-        });
-    });
-
-    it("does not display facets if there are no facets and no results", (done) => {
-        wrapper.vm.retrieveData();
-        moxios.stubRequest(`api/searchJson?anywhere=&getFacets=true`, {
-            status: 200,
-            response: JSON.stringify(no_results)
-        });
-        moxios.wait(() => {
-            expect(wrapper.find('.facet-list').exists()).toBe(false);
-            expect(wrapper.vm.hasFacets).toBe(false);
-            done();
-        });
-    });
-
-    it("displays start and end records for current page", (done) => {
-        loadFullData();
-        moxios.wait(() => {
-            expect(wrapper.vm.recordDisplayCounts).toEqual('1-1');
-            done();
-        });
-    });
-
-    it("displays a 'page not found' message if JSON response is an empty", (done) => {
-        moxios.stubRequest(`api/searchJson?anywhere=&getFacets=true`, {
-            status: 200,
-            response: JSON.stringify('')
-        });
-        wrapper.vm.retrieveData();
-        moxios.wait(() => {
-            expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(true);
-            expect(wrapper.vm.hasFacets).toBe(false);
-            done();
-        });
-    });
-
-    it("displays a '503 page' if JSON responds with an error", (done) => {
-        moxios.stubRequest(`api/searchJson?anywhere=&getFacets=true`, {
-            status: 503,
-            response: JSON.stringify({ message: 'bad stuff happened' })
-        });
-        wrapper.vm.retrieveData();
-        moxios.wait(() => {
-            expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);
-            expect(wrapper.vm.hasFacets).toBe(false);
-            done();
-        });
-    });
-
     afterEach(() => {
-        moxios.uninstall();
+        fetchMock.disableMocks();
         wrapper = null;
-        router = null
+        router = null;
+    });
+
+    it("retrieves data", async () => {
+        loadFullData();
+
+        await flushPromises();
+
+        expect(wrapper.vm.records).toEqual(response.metadata);
+        expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(false);
+    });
+
+    it("displays facets for results", async () => {
+        loadFullData();
+
+        await flushPromises();
+
+        expect(wrapper.find('.facet-list').isVisible()).toBe(true);
+        expect(wrapper.vm.hasFacets).toBe(true);
+    });
+
+    it("displays facets if facets but no results", async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(facets_no_results));
+        wrapper.vm.retrieveData();
+
+        await flushPromises();
+
+        expect(wrapper.find('.facet-list').isVisible()).toBe(true);
+        expect(wrapper.vm.hasFacets).toBe(true);
+    });
+
+    it("does not display facets if there are no facets and no results", async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(no_results));
+        wrapper.vm.retrieveData();
+
+        await flushPromises();
+
+        expect(wrapper.find('.facet-list').exists()).toBe(false);
+        expect(wrapper.vm.hasFacets).toBe(false);
+    });
+
+    it("displays start and end records for current page", async () => {
+        loadFullData();
+
+        await flushPromises();
+
+        expect(wrapper.vm.recordDisplayCounts).toEqual('1-1');
+    });
+
+    it("displays a 'page not found' message if JSON response is an empty", async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(''), { status: 404 });
+        wrapper.vm.retrieveData();
+
+        await flushPromises();
+
+        expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(true);
+        expect(wrapper.vm.hasFacets).toBe(false);
+    });
+
+    it("displays a '503 page' if JSON responds with an error", async () => {
+        fetchMock.mockResponseOnce(
+            JSON.stringify({ message: 'bad stuff happened' }),
+            { status: 503 }
+        );
+        wrapper.vm.retrieveData();
+
+        await flushPromises();
+
+        expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);
+        expect(wrapper.vm.hasFacets).toBe(false);
     });
 });
 
 function loadFullData() {
-    moxios.stubRequest(`api/searchJson?anywhere=&getFacets=true`, {
-        status: 200,
-        response: JSON.stringify(response)
-    });
+    fetchMock.mockResponseOnce(JSON.stringify(response));
     wrapper.vm.retrieveData();
 }

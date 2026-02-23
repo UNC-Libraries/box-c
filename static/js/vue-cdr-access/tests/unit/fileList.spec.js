@@ -1,6 +1,5 @@
 import {RouterLinkStub, shallowMount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import cloneDeep from 'lodash.clonedeep';
 import fileList from '@/components/full_record/fileList.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';

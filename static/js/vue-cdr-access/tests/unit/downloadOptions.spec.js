@@ -93,7 +93,7 @@ describe('downloadOption.vue', () => {
             },
             props: {
                 recordData: record,
-                t: jest.fn()
+                t: vi.fn()
             }
         });
         store = useAccessStore();

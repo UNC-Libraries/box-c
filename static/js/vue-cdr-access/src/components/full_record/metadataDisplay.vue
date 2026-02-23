@@ -6,8 +6,6 @@
 </template>
 
 <script>
-import get from 'axios';
-
 export default {
     name: 'metadataDisplay',
 
@@ -35,15 +33,22 @@ export default {
     },
 
     methods: {
-        loadMetadata() {
-            get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                this.metadata = response.data;
+        async loadMetadata() {
+            try {
+                const response = await fetch(`/api/record/${this.uuid}/metadataView`);
+                if (!response.ok) {
+                    const error = new Error('Network response was not ok');
+                    error.response = response;
+                    throw error;
+                }
+
+                this.metadata = await response.text(); // Use .text() for HTML
                 this.hasLoaded = true;
-            }).catch((error) => {
+            } catch (error) {
                 console.log(error);
-                this.metadata = '';
+                this.metadata = `<p>${this.$t('modal.error')}</p>`;
                 this.hasLoaded = true;
-            });
+            }
         }
     },
 
