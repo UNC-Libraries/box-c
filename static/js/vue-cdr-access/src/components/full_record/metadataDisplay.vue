@@ -46,7 +46,7 @@ export default {
                 this.hasLoaded = true;
             } catch (error) {
                 console.log(error);
-                this.metadata = `<p>${this.$t('modal.error')}</p>`;
+                this.metadata = '';
                 this.hasLoaded = true;
             }
         }
