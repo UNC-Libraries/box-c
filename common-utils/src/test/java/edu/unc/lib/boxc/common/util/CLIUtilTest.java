@@ -70,7 +70,7 @@ public class CLIUtilTest {
         CommandException exception = assertThrows(CommandException.class, () ->
                 CLIUtil.executeCommand(List.of(scriptPath.toString()), 5));
 
-        assertEquals(-1, exception.getExitCode());
+        assertEquals(1, exception.getExitCode());
         assertTrue(exception.getMessage().contains("Command failed to execute"));
         assertTrue(exception.getOutput().contains("some output"));
     }
