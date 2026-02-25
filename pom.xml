@@ -92,6 +92,7 @@
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-fileupload.version>1.6.0</commons-fileupload.version>
         <commons-collections.version>4.5.0</commons-collections.version>
+        <commons-exec.version>1.6.0</commons-exec.version>
 
         <activemq.version>6.1.8</activemq.version>
 
@@ -814,6 +815,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons-collections.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-exec</artifactId>
+                <version>${commons-exec.version}</version>
             </dependency>
             
             <dependency>
