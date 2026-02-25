@@ -61,6 +61,7 @@ public class CLIUtil {
             throw new CommandException("Command failed to execute", command, output, exitValue, e);
         } catch (IOException e) {
             String output = outputStream + "\n" + errorStream;
-            throw new CommandException("Command failed to execute", command, output, e);        }
+            throw new CommandException("Command failed to execute", command, output, e);
+        }
     }
 }
