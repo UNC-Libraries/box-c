@@ -95,4 +95,15 @@ describe('fileList.vue', () => {
             groupRoleMap: { authenticated: ['none'], everyone: ['none'] }
         })).toEqual({ markDeleted: false, restricted: true });
     });
+
+    it("includes edit column when editAccess is true", () => {
+        const defs = wrapper.vm.columnDefs;
+        expect(wrapper.vm.columns.length).toBeGreaterThan(6);
+        expect(defs.some(def => def.targets === 6)).toBe(true);
+    });
+
+    it("builds aria label text with title", () => {
+        const label = wrapper.vm.ariaLabelText({ title: 'Sample Title' });
+        expect(label).toContain('Sample Title');
+    });
 });
