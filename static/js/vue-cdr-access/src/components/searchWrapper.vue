@@ -137,7 +137,6 @@ Top level component wrapper for search pages
                     }
 
                     const data = await response.json();
-                    console.log(data);
                     this.emptyJsonResponseCheck(data);
                     this.records = data.metadata;
                     this.total_records = data.resultCount;
