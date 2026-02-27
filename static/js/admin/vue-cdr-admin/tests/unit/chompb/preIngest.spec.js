@@ -1,5 +1,4 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { nextTick } from 'vue';
 import preIngest from '@/components/chompb/preIngest.vue';
 import structuredClone from '@ungap/structured-clone';
 
@@ -96,8 +95,6 @@ describe('preIngest.vue', () => {
         updatedInfo[0].processingJobs['velocicroptor'] = { 'status' : 'completed' };
         setupWrapper(updatedInfo);
 
-        await nextTick();
-
         let rows = wrapper.findAll('.datatable tbody tr');
         let actions1 = rows[0].findAll('a');
         expect(actions1[0].text()).toBe('Copy Path');
@@ -119,8 +116,6 @@ describe('preIngest.vue', () => {
         // Mock window.confirm before any actions
         const confirmMock = vi.fn().mockReturnValue(true);
         vi.stubGlobal('confirm', confirmMock);
-
-        await nextTick();
 
         // Mock the fetch response
         fetchMock.mockResponseOnce(JSON.stringify({'action' : 'Start cropping for project file_source_test'}), {

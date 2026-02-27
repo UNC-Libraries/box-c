@@ -1,8 +1,7 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, flushPromises } from '@vue/test-utils';
 import velocicroptorReport from '@/components/chompb/velocicroptorReport.vue';
-import {createTestingPinia} from "@pinia/testing";
-import  { createRouter, createWebHistory } from 'vue-router';
-import moxios from "moxios";
+import { createTestingPinia } from '@pinia/testing';
+import { createRouter, createWebHistory } from 'vue-router';
 
 let wrapper, router;
 
@@ -38,13 +37,10 @@ describe('velocicroptorReport.vue', () => {
             ]
         });
 
-        moxios.stubRequest(`/admin/chompb/project/file_source_test/processing_results/velocicroptor/files?path=data.json`, {
-            status: 200,
-            response: JSON.stringify(report_data)
-        });
+        fetchMock.mockResponseOnce(JSON.stringify(report_data));
 
-        // Push the desired route directly
         await router.push('/admin/chompb/project/file_source_test/processing_results/velocicroptor');
+        await flushPromises();
 
         global.URL.createObjectURL = vi.fn();
 
@@ -58,6 +54,10 @@ describe('velocicroptorReport.vue', () => {
                 }
             }
         });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
     });
 
     it("contains a data tables", () => {
@@ -104,7 +104,5 @@ describe('velocicroptorReport.vue', () => {
         const csv_result = mockBlobConstructor.mock.calls[0][0][0];
         expect(csv_result).toBe('path,predicted_class,corrected_class\n' +
             '/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif,0,1');
-
-        vi.unstubAllGlobals();
     });
 });
