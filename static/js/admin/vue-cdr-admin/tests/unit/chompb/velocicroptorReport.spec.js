@@ -3,6 +3,20 @@ import velocicroptorReport from '@/components/chompb/velocicroptorReport.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { createRouter, createWebHistory } from 'vue-router';
 
+// Mock datatables.net-vue3 since it relies on the DOM and jQuery, which are not available in this testing environment.
+// We will just mock the component and the use function since we don't need to test
+// the actual functionality of datatables in this unit test.
+vi.mock('datatables.net-vue3', () => ({
+    default: {
+        name: 'DataTable',
+        template: '<div><slot /></div>',
+        use: vi.fn()
+    }
+}));
+vi.mock('datatables.net-bm', () => ({ default: {} }));
+vi.mock('datatables.net-searchpanes-bm', () => ({ default: {} }));
+vi.mock('datatables.net-select-bm', () => ({ default: {} }));
+
 let wrapper, router;
 
 const report_data = {

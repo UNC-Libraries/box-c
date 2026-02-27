@@ -2,6 +2,16 @@ import { mount, flushPromises } from '@vue/test-utils';
 import preIngest from '@/components/chompb/preIngest.vue';
 import structuredClone from '@ungap/structured-clone';
 
+vi.mock('datatables.net-vue3', () => ({
+    default: {
+        name: 'DataTable',
+        props: ['data', 'columns', 'options'],
+        template: '<table class="datatable"><thead><slot name="thead" /></thead><tbody><tr v-for="row in data" :key="row.projectProperties.name"><td v-for="col in columns" :key="col.title"><slot :name="col.render && col.render.display ? col.render.display.replace(\'#\', \'\') : col.title" :rowData="row" /></td></tr></tbody></table>',
+        use: vi.fn()
+    }
+}));
+vi.mock('datatables.net-bm', () => ({ default: {} }));
+
 let wrapper;
 let mockRouter;
 
@@ -66,13 +76,16 @@ describe('preIngest.vue', () => {
     }
 
     beforeEach(() => {
-        fetchMock.enableMocks();
-        fetchMock.resetMocks();
+        fetch.mockReset();
+        fetch.mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: async () => ({}),
+        });
     });
 
     afterEach(() => {
-        fetchMock.disableMocks();
-        vi.unstubAllGlobals();
+        vi.clearAllMocks();
     });
 
     it("contains a table of projects", () => {
@@ -108,18 +121,17 @@ describe('preIngest.vue', () => {
     });
 
     it("clicking on the crop button causes request to be made", async () => {
-        // suppressing error spam from jsdom when making http requests
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         setupWrapper(project_info);
 
-        // Mock window.confirm before any actions
         const confirmMock = vi.fn().mockReturnValue(true);
         vi.stubGlobal('confirm', confirmMock);
 
-        // Mock the fetch response
-        fetchMock.mockResponseOnce(JSON.stringify({'action' : 'Start cropping for project file_source_test'}), {
-            status: 200
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: async () => ({ action: 'Start cropping for project file_source_test' }),
         });
 
         let rows = wrapper.findAll('.datatable tbody tr');
@@ -129,14 +141,12 @@ describe('preIngest.vue', () => {
         await actions1[1].trigger('click');
         await flushPromises();
 
-        // Check the fetch call was made correctly
-        const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+        const lastCall = fetch.mock.calls[fetch.mock.calls.length - 1];
         expect(lastCall[0]).toContain('/admin/chompb/project/file_source_test/action/velocicroptor');
         expect(lastCall[1].method).toEqual('POST');
 
         expect(confirmMock).toHaveBeenCalledWith('Are you sure you want to crop color bars for this project?');
 
-        // crop option should have changed from a link to a span
         rows = wrapper.findAll('.datatable tbody tr');
         let actions2 = rows[0].findAll('span');
         expect(actions2[0].text()).toBe('Crop in progress');
