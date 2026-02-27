@@ -33,7 +33,7 @@ describe('streamingPlayer.vue', () => {
         expect(wrapper.find('#streaming-player').exists()).toBe(true);
     });
 
-    // Default record url is set in jest.config.js, which is where the refUrl comes from here
+    // Default record url is set in vite.config.js, which is where the refUrl comes from here
     it('has a source link for the streaming player', async () => {
         expect(wrapper.find('#streaming-player').attributes('src')).toEqual(`${STREAMING_URL_SOUND}&refUrl=https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a`);
     });

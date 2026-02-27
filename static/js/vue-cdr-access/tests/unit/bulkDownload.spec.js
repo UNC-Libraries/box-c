@@ -27,6 +27,10 @@ describe('bulkDownload.vue', () => {
         });
     });
 
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it ("displays a bulk download button for downloads less than 1 GB", () => {
         let download_link = wrapper.find('.bulk-download-link');
         let download_email = wrapper.find('.bulk-download-email');
@@ -70,48 +74,47 @@ describe('bulkDownload.vue', () => {
         expect(download_link.exists()).toBe(false);
     });
 
-    it ("prompts user for confirmation if there are more than 100 files", async () => {
-        // Mock window.confirm
-        const confirmMock = jest.spyOn(window, 'confirm');
 
-        // Mock return values for confirm
-        confirmMock.mockImplementationOnce(() => false); // Simulate "No" click
-        confirmMock.mockImplementationOnce(() => true);  // Simulate "Yes" click
+    it("prompts user for confirmation if there are more than 100 files", async () => {
+        // Mock window.confirm with different return values
+        const confirmMock = vi.fn()
+            .mockReturnValueOnce(false) // Simulate "No" click
+            .mockReturnValueOnce(true);  // Simulate "Yes" click
 
-        // Mock navigation
-        const locationMock = jest.spyOn(window, 'location', 'get');
+        vi.stubGlobal('confirm', confirmMock);
+
+        // Mock window.location
         const mockLocation = { href: '' };
-        locationMock.mockReturnValue(mockLocation);
+        vi.stubGlobal('location', mockLocation);
 
         await wrapper.setProps({
             childCount: 200
         });
 
-        let download_link = wrapper.find('.bulk-download-link');
-        let download_email = wrapper.find('.bulk-download-email');
+        const download_link = wrapper.find('.bulk-download-link');
+        const download_email = wrapper.find('.bulk-download-email');
 
         expect(download_link.exists()).toBe(true);
         expect(download_email.exists()).toBe(false);
-        expect(download_link.attributes('href')).toEqual(expect.stringContaining(`/services/api/bulkDownload/${work_id}`));
-        expect(download_link.text()).toEqual(expect.stringContaining('Download All Files (8 KB)'));
-
-        // Trigger the click (simulating user action)
-        await download_link.trigger('click');
-        expect(window.confirm).toHaveBeenCalledWith(
-            "Number of files exceeds the download limit, only the first 100 will be exported. Do you want to continue?"
+        expect(download_link.attributes('href')).toEqual(
+            expect.stringContaining(`/services/api/bulkDownload/${work_id}`)
+        );
+        expect(download_link.text()).toEqual(
+            expect.stringContaining('Download All Files (8 KB)')
         );
 
-        // Verify that "No" prevents navigation
-        expect(mockLocation.href).toBe('');
-
-        // Simulate another click with "Yes"
+        // First click - User clicks "No"
         await download_link.trigger('click');
-        expect(window.confirm).toBeCalledTimes(2);
-        // Download should occur this time
-        expect(mockLocation.href).toContain(`/services/api/bulkDownload/${work_id}`);
 
-        // Cleanup mocks
-        confirmMock.mockRestore();
-        locationMock.mockRestore();
+        expect(confirmMock).toHaveBeenCalledWith(
+            "Number of files exceeds the download limit, only the first 100 will be exported. Do you want to continue?"
+        );
+        expect(mockLocation.href).toBe(''); // Navigation prevented
+
+        // Second click - User clicks "Yes"
+        await download_link.trigger('click');
+
+        expect(confirmMock).toHaveBeenCalledTimes(2);
+        expect(mockLocation.href).toContain(`/services/api/bulkDownload/${work_id}`);
     });
 });

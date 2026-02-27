@@ -156,7 +156,6 @@
 </template>
 
 <script>
-import get from 'axios';
 import headerSmall from '@/components/header/headerSmall.vue';
 import analyticsUtils from '../mixins/analyticsUtils';
 
@@ -181,20 +180,32 @@ export default {
     },
 
     methods: {
-        getCollections() {
-            get('/api/advancedSearch/collectionsJson').then((response) => {
-                this.collections = response.data;
-            }).catch(function (error) {
+        async getCollections() {
+            try {
+                const response = await fetch('/api/advancedSearch/collectionsJson');
+                if (!response.ok) {
+                    const error = new Error('Network response was not ok');
+                    error.response = response;
+                    throw error;
+                }
+                this.collections = await response.json();
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
 
-        getFormats() {
-            get('/api/advancedSearch/formats').then((response) => {
-                this.formats = response.data;
-            }).catch(function (error) {
+        async getFormats() {
+            try {
+                const response = await fetch('/api/advancedSearch/formats');
+                if (!response.ok) {
+                    const error = new Error('Network response was not ok');
+                    error.response = response;
+                    throw error;
+                }
+                this.formats = await response.json();
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
     },
 

@@ -1,4 +1,4 @@
-import {shallowMount, RouterLinkStub} from '@vue/test-utils';
+import {shallowMount, RouterLinkStub, flushPromises} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -6,8 +6,6 @@ import frontPage from '@/components/frontPage.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import moxios from "moxios";
-
 
 let wrapper, router, store;
 
@@ -19,7 +17,8 @@ describe('frontPage.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
+        fetchMock.enableMocks();
+        fetchMock.resetMocks();
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -50,9 +49,9 @@ describe('frontPage.vue', () => {
         store = useAccessStore();
     });
 
-    afterEach(function () {
+    afterEach(() => {
         store.$reset();
-        moxios.uninstall();
+        fetchMock.disableMocks();
     });
 
     it("loads the frontPage", () => {
@@ -60,7 +59,7 @@ describe('frontPage.vue', () => {
         expect(wrapper.find('main').exists()).toBe(true);
     });
 
-    it("loads the collectionStats", (done) => {
+    it("loads the collectionStats", async () => {
         const collectionStats = {
             "formatCounts":[
                 {"image":"386710"},
@@ -69,16 +68,12 @@ describe('frontPage.vue', () => {
                 {"text":"46936"}
             ]
         };
-        moxios.stubRequest('/api/collectionStats', {
-            status: 200,
-            response: JSON.stringify(collectionStats)
-        });
+
+        fetchMock.mockResponseOnce(JSON.stringify(collectionStats));
         wrapper.vm.getCollectionStats();
 
-        moxios.wait(() => {
-            expect(wrapper.vm.collectionStats).toEqual(collectionStats);
-            done();
-        });
+        await flushPromises();
+
+        expect(wrapper.vm.collectionStats).toEqual(collectionStats);
     });
 });
-

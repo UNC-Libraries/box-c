@@ -1,6 +1,5 @@
 import {RouterLinkStub, shallowMount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import cloneDeep from 'lodash.clonedeep';
 import fileList from '@/components/full_record/fileList.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
@@ -95,5 +94,16 @@ describe('fileList.vue', () => {
             status: [''],
             groupRoleMap: { authenticated: ['none'], everyone: ['none'] }
         })).toEqual({ markDeleted: false, restricted: true });
+    });
+
+    it("includes edit column when editAccess is true", () => {
+        const defs = wrapper.vm.columnDefs;
+        expect(wrapper.vm.columns.length).toBeGreaterThan(6);
+        expect(defs.some(def => def.targets === 6)).toBe(true);
+    });
+
+    it("builds aria label text with title", () => {
+        const label = wrapper.vm.ariaLabelText({ title: 'Sample Title' });
+        expect(label).toContain('Sample Title');
     });
 });

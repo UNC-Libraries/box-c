@@ -1,10 +1,11 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
+import { vi } from 'vitest';
+import { nextTick } from 'vue';
 import translations from '@/translations';
-import moxios from 'moxios';
 
 const uuid = '9f7f3746-0237-4261-96a2-4b4765d4ae03';
 const oneDay = 86400000;
@@ -18,7 +19,10 @@ describe('singleUseLink.vue', () => {
         messages: translations
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        fetchMock.enableMocks();
+        fetchMock.resetMocks();
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -29,6 +33,9 @@ describe('singleUseLink.vue', () => {
                 }
             ]
         });
+        await router.push(`/record/${uuid}`);
+        await router.isReady();
+
         wrapper = shallowMount(singleUseLink, {
             global: {
                 plugins: [i18n, router]
@@ -37,57 +44,44 @@ describe('singleUseLink.vue', () => {
                 uuid: '9f7f3746-0237-4261-96a2-4b4765d4ae03'
             }
         });
-
-        moxios.install();
     });
 
     afterEach(function () {
-        moxios.uninstall();
+        fetchMock.disableMocks();
     });
 
-    it("creates single use links", (done) => {
+    it("creates single use links", async () => {
         expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
 
-        moxios.stubRequest(`/services/api/single_use_link/create/${uuid}`, {
-            status: 200,
-            response: JSON.stringify(response_date)
+        fetchMock.mockResponseOnce(JSON.stringify(response_date), { status: 200 });
+
+        await wrapper.find('#single-use-link').trigger('click');
+        await flushPromises();
+        await nextTick();
+
+        expect(fetchMock).toHaveBeenCalledWith(`/services/api/single_use_link/create/${uuid}`, {
+            method: 'POST'
         });
-
-        moxios.wait(async () => {
-            await wrapper.find('#single-use-link').trigger('click');
-
-            moxios.wait(() => {
-                let request = moxios.requests.mostRecent();
-
-                expect(request.config.method).toEqual('post');
-                expect(wrapper.find('.download-link-wrapper').exists()).toBe(true);
-                expect(wrapper.find('.download-link-wrapper div').text())
-                    .toEqual(`Created link ${response_date.key} expires in 1 day`);
-                expect(wrapper.find('.download-link-wrapper a').exists()).toBe(true); // Copy button
-                done();
-            });
-        });
+        expect(wrapper.find('.download-link-wrapper').exists()).toBe(true);
+        expect(wrapper.find('.download-link-wrapper div').text())
+            .toEqual(`Created link ${response_date.key} expires in 1 day`);
+        expect(wrapper.find('.download-link-wrapper a').exists()).toBe(true); // Copy button
     });
 
-    it("does not create single use links on response errors", (done) => {
+    it("does not create single use links on response errors", async () => {
         expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
 
-        moxios.stubRequest(`/services/api/single_use_link/create/${uuid}`, {
-            status: 404,
-            response: JSON.stringify('No record here')
-        });
+        fetchMock.mockResponseOnce(JSON.stringify('No record here'), { status: 404 });
 
-        moxios.wait(async () => {
-            await wrapper.find('#single-use-link').trigger('click');
-            expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
-            done();
-        });
+        await wrapper.find('#single-use-link').trigger('click');
+        await flushPromises();
+        expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
     });
 
     it("copies single use links", async () => {
         Object.assign(window.navigator, {
             clipboard: {
-                writeText: jest.fn().mockImplementation(() => Promise.resolve()),
+                writeText: vi.fn().mockImplementation(() => Promise.resolve()),
             },
         });
 
