@@ -149,11 +149,6 @@ describe('analyticsUtils', () => {
         await flushPromises();
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        // Debug output
-        console.log('window._mtm:', window._mtm);
-        console.log('container_info:', wrapper.vm.container_info);
-        console.log('Fetch called:', fetchMock.mock.calls.length, 'times');
-
         // Verify events were pushed to window._mtm
         expect(window._mtm.length).toBeGreaterThan(0);
 
