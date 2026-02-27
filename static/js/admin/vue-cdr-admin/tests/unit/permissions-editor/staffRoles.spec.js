@@ -1,6 +1,4 @@
 import { flushPromises, shallowMount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { nextTick } from 'vue';
 import staffRoles from '@/components/permissions-editor/staffRoles.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
@@ -66,7 +64,6 @@ describe('staffRoles.vue', () => {
         vi.stubGlobal('confirm', mockConfirm);
 
         await flushPromises();
-        await nextTick();
     });
 
     afterEach(() => {
@@ -213,7 +210,6 @@ describe('staffRoles.vue', () => {
         wrapper.vm.getRoles();
 
         await flushPromises();
-        await nextTick();
 
         let cells = wrapper.findAll('.inherited-permissions td');
         expect(cells[0].text()).toEqual(newResponse.inherited.roles[0].principal);
@@ -312,13 +308,11 @@ describe('staffRoles.vue', () => {
 
         // Mark a previously assigned role for deletion
         await button.trigger('click');
-        await nextTick();
         button = wrapper.find('.btn button');
         expect(button.text()).toEqual('Undo Remove');
 
         // Undo marking previously assigned role for deletion
         await button.trigger('click');
-        await nextTick();
         button = wrapper.find('.btn button');
         expect(button.text()).toEqual('Remove');
     });
@@ -328,12 +322,10 @@ describe('staffRoles.vue', () => {
 
         data.type = 'AdminUnit';
         await store.setMetadata(data);
-        await nextTick();
         expect(wrapper.find('.assigned').exists()).toBe(true);
 
         data.type = 'Collection';
         await store.setMetadata(data);
-        await nextTick();
         expect(wrapper.find('.assigned').exists()).toBe(true);
     });
 
@@ -342,17 +334,14 @@ describe('staffRoles.vue', () => {
 
         data.type = 'Folder';
         await store.setMetadata(data);
-        await nextTick();
         expect(wrapper.find('.assigned').exists()).toBe(false);
 
         data.type = 'Work';
         await store.setMetadata(data);
-        await nextTick();
         expect(wrapper.find('.assigned').exists()).toBe(false);
 
         data.type = 'File';
         await store.setMetadata(data);
-        await nextTick();
         expect(wrapper.find('.assigned').exists()).toBe(false);
     });
 
@@ -361,13 +350,11 @@ describe('staffRoles.vue', () => {
 
         data.type = 'AdminUnit';
         await store.setMetadata(data);
-        await nextTick();
         let btn = wrapper.find('#is-submitting');
         expect(btn.isVisible()).toBe(true);
 
         data.type = 'Collection';
         await store.setMetadata(data);
-        await nextTick();
         expect(btn.isVisible()).toBe(true);
     });
 

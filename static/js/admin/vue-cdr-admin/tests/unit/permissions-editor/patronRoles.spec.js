@@ -1,5 +1,4 @@
 import {shallowMount, flushPromises} from '@vue/test-utils';
-import {nextTick} from 'vue';
 import patronRoles from '@/components/permissions-editor/patronRoles.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
@@ -111,7 +110,6 @@ describe('patronRoles.vue', () => {
         await wrapper.findAll('#add-new-patron-principal-id option')[0].setSelected();
         await wrapper.findAll('#add-new-patron-principal-role option')[5].setSelected();
         await wrapper.find('#add-principal').trigger('click');
-        await nextTick();
 
         fetchMock.mockResponseOnce(JSON.stringify({ success: true }));
         await wrapper.find('#is-submitting').trigger('click');
@@ -137,7 +135,6 @@ describe('patronRoles.vue', () => {
 
         stubDataLoad(resp_with_allowed_patrons);
         await flushPromises();
-        await nextTick();
 
         expect(wrapper.vm.user_type).toBe('patron');
 
@@ -145,10 +142,6 @@ describe('patronRoles.vue', () => {
         expect(wrapper.vm.should_show_add_principal).toBe(false);
 
         await wrapper.find('#add-principal').trigger('click');
-        await nextTick();
-        await nextTick();
-
-        // Check the data property changed
         expect(wrapper.vm.should_show_add_principal).toBe(true);
 
         // Check element doesn't have display:none
@@ -208,8 +201,6 @@ describe('patronRoles.vue', () => {
             { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
         expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
-        // Once the UI has refreshed it should now show added entry
-        await nextTick();
         let assigned_patrons = wrapper.findAll('.patron-assigned');
         expect(assigned_patrons.length).toEqual(3);
         expect(assigned_patrons[0].findAll('p')[0].text()).toEqual('Public users');
@@ -260,7 +251,6 @@ describe('patronRoles.vue', () => {
         expect(wrapper.vm.assignedPatronRoles).toEqual([assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2],
             { principal: 'the:extra:special:group', role: 'canViewAccessCopies', assignedTo: UUID }]);
 
-        await nextTick();
         let assigned_patrons = wrapper.findAll('.patron-assigned');
         expect(assigned_patrons.length).toEqual(4);
         expect(assigned_patrons[0].findAll('p')[0].text()).toEqual('Public users');
@@ -930,8 +920,6 @@ describe('patronRoles.vue', () => {
         ]);
 
         await store.setEmbargoInfo({ embargo: embargo_date, skip_embargo: false });
-        await nextTick();
-
         expect(wrapper.vm.displayAssignments).toEqual([
             { principal: 'patron', role: 'canViewMetadata', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID }
         ]);
@@ -955,8 +943,6 @@ describe('patronRoles.vue', () => {
         ]);
 
         await store.setEmbargoInfo(embargo_date);
-        await nextTick();
-
         expect(wrapper.vm.displayAssignments).toEqual([
             { principal: 'everyone', role: 'none', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID },
             { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
@@ -970,11 +956,9 @@ describe('patronRoles.vue', () => {
         expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
 
         await store.setEmbargoInfo({ embargo: embargo_date, skip_embargo: false });
-        await nextTick();
         expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(embargo_date);
 
         await store.setEmbargoInfo({ embargo: null, skip_embargo: false });
-        await nextTick();
         expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
     });
 
@@ -987,8 +971,6 @@ describe('patronRoles.vue', () => {
         stubDataLoad();
         await flushPromises();
         await wrapper.findAll('option')[1].setSelected();
-        await nextTick();
-
         expectSaveButtonDisabled(false);
     });
 
@@ -1124,11 +1106,9 @@ describe('patronRoles.vue', () => {
         expectSaveButtonDisabled();
 
         await store.setEmbargoInfo({embargo: embargo_date, skipEmbargo: false});
-        await nextTick();
         expectSaveButtonDisabled(false);
 
         await store.setEmbargoInfo({embargo: null, skipEmbargo: true});
-        await nextTick();
         expectSaveButtonDisabled();
 
         await wrapper.find('#user_type_staff').trigger('change');
@@ -1213,10 +1193,8 @@ describe('patronRoles.vue', () => {
         mountApp(true, resultObjectsTwoFolders);
 
         await flushPromises();
-        await nextTick();
-
         await store.setEmbargoInfo({ embargo: embargo_date, skipEmbargo: false });
-        await nextTick();
+
 
         // Store the count before submitting
         const callCountBefore = fetchMock.mock.calls.length;
@@ -1252,8 +1230,6 @@ describe('patronRoles.vue', () => {
         });
         expect(mockConfirm).toHaveBeenCalled();
         expectSaveButtonDisabled();
-
-        await nextTick();
 
         let btn = wrapper.find('#is-canceling');
         expect(btn.text()).toBe('Close');
