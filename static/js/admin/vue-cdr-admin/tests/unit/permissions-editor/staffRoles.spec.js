@@ -1,7 +1,5 @@
-import { shallowMount } from '@vue/test-utils'
-import '@testing-library/jest-dom'
-import staffRoles from '@/components/permissions-editor/staffRoles.vue'
-import moxios from "moxios";
+import { flushPromises, shallowMount } from '@vue/test-utils';
+import staffRoles from '@/components/permissions-editor/staffRoles.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
 
@@ -12,7 +10,11 @@ const response = {
 
 const user_role = { principal: 'test_user_2', role: 'canManage', type: 'new' };
 const metadata = () => {
-    return { id: '73bc003c-9603-4cd9-8a65-93a22520ef6a', type: 'AdminUnit', title: 'Test Stuff', objectPath: [{
+    return {
+        id: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
+        type: 'AdminUnit',
+        title: 'Test Stuff',
+        objectPath: [{
             pid: 'collections',
             name: 'Content Collections Root',
             container: true
@@ -23,23 +25,28 @@ const metadata = () => {
         }]
     };
 };
-let wrapper, store;
+
+const jsonHeader = { headers: { 'Content-Type': 'application/json' } };
+
+let wrapper, store, mockConfirm, mockAlertHandler;
 
 describe('staffRoles.vue', () => {
-    beforeEach(() => {
-        moxios.install();
+    beforeEach(async () => {
+        fetchMock.resetMocks();
+        // Catch any unmocked fetch calls and return a default response to prevent test failures due to unexpected requests
+        fetchMock.mockResponse(JSON.stringify({ inherited: { roles: [] }, assigned: { roles: [] } }), jsonHeader);
+        mockConfirm = vi.fn().mockReturnValue(true);
+        mockAlertHandler = vi.fn();
+
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
 
         wrapper = shallowMount(staffRoles, {
             global: {
                 plugins: [createTestingPinia({
                     initialState: {
                         permissions: {
-                            actionHandler: {
-                                addEvent: jest.fn()
-                            },
-                            alertHandler: {
-                                alertHandler: jest.fn()
-                            },
+                            actionHandler: { addEvent: vi.fn() },
+                            alertHandler: { alertHandler: mockAlertHandler },
                             metadata: metadata()
                         }
                     },
@@ -49,41 +56,43 @@ describe('staffRoles.vue', () => {
         });
 
         store = usePermissionsStore();
-        moxios.stubRequest(`/services/api/acl/staff/${wrapper.vm.uuid}`, {
-            status: 200,
-            response: JSON.stringify(response)
-        });
-        wrapper.vm.getRoles();
-        global.confirm = jest.fn().mockReturnValue(true);
+        vi.stubGlobal('confirm', mockConfirm);
+
+        await flushPromises();
     });
 
-    it("retrieves current staff roles data from the server", (done) => {
-        moxios.wait(() => {
-            expect(wrapper.vm.current_staff_roles).toEqual(response);
-            expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles);
-            done();
-        });
+    afterEach(() => {
+        mockAlertHandler.mockClear();
+        mockConfirm.mockClear();
+        store.$reset();
+        vi.unstubAllGlobals();
+        wrapper = null;
     });
 
-    it("shows help text",  (done) => {
-        moxios.wait(async () => {
-            expect(wrapper.find('#role-list').exists()).toBe(false);
-            await wrapper.find('.info').trigger('click');
-            expect(wrapper.find('#role-list').isVisible()).toBe(true);
-            done();
-        });
+    it("retrieves current staff roles data from the server", () => {
+        expect(wrapper.vm.current_staff_roles).toEqual(response);
+        expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles);
+    });
+
+    it("shows help text", async () => {
+        expect(wrapper.find('#role-list').exists()).toBe(false);
+        await wrapper.find('.info').trigger('click');
+        expect(wrapper.find('#role-list').isVisible()).toBe(true);
     });
 
     it("triggers a submission", async () => {
-        // Mount separately to mock methods to test that they're called
-        let updateUsers = jest.spyOn(wrapper.vm, 'updateUserList');
-        let setRoles = jest.spyOn(wrapper.vm, 'setRoles');
+        let updateUsers = vi.spyOn(wrapper.vm, 'updateUserList');
+        let setRoles = vi.spyOn(wrapper.vm, 'setRoles');
 
-        // Add a new user
         await wrapper.find('input').setValue('test_user_71');
         await wrapper.findAll('option')[2].setSelected();
         await wrapper.find('.btn-add').trigger('click');
+
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+
         await wrapper.find('#is-submitting').trigger('click');
+        await flushPromises();
 
         expect(updateUsers).toHaveBeenCalled();
         expect(setRoles).toHaveBeenCalled();
@@ -92,48 +101,63 @@ describe('staffRoles.vue', () => {
         setRoles.mockRestore();
     });
 
-    it("sends current staff roles to the server", (done) => {
-        moxios.wait(async () => {
-            // Add a new user to enable submit button
-            await wrapper.find('input').setValue('test_user_7');
-            await wrapper.findAll('option')[2].setSelected();
-            await wrapper.find('.btn-add').trigger('click');
-            await wrapper.find('#is-submitting').trigger('click');
+    it("sends current staff roles to the server", async () => {
+        await wrapper.find('input').setValue('test_user_7');
+        await wrapper.findAll('option')[2].setSelected();
+        await wrapper.find('.btn-add').trigger('click');
 
-            let request = moxios.requests.mostRecent();
-            expect(request.config.method).toEqual('put');
-            expect(JSON.parse(request.config.data)).toEqual( { roles: [...response.assigned.roles, ...[{ principal: 'test_user_7', role: 'canDescribe', type: 'new'}]] } );
-            done();
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+
+        await wrapper.find('#is-submitting').trigger('click');
+        await flushPromises();
+
+        const putCall = fetchMock.mock.calls.find(call =>
+            call[0].includes('/services/api/edit/acl/staff/') &&
+            call[1]?.method === 'PUT'
+        );
+
+        expect(putCall).toBeDefined();
+        expect(putCall[0]).toContain(`/services/api/edit/acl/staff/${wrapper.vm.uuid}`);
+        expect(putCall[1].method).toEqual('PUT');
+        expect(JSON.parse(putCall[1].body)).toEqual({
+            roles: [
+                ...response.assigned.roles,
+                { principal: 'test_user_7', role: 'canDescribe', type: 'new'}
+            ]
         });
     });
 
-    it("it adds un-added users and then sends current staff roles to the server", (done) => {
+    it("it adds un-added users and then sends current staff roles to the server", async () => {
         let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
         let all_users = { roles: [...response.assigned.roles, ...[added_user]] };
 
-        moxios.wait(async () => {
-            await wrapper.setData({
-                user_name: 'dean'
-            });
-            await wrapper.find('#is-submitting').trigger('click');
-
-            let request = moxios.requests.mostRecent();
-            expect(request.config.method).toEqual('put');
-            expect(JSON.parse(request.config.data)).toEqual(all_users);
-            done();
+        await wrapper.setData({
+            user_name: 'dean'
         });
+
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+
+        await wrapper.find('#is-submitting').trigger('click');
+        await flushPromises();
+
+        const lastCall = fetchMock.mock.calls.find(call =>
+            call[0].includes('/services/api/edit/acl/staff/') &&
+            call[1]?.method === 'PUT'
+        );
+
+        expect(lastCall[1].method).toEqual('PUT');
+        expect(JSON.parse(lastCall[1].body)).toEqual(all_users);
     });
 
-    it("displays inherited staff roles", (done) => {
-        moxios.wait(() => {
-            let cells = wrapper.findAll('.inherited-permissions td');
-            expect(cells[0].text()).toEqual(response.inherited.roles[0].principal);
-            expect(cells[1].text()).toEqual(response.inherited.roles[0].role);
-            done();
-        });
+    it("displays inherited staff roles", () => {
+        let cells = wrapper.findAll('.inherited-permissions td');
+        expect(cells[0].text()).toEqual(response.inherited.roles[0].principal);
+        expect(cells[1].text()).toEqual(response.inherited.roles[0].role);
     });
 
-    it("displays names of containers that roles are assigned to in inherited table", (done) => {
+    it("displays names of containers that roles are assigned to in inherited table", async () => {
         store.setMetadata({
             id: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
             title: 'Some Subfolder',
@@ -157,198 +181,150 @@ describe('staffRoles.vue', () => {
             }]
         });
 
-        const response = {
+        const newResponse = {
             inherited: {
-                roles: [{ principal: 'test_admin', role: 'unitOwner', assignedTo: '73bc003c-9603-4cd9-8a65-93a22520ef6a' },
-                    { principal: 'test_manager', role: 'canManage', assignedTo: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb' }]
+                roles: [
+                    { principal: 'test_admin', role: 'unitOwner', assignedTo: '73bc003c-9603-4cd9-8a65-93a22520ef6a' },
+                    { principal: 'test_manager', role: 'canManage', assignedTo: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb' }
+                ]
             },
             assigned: {
                 roles: []
             }
         };
 
-        moxios.stubRequest(`/services/api/acl/staff/${wrapper.vm.uuid}`, {
-            status: 200,
-            response: JSON.stringify(response)
-        });
+        fetchMock.mockResponseOnce(JSON.stringify(newResponse), jsonHeader);
         wrapper.vm.getRoles();
 
-        moxios.wait(() => {
-            let cells = wrapper.findAll('.inherited-permissions td');
-            expect(cells[0].text()).toEqual(response.inherited.roles[0].principal);
-            expect(cells[1].text()).toEqual(response.inherited.roles[0].role);
-            expect(cells[2].text()).toEqual('Test Unit');
-            expect(cells[3].text()).toEqual(response.inherited.roles[1].principal);
-            expect(cells[4].text()).toEqual(response.inherited.roles[1].role);
-            expect(cells[5].text()).toEqual('Test Collection');
-            done();
-        });
+        await flushPromises();
+
+        let cells = wrapper.findAll('.inherited-permissions td');
+        expect(cells[0].text()).toEqual(newResponse.inherited.roles[0].principal);
+        expect(cells[1].text()).toEqual(newResponse.inherited.roles[0].role);
+        expect(cells[2].text()).toEqual('Test Unit');
+        expect(cells[3].text()).toEqual(newResponse.inherited.roles[1].principal);
+        expect(cells[4].text()).toEqual(newResponse.inherited.roles[1].role);
+        expect(cells[5].text()).toEqual('Test Collection');
     });
 
-    it("does not display an inherited roles table if there are no inherited roles", (done) => {
-        moxios.wait(async () => {
-            await wrapper.setData({
-                current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } }
-            });
-
-            expect(wrapper.find('p').text()).toEqual('There are no inherited staff permissions.');
-            done();
+    it("does not display an inherited roles table if there are no inherited roles", async () => {
+        await wrapper.setData({
+            current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } }
         });
+
+        expect(wrapper.find('p').text()).toEqual('There are no inherited staff permissions.');
     });
 
-    it("displays assigned staff roles", (done) => {
-        moxios.wait(() => {
-            let cells = wrapper.findAll('.assigned-permissions td');
-            expect(cells[0].text()).toEqual(response.assigned.roles[0].principal);
-            // See test in staffRolesSelect.spec.js for test asserting that the correct option is displayed
-            done();
-        });
+    it("displays assigned staff roles", () => {
+        let cells = wrapper.findAll('.assigned-permissions td');
+        expect(cells[0].text()).toEqual(response.assigned.roles[0].principal);
     });
 
-    it("updates user roles, if a role is changed", async() => {
-        // Role loaded in beforeEach action
+    it("updates user roles, if a role is changed", async () => {
         expect(wrapper.vm.updated_staff_roles).toEqual([{ principal: 'test_user', role: 'canIngest' }]);
 
-        // staffSelectRole component updates the data store
         const updatedUser = { principal: 'test_user', role: 'canManage' };
         await store.setStaffRole(updatedUser);
         expect(wrapper.vm.updated_staff_roles).toEqual([updatedUser]);
     });
 
-    it("disables 'submit' by default", (done) => {
-        moxios.wait(() => {
-            let btn = wrapper.find('#is-submitting');
-            let is_disabled = expect.stringContaining('disabled');
-            expect(btn.html()).toEqual(is_disabled);
-            done();
-        });
+    it("disables 'submit' by default", () => {
+        let btn = wrapper.find('#is-submitting');
+        let is_disabled = expect.stringContaining('disabled');
+        expect(btn.html()).toEqual(is_disabled);
     });
 
-    it("enables 'submit' button if user/role has been added or changed",  (done) => {
+    it("enables 'submit' button if user/role has been added or changed", async () => {
         let is_disabled = expect.stringContaining('disabled');
 
-        // Add a user
-        moxios.wait(async () => {
-            await wrapper.find('input').setValue('test_user_77');
-            await wrapper.findAll('option')[1].setSelected();
-            await wrapper.find('.btn-add').trigger('click');
-            expect(wrapper.find('#is-submitting').html()).not.toEqual(is_disabled);
-            done();
-        });
+        await wrapper.find('input').setValue('test_user_77');
+        await wrapper.findAll('option')[1].setSelected();
+        await wrapper.find('.btn-add').trigger('click');
+        expect(wrapper.find('#is-submitting').html()).not.toEqual(is_disabled);
     });
 
-    it("adds new assigned roles", (done) => {
-        moxios.wait(async () => {
-            await wrapper.setData({
-                user_name: 'test_user_2',
-                selected_role: 'canManage'
-            });
-
-            await wrapper.find('.btn-add').trigger('click');
-            expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles.concat([user_role]));
-            done();
+    it("adds new assigned roles", async () => {
+        await wrapper.setData({
+            user_name: 'test_user_2',
+            selected_role: 'canManage'
         });
+
+        await wrapper.find('.btn-add').trigger('click');
+        expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles.concat([user_role]));
     });
 
-    it("resets the form after adding a user", (done) => {
-        moxios.wait(async () => {
-            await wrapper.find('input').setValue('test_user_11');
-            await wrapper.findAll('option')[2].setSelected();
-            await wrapper.find('.btn-add').trigger('click');
+    it("resets the form after adding a user", async () => {
+        await wrapper.find('input').setValue('test_user_11');
+        await wrapper.findAll('option')[2].setSelected();
+        await wrapper.find('.btn-add').trigger('click');
 
-            expect(wrapper.vm.user_name).toEqual('');
-            expect(wrapper.vm.selected_role).toEqual('canAccess');
-            done();
-        });
+        expect(wrapper.vm.user_name).toEqual('');
+        expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
 
-    it("does not add a new user with roles if user already exists", (done) => {
-        moxios.wait(async () => {
-            await wrapper.find('input').setValue('test_user');
-            await wrapper.findAll('option')[2].setSelected();
-            await wrapper.find('.btn-add').trigger('click');
+    it("does not add a new user with roles if user already exists", async () => {
+        await wrapper.find('input').setValue('test_user');
+        await wrapper.findAll('option')[2].setSelected();
+        await wrapper.find('.btn-add').trigger('click');
 
-            expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles);
-            expect(wrapper.vm.response_message).toEqual('User: test_user already exists. User not added.');
-            done();
-        });
+        expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles);
+        expect(wrapper.vm.response_message).toEqual('User: test_user already exists. User not added.');
     });
 
-    it("marks user for deletion if user had previously assigned role", (done) => {
-        moxios.wait(async () => {
-            await wrapper.find('.btn-remove').trigger('click');
-            expect(wrapper.vm.deleted_users).toEqual(response.assigned.roles);
-            done();
-        });
+    it("marks user for deletion if user had previously assigned role", async () => {
+        await wrapper.find('.btn-remove').trigger('click');
+        expect(wrapper.vm.deleted_users).toEqual(response.assigned.roles);
     });
 
-    it("removes deleted users before submitting", (done) => {
-        moxios.wait(async () => {
-            let first_user_role = { principal: 'testy', role: 'canManage' };
+    it("removes deleted users before submitting", () => {
+        let first_user_role = { principal: 'testy', role: 'canManage' };
 
-            await wrapper.setData({
-                deleted_users: [user_role],
-                updated_staff_roles: [first_user_role, user_role]
-            });
+        wrapper.vm.deleted_users = [user_role];
+        wrapper.vm.updated_staff_roles = [first_user_role, user_role];
 
-            wrapper.vm.setRoles();
-
-            expect(wrapper.vm.updated_staff_roles).toEqual([first_user_role]);
-            done();
-        });
+        const result = wrapper.vm.removeDeletedAssignedRoles();
+        expect(result).toEqual([first_user_role]);
     });
 
-    it("it updates button text based on context", (done) => {
-        moxios.wait(async () => {
-            let button = wrapper.find('.btn button');
-            expect(button.text()).toEqual('Remove');
+    it("it updates button text based on context", async () => {
+        let button = wrapper.find('.btn button');
+        expect(button.text()).toEqual('Remove');
 
-            // Mark a previously assigned role for deletion
-            await button.trigger('click');
-            button = wrapper.find('.btn button');
-            expect(button.text()).toEqual('Undo Remove');
+        await button.trigger('click');
+        button = wrapper.find('.btn button');
+        expect(button.text()).toEqual('Undo Remove');
 
-            // Undo marking previously assigned role for deletion
-            await button.trigger('click');
-            button = wrapper.find('.btn button');
-            expect(button.text()).toEqual('Remove');
-
-            done();
-        });
+        await button.trigger('click');
+        button = wrapper.find('.btn button');
+        expect(button.text()).toEqual('Remove');
     });
 
-    it("displays roles form if the container is of the proper type", (done) => {
-        moxios.wait(async () => {
-            let data = metadata();
+    it("displays roles form if the container is of the proper type", async () => {
+        let data = metadata();
 
-            data.type = 'AdminUnit';
-            await store.setMetadata(data);
-            expect(wrapper.find('.assigned').exists()).toBe(true);
+        data.type = 'AdminUnit';
+        await store.setMetadata(data);
+        expect(wrapper.find('.assigned').exists()).toBe(true);
 
-            data.type = 'Collection';
-            await store.setMetadata(data);
-            expect(wrapper.find('.assigned').exists()).toBe(true);
-            done();
-        });
+        data.type = 'Collection';
+        await store.setMetadata(data);
+        expect(wrapper.find('.assigned').exists()).toBe(true);
     });
 
-    it("doesn't display roles form if the container isn't of the proper type", (done) => {
-        moxios.wait(async () => {
-            let data = metadata();
+    it("doesn't display roles form if the container isn't of the proper type", async () => {
+        let data = metadata();
 
-            data.type = 'Folder';
-            await store.setMetadata(data);
-            expect(wrapper.find('.assigned').exists()).toBe(false);
+        data.type = 'Folder';
+        await store.setMetadata(data);
+        expect(wrapper.find('.assigned').exists()).toBe(false);
 
-            data.type = 'Work';
-            await store.setMetadata(data);
-            expect(wrapper.find('.assigned').exists()).toBe(false);
+        data.type = 'Work';
+        await store.setMetadata(data);
+        expect(wrapper.find('.assigned').exists()).toBe(false);
 
-            data.type = 'File';
-            await store.setMetadata(data);
-            expect(wrapper.find('.assigned').exists()).toBe(false);
-            done();
-        });
+        data.type = 'File';
+        await store.setMetadata(data);
+        expect(wrapper.find('.assigned').exists()).toBe(false);
     });
 
     it("displays a submit button for admin units and collections", async () => {
@@ -370,60 +346,48 @@ describe('staffRoles.vue', () => {
         expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
 
-    it("updates the data store to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
-        moxios.wait(() => {
-            wrapper.find('#is-canceling').trigger('click');
-            expect(store.showPermissionsModal).toEqual(false);
-            done();
-        });
+    it("updates the data store to close the modal if 'Cancel' is clicked and there are no unsaved changes", () => {
+        wrapper.find('#is-canceling').trigger('click');
+        expect(store.showPermissionsModal).toEqual(false);
     });
 
-    it("does not prompt the user if 'Submit' is clicked and there are unsaved changes", (done) => {
-        moxios.wait(async () => {
-            await wrapper.setData({
-                deleted_users: response.assigned.roles
-            });
-            await wrapper.find('#is-submitting').trigger('click');
-            expect(global.confirm).toHaveBeenCalledTimes(0);
-            done();
+    it("does not prompt the user if 'Submit' is clicked and there are unsaved changes", async () => {
+        await wrapper.setData({
+            deleted_users: response.assigned.roles
         });
+
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+
+        await wrapper.find('#is-submitting').trigger('click');
+        await flushPromises();
+
+        expect(mockConfirm).toHaveBeenCalledTimes(0);
     });
 
-    it("prompts the user if 'Cancel' is clicked and there are unsaved changes", (done) => {
-        moxios.wait(async () => {
-            await wrapper.setData({
-                deleted_users: response.assigned.roles
-            });
-            await wrapper.find('#is-canceling').trigger('click');
-            expect(global.confirm).toHaveBeenCalled();
-            done();
+    it("prompts the user if 'Cancel' is clicked and there are unsaved changes", async () => {
+        await wrapper.setData({
+            deleted_users: response.assigned.roles
         });
+        await wrapper.find('#is-canceling').trigger('click');
+        expect(mockConfirm).toHaveBeenCalled();
     });
 
-    it("checks for un-saved user and permissions", (done) => {
-        moxios.wait(async () => {
-            wrapper.vm.unsavedUpdates();
-            expect(wrapper.vm.unsaved_changes).toBe(false);
+    it("checks for un-saved user and permissions", async () => {
+        wrapper.vm.unsavedUpdates();
+        expect(wrapper.vm.unsaved_changes).toBe(false);
 
-            await wrapper.setData({
-                deleted_users: response.assigned.roles
-            });
-            wrapper.vm.unsavedUpdates();
-            expect(wrapper.vm.unsaved_changes).toBe(true);
-
-            await wrapper.setData({
-                deleted_users: [],
-                updated_staff_roles: [{ principal: 'test_user', role: 'canMove' }]
-            });
-            wrapper.vm.unsavedUpdates();
-            expect(wrapper.vm.unsaved_changes).toBe(true);
-            done();
+        await wrapper.setData({
+            deleted_users: response.assigned.roles
         });
-    });
+        wrapper.vm.unsavedUpdates();
+        expect(wrapper.vm.unsaved_changes).toBe(true);
 
-    afterEach(() => {
-        moxios.uninstall();
-        store.$reset();
-        wrapper = null;
+        await wrapper.setData({
+            deleted_users: [],
+            updated_staff_roles: [{ principal: 'test_user', role: 'canMove' }]
+        });
+        wrapper.vm.unsavedUpdates();
+        expect(wrapper.vm.unsaved_changes).toBe(true);
     });
 });
