@@ -48,51 +48,53 @@
                 </div>
             </transition>
             <table class="assigned-permissions">
-                <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
-                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
-                      <div class="text-only">
-                        <span @mouseover="hover_row = index" @mouseleave="hover_row = ''">
-                          {{ truncatePermissionText(updated_staff_role.principal) }}</span>
-                        <span @click="copyPermission(updated_staff_role.principal)">
-                          <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
-                      </div>
-                      <div class="tooltip" v-if="hover_row === index">
-                        {{ updated_staff_role.principal }}
-                      </div>
-                    </td>
-                    <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
-                        <staff-roles-select
-                                :container-type="containerType"
-                                :are-deleted="deleted_users"
-                                :user="updated_staff_role">
-                        </staff-roles-select>
-                    </td>
-                    <td class="btn">
-                        <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="fullyRemoveUser(index)">Undo Add</button>
-                        <button v-else-if="checkUserRemoved(updated_staff_role)"
-                                class="btn-revert"
-                                @click="revertRemoveUser(updated_staff_role)">Undo Remove</button>
-                        <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border size">
-                        <input @focus="updateErrorMsg('')"
-                               type="text"
-                               placeholder="ONYEN/Group"
-                               v-model.trim="user_name">
-                    </td>
-                    <td class="border select-box">
-                        <div class="select-wrapper">
-                            <select v-model="selected_role" @focus="updateErrorMsg('')">
-                                <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
-                            </select>
-                        </div>
-                    </td>
-                    <td class="btn">
-                        <button class="btn-add" @click.prevent="updateUserList">Add</button>
-                    </td>
-                </tr>
+                <tbody>
+                    <tr v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
+                        <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
+                          <div class="text-only">
+                            <span @mouseover="hover_row = index" @mouseleave="hover_row = ''">
+                              {{ truncatePermissionText(updated_staff_role.principal) }}</span>
+                            <span @click="copyPermission(updated_staff_role.principal)">
+                              <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
+                          </div>
+                          <div class="tooltip" v-if="hover_row === index">
+                            {{ updated_staff_role.principal }}
+                          </div>
+                        </td>
+                        <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
+                            <staff-roles-select
+                                    :container-type="containerType"
+                                    :are-deleted="deleted_users"
+                                    :user="updated_staff_role">
+                            </staff-roles-select>
+                        </td>
+                        <td class="btn">
+                            <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="fullyRemoveUser(index)">Undo Add</button>
+                            <button v-else-if="checkUserRemoved(updated_staff_role)"
+                                    class="btn-revert"
+                                    @click="revertRemoveUser(updated_staff_role)">Undo Remove</button>
+                            <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border size">
+                            <input @focus="updateErrorMsg('')"
+                                   type="text"
+                                   placeholder="ONYEN/Group"
+                                   v-model.trim="user_name">
+                        </td>
+                        <td class="border select-box">
+                            <div class="select-wrapper">
+                                <select v-model="selected_role" @focus="updateErrorMsg('')">
+                                    <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td class="btn">
+                            <button class="btn-add" @click.prevent="updateUserList">Add</button>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <p class="message" :class="{error: is_error_message}">{{ response_message }}</p>
         </div>

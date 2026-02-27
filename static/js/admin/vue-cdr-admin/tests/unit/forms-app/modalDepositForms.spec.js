@@ -3,6 +3,12 @@ import ModalDepositForms from '@/components/forms-app/modalDepositForms.vue';
 import {createTestingPinia} from '@pinia/testing';
 import { useFormsStore } from '@/stores/forms';
 
+// Mock axios to prevent actual HTTP requests during testing.
+// Needed for the submitForm method which makes a POST request to the server.
+vi.mock('axios', () => ({
+    default: vi.fn().mockResolvedValue({ data: {} })
+}));
+
 let wrapper, store;
 
 describe('modalDepositForms.vue', () => {
@@ -21,6 +27,7 @@ describe('modalDepositForms.vue', () => {
                 }
             });
         store = useFormsStore();
+        store.alertHandler = { alertHandler: vi.fn() };
     });
 
     afterEach(() => {

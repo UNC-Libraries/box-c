@@ -26,28 +26,27 @@ const metadata = () => {
     };
 };
 
+const jsonHeader = { headers: { 'Content-Type': 'application/json' } };
+
 let wrapper, store, mockConfirm, mockAlertHandler;
 
 describe('staffRoles.vue', () => {
     beforeEach(async () => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
-
-        // Create mock functions
+        // Catch any unmocked fetch calls and return a default response to prevent test failures due to unexpected requests
+        fetchMock.mockResponse(JSON.stringify({ inherited: { roles: [] }, assigned: { roles: [] } }), jsonHeader);
         mockConfirm = vi.fn().mockReturnValue(true);
         mockAlertHandler = vi.fn();
+
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
 
         wrapper = shallowMount(staffRoles, {
             global: {
                 plugins: [createTestingPinia({
                     initialState: {
                         permissions: {
-                            actionHandler: {
-                                addEvent: vi.fn()
-                            },
-                            alertHandler: {
-                                alertHandler: mockAlertHandler
-                            },
+                            actionHandler: { addEvent: vi.fn() },
+                            alertHandler: { alertHandler: mockAlertHandler },
                             metadata: metadata()
                         }
                     },
@@ -57,17 +56,12 @@ describe('staffRoles.vue', () => {
         });
 
         store = usePermissionsStore();
-
-        fetchMock.mockResponseOnce(JSON.stringify(response));
-        wrapper.vm.getRoles();
-
         vi.stubGlobal('confirm', mockConfirm);
 
         await flushPromises();
     });
 
     afterEach(() => {
-        fetchMock.disableMocks();
         mockAlertHandler.mockClear();
         mockConfirm.mockClear();
         store.$reset();
@@ -87,18 +81,15 @@ describe('staffRoles.vue', () => {
     });
 
     it("triggers a submission", async () => {
-        // Spy on methods
         let updateUsers = vi.spyOn(wrapper.vm, 'updateUserList');
         let setRoles = vi.spyOn(wrapper.vm, 'setRoles');
 
-        // Add a new user
         await wrapper.find('input').setValue('test_user_71');
         await wrapper.findAll('option')[2].setSelected();
         await wrapper.find('.btn-add').trigger('click');
 
-        // Mock the getRoles response after submit
-        fetchMock.mockResponseOnce(JSON.stringify(response));
-        fetchMock.mockResponseOnce(JSON.stringify({ success: true }));
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
 
         await wrapper.find('#is-submitting').trigger('click');
         await flushPromises();
@@ -111,19 +102,16 @@ describe('staffRoles.vue', () => {
     });
 
     it("sends current staff roles to the server", async () => {
-        // Add a new user to enable submit button
         await wrapper.find('input').setValue('test_user_7');
         await wrapper.findAll('option')[2].setSelected();
         await wrapper.find('.btn-add').trigger('click');
 
-        // Mock both the PUT and the subsequent GET for getRoles()
-        fetchMock.mockResponseOnce(JSON.stringify({ success: true }));
-        fetchMock.mockResponseOnce(JSON.stringify(response));
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
 
         await wrapper.find('#is-submitting').trigger('click');
         await flushPromises();
 
-        // Find the PUT request specifically
         const putCall = fetchMock.mock.calls.find(call =>
             call[0].includes('/services/api/edit/acl/staff/') &&
             call[1]?.method === 'PUT'
@@ -148,9 +136,8 @@ describe('staffRoles.vue', () => {
             user_name: 'dean'
         });
 
-        // Mock both PUT and subsequent GET
-        fetchMock.mockResponseOnce(JSON.stringify({ success: true }));
-        fetchMock.mockResponseOnce(JSON.stringify(response));
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
 
         await wrapper.find('#is-submitting').trigger('click');
         await flushPromises();
@@ -206,7 +193,7 @@ describe('staffRoles.vue', () => {
             }
         };
 
-        fetchMock.mockResponseOnce(JSON.stringify(newResponse));
+        fetchMock.mockResponseOnce(JSON.stringify(newResponse), jsonHeader);
         wrapper.vm.getRoles();
 
         await flushPromises();
@@ -234,10 +221,8 @@ describe('staffRoles.vue', () => {
     });
 
     it("updates user roles, if a role is changed", async () => {
-        // Role loaded in beforeEach action
         expect(wrapper.vm.updated_staff_roles).toEqual([{ principal: 'test_user', role: 'canIngest' }]);
 
-        // staffSelectRole component updates the data store
         const updatedUser = { principal: 'test_user', role: 'canManage' };
         await store.setStaffRole(updatedUser);
         expect(wrapper.vm.updated_staff_roles).toEqual([updatedUser]);
@@ -252,7 +237,6 @@ describe('staffRoles.vue', () => {
     it("enables 'submit' button if user/role has been added or changed", async () => {
         let is_disabled = expect.stringContaining('disabled');
 
-        // Add a user
         await wrapper.find('input').setValue('test_user_77');
         await wrapper.findAll('option')[1].setSelected();
         await wrapper.find('.btn-add').trigger('click');
@@ -306,12 +290,10 @@ describe('staffRoles.vue', () => {
         let button = wrapper.find('.btn button');
         expect(button.text()).toEqual('Remove');
 
-        // Mark a previously assigned role for deletion
         await button.trigger('click');
         button = wrapper.find('.btn button');
         expect(button.text()).toEqual('Undo Remove');
 
-        // Undo marking previously assigned role for deletion
         await button.trigger('click');
         button = wrapper.find('.btn button');
         expect(button.text()).toEqual('Remove');
@@ -374,9 +356,8 @@ describe('staffRoles.vue', () => {
             deleted_users: response.assigned.roles
         });
 
-        // Mock both PUT and subsequent GET
-        fetchMock.mockResponseOnce(JSON.stringify({ success: true }));
-        fetchMock.mockResponseOnce(JSON.stringify(response));
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
 
         await wrapper.find('#is-submitting').trigger('click');
         await flushPromises();

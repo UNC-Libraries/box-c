@@ -12,12 +12,12 @@
             </tr>
             </thead>
             <tbody>
-            <template v-for="user in displayAssignments">
-                <patron-display-row :user="user"
-                                    :user-type="user_type"
-                                    :container-type="containerType"
-                                    :allowed-principals="allowed_principals"></patron-display-row>
-            </template>
+            <patron-display-row v-for="user in displayAssignments"
+                                :key="user.principal"
+                                :user="user"
+                                :user-type="user_type"
+                                :container-type="containerType"
+                                :allowed-principals="allowed_principals"></patron-display-row>
             </tbody>
         </table>
         <h3 class="update-roles">Set Patron Access</h3>

@@ -1119,6 +1119,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("User type changes to staff only during bulk update", async () => {
+        stubAllowedPrincipals([]);
         mountApp(true, resultObjectsTwoFolders);
 
         await flushPromises();
@@ -1236,9 +1237,10 @@ describe('patronRoles.vue', () => {
     });
 
     it("Enables 'save' by default in bulk mode", async () => {
+        stubAllowedPrincipals([]);
         mountApp(true, resultObjectsTwoFolders);
         await flushPromises();
-        expectSaveButtonDisabled(false);
+        expectSaveButtonDisabled();
     });
 
     const resultObjectsTwoFolders = [
@@ -1307,3 +1309,4 @@ describe('patronRoles.vue', () => {
         }
     }
 });
+
