@@ -24,7 +24,8 @@
     "lodash.isempty": "^4.4.0",
     "pinia": "^2.3.1",
     "vue": "^3.5.29",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "wretch": "^3.0.6"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.27.1",

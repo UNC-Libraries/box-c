@@ -121,6 +121,7 @@
     import isEmpty from 'lodash.isempty';
     import { mapState, mapStores } from 'pinia';
     import {usePermissionsStore} from "@/stores/permissions";
+    import wretch from 'wretch';
 
     export default {
         name: 'staffRoles',
@@ -169,14 +170,9 @@
 
         methods: {
             getRoles() {
-                fetch(`/services/api/acl/staff/${this.uuid}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then((data) => {
+                wretch(`/services/api/acl/staff/${this.uuid}`)
+                    .get()
+                    .json((data) => {
                         if (!isEmpty(data)) {
                             this.current_staff_roles = data;
                             /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
@@ -203,32 +199,25 @@
                 this.is_error_message = false;
                 this.response_message = 'Saving permissions \u2026';
 
-                fetch(`/services/api/edit/acl/staff/${this.uuid}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json; charset=utf-8'
-                    },
-                    body: JSON.stringify({ roles: this.updated_staff_roles })
-                }).then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                }).then(() => {
-                    this.getRoles(); // Reset role list so user can close modal without a prompt.
-                    let response_msg = `Staff roles successfully updated for: ${this.title}`;
-                    this.alertHandler.alertHandler('success', response_msg);
-                    this.unsaved_changes = false;
-                    this.is_submitting = false;
-                    this.deleted_users = [];
-                    this.is_error_message = true; // Reset, as "save" is the only non-error status
-                    this.response_message = '';
-                }).catch((error) => {
-                    let response_msg = `Unable to update staff roles for: ${this.title}`;
-                    this.is_submitting = false;
-                    this.alertHandler.alertHandler('error', response_msg);
-                    console.log(error);
-                });
+                wretch(`/services/api/edit/acl/staff/${this.uuid}`)
+                    .headers({ 'Content-Type': 'application/json; charset=utf-8' })
+                    .put(JSON.stringify({ roles: this.updated_staff_roles }))
+                    .json(() => {
+                        this.getRoles(); // Reset role list so user can close modal without a prompt.
+                        let response_msg = `Staff roles successfully updated for: ${this.title}`;
+                        this.alertHandler.alertHandler('success', response_msg);
+                        this.unsaved_changes = false;
+                        this.is_submitting = false;
+                        this.deleted_users = [];
+                        this.is_error_message = true; // Reset, as "save" is the only non-error status
+                        this.response_message = '';
+                    })
+                    .catch((error) => {
+                        let response_msg = `Unable to update staff roles for: ${this.title}`;
+                        this.is_submitting = false;
+                        this.alertHandler.alertHandler('error', response_msg);
+                        console.log(error);
+                    });
             },
 
             getUserIndex(user, use_update_list = true) {

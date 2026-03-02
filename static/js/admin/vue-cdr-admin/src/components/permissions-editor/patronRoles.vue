@@ -100,6 +100,7 @@
     import cloneDeep from 'lodash.clonedeep';
     import {mapActions, mapState} from 'pinia';
     import {usePermissionsStore} from '@/stores/permissions';
+    import wretch from 'wretch';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -290,32 +291,20 @@
 
             async getRoles() {
                 try {
-                    // No need to retrieve existing roles when performing bulk update
                     if (this.isBulkMode) {
-                        const response = await fetch(`/services/api/acl/patron/allowedPrincipals`);
-
-                        if (!response.ok) {
-                            const error = new Error('Network response was not ok');
-                            error.response = response;
-                            throw error;
-                        }
-
-                        this.allowed_principals = await response.json();
+                        this.allowed_principals = await wretch(`/services/api/acl/patron/allowedPrincipals`)
+                            .get()
+                            .json();
                         this._initializeSelectedAssignments([]);
                         this.bulk_has_saved = false;
                         this.user_type = ACCESS_TYPE_IGNORE;
                         return;
                     }
 
-                    const response = await fetch(`/services/api/acl/patron/${this.uuid}`);
+                    const data = await wretch(`/services/api/acl/patron/${this.uuid}`)
+                        .get()
+                        .json();
 
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
                     this.setEmbargoInfo({
                         embargo: data.assigned.embargo,
                         skipEmbargo: true
@@ -443,26 +432,16 @@
                 let submissionDetails = this.submissionAccessDetails();
 
                 try {
-                    const response = await fetch(`/services/api/edit/acl/patron/${this.uuid}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json; charset=utf-8'
-                        },
-                        body: JSON.stringify(submissionDetails)
-                    });
-
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
+                    await wretch(`/services/api/edit/acl/patron/${this.uuid}`)
+                        .headers({ 'Content-Type': 'application/json; charset=utf-8' })
+                        .put(JSON.stringify(submissionDetails))
+                        .res();
 
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
                     this.saved_details = submissionDetails;
 
-                    // Update entry in results table
                     this.actionHandler.addEvent({
                         action : 'RefreshResult',
                         target : this.resultObject,
@@ -491,19 +470,10 @@
                 };
 
                 try {
-                    const response = await fetch(`/services/api/edit/acl/patron`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json; charset=utf-8'
-                        },
-                        body: JSON.stringify(bulkDetails)
-                    });
-
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
+                    await wretch(`/services/api/edit/acl/patron`)
+                        .headers({ 'Content-Type': 'application/json; charset=utf-8' })
+                        .put(JSON.stringify(bulkDetails))
+                        .res();
 
                     let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
                     this.alertHandler.alertHandler('success', response_msg);
@@ -511,7 +481,6 @@
                     this.bulk_has_saved = true;
 
                     for (let rObject of this.resultObjects) {
-                        // Update entry in results table
                         this.actionHandler.addEvent({
                             action : 'RefreshResult',
                             target : rObject,

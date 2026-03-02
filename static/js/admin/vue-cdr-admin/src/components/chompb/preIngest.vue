@@ -40,6 +40,7 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bm';
+import wretch from 'wretch';
 
 DataTable.use(DataTablesCore);
 
@@ -128,9 +129,8 @@ export default {
     },
 
     methods: {
-        async performAction(action_info, row_data) {
+        performAction(action_info, row_data) {
             let projectName = row_data.projectProperties.name;
-            // Action requires confirmation, exiting early if the user cancels
             if (action_info.confirm && !confirm(action_info.confirmMessage)) {
                 return;
             }
@@ -139,25 +139,19 @@ export default {
             }
             let actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
             if (action_info.method === 'post' || action_info.method === 'get') {
-                try {
-                    const response = await fetch(actionUrl, {
-                        method: action_info.method.toUpperCase()
+                wretch(actionUrl)[action_info.method]().res()
+                    .then(() => {
+                        console.log("Successfully triggered action", actionUrl);
+                        this.copy_error = false;
+                        this.copy_msg = `"${action_info.label}" action successfully triggered for project: ${projectName}`;
+                        this.clearCopyMessage();
+                    })
+                    .catch((error) => {
+                        this.copy_error = true;
+                        this.copy_msg = `Error encountered while performing action "${action_info.label}" for project: ${projectName}`;
+                        console.log("Error encountered while performing action", error);
+                        this.clearCopyMessage();
                     });
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    console.log("Successfully triggered action", actionUrl);
-                    this.copy_error = false;
-                    this.copy_msg = `"${action_info.label}" action successfully triggered for project: ${projectName}`;
-                    this.clearCopyMessage();
-                } catch (error) {
-                    this.copy_error = true;
-                    this.copy_msg = `Error encountered while performing action" ${action_info.label}" for project: ${projectName}`;
-                    console.log("Error encountered while performing action", error);
-                    this.clearCopyMessage();
-                }
             } else if (action_info.method === 'link') {
                 this.$router.push(actionUrl);
             }
@@ -196,17 +190,20 @@ export default {
             }, 5000);
         },
 
-        async copyPath(project_path) {
-            try {
-                await navigator.clipboard.writeText(project_path);
-                this.copy_error = false;
-                this.copy_msg = 'Project path copied to the clipboard!';
-            } catch (err) {
-                this.copy_error = true;
-                this.copy_msg = 'Unable to copy project path the to clipboard!';
-                console.error('Failed to copy: ', err);
-            }
-            this.clearCopyMessage();
+        copyPath(project_path) {
+            navigator.clipboard.writeText(project_path)
+                .then(() => {
+                    this.copy_error = false;
+                    this.copy_msg = 'Project path copied to the clipboard!';
+                })
+                .catch((err) => {
+                    this.copy_error = true;
+                    this.copy_msg = 'Unable to copy project path the to clipboard!';
+                    console.error('Failed to copy: ', err);
+                })
+                .finally(() => {
+                    this.clearCopyMessage();
+                });
         }
     }
 }
