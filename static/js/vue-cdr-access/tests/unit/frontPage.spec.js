@@ -17,8 +17,8 @@ describe('frontPage.vue', () => {
     });
 
     beforeEach(() => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
+        fetchMock.mockResponse(JSON.stringify({ formatCounts: {} }));
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -51,7 +51,6 @@ describe('frontPage.vue', () => {
 
     afterEach(() => {
         store.$reset();
-        fetchMock.disableMocks();
     });
 
     it("loads the frontPage", () => {

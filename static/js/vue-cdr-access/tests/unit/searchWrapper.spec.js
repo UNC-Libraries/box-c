@@ -120,10 +120,7 @@ describe('searchWrapper.vue', () => {
         messages: translations
     });
 
-    beforeEach(() => {
-        fetchMock.enableMocks();
-        fetchMock.resetMocks();
-
+    beforeEach(async () => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -135,6 +132,10 @@ describe('searchWrapper.vue', () => {
             ]
         });
 
+        // Add default mock response before mounting to handle the initial
+        // retrieveData() call triggered by created()
+        fetchMock.mockResponse(JSON.stringify(response));
+
         wrapper = shallowMount(searchWrapper, {
             global: {
                 plugins: [router, i18n],
@@ -142,10 +143,13 @@ describe('searchWrapper.vue', () => {
         });
 
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
+        await flushPromises();
+
+        // Reset AFTER setup is done so each test starts with a clean queue
+        fetchMock.resetMocks();
     });
 
     afterEach(() => {
-        fetchMock.disableMocks();
         wrapper = null;
         router = null;
     });
@@ -197,7 +201,7 @@ describe('searchWrapper.vue', () => {
     });
 
     it("displays a 'page not found' message if JSON response is an empty", async () => {
-        fetchMock.mockResponseOnce(JSON.stringify(''), { status: 404 });
+        fetchMock.mockResponseOnce(JSON.stringify({}), { status: 404 });
         wrapper.vm.retrieveData();
 
         await flushPromises();

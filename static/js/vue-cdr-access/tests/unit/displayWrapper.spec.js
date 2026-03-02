@@ -9,14 +9,6 @@ import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import { response, briefObjectData } from '../fixtures/displayWrapperFixtures';
 
-const defaultSearchResponse = {
-    container: response.container,
-    metadata: [],
-    resultCount: 0,
-    facetFields: [],
-    filterParameters: {}
-};
-
 let wrapper, router, store;
 
 describe('displayWrapper.vue', () => {
@@ -30,9 +22,9 @@ describe('displayWrapper.vue', () => {
         fetchMock.resetMocks();
         fetchMock.mockResponseIf(/\/api\//, (req) => {
             if (req.url.endsWith('/json')) {
-                return JSON.stringify(briefObjectData);
+                return { body: JSON.stringify(briefObjectData), status: 200 };
             }
-            return JSON.stringify(defaultSearchResponse);
+            return { body: JSON.stringify(response), status: 200 };
         });
 
         router = createRouter({
@@ -47,7 +39,6 @@ describe('displayWrapper.vue', () => {
         });
     });
 
-
     function mountApp(data_overrides = {}) {
         const default_data = {
             container_name: '',
@@ -56,7 +47,6 @@ describe('displayWrapper.vue', () => {
             record_list: [],
             uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
             filter_parameters: {},
-            is_page_loading: false // Override to skip initial loading
         };
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
@@ -92,12 +82,9 @@ describe('displayWrapper.vue', () => {
     }
 
     it("retrieves data", async () => {
-        fetchMock.mockResponseOnce(JSON.stringify(briefObjectData));
-        fetchMock.mockResponseOnce(JSON.stringify(response));
-
         await router.push(`/record/${response.container.id}`);
         mountApp({
-            is_page_loading: false
+            is_page_loading: true // let created() run, mockResponseIf handles it
         });
 
         await flushPromises();
@@ -112,7 +99,7 @@ describe('displayWrapper.vue', () => {
 
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
-        mountApp();
+        mountApp({ is_page_loading: false });
 
         wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('searchJson');
@@ -120,7 +107,7 @@ describe('displayWrapper.vue', () => {
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
-        mountApp();
+        mountApp({ is_page_loading: false });
 
         wrapper.vm.updateParams();
         expect(wrapper.vm.search_method).toEqual('listJson');
@@ -129,6 +116,7 @@ describe('displayWrapper.vue', () => {
     it("uses the correct search parameters if search text is specified", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?anywhere=search query');
         mountApp({
+            is_page_loading: false,
             filter_parameters: { "anywhere" : "search query"}
         });
 
@@ -139,6 +127,7 @@ describe('displayWrapper.vue', () => {
     it("uses the correct search parameters if facet parameter is specified", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?subject=subj value');
         mountApp({
+            is_page_loading: false,
             filter_parameters: { "subject" : "subj value" }
         });
 
@@ -163,7 +152,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -176,7 +165,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -186,7 +175,7 @@ describe('displayWrapper.vue', () => {
 
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
-        mountApp();
+        mountApp({ is_page_loading: false });
 
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
@@ -217,7 +206,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -235,7 +224,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -275,7 +264,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -310,7 +299,7 @@ describe('displayWrapper.vue', () => {
         fetchMock.mockResponseOnce(JSON.stringify(response));
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
-        mountApp();
+        mountApp({ is_page_loading: true });
 
         await flushPromises();
 
@@ -346,6 +335,9 @@ describe('displayWrapper.vue', () => {
                 mocks: {
                     $route: mockRoute,
                     $router: mockRouter
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             },
             data() {
@@ -397,6 +389,9 @@ describe('displayWrapper.vue', () => {
                 mocks: {
                     $route: mockRoute,
                     $router: mockRouter
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             },
             data() {
@@ -437,6 +432,9 @@ describe('displayWrapper.vue', () => {
                 mocks: {
                     $route: mockRoute,
                     $router: mockRouter
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             },
             data() {
@@ -480,6 +478,9 @@ describe('displayWrapper.vue', () => {
                 mocks: {
                     $route: mockRoute,
                     $router: mockRouter
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             },
             data() {
@@ -517,6 +518,9 @@ describe('displayWrapper.vue', () => {
                 mocks: {
                     $route: mockRoute,
                     $router: mockRouter
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             },
             data() {
@@ -539,6 +543,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if no data is returned", async () => {
+        fetchMock.resetMocks();
         fetchMock.mockResponseOnce('', { status: 200 });
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=list-display');
@@ -563,6 +568,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("shows a 'not found' message if a 4xx status code is returned", async () => {
+        fetchMock.resetMocks();
         fetchMock.mockResponseOnce(JSON.stringify({ message: 'Nothing to see here' }), { status: 404 });
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
@@ -587,6 +593,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("displays a '503 page' if JSON responds with an error", async () => {
+        fetchMock.resetMocks();
         fetchMock.mockResponseOnce(JSON.stringify({ message: 'bad stuff happened' }), { status: 503 });
 
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b?browse_type=list-display');
@@ -620,4 +627,3 @@ describe('displayWrapper.vue', () => {
         document.getElementsByTagName('html')[0].innerHTML = '';
     });
 });
-

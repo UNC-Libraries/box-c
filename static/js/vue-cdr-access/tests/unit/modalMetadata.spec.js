@@ -19,7 +19,6 @@ describe('modalMetadata.vue', () => {
     });
 
     beforeEach(async () => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
 
         router = createRouter({
@@ -48,7 +47,6 @@ describe('modalMetadata.vue', () => {
     afterEach(() => {
         wrapper = null;
         router = null;
-        fetchMock.disableMocks();
     });
 
     it("fetches the record metadata when the modal is opened", async () => {

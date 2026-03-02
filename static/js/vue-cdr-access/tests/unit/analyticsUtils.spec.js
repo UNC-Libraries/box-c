@@ -18,8 +18,9 @@ describe('analyticsUtils', () => {
     });
 
     beforeEach(() => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
+        // Provide a fallback so any unexpected fetch still returns valid JSON (prevents JSON.parse errors)
+        fetchMock.mockResponse(JSON.stringify({}));
 
         // Initialize window._mtm before each test
         window._mtm = [];
@@ -37,7 +38,6 @@ describe('analyticsUtils', () => {
     });
 
     afterEach(() => {
-        fetchMock.disableMocks();
         delete window._mtm;
         if (store) {
             store.$reset();

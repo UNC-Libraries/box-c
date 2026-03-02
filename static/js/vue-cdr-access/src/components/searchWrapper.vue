@@ -147,6 +147,7 @@ Top level component wrapper for search pages
                 } catch (error) {
                     this.setErrorResponse(error);
                     this.is_loading = false;
+                    this.facet_list = [];
                     console.log(error);
                 }
             }

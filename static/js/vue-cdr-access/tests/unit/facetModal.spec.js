@@ -17,8 +17,11 @@ describe('modalMetadata.vue', () => {
     let router, wrapper;
 
     beforeEach(async () => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
+        fetchMock.mockResponseIf(
+            /\/services\/api\/facet\//,
+            () => ({ body: JSON.stringify(defaultData()), status: 200 })
+        );
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -55,7 +58,6 @@ describe('modalMetadata.vue', () => {
     });
 
     afterEach(() => {
-        fetchMock.disableMocks();
         wrapper = null;
         router = null;
     });
@@ -311,8 +313,12 @@ describe('modalMetadata.vue', () => {
         expect(wrapper.find('.modal-wrapper').exists()).toBe(false);
     });
 
+    // openModal() with no args uses the mockResponseIf fallback (defaultData())
+    // Local mockResponses take priority over mockResponseIf, so you can pass in custom data for specific tests without affecting others
     async function openModal(data = defaultData()) {
-        fetchMock.mockResponseOnce(JSON.stringify(data));
+        if (data !== null) {
+            fetchMock.mockResponseOnce(JSON.stringify(data));
+        }
         await wrapper.find('a').trigger('click');
         await flushPromises();
     }

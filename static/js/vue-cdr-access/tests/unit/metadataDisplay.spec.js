@@ -21,7 +21,6 @@ describe('metadataDisplay.vue', () => {
     });
 
     beforeEach(() => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
 
         router = createRouter({
@@ -44,10 +43,6 @@ describe('metadataDisplay.vue', () => {
                 uuid: record.uuid
             }
         });
-    });
-
-    afterEach(() => {
-        fetchMock.disableMocks();
     });
 
     it("loads record MODS metadata as html", async () => {

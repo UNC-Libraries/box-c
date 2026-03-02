@@ -20,7 +20,6 @@ describe('singleUseLink.vue', () => {
     });
 
     beforeEach(async () => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
 
         router = createRouter({
@@ -44,10 +43,6 @@ describe('singleUseLink.vue', () => {
                 uuid: '9f7f3746-0237-4261-96a2-4b4765d4ae03'
             }
         });
-    });
-
-    afterEach(function () {
-        fetchMock.disableMocks();
     });
 
     it("creates single use links", async () => {

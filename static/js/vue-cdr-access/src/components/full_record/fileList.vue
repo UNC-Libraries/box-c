@@ -58,7 +58,7 @@ export default {
             default: false,
             type: Boolean
         },
-        resourceType: {
+        resourceTypeProp: {
             default: 'Work',
             type: String
         },
@@ -82,6 +82,9 @@ export default {
     },
 
     computed: {
+        resourceType() {
+            return this.resourceTypeProp;
+        },
         // Datatables expects dataSrc to return an array
         // File objects don't have any child metadata, so wrap the file object in an array
         ajaxOptions() {

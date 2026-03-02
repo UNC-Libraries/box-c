@@ -16,9 +16,13 @@ describe('advancedSearch.vue', () => {
         messages: translations
     });
 
-    beforeEach(() => {
-        fetchMock.enableMocks();
+    beforeEach(async () => {
         fetchMock.resetMocks();
+        // Consume the two mounted() calls (getCollections + getFormats)
+        fetchMock.mockResponseOnce(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
+        fetchMock.mockResponseOnce(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
+        // Fallback for any additional calls
+        fetchMock.mockResponse(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -28,13 +32,14 @@ describe('advancedSearch.vue', () => {
                     name: 'advancedSearch',
                     component: advancedSearch
                 },
-                { // Add route to avoid test warnings
+                {
                     path: '/record/:uuid',
                     name: 'displayRecords',
                     component: displayWrapper
                 }
             ]
         });
+
         wrapper = shallowMount(advancedSearch, {
             global: {
                 plugins: [i18n, router, createTestingPinia({
@@ -45,14 +50,13 @@ describe('advancedSearch.vue', () => {
                 }
             }
         });
+
         store = useAccessStore();
     });
 
     afterEach(function () {
         store.$reset();
-        fetchMock.disableMocks();
     });
-
 
     it("loads the advanced search form", () => {
         wrapper.find('form');
@@ -98,7 +102,6 @@ describe('advancedSearch.vue', () => {
 
         fetchMock.mockResponseOnce(JSON.stringify(formats));
         await wrapper.vm.getFormats();
-
         await flushPromises();
 
         expect(wrapper.vm.formats).toEqual(formats);

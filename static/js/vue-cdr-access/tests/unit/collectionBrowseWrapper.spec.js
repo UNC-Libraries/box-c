@@ -62,18 +62,20 @@ describe('collectionBrowseWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        fetchMock.enableMocks();
         fetchMock.resetMocks();
+        fetchMock.mockResponse(JSON.stringify({ metadata: [] }));
 
         wrapper = shallowMount(collectionBrowseWrapper, {
             global: {
-                plugins: [i18n]
+                plugins: [i18n],
+                stubs: {
+                    'header-small': true,
+                    'list-display': true,
+                    'not-found': true,
+                    'not-available': true
+                }
             }
         });
-    });
-
-    afterEach(() => {
-        fetchMock.disableMocks();
     });
 
     it("retrieves data", async () => {
