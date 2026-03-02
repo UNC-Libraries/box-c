@@ -1261,6 +1261,12 @@ describe('patronRoles.vue', () => {
     ];
 
     function mountApp(use_bulk = false, resultObjects = []) {
+        // Mock the initial fetch for patron roles to return empty roles since the component expects a response to set initial form state, but this will be overridden in individual tests as needed
+        fetchMock.mockResponseOnce(JSON.stringify(empty_response), {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+        });
+
         let initial_permissions = {
             actionHandler: { addEvent: vi.fn() },
             alertHandler: { alertHandler: vi.fn() },

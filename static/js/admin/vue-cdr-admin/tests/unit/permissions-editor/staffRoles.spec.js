@@ -88,8 +88,9 @@ describe('staffRoles.vue', () => {
         await wrapper.findAll('option')[2].setSelected();
         await wrapper.find('.btn-add').trigger('click');
 
-        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
-        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader); // PUT response
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader); // getRoles() refresh
+
 
         await wrapper.find('#is-submitting').trigger('click');
         await flushPromises();
