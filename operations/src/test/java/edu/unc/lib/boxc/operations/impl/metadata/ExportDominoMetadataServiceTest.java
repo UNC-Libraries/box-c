@@ -131,8 +131,12 @@ public class ExportDominoMetadataServiceTest {
         verify(solrSearchService).getSearchResults(searchRequest.capture());
         var searchState = searchRequest.getValue().getSearchState();
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
-        var refIdFilter = searchState.getFilters().getFirst();
+        var filters = searchState.getFilters();
+        assertEquals(2, filters.size());
+        var refIdFilter = filters.getFirst();
         assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
+        var publicFilter = filters.get(1);
+        assertEquals(SearchFieldKey.READ_GROUP.getSolrField() + ":everyone", publicFilter.toFilterString());
         assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
     }
 
@@ -161,8 +165,12 @@ public class ExportDominoMetadataServiceTest {
         verify(solrSearchService).getSearchResults(searchRequest.capture());
         var searchState = searchRequest.getValue().getSearchState();
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
-        var refIdFilter = searchState.getFilters().getFirst();
+        var filters = searchState.getFilters();
+        assertEquals(2, filters.size());
+        var refIdFilter = filters.getFirst();
         assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
+        var publicFilter = filters.get(1);
+        assertEquals(SearchFieldKey.READ_GROUP.getSolrField() + ":everyone", publicFilter.toFilterString());
         assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
     }
 
@@ -193,8 +201,12 @@ public class ExportDominoMetadataServiceTest {
         verify(solrSearchService).getSearchResults(searchRequest.capture());
         var searchState = searchRequest.getValue().getSearchState();
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_UPDATED.name()));
-        var refIdFilter = searchState.getFilters().getFirst();
+        var filters = searchState.getFilters();
+        assertEquals(2, filters.size());
+        var refIdFilter = filters.getFirst();
         assertEquals(SearchFieldKey.ASPACE_REF_ID.getSolrField() + ":[\"\" TO *]", refIdFilter.toFilterString());
+        var publicFilter = filters.get(1);
+        assertEquals(SearchFieldKey.READ_GROUP.getSolrField() + ":everyone", publicFilter.toFilterString());
         assertIterableEquals(List.of(ResourceType.Work.name()), searchState.getResourceTypes());
     }
     

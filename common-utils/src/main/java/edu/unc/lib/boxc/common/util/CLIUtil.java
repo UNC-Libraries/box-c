@@ -1,16 +1,19 @@
 package edu.unc.lib.boxc.common.util;
 
 import edu.unc.lib.boxc.common.errors.CommandException;
+import edu.unc.lib.boxc.common.errors.CommandTimeoutException;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Utilities for executing commands
@@ -29,72 +32,36 @@ public class CLIUtil {
      * @return List containing the standard output and standard error output
      */
     public static List<String> executeCommand(List<String> command, long timeout) {
+        log.debug("Executing command with timeout {}s: {}", timeout, String.join(" ", command));
+        CommandLine cmdLine = CommandLine.parse(command.getFirst());
+        cmdLine.addArguments(command.subList(1, command.size()).toArray(new String[0]));
+
+        DefaultExecutor executor = DefaultExecutor.builder().get();
+        ExecuteWatchdog watchdog = null;
+        if (timeout > 0) {
+            watchdog = EscalatingExecuteWatchdog.create(Duration.ofSeconds(timeout));
+            executor.setWatchdog(watchdog);
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+        executor.setStreamHandler(new PumpStreamHandler(outputStream, errorStream));
+
         try {
-            ProcessBuilder builder = new ProcessBuilder(command);
-            Process process = builder.start();
+            executor.execute(cmdLine);
+            return List.of(outputStream.toString(), errorStream.toString());
+        } catch (ExecuteException e) {
+            String output = outputStream.toString();
+            int exitValue = e.getExitValue();
 
-            // Use a separate thread to read the output concurrently, to avoid deadlock in case command times out
-            var outputConsumer = new StreamConsumer(process.getInputStream());
-            var errorConsumer = new StreamConsumer(process.getErrorStream());
-            outputConsumer.start();
-            errorConsumer.start();
-
-            waitForProcess(process, command, timeout);
-            // If any errors occurred while reading the output, they will be thrown here
-            outputConsumer.join();
-            errorConsumer.join();
-
-            if (process.exitValue() != 0) {
-                throw new CommandException("Command exited with errors", command,
-                        combinedOutput(outputConsumer, errorConsumer), process.exitValue());
+            if (watchdog != null && watchdog.killedProcess()) {
+                throw new CommandTimeoutException("Command timed out after " + timeout + " seconds",
+                        command, output);
             }
-
-            return List.of(outputConsumer.getContent(), errorConsumer.getContent());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CommandException("Command interrupted", command, "", e);
+            throw new CommandException("Command failed to execute", command, output, exitValue, e);
         } catch (IOException e) {
-            throw new CommandException("Command failed to execute", command, "", e);
-        }
-    }
-
-    private static String combinedOutput(StreamConsumer outputConsumer, StreamConsumer errorConsumer) {
-        return outputConsumer.getContent() + errorConsumer.getContent();
-    }
-
-    private static void waitForProcess(Process process, List<String> command, long timeout)
-            throws InterruptedException {
-        log.debug("Waiting for process for {} seconds: {}", timeout, command);
-        if (!process.waitFor(timeout, TimeUnit.SECONDS)) {
-            log.warn("Command timed out, attempting to end process: {}", command);
-            process.destroy();
-            throw new CommandException("Command timed out after " + timeout + " seconds",
-                    command, "", -1);
-        }
-    }
-
-    private static class StreamConsumer extends Thread {
-        private final InputStream inputStream;
-        private final StringBuilder content = new StringBuilder();
-
-        public StreamConsumer(InputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-
-        @Override
-        public void run() {
-            try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-            } catch (IOException e) {
-                log.error("Error reading process stream", e);
-            }
-        }
-
-        public String getContent() {
-            return content.toString();
+            String output = outputStream + "\n" + errorStream;
+            throw new CommandException("Command failed to execute", command, output, e);
         }
     }
 }
