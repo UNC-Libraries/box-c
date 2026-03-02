@@ -52,6 +52,7 @@ Top level component wrapper for search pages
     import pagination from "@/components/pagination.vue";
     import analyticsUtils from '../mixins/analyticsUtils';
     import errorUtils from "../mixins/errorUtils";
+    import fetchUtils from "../mixins/fetchUtils";
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import cloneDeep from 'lodash.clonedeep';
@@ -70,7 +71,7 @@ Top level component wrapper for search pages
             pagination
         },
 
-        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, fetchUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -129,14 +130,7 @@ Top level component wrapper for search pages
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
                 try {
-                    const response = await fetch(`api/${search_path}${param_string}`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
+                    const data = await this.fetchWrapper(`api/${search_path}${param_string}`);
                     this.emptyJsonResponseCheck(data);
                     this.records = data.metadata;
                     this.total_records = data.resultCount;

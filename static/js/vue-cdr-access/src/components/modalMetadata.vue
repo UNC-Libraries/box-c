@@ -33,6 +33,7 @@ Displays the MODS descriptive record for an object inside of a modal
 </template>
 
 <script>
+import fetchUtils from '../mixins/fetchUtils';
 import imageUtils from '../mixins/imageUtils';
 
 export default {
@@ -55,7 +56,7 @@ export default {
 
         emits: ['display-metadata'],
 
-        mixins: [imageUtils],
+        mixins: [fetchUtils, imageUtils],
 
         data() {
             return {
@@ -75,14 +76,7 @@ export default {
         methods: {
             async loadMetadata() {
                 try {
-                    const response = await fetch(`/api/record/${this.uuid}/metadataView`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    this.metadata = await response.text();
+                    this.metadata = await this.fetchWrapper(`/api/record/${this.uuid}/metadataView`,  false);
                     this.hasLoaded = true;
                 } catch (error) {
                     console.log(error);

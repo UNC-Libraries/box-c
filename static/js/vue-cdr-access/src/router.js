@@ -67,15 +67,16 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const store = useAccessStore();
 
+  // Can't use the fetchWrapper mixin here, as the router is not a component and doesn't have access to mixins.
   fetch('/api/userInformation', { method: 'HEAD' })
-    .then(response => {
-      store.setUsername(response.headers.get('username'));
-      store.setIsLoggedIn();
-      store.setViewAdmin(response.headers.get('can-view-admin'));
-    })
-    .catch(error => {
-      console.log(error);
-    });
+      .then(response => {
+        store.setUsername(response.headers.get('username'));
+        store.setIsLoggedIn();
+        store.setViewAdmin(response.headers.get('can-view-admin'));
+      })
+      .catch(error => {
+        console.log(error);
+      });
 });
 
 export default router

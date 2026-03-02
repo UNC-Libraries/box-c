@@ -46,15 +46,16 @@
 </template>
 
 <script>
-import headerHome from "@/components/header/headerHome.vue";
+import headerHome from '@/components/header/headerHome.vue';
 import analyticsUtils from '../mixins/analyticsUtils';
+import fetchUtils from '../mixins/fetchUtils';
 
 export default {
     name: "frontPage",
 
     components: {headerHome},
 
-    mixins: [analyticsUtils],
+    mixins: [analyticsUtils, fetchUtils],
 
     data() {
         return {
@@ -73,14 +74,7 @@ export default {
     methods: {
         async getCollectionStats() {
             try {
-                const response = await fetch('/api/collectionStats');
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-                const data = await response.json();
-                this.collectionStats = data;
+                this.collectionStats = await this.fetchWrapper('/api/collectionStats');
             } catch (error) {
                 console.log(error);
             }

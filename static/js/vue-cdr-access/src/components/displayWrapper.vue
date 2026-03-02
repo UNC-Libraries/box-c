@@ -77,6 +77,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
+    import fetchUtils from "../mixins/fetchUtils";
 
     const FACETS_REMOVE_ADMIN_UNIT = ['unit'];
     const FACETS_REMOVE_COLLECTION_AND_CHILDREN = ['unit', 'collection'];
@@ -135,7 +136,7 @@ Top level component for full record pages with searching/browsing, including Adm
             notFound
         },
 
-        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, fetchUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -192,14 +193,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 this.uuid = location.pathname.split('/')[2];
 
                 try {
-                    const response = await fetch(`/api/${this.search_method}/${this.uuid}${param_string}`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
+                    const data = await this.fetchWrapper(`/api/${this.search_method}/${this.uuid}${param_string}`);
                     this.record_count = data.resultCount;
                     this.record_list = data.metadata;
                     this.facet_list = data.facetFields;
@@ -222,14 +216,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
 
                 try {
-                    const response = await fetch(`/api${link}json`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const responseText = await response.text();
+                    const responseText = await this.fetchWrapper(`/api${link}json`, false)
                     if (responseText.trim() === '') {
                         throw new Error('ResponseEmpty');
                     }

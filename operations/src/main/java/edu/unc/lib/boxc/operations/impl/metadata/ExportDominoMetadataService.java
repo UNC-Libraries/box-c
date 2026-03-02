@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static java.util.Arrays.asList;
@@ -140,6 +141,8 @@ public class ExportDominoMetadataService {
         searchState.addFacet(selectedPath);
         // Limit results to only works that have ref ids
         searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.ASPACE_REF_ID));
+        // Limit to only publicly accessible works
+        searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.READ_GROUP, List.of(PUBLIC_PRINC)));
         searchState.setResourceTypes(List.of(Work.name()));
         searchState.getRangeFields().put(SearchFieldKey.DATE_UPDATED.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");

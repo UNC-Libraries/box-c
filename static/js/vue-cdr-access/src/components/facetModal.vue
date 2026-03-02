@@ -75,9 +75,12 @@ Modal facet component, used to display all the values of a particular facet in a
 
 <script>
 import cloneDeep from "lodash.clonedeep";
+import fetchUtils from "../mixins/fetchUtils";
 
 export default {
     name: "facetModal",
+
+    mixins: [fetchUtils],
 
     props: {
         facetId: String,
@@ -140,14 +143,7 @@ export default {
     methods: {
         async retrieveResults() {
             try {
-                const response = await fetch(this.facetUrl);
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-
-                this.facet_data = await response.json();
+                this.facet_data = await this.fetchWrapper(this.facetUrl);
                 this.show_modal = true;
             } catch (error) {
                 console.log(error);

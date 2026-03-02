@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from "@/components/displayWrapper.vue";
@@ -74,8 +73,10 @@ describe('modalMetadata.vue', () => {
     it("displays facets in the modal", async () => {
         await openModal();
 
-        expect(fetchMock).toHaveBeenCalledWith('/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0');
-
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0',
+            { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+        );
         const facets = wrapper.findAll('li');
         expect(facets).toHaveLength(6);
         expect(facets[0].text()).toContain('English (10)');
@@ -91,7 +92,8 @@ describe('modalMetadata.vue', () => {
         wrapper.vm.$route.params.id = uuid;
         await openModal();
 
-        expect(fetchMock).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
+        expect(fetchMock).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`,
+            { method: 'GET', headers: { 'Content-Type': 'application/json' } });
     });
 
     it("it appends some current url params, if present", async () => {
@@ -102,7 +104,7 @@ describe('modalMetadata.vue', () => {
         await openModal();
 
         const query = '/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
-        expect(fetchMock).toHaveBeenCalledWith(query);
+        expect(fetchMock).toHaveBeenCalledWith(query, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
     });
 
     it("disables 'Previous/Next' buttons if there is only one page of results", async () => {
