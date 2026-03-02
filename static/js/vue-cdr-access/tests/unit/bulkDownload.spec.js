@@ -1,4 +1,4 @@
-import {shallowMount} from '@vue/test-utils'
+import {flushPromises, shallowMount} from '@vue/test-utils'
 import bulkDownload from '@/components/full_record/bulkDownload.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
@@ -22,7 +22,7 @@ describe('bulkDownload.vue', () => {
                 totalDownloadSize: 8193,
                 hasBulkDownloadAccess: true,
                 workId: work_id,
-                childCount: 5
+                workChildCount: 5
             }
         });
     });
@@ -74,21 +74,18 @@ describe('bulkDownload.vue', () => {
         expect(download_link.exists()).toBe(false);
     });
 
-
     it("prompts user for confirmation if there are more than 100 files", async () => {
-        // Mock window.confirm with different return values
         const confirmMock = vi.fn()
-            .mockReturnValueOnce(false) // Simulate "No" click
-            .mockReturnValueOnce(true);  // Simulate "Yes" click
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(true);
 
         vi.stubGlobal('confirm', confirmMock);
 
-        // Mock window.location
         const mockLocation = { href: '' };
         vi.stubGlobal('location', mockLocation);
 
         await wrapper.setProps({
-            childCount: 200
+            workChildCount: 200
         });
 
         const download_link = wrapper.find('.bulk-download-link');
