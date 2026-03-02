@@ -1,5 +1,4 @@
 import { shallowMount } from '@vue/test-utils'
-import '@testing-library/jest-dom'
 import staffRoles from '@/components/permissions-editor/staffRoles.vue'
 import moxios from "moxios";
 import { createTestingPinia } from '@pinia/testing';
@@ -23,6 +22,8 @@ const metadata = () => {
         }]
     };
 };
+
+const mockConfirm = vi.fn().mockReturnValue(true);
 let wrapper, store;
 
 describe('staffRoles.vue', () => {
@@ -35,10 +36,10 @@ describe('staffRoles.vue', () => {
                     initialState: {
                         permissions: {
                             actionHandler: {
-                                addEvent: jest.fn()
+                                addEvent: vi.fn()
                             },
                             alertHandler: {
-                                alertHandler: jest.fn()
+                                alertHandler: vi.fn()
                             },
                             metadata: metadata()
                         }
@@ -54,7 +55,7 @@ describe('staffRoles.vue', () => {
             response: JSON.stringify(response)
         });
         wrapper.vm.getRoles();
-        global.confirm = jest.fn().mockReturnValue(true);
+        vi.stubGlobal('confirm', mockConfirm);
     });
 
     it("retrieves current staff roles data from the server", (done) => {
@@ -76,8 +77,8 @@ describe('staffRoles.vue', () => {
 
     it("triggers a submission", async () => {
         // Mount separately to mock methods to test that they're called
-        let updateUsers = jest.spyOn(wrapper.vm, 'updateUserList');
-        let setRoles = jest.spyOn(wrapper.vm, 'setRoles');
+        let updateUsers = vi.spyOn(wrapper.vm, 'updateUserList');
+        let setRoles = vi.spyOn(wrapper.vm, 'setRoles');
 
         // Add a new user
         await wrapper.find('input').setValue('test_user_71');
@@ -384,7 +385,7 @@ describe('staffRoles.vue', () => {
                 deleted_users: response.assigned.roles
             });
             await wrapper.find('#is-submitting').trigger('click');
-            expect(global.confirm).toHaveBeenCalledTimes(0);
+            expect(mockConfirm).toHaveBeenCalledTimes(0);
             done();
         });
     });
@@ -395,7 +396,7 @@ describe('staffRoles.vue', () => {
                 deleted_users: response.assigned.roles
             });
             await wrapper.find('#is-canceling').trigger('click');
-            expect(global.confirm).toHaveBeenCalled();
+            expect(mockConfirm).toHaveBeenCalled();
             done();
         });
     });
@@ -424,6 +425,7 @@ describe('staffRoles.vue', () => {
     afterEach(() => {
         moxios.uninstall();
         store.$reset();
+        vi.unstubAllGlobals();
         wrapper = null;
     });
 });

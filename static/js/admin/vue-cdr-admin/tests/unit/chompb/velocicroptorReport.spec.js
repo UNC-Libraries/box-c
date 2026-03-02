@@ -46,7 +46,7 @@ describe('velocicroptorReport.vue', () => {
         // Push the desired route directly
         await router.push('/admin/chompb/project/file_source_test/processing_results/velocicroptor');
 
-        global.URL.createObjectURL = jest.fn();
+        global.URL.createObjectURL = vi.fn();
 
         wrapper = shallowMount(velocicroptorReport, {
             global: {
@@ -58,8 +58,6 @@ describe('velocicroptorReport.vue', () => {
                 }
             }
         });
-
-
     });
 
     it("contains a data tables", () => {
@@ -71,25 +69,27 @@ describe('velocicroptorReport.vue', () => {
     });
 
     it("marking entry as problematic adds entries to problem csv export", () => {
-        const mockBlobConstructor = jest.fn((content, options) => ({
-            content,
-            options
-        }));
+        class MockBlob {
+            constructor(content, options) {
+                this.content = content;
+                this.options = options;
+            }
+        }
+        const mockBlobConstructor = vi.fn(MockBlob);
 
-        global.Blob = mockBlobConstructor;
+        vi.stubGlobal('Blob', mockBlobConstructor);
 
         const e = {
             target: {
                 classList: {
-                    contains: jest.fn().mockReturnValue(true),
-                    add: jest.fn(),
-                    remove: jest.fn()
+                    contains: vi.fn().mockReturnValue(true),
+                    add: vi.fn(),
+                    remove: vi.fn()
                 },
                 dataset: {
                     path: '/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif',
                     predicted: '0'
                 }
-
             }
         };
         wrapper.vm.markAsProblem(e);
@@ -104,5 +104,7 @@ describe('velocicroptorReport.vue', () => {
         const csv_result = mockBlobConstructor.mock.calls[0][0][0];
         expect(csv_result).toBe('path,predicted_class,corrected_class\n' +
             '/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif,0,1');
+
+        vi.unstubAllGlobals();
     });
 });
