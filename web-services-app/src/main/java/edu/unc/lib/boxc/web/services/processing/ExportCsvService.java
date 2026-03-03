@@ -27,13 +27,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -106,8 +107,8 @@ public class ExportCsvService {
     private RepositoryObjectLoader repositoryObjectLoader;
     private String baseUrl;
     private int pageSize = DEFAULT_PAGE_SIZE;
-
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public Path exportCsv(List<PID> pids, AgentPrincipals agent) {
         AccessGroupSet accessGroups = agent.getPrincipals();
@@ -259,22 +260,12 @@ public class ExportCsvService {
 
 
         // Dates: added, updated
-
         Date added = object.getDateAdded();
-
-        if (added != null) {
-            printer.print(dateFormat.format(added));
-        } else {
-            printer.print("");
-        }
+        printer.print(getFormattedDate(added));
 
         Date updated = object.getDateUpdated();
+        printer.print(getFormattedDate(updated));
 
-        if (updated != null) {
-            printer.print(dateFormat.format(updated));
-        } else {
-            printer.print("");
-        }
 
         // DATA_FILE info: mime type, checksum, file size
         Datastream dataFileDatastream = object.getDatastreamObject(ORIGINAL_FILE.getId());
@@ -384,6 +375,18 @@ public class ExportCsvService {
         String[] result = input.split(regex);
         // for the last one escape any backslashes in the title
         return result[result.length - 2].replace("\\/", "/");
+    }
+
+    /**
+     * formats CSV date values
+     * @param date Date object
+     * @return empty string if date is null, otherwise a formatted date string "yyyy-MM-dd HH:mm:ss"
+     */
+    private String getFormattedDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        return FORMATTER.withZone(ZoneId.systemDefault()).format(date.toInstant());
     }
 
     public void setChildrenCountService(ChildrenCountService childrenCountService) {
