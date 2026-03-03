@@ -73,6 +73,34 @@ describe('notFound.vue', () => {
         expect(loginLink.attributes('href')).toBeTruthy();
     });
 
+    it('login link href points to the SSO login endpoint', () => {
+        const links = wrapper.findAll('a');
+        const loginLink = links.find(l => l.text() === 'logging in (UNC Onyen)');
+        expect(loginLink.attributes('href')).toContain('/Shibboleth.sso/Login');
+    });
+
+    it('displays the correct text for all three links when logged out', () => {
+        const links = wrapper.findAll('a');
+        expect(links[0].text()).toBe('report');
+        expect(links[1].text()).toBe('logging in (UNC Onyen)');
+        expect(links[2].text()).toBe('Contact Wilson Library for access information');
+    });
+
+    it('Contact Wilson Library link has correct text when logged in', async () => {
+        store.isLoggedIn = true;
+        await wrapper.vm.$nextTick();
+        const links = wrapper.findAll('a');
+        expect(links[1].text()).toBe('Contact Wilson Library for access information');
+    });
+
+    it('report and contact links always point to library contact page regardless of login state', async () => {
+        store.isLoggedIn = true;
+        await wrapper.vm.$nextTick();
+        const links = wrapper.findAll('a');
+        expect(links[0].attributes('href')).toBe('https://library.unc.edu/contact-us/');
+        expect(links[1].attributes('href')).toBe('https://library.unc.edu/contact-us/');
+    });
+
     it('displayHeader defaults to true', () => {
         expect(wrapper.props('displayHeader')).toBe(true);
     });
@@ -117,5 +145,24 @@ describe('notFound.vue', () => {
         expect(links.length).toEqual(2);
         expect(links[0].text()).toEqual('report');
         expect(links[1].text()).toEqual('Contact Wilson Library for access information');
+    });
+
+    it('hides the header when displayHeader is false', async () => {
+        await wrapper.setProps({ displayHeader: false });
+        expect(wrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(false);
+    });
+
+    it('renders the main error message text', () => {
+        const paragraphs = wrapper.findAll('p');
+        expect(paragraphs[0].text()).toContain('does not exist or you do not have sufficient rights');
+    });
+
+    it('renders the access request message text', () => {
+        const paragraphs = wrapper.findAll('p');
+        expect(paragraphs[2].text()).toContain('believe the record exists');
+    });
+
+    it('renders the correct number of paragraphs', () => {
+        expect(wrapper.findAll('p').length).toBe(3);
     });
 });

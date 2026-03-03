@@ -106,4 +106,119 @@ describe('advancedSearch.vue', () => {
 
         expect(wrapper.vm.formats).toEqual(formats);
     });
+
+    it("renders the headerSmall component", () => {
+        expect(wrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(true);
+    });
+
+    it("renders the form with correct action and method", () => {
+        const form = wrapper.find('form#advanced-search-form');
+        expect(form.attributes('action')).toBe('/api/advancedSearch');
+        expect(form.attributes('method')).toBe('get');
+    });
+
+    it("renders the anywhere input field", () => {
+        const input = wrapper.find('input#anywhere');
+        expect(input.exists()).toBe(true);
+        expect(input.attributes('name')).toBe('anywhere');
+    });
+
+    it("renders the title input field", () => {
+        const input = wrapper.find('input#title');
+        expect(input.exists()).toBe(true);
+        expect(input.attributes('name')).toBe('titleIndex');
+    });
+
+    it("renders the contributor input field", () => {
+        const input = wrapper.find('input#contributor');
+        expect(input.exists()).toBe(true);
+        expect(input.attributes('name')).toBe('contributorIndex');
+    });
+
+    it("renders the subject input field", () => {
+        const input = wrapper.find('input#subject');
+        expect(input.exists()).toBe(true);
+        expect(input.attributes('name')).toBe('subjectIndex');
+    });
+
+    it("renders the collection id input field", () => {
+        const input = wrapper.find('input#collection_id');
+        expect(input.exists()).toBe(true);
+        expect(input.attributes('name')).toBe('collectionId');
+    });
+
+    it("renders deposited start and end date inputs", () => {
+        expect(wrapper.find('input#addedStart').exists()).toBe(true);
+        expect(wrapper.find('input#addedEnd').exists()).toBe(true);
+    });
+
+    it("renders created start and end date inputs", () => {
+        expect(wrapper.find('input#createdYearStart').exists()).toBe(true);
+        expect(wrapper.find('input#createdYearEnd').exists()).toBe(true);
+    });
+
+    it("renders a submit button", () => {
+        expect(wrapper.find('input#advsearch_submit[type="submit"]').exists()).toBe(true);
+    });
+
+    it("renders collections in the collection select after loading", async () => {
+        const collections = [
+            { id: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc', title: 'testCollection' }
+        ];
+        fetchMock.mockResponseOnce(JSON.stringify(collections));
+        await wrapper.vm.getCollections();
+        await flushPromises();
+
+        const options = wrapper.find('select[name="collection"]').findAll('option');
+        expect(options).toHaveLength(2); // default + 1 collection
+        expect(options[1].text()).toBe('testCollection');
+        expect(options[1].attributes('value')).toBe('fc77a9be-b49d-4f4e-b656-1644c9e964fc');
+    });
+
+    it("renders formats in the format select after loading", async () => {
+        const formats = ['Audio', 'Image', 'Video'];
+        fetchMock.mockResponseOnce(JSON.stringify(formats));
+        await wrapper.vm.getFormats();
+        await flushPromises();
+
+        const options = wrapper.find('select[name="format"]').findAll('option');
+        expect(options).toHaveLength(4); // default + 3 formats
+        expect(options[1].text()).toBe('Audio');
+        expect(options[2].text()).toBe('Image');
+        expect(options[3].text()).toBe('Video');
+    });
+
+    it("handles error in getCollections gracefully", async () => {
+        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        fetchMock.mockRejectOnce(new Error('Network failure'));
+        await wrapper.vm.getCollections();
+        await flushPromises();
+
+        expect(wrapper.vm.collections).toEqual([]);
+        expect(consoleLogSpy).toHaveBeenCalled();
+        consoleLogSpy.mockRestore();
+    });
+
+    it("handles error in getFormats gracefully", async () => {
+        const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+        fetchMock.mockRejectOnce(new Error('Network failure'));
+        await wrapper.vm.getFormats();
+        await flushPromises();
+
+        expect(wrapper.vm.formats).toEqual([]);
+        expect(consoleLogSpy).toHaveBeenCalled();
+        consoleLogSpy.mockRestore();
+    });
+
+    it("collection select has a default empty option", () => {
+        const options = wrapper.find('select[name="collection"]').findAll('option');
+        expect(options[0].text()).toBe('Collection');
+        expect(options[0].attributes('value')).toBe('');
+    });
+
+    it("format select has a default empty option", () => {
+        const options = wrapper.find('select[name="format"]').findAll('option');
+        expect(options[0].text()).toBe('Format');
+        expect(options[0].attributes('value')).toBe('');
+    });
 });
