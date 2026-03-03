@@ -74,7 +74,11 @@ describe('modalMetadata.vue', () => {
     it("displays facets in the modal", async () => {
         await openModal();
 
-        expect(fetchMock).toHaveBeenCalledWith('/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0');
+        // Wretch calls fetch with a Request object, not a plain URL string.
+        // So need to check the URL on the Request object passed to fetchMock.
+        const calledUrl = fetchMock.mock.calls[0][0];
+        expect(calledUrl)
+            .toBe('/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0');
 
         const facets = wrapper.findAll('li');
         expect(facets).toHaveLength(6);
@@ -91,7 +95,9 @@ describe('modalMetadata.vue', () => {
         wrapper.vm.$route.params.id = uuid;
         await openModal();
 
-        expect(fetchMock).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
+        const calledUrl = fetchMock.mock.calls[0][0];
+        expect(calledUrl)
+            .toBe(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
     });
 
     it("it appends some current url params, if present", async () => {
@@ -102,7 +108,8 @@ describe('modalMetadata.vue', () => {
         await openModal();
 
         const query = '/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
-        expect(fetchMock).toHaveBeenCalledWith(query);
+        const calledUrl = fetchMock.mock.calls[0][0];
+        expect(calledUrl).toBe(query);
     });
 
     it("disables 'Previous/Next' buttons if there is only one page of results", async () => {
@@ -536,3 +543,4 @@ describe('modalMetadata.vue', () => {
         };
     }
 });
+

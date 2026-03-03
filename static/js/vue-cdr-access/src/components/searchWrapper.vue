@@ -55,6 +55,7 @@ Top level component wrapper for search pages
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import cloneDeep from 'lodash.clonedeep';
+    import wretch from 'wretch';
 
     export default {
         name: 'searchWrapper',
@@ -122,34 +123,29 @@ Top level component wrapper for search pages
         },
 
         methods: {
-            async retrieveData() {
+            retrieveData() {
                 let query = cloneDeep(this.$route.query);
                 let param_string = `${this.formatParamsString(query)}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
-                try {
-                    const response = await fetch(`api/${search_path}${param_string}`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
-                    this.emptyJsonResponseCheck(data);
-                    this.records = data.metadata;
-                    this.total_records = data.resultCount;
-                    this.facet_list = data.facetFields;
-                    this.filter_parameters = data.filterParameters;
-                    this.min_created_year = data.minSearchYear;
-                    this.is_loading = false;
-                } catch (error) {
-                    this.setErrorResponse(error);
-                    this.is_loading = false;
-                    this.facet_list = [];
-                    console.log(error);
-                }
+                wretch(`api/${search_path}${param_string}`)
+                    .get()
+                    .json((data) => {
+                        this.emptyJsonResponseCheck(data);
+                        this.records = data.metadata;
+                        this.total_records = data.resultCount;
+                        this.facet_list = data.facetFields;
+                        this.filter_parameters = data.filterParameters;
+                        this.min_created_year = data.minSearchYear;
+                        this.is_loading = false;
+                    })
+                    .catch((error) => {
+                        this.setErrorResponse(error);
+                        this.is_loading = false;
+                        this.facet_list = [];
+                        console.log(error);
+                    });
             }
         },
 

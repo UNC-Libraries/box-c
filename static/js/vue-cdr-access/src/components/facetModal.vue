@@ -75,6 +75,7 @@ Modal facet component, used to display all the values of a particular facet in a
 
 <script>
 import cloneDeep from "lodash.clonedeep";
+import wretch from 'wretch';
 
 export default {
     name: "facetModal",
@@ -138,20 +139,16 @@ export default {
     },
 
     methods: {
-        async retrieveResults() {
-            try {
-                const response = await fetch(this.facetUrl);
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-
-                this.facet_data = await response.json();
-                this.show_modal = true;
-            } catch (error) {
-                console.log(error);
-            }
+        retrieveResults() {
+            wretch(this.facetUrl)
+                .get()
+                .json((data) => {
+                    this.facet_data = data;
+                    this.show_modal = true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
 
         selectedFacet(facetValue) {

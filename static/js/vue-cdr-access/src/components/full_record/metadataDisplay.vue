@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import wretch from 'wretch';
+
 export default {
     name: 'metadataDisplay',
 
@@ -33,22 +35,18 @@ export default {
     },
 
     methods: {
-        async loadMetadata() {
-            try {
-                const response = await fetch(`/api/record/${this.uuid}/metadataView`);
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-
-                this.metadata = await response.text(); // Use .text() for HTML
-                this.hasLoaded = true;
-            } catch (error) {
-                console.log(error);
-                this.metadata = '';
-                this.hasLoaded = true;
-            }
+        loadMetadata() {
+            wretch(`/api/record/${this.uuid}/metadataView`)
+                .get()
+                .text((text) => {
+                    this.metadata = text;
+                    this.hasLoaded = true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.metadata = '';
+                    this.hasLoaded = true;
+                });
         }
     },
 

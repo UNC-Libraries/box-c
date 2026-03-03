@@ -48,6 +48,7 @@
 <script>
 import headerHome from "@/components/header/headerHome.vue";
 import analyticsUtils from '../mixins/analyticsUtils';
+import wretch from 'wretch';
 
 export default {
     name: "frontPage",
@@ -71,19 +72,15 @@ export default {
     },
 
     methods: {
-        async getCollectionStats() {
-            try {
-                const response = await fetch('/api/collectionStats');
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-                const data = await response.json();
-                this.collectionStats = data;
-            } catch (error) {
-                console.log(error);
-            }
+        getCollectionStats() {
+            wretch('/api/collectionStats')
+                .get()
+                .json((data) => {
+                    this.collectionStats = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         }
     },
 

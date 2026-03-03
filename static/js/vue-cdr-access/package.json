@@ -34,7 +34,8 @@
         "veaury": "^2.6.3",
         "vue": "^3.5.25",
         "vue-i18n": "^10.0.8",
-        "vue-router": "^4.6.3"
+        "vue-router": "^4.6.3",
+        "wretch": "^3.0.6"
     },
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.25.7",

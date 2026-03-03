@@ -7,6 +7,7 @@ import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import { useAccessStore } from './stores/access';
+import wretch from 'wretch';
 
 const UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
@@ -67,13 +68,14 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const store = useAccessStore();
 
-  fetch('/api/userInformation', { method: 'HEAD' })
-    .then(response => {
+  wretch('/api/userInformation')
+    .head()
+    .res((response) => {
       store.setUsername(response.headers.get('username'));
       store.setIsLoggedIn();
       store.setViewAdmin(response.headers.get('can-view-admin'));
     })
-    .catch(error => {
+    .catch((error) => {
       console.log(error);
     });
 });

@@ -53,6 +53,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
 <script>
     import isEqual from 'lodash.isequal';
+    import wretch from 'wretch';
     import { mapActions } from 'pinia';
     import { useAccessStore } from '../stores/access';
     import adminUnit from '@/components/full_record/adminUnit.vue';
@@ -191,64 +192,54 @@ Top level component for full record pages with searching/browsing, including Adm
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
 
-                try {
-                    const response = await fetch(`/api/${this.search_method}/${this.uuid}${param_string}`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
-                    this.record_count = data.resultCount;
-                    this.record_list = data.metadata;
-                    this.facet_list = data.facetFields;
-                    this.container_name = data.container.title;
-                    this.container_metadata = data.container;
-                    this.min_created_year = data.minSearchYear;
-                    this.filter_parameters = data.filterParameters;
-                    this.is_page_loading = false;
-                } catch (error) {
-                    this.setErrorResponse(error);
-                    this.is_page_loading = false;
-                    console.log(error);
-                }
+                wretch(`/api/${this.search_method}/${this.uuid}${param_string}`)
+                    .get()
+                    .json((data) => {
+                        this.record_count = data.resultCount;
+                        this.record_list = data.metadata;
+                        this.facet_list = data.facetFields;
+                        this.container_name = data.container.title;
+                        this.container_metadata = data.container;
+                        this.min_created_year = data.minSearchYear;
+                        this.filter_parameters = data.filterParameters;
+                        this.is_page_loading = false;
+                    })
+                    .catch((error) => {
+                        this.setErrorResponse(error);
+                        this.is_page_loading = false;
+                        console.log(error);
+                    });
             },
 
-            async getBriefObject() {
+            getBriefObject() {
                 let link = window.location.pathname;
                 if (!(/\/$/.test(link))) {
                     link += '/';
                 }
 
-                try {
-                    const response = await fetch(`/api${link}json`);
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
+                wretch(`/api${link}json`)
+                    .get()
+                    .text((text) => {
+                        if (text.trim() === '') {
+                            throw new Error('ResponseEmpty');
+                        }
+                        const data = JSON.parse(text);
+                        this.container_info = data;
 
-                    const responseText = await response.text();
-                    if (responseText.trim() === '') {
-                        throw new Error('ResponseEmpty');
-                    }
-                    const data = JSON.parse(responseText);
-                    this.container_info = data;
+                        this.pageView(this.container_info.pageSubtitle);
+                        this.pageEvent(data);
 
-                    this.pageView(this.container_info.pageSubtitle);
-                    this.pageEvent(data);
-
-                    if (this.needsSearchResults) {
-                        this.adjustFacetsForRetrieval();
-                    } else {
+                        if (this.needsSearchResults) {
+                            this.adjustFacetsForRetrieval();
+                        } else {
+                            this.is_page_loading = false;
+                        }
+                    })
+                    .catch((error) => {
+                        this.setErrorResponse(error);
                         this.is_page_loading = false;
-                    }
-                } catch (error) {
-                    this.setErrorResponse(error);
-                    this.is_page_loading = false;
-                    console.log(error);
-                }
+                        console.log(error);
+                    });
             },
 
             getCollectionName(briefObject) {

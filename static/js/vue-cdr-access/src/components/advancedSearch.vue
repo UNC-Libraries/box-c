@@ -158,6 +158,7 @@
 <script>
 import headerSmall from '@/components/header/headerSmall.vue';
 import analyticsUtils from '../mixins/analyticsUtils';
+import wretch from 'wretch';
 
 export default {
     name: "advancedSearch",
@@ -180,32 +181,26 @@ export default {
     },
 
     methods: {
-        async getCollections() {
-            try {
-                const response = await fetch('/api/advancedSearch/collectionsJson');
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-                this.collections = await response.json();
-            } catch (error) {
-                console.log(error);
-            }
+        getCollections() {
+            wretch('/api/advancedSearch/collectionsJson')
+                .get()
+                .json((data) => {
+                    this.collections = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
 
-        async getFormats() {
-            try {
-                const response = await fetch('/api/advancedSearch/formats');
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-                this.formats = await response.json();
-            } catch (error) {
-                console.log(error);
-            }
+        getFormats() {
+            wretch('/api/advancedSearch/formats')
+                .get()
+                .json((data) => {
+                    this.formats = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
     },
 
