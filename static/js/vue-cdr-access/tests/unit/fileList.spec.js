@@ -102,8 +102,104 @@ describe('fileList.vue', () => {
         expect(defs.some(def => def.targets === 6)).toBe(true);
     });
 
+    it("does not include edit column when editAccess is false", () => {
+        const noEditWrapper = shallowMount(fileList, {
+            global: { plugins: [i18n, router], stubs: { RouterLink: RouterLinkStub } },
+            props: { childCount: 3, editAccess: false, viewOriginalAccess: false, workId: 'e2f0d544-4f36-482c-b0ca-ba11f1251c01' }
+        });
+        expect(noEditWrapper.vm.columns.length).toBe(6);
+        expect(noEditWrapper.vm.columnDefs.some(def => def.targets === 6)).toBe(false);
+    });
+
     it("builds aria label text with title", () => {
         const label = wrapper.vm.ariaLabelText({ title: 'Sample Title' });
         expect(label).toContain('Sample Title');
+    });
+
+    it("builds correct ajax URL from workId", () => {
+        expect(wrapper.vm.ajaxOptions.url).toBe('/api/listJson/e2f0d544-4f36-482c-b0ca-ba11f1251c01?rows=10');
+    });
+
+    it("dataSrc returns metadata array for Work type", () => {
+        const data = { metadata: [briefObject], container: {} };
+        const result = wrapper.vm.ajaxOptions.dataSrc(data);
+        expect(result).toBe(data.metadata);
+    });
+
+    it("dataSrc returns container array for non-Work type", () => {
+        const noEditWrapper = shallowMount(fileList, {
+            global: { plugins: [i18n, router], stubs: { RouterLink: RouterLinkStub } },
+            props: { childCount: 1, editAccess: false, viewOriginalAccess: false, workId: 'abc', resourceTypeProp: 'File' }
+        });
+        const data = { metadata: [], container: briefObject };
+        expect(noEditWrapper.vm.ajaxOptions.dataSrc(data)).toEqual([briefObject]);
+    });
+
+    it("dataFilter parses JSON and sets recordsTotal and recordsFiltered from resultCount", () => {
+        const input = JSON.stringify({ resultCount: 42, metadata: [] });
+        const output = JSON.parse(wrapper.vm.ajaxOptions.dataFilter(input));
+        expect(output.recordsTotal).toBe(42);
+        expect(output.recordsFiltered).toBe(42);
+    });
+
+    it("ajax data callback sets sort from order when order is present", () => {
+        const data = { search: { value: 'foo' }, order: [{ column: 1, dir: 'asc' }], length: 0, rollup: true };
+        wrapper.vm.ajaxOptions.data(data);
+        expect(data.anywhere).toBe('foo');
+        expect(data.sort).toBe('title,normal');
+        expect(data.length).toBe(10);
+        expect(data.rollup).toBe(false);
+    });
+
+    it("ajax data callback sets sort from order with desc direction", () => {
+        const data = { search: { value: '' }, order: [{ column: 2, dir: 'desc' }] };
+        wrapper.vm.ajaxOptions.data(data);
+        expect(data.sort).toBe('fileFormatDescription,reverse');
+    });
+
+    it("ajax data callback does not set sort when order is empty", () => {
+        const data = { search: { value: '' }, order: [] };
+        wrapper.vm.ajaxOptions.data(data);
+        expect(data.sort).toBeUndefined();
+    });
+
+    it("tableOptions has serverSide enabled", () => {
+        expect(wrapper.vm.tableOptions.serverSide).toBe(true);
+    });
+
+    it("tableOptions rowCallback adds deleted class for marked-for-deletion rows", () => {
+        const row = document.createElement('tr');
+        wrapper.vm.tableOptions.rowCallback(row, {
+            status: ['Marked for Deletion'],
+            groupRoleMap: { authenticated: ['canViewOriginals'], everyone: ['canViewAccessCopies'] }
+        });
+        expect(row.classList.contains('deleted')).toBe(true);
+    });
+
+    it("tableOptions rowCallback does not add deleted class for normal rows", () => {
+        const row = document.createElement('tr');
+        wrapper.vm.tableOptions.rowCallback(row, {
+            status: [],
+            groupRoleMap: { authenticated: ['canViewOriginals'], everyone: ['canViewAccessCopies'] }
+        });
+        expect(row.classList.contains('deleted')).toBe(false);
+    });
+
+    it("showBadge returns restricted true when everyone has no access", () => {
+        expect(wrapper.vm.showBadge({
+            status: [],
+            groupRoleMap: { authenticated: ['none'], everyone: ['none'] }
+        })).toEqual({ markDeleted: false, restricted: true });
+    });
+
+    it("showBadge returns both false for fully accessible non-deleted object", () => {
+        expect(wrapper.vm.showBadge({
+            status: [],
+            groupRoleMap: { authenticated: ['canViewOriginals'], everyone: ['canViewAccessCopies'] }
+        })).toEqual({ markDeleted: false, restricted: false });
+    });
+
+    it("resourceType computed returns resourceTypeProp value", () => {
+        expect(wrapper.vm.resourceType).toBe('Work');
     });
 });

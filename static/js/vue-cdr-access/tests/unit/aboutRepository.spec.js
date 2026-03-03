@@ -53,4 +53,45 @@ describe('aboutRepository.vue', () => {
         expect(wrapper.html()).toContain('about-repo');
         expect(wrapper.find('h2').text()).toBe('About this Repository');
     });
+
+    it("renders the headerSmall component", () => {
+        expect(wrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(true);
+    });
+
+    it("renders the Wilson Library special collections link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'https://library.unc.edu/wilson/search-the-special-collections/');
+        expect(found).toBeDefined();
+    });
+
+    it("renders the special collections scan link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'https://library.unc.edu/special-collection/');
+        expect(found).toBeDefined();
+    });
+
+    it("renders the DocSouth link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'https://docsouth.unc.edu/docsouthdata/');
+        expect(found).toBeDefined();
+    });
+
+    it("renders the Archive-It link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'https://archive-it.org/collections/3491');
+        expect(found).toBeDefined();
+    });
+
+    it("renders the Wilson Library website link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'https://library.unc.edu/wilson/');
+        expect(found).toBeDefined();
+    });
+
+    it("renders the contact email link", () => {
+        const links = wrapper.findAll('a');
+        const found = links.find(l => l.attributes('href') === 'mailto:wilsonlibrary@unc.edu');
+        expect(found).toBeDefined();
+        expect(found.text()).toBe('wilsonlibrary@unc.edu');
+    });
 });

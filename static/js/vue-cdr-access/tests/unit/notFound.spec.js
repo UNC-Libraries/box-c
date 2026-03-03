@@ -56,6 +56,40 @@ describe('notFound.vue', () => {
         expect(links[2].text()).toEqual('Contact Wilson Library for access information');
     });
 
+    it('displays the correct href for the "report" link', () => {
+        const links = wrapper.findAll('a');
+        expect(links[0].attributes('href')).toBe('https://library.unc.edu/contact-us/');
+    });
+
+    it('displays the correct href for the "Contact Wilson Library" link', () => {
+        const links = wrapper.findAll('a');
+        expect(links[links.length - 1].attributes('href')).toBe('https://library.unc.edu/contact-us/');
+    });
+
+    it('displays a login link with a valid loginUrl when not logged in', () => {
+        const links = wrapper.findAll('a');
+        const loginLink = links.find(l => l.text() === 'logging in (UNC Onyen)');
+        expect(loginLink).toBeDefined();
+        expect(loginLink.attributes('href')).toBeTruthy();
+    });
+
+    it('displayHeader defaults to true', () => {
+        expect(wrapper.props('displayHeader')).toBe(true);
+    });
+
+    it('displays the DCR header when displayHeader is explicitly true', async () => {
+        await wrapper.setProps({ displayHeader: true });
+        expect(wrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(true);
+    });
+
+    it('does not display a login link if a user is already logged in and shows correct link count', async () => {
+        store.isLoggedIn = true;
+        await wrapper.vm.$nextTick();
+        const links = wrapper.findAll('a');
+        expect(links.length).toEqual(2);
+        expect(links.some(l => l.text() === 'logging in (UNC Onyen)')).toBe(false);
+    });
+
     it('does not display the DCR header when set to "false"', async () => {
         await wrapper.setProps({
             displayHeader: false
