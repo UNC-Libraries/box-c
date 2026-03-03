@@ -6,6 +6,21 @@ import searchWrapper from '@/components/searchWrapper.vue';
 
 let wrapper, facet_tags, router;
 
+// Mock the routeUtils mixin to provide $route and $router for the component
+// to avoid [Vue warn]: Computed property "childCount" is already defined in Props.
+vi.mock('@/mixins/routeUtils', () => ({
+    default: {
+        computed: {
+            routeParams() { return this.$route.params || {}; }
+        },
+        methods: {
+            routeWithParams(params, routeName, routeParams) {
+                return this.$router.push({ name: routeName, params: routeParams, query: params });
+            }
+        }
+    }
+}));
+
 describe('filterTags.vue', () => {
     beforeEach(() => {
         router = createRouter({
@@ -255,3 +270,4 @@ describe('filterTags.vue', () => {
         expect(wrapper.find('.search-text').exists()).toBe(false);
     });
 });
+

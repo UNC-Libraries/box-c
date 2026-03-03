@@ -33,10 +33,10 @@ Displays the MODS descriptive record for an object inside of a modal
 </template>
 
 <script>
-    import get from 'axios';
-    import imageUtils from '../mixins/imageUtils';
+import imageUtils from '../mixins/imageUtils';
+import wretch from 'wretch';
 
-    export default {
+export default {
         name: 'modalMetadata',
 
         props: {
@@ -75,14 +75,17 @@ Displays the MODS descriptive record for an object inside of a modal
 
         methods: {
             loadMetadata() {
-                get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                    this.metadata = response.data;
-                    this.hasLoaded = true;
-                }).catch((error) => {
-                    console.log(error);
-                    this.metadata = `<p>${this.$t('modal.error')}</p>`;
-                    this.hasLoaded = true;
-                });
+                wretch(`/api/record/${this.uuid}/metadataView`)
+                    .get()
+                    .text((text) => {
+                        this.metadata = text;
+                        this.hasLoaded = true;
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        this.metadata = `<p>${this.$t('modal.error')}</p>`;
+                        this.hasLoaded = true;
+                    });
             },
 
             closeModal() {

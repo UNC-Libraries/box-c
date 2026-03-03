@@ -74,8 +74,8 @@ Modal facet component, used to display all the values of a particular facet in a
 </template>
 
 <script>
-import axios from 'axios';
 import cloneDeep from "lodash.clonedeep";
+import wretch from 'wretch';
 
 export default {
     name: "facetModal",
@@ -140,12 +140,15 @@ export default {
 
     methods: {
         retrieveResults() {
-            axios.get(this.facetUrl).then((response) => {
-                this.facet_data = response.data;
-                this.show_modal = true;
-            }).catch(function (error) {
-                console.log(error);
-            });
+            wretch(this.facetUrl)
+                .get()
+                .json((data) => {
+                    this.facet_data = data;
+                    this.show_modal = true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
 
         selectedFacet(facetValue) {

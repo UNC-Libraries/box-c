@@ -4,7 +4,6 @@ import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
-import moxios from 'moxios';
 import cloneDeep from 'lodash.clonedeep';
 
 const record = {
@@ -547,7 +546,6 @@ describe('aggregateRecord.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [

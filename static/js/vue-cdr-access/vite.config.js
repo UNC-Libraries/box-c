@@ -1,15 +1,15 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
-
-const path = require('path');
+import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [vue()],
     resolve: {
         alias: {
-            "@": path.resolve(__dirname, "./src"),
-        }
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+        },
+        conditions: ['node', 'node-addons'],
     },
     build: {
         minify: false,
@@ -22,5 +22,30 @@ export default defineConfig({
             }
         }
     },
-    base: '/static/'
+    base: '/static/',
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        environmentOptions: {
+            jsdom: {
+                url: 'https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a',
+            },
+        },
+        setupFiles: ['vitest-localstorage-mock', './vitest.setup.js'],
+        coverage: {
+            enabled: true,
+            provider: 'v8',
+            include: ['src/components/**', 'src/mixins/**'],
+            reporter: [
+                ['lcov', { projectRoot: '../../../' }],
+                'json',
+                'text'
+            ],
+        },
+        server: {
+            deps: {
+                inline: [/pdf-js-dist/, /@vue-pdf-viewer\/viewer/],
+            },
+        },
+    },
 });

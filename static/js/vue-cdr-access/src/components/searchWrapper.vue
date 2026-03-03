@@ -54,8 +54,8 @@ Top level component wrapper for search pages
     import errorUtils from "../mixins/errorUtils";
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
-    import get from 'axios';
     import cloneDeep from 'lodash.clonedeep';
+    import wretch from 'wretch';
 
     export default {
         name: 'searchWrapper',
@@ -129,19 +129,23 @@ Top level component wrapper for search pages
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
-                get(`api/${search_path}${param_string}`).then((response) => {
-                    this.emptyJsonResponseCheck(response);
-                    this.records = response.data.metadata;
-                    this.total_records = response.data.resultCount;
-                    this.facet_list = response.data.facetFields;
-                    this.filter_parameters = response.data.filterParameters;
-                    this.min_created_year = response.data.minSearchYear;
-                    this.is_loading = false;
-                }).catch(error => {
-                    this.setErrorResponse(error);
-                    this.is_loading = false;
-                    console.log(error);
-                });
+                wretch(`api/${search_path}${param_string}`)
+                    .get()
+                    .json((data) => {
+                        this.emptyJsonResponseCheck(data);
+                        this.records = data.metadata;
+                        this.total_records = data.resultCount;
+                        this.facet_list = data.facetFields;
+                        this.filter_parameters = data.filterParameters;
+                        this.min_created_year = data.minSearchYear;
+                        this.is_loading = false;
+                    })
+                    .catch((error) => {
+                        this.setErrorResponse(error);
+                        this.is_loading = false;
+                        this.facet_list = [];
+                        console.log(error);
+                    });
             }
         },
 

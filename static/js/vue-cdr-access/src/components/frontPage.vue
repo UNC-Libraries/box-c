@@ -46,9 +46,9 @@
 </template>
 
 <script>
-import get from "axios";
 import headerHome from "@/components/header/headerHome.vue";
 import analyticsUtils from '../mixins/analyticsUtils';
+import wretch from 'wretch';
 
 export default {
     name: "frontPage",
@@ -73,11 +73,14 @@ export default {
 
     methods: {
         getCollectionStats() {
-            get('/api/collectionStats').then((response) => {
-                this.collectionStats = response.data;
-            }).catch(function (error) {
-                console.log(error);
-            });
+            wretch('/api/collectionStats')
+                .get()
+                .json((data) => {
+                    this.collectionStats = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         }
     },
 

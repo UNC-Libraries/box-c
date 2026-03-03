@@ -94,6 +94,16 @@ describe('worksOnly.vue', () => {
         expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
+    it("computes button classes based on works_only state", async () => {
+        await wrapper.setData({ works_only: false });
+        expect(wrapper.vm.onButtonClasses).toContain('has-text-grey');
+        expect(wrapper.vm.offButtonClasses).toContain('is-selected');
+
+        await wrapper.setData({ works_only: true });
+        expect(wrapper.vm.onButtonClasses).toContain('is-selected');
+        expect(wrapper.vm.offButtonClasses).toContain('has-text-grey');
+    });
+
     afterEach(() => {
         // Make sure box is unchecked
         wrapper.setData({ works_only: false });

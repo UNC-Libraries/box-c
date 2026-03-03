@@ -156,9 +156,9 @@
 </template>
 
 <script>
-import get from 'axios';
 import headerSmall from '@/components/header/headerSmall.vue';
 import analyticsUtils from '../mixins/analyticsUtils';
+import wretch from 'wretch';
 
 export default {
     name: "advancedSearch",
@@ -182,19 +182,25 @@ export default {
 
     methods: {
         getCollections() {
-            get('/api/advancedSearch/collectionsJson').then((response) => {
-                this.collections = response.data;
-            }).catch(function (error) {
-                console.log(error);
-            });
+            wretch('/api/advancedSearch/collectionsJson')
+                .get()
+                .json((data) => {
+                    this.collections = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
 
         getFormats() {
-            get('/api/advancedSearch/formats').then((response) => {
-                this.formats = response.data;
-            }).catch(function (error) {
-                console.log(error);
-            });
+            wretch('/api/advancedSearch/formats')
+                .get()
+                .json((data) => {
+                    this.formats = data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
     },
 

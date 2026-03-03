@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import get from 'axios';
+import wretch from 'wretch';
 
 export default {
     name: 'metadataDisplay',
@@ -36,14 +36,17 @@ export default {
 
     methods: {
         loadMetadata() {
-            get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                this.metadata = response.data;
-                this.hasLoaded = true;
-            }).catch((error) => {
-                console.log(error);
-                this.metadata = '';
-                this.hasLoaded = true;
-            });
+            wretch(`/api/record/${this.uuid}/metadataView`)
+                .get()
+                .text((text) => {
+                    this.metadata = text;
+                    this.hasLoaded = true;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.metadata = '';
+                    this.hasLoaded = true;
+                });
         }
     },
 

@@ -18,9 +18,8 @@
 </template>
 
 <script>
-import axios from 'axios';
-import {formatDistanceToNow} from "date-fns";
-import {toDate} from "date-fns";
+import {formatDistanceToNow, toDate} from "date-fns";
+import wretch from 'wretch';
 
 export default {
     name: 'singleUseLink',
@@ -46,31 +45,35 @@ export default {
 
     methods: {
         createLink() {
-            axios({
-                method: 'post',
-                url: `/services/api/single_use_link/create/${this.uuid}`
-            }).then((response) => {
-                let basePath = window.location.hostname;
-                let accessCode = response.data.key;
-                this.single_use_links.push({"link": this.generateUrl(basePath, accessCode),
-                                            "accessCode": accessCode.substring(0, 8),
-                                            "expires": this.formatTimestamp(response.data.expires)
-                                            });
-            }).catch((error) => {
-                console.log(error);
-                this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid});
-                this.fadeOutMsg();
-            });
+            wretch(`/services/api/single_use_link/create/${this.uuid}`)
+                .post()
+                .json((data) => {
+                    let basePath = window.location.hostname;
+                    let accessCode = data.key;
+                    this.single_use_links.push({
+                        "link": this.generateUrl(basePath, accessCode),
+                        "accessCode": accessCode.substring(0, 8),
+                        "expires": this.formatTimestamp(data.expires)
+                    });
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid });
+                    this.fadeOutMsg();
+                });
         },
 
-        async copyUrl(text) {
-            try {
-                await navigator.clipboard.writeText(text);
-                this.message = this.$t('full_record.copied_link', { text: text});
-            } catch(err) {
-                this.message = this.$t('full_record.copied_link_failed', { text: text});
-            }
-            this.fadeOutMsg();
+        copyUrl(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    this.message = this.$t('full_record.copied_link', { text: text });
+                })
+                .catch(() => {
+                    this.message = this.$t('full_record.copied_link_failed', { text: text });
+                })
+                .finally(() => {
+                    this.fadeOutMsg();
+                });
         },
 
         fadeOutMsg() {
