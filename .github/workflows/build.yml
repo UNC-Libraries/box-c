@@ -40,9 +40,10 @@ jobs:
       run: sudo chmod 2777 /tmp/boxc_test_storage
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: 'recursive'
+        fetch-depth: 0
 
     - name: Get Container ID of fedora service
       id: get_container_id
