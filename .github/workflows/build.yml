@@ -102,6 +102,12 @@ jobs:
 
     - name: Generate coverage
       run: mvn -pl !clamav-java,!jp24u,!mp44u verify
+
+    - name: Debug lcov paths
+      run: head -20 ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
+    - name: Debug jacoco paths
+      run: grep "<sourcefile" ${{github.workspace}}/web-access-app/target/site/jacoco/jacoco.xml | head -5
+
     - name: Qlty Code Coverage auth-api
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -276,3 +282,4 @@ jobs:
       if: always()
       run: |
         docker logs ${{ env.CONTAINER_ID }}
+
