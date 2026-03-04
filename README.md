@@ -2,6 +2,8 @@
 [![Code Coverage](https://qlty.sh/gh/UNC-Libraries/projects/box-c/coverage.svg)](https://qlty.sh/gh/UNC-Libraries/projects/box-c)
 [![Build](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml/badge.svg)](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml)
 
+Testing qlty
+
 Requirements
 ============
 Box-c requires Java 11 in order to build and test. On a Mac, this can be installed using brew as follows:
