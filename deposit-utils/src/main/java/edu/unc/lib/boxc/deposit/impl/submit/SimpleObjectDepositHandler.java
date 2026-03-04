@@ -35,6 +35,12 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
         Map<String, String> options = new HashMap<>();
         options.put(DepositField.excludeDepositRecord.name(), "true");
 
+        int test = 0;
+        log.debug("Testing qlty of log output {}", test);
+        if (test != 0) {
+            log.debug("Can't reach this {}", test);
+        }
+
         registerDeposit(depositPID, destination, deposit, options);
 
         return depositPID;
