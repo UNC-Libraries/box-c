@@ -116,7 +116,7 @@ jobs:
           ${{github.workspace}}/auth-api/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/auth-api/target/site/jacoco-it/jacoco.xml
         add-prefix: auth-api/src/main/java/
-        tag: auth-api
+        tag: total
     - name: Qlty Code Coverage auth-fcrepo
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -125,7 +125,7 @@ jobs:
           ${{github.workspace}}/auth-fcrepo/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/auth-fcrepo/target/site/jacoco-it/jacoco.xml
         add-prefix: auth-fcrepo/src/main/java/
-        tag: auth-fcrepo
+        tag: total
     - name: Qlty Code Coverage common-utils
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -134,7 +134,7 @@ jobs:
           ${{github.workspace}}/common-utils/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/common-utils/target/site/jacoco-it/jacoco.xml
         add-prefix: common-utils/src/main/java/
-        tag: common-utils
+        tag: total
     - name: Qlty Code Coverage deposit-app
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -143,7 +143,7 @@ jobs:
           ${{github.workspace}}/deposit-app/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/deposit-app/target/site/jacoco-it/jacoco.xml
         add-prefix: deposit-app/src/main/java/
-        tag: deposit-app
+        tag: total
     - name: Qlty Code Coverage deposit-utils
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -152,7 +152,7 @@ jobs:
           ${{github.workspace}}/deposit-utils/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/deposit-utils/target/site/jacoco-it/jacoco.xml
         add-prefix: deposit-utils/src/main/java/
-        tag: deposit-utils
+        tag: total
     - name: Qlty Code Coverage fcrepo-utils
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -161,7 +161,7 @@ jobs:
           ${{github.workspace}}/fcrepo-utils/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/fcrepo-utils/target/site/jacoco-it/jacoco.xml
         add-prefix: fcrepo-utils/src/main/java/
-        tag: fcrepo-utils
+        tag: total
     - name: Qlty Code Coverage indexing-solr
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -170,7 +170,7 @@ jobs:
           ${{github.workspace}}/indexing-solr/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/indexing-solr/target/site/jacoco-it/jacoco.xml
         add-prefix: indexing-solr/src/main/java/
-        tag: indexing-solr
+        tag: total
     - name: Qlty Code Coverage model-api
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -179,7 +179,7 @@ jobs:
           ${{github.workspace}}/model-api/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/model-api/target/site/jacoco-it/jacoco.xml
         add-prefix: model-api/src/main/java/
-        tag: model-api
+        tag: total
     - name: Qlty Code Coverage model-fcrepo
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -188,7 +188,7 @@ jobs:
           ${{github.workspace}}/model-fcrepo/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/model-fcrepo/target/site/jacoco-it/jacoco.xml
         add-prefix: model-fcrepo/src/main/java/
-        tag: model-fcrepo
+        tag: total
     - name: Qlty Code Coverage operations
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -197,7 +197,7 @@ jobs:
           ${{github.workspace}}/operations/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/operations/target/site/jacoco-it/jacoco.xml
         add-prefix: operations/src/main/java/
-        tag: operations
+        tag: total
     - name: Qlty Code Coverage operations-jms
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -206,7 +206,7 @@ jobs:
           ${{github.workspace}}/operations-jms/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/operations-jms/target/site/jacoco-it/jacoco.xml
         add-prefix: operations-jms/src/main/java/
-        tag: operations-jms
+        tag: total
     - name: Qlty Code Coverage persistence
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -215,7 +215,7 @@ jobs:
           ${{github.workspace}}/persistence/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/persistence/target/site/jacoco-it/jacoco.xml
         add-prefix: persistence/src/main/java/
-        tag: persistence
+        tag: total
     - name: Qlty Code Coverage search-solr
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -224,7 +224,7 @@ jobs:
           ${{github.workspace}}/search-solr/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/search-solr/target/site/jacoco-it/jacoco.xml
         add-prefix: search-solr/src/main/java/
-        tag: search-solr
+        tag: total
     - name: Qlty Code Coverage services-camel-app
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -233,7 +233,7 @@ jobs:
           ${{github.workspace}}/services-camel-app/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/services-camel-app/target/site/jacoco-it/jacoco.xml
         add-prefix: services-camel-app/src/main/java/
-        tag: services-camel-app
+        tag: total
     - name: Qlty Code Coverage static
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -241,7 +241,7 @@ jobs:
         files: |
           ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
           ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info
-        tag: static
+        tag: total
     - name: Qlty Code Coverage web-access-app
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -250,7 +250,7 @@ jobs:
           ${{github.workspace}}/web-access-app/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/web-access-app/target/site/jacoco-it/jacoco.xml
         add-prefix: web-access-app/src/main/java/
-        tag: web-access-app
+        tag: total
     - name: Qlty Code Coverage web-admin-app
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -259,7 +259,7 @@ jobs:
           ${{github.workspace}}/web-admin-app/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/web-admin-app/target/site/jacoco-it/jacoco.xml
         add-prefix: web-admin-app/src/main/java/
-        tag: web-admin-app
+        tag: total
     - name: Qlty Code Coverage web-common
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -268,7 +268,7 @@ jobs:
           ${{github.workspace}}/web-common/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/web-common/target/site/jacoco-it/jacoco.xml
         add-prefix: web-common/src/main/java/
-        tag: web-common
+        tag: total
     - name: Qlty Code Coverage web-services-app
       uses: qltysh/qlty-action/coverage@v1
       with:
@@ -277,7 +277,7 @@ jobs:
           ${{github.workspace}}/web-services-app/target/site/jacoco/jacoco.xml
           ${{github.workspace}}/web-services-app/target/site/jacoco-it/jacoco.xml
         add-prefix: web-services-app/src/main/java/
-        tag: web-services-app
+        tag: total
     - name: View fedora service logs
       if: always()
       run: |
