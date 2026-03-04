@@ -115,12 +115,14 @@
 
 <script>
     import staffRolesSelect from "@/components/permissions-editor/staffRolesSelect.vue";
-    import staffRoleList from "../../mixins/staffRoleList";
     import displayModal from "../../mixins/displayModal";
+    import fetchUtils from "../../mixins/fetchUtils";
+    import staffRoleList from "../../mixins/staffRoleList";
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
     import { mapState, mapStores } from 'pinia';
     import {usePermissionsStore} from "@/stores/permissions";
+
 
     export default {
         name: 'staffRoles',
@@ -129,7 +131,7 @@
             staffRolesSelect
         },
 
-        mixins: [staffRoleList, displayModal],
+        mixins: [displayModal, fetchUtils, staffRoleList],
 
         data() {
             return {
@@ -168,28 +170,21 @@
         },
 
         methods: {
-            getRoles() {
-                fetch(`/services/api/acl/staff/${this.uuid}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then((data) => {
-                        if (!isEmpty(data)) {
-                            this.current_staff_roles = data;
-                            /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
-                               when a user is added/updated */
-                            let update_roles = cloneDeep(data);
-                            this.updated_staff_roles = update_roles.assigned.roles;
-                        }
-                    })
-                    .catch((error) => {
-                        let response_msg = `Unable load current staff roles for: ${this.title}`;
-                        this.alertHandler.alertHandler('error', response_msg);
-                        console.log(error);
-                    });
+            async getRoles() {
+                try {
+                    const data = await this.fetchWrapper(`/services/api/acl/staff/${this.uuid}`);
+                    if (!isEmpty(data)) {
+                        this.current_staff_roles = data;
+                        /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
+                           when a user is added/updated */
+                        const update_roles = cloneDeep(data);
+                        this.updated_staff_roles = update_roles.assigned.roles;
+                    }
+                } catch (error) {
+                    const response_msg = `Unable load current staff roles for: ${this.title}`;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                }
             },
 
             setSubmitting() {
@@ -198,37 +193,32 @@
                 this.setRoles();
             },
 
-            setRoles() {
+            async setRoles() {
                 this.updated_staff_roles = this.removeDeletedAssignedRoles();
                 this.is_error_message = false;
                 this.response_message = 'Saving permissions \u2026';
 
-                fetch(`/services/api/edit/acl/staff/${this.uuid}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json; charset=utf-8'
-                    },
-                    body: JSON.stringify({ roles: this.updated_staff_roles })
-                }).then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                }).then(() => {
+                try {
+                    await this.fetchWrapper(`/services/api/edit/acl/staff/${this.uuid}`, true, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                        body: JSON.stringify({ roles: this.updated_staff_roles })
+                     });
+
                     this.getRoles(); // Reset role list so user can close modal without a prompt.
-                    let response_msg = `Staff roles successfully updated for: ${this.title}`;
+                    const response_msg = `Staff roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.unsaved_changes = false;
                     this.is_submitting = false;
                     this.deleted_users = [];
                     this.is_error_message = true; // Reset, as "save" is the only non-error status
                     this.response_message = '';
-                }).catch((error) => {
-                    let response_msg = `Unable to update staff roles for: ${this.title}`;
+                } catch (error) {
+                    const response_msg = `Unable to update staff roles for: ${this.title}`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
             getUserIndex(user, use_update_list = true) {

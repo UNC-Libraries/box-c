@@ -40,6 +40,7 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bm';
+import fetchUtils from '@/mixins/fetchUtils';
 
 DataTable.use(DataTablesCore);
 
@@ -47,6 +48,8 @@ export default {
     name: 'preIngest',
 
     components: {DataTable},
+
+    mixins: [fetchUtils],
 
     data() {
         return {
@@ -140,13 +143,7 @@ export default {
             let actionUrl = `/admin/chompb/project/${projectName}/${action_info.action}/${action_info.jobName}`;
             if (action_info.method === 'post' || action_info.method === 'get') {
                 try {
-                    const response = await fetch(actionUrl, {
-                        method: action_info.method.toUpperCase()
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
+                    await this.fetchWrapper(actionUrl, true, { method: action_info.method.toUpperCase() });
 
                     console.log("Successfully triggered action", actionUrl);
                     this.copy_error = false;

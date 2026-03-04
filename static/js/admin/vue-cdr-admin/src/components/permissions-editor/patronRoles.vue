@@ -96,6 +96,7 @@
     import patronDisplayRow from '@/components/permissions-editor/patronDisplayRow.vue';
     import embargo from '@/components/permissions-editor/embargo.vue';
     import displayModal from '../../mixins/displayModal';
+    import fetchUtils from '../../mixins/fetchUtils';
     import patronHelpers from '../../mixins/patronHelpers';
     import cloneDeep from 'lodash.clonedeep';
     import {mapActions, mapState} from 'pinia';
@@ -132,7 +133,7 @@
 
         components: {patronDisplayRow, embargo},
 
-        mixins: [displayModal, patronHelpers],
+        mixins: [displayModal, fetchUtils, patronHelpers],
 
         data() {
             return {
@@ -292,30 +293,14 @@
                 try {
                     // No need to retrieve existing roles when performing bulk update
                     if (this.isBulkMode) {
-                        const response = await fetch(`/services/api/acl/patron/allowedPrincipals`);
-
-                        if (!response.ok) {
-                            const error = new Error('Network response was not ok');
-                            error.response = response;
-                            throw error;
-                        }
-
-                        this.allowed_principals = await response.json();
+                        this.allowed_principals = await this.fetchWrapper('/services/api/acl/patron/allowedPrincipals')
                         this._initializeSelectedAssignments([]);
                         this.bulk_has_saved = false;
                         this.user_type = ACCESS_TYPE_IGNORE;
                         return;
                     }
 
-                    const response = await fetch(`/services/api/acl/patron/${this.uuid}`);
-
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
-                    const data = await response.json();
+                    const data = await this.fetchWrapper(`/services/api/acl/patron/${this.uuid}`);
                     this.setEmbargoInfo({
                         embargo: data.assigned.embargo,
                         skipEmbargo: true
@@ -443,20 +428,11 @@
                 let submissionDetails = this.submissionAccessDetails();
 
                 try {
-                    const response = await fetch(`/services/api/edit/acl/patron/${this.uuid}`, {
+                    await this.fetchWrapper(`/services/api/edit/acl/patron/${this.uuid}`, true, {
                         method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json; charset=utf-8'
-                        },
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
                         body: JSON.stringify(submissionDetails)
                     });
-
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
-
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
@@ -491,19 +467,11 @@
                 };
 
                 try {
-                    const response = await fetch(`/services/api/edit/acl/patron`, {
+                    await this.fetchWrapper('/services/api/edit/acl/patron', true, {
                         method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json; charset=utf-8'
-                        },
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
                         body: JSON.stringify(bulkDetails)
                     });
-
-                    if (!response.ok) {
-                        const error = new Error('Network response was not ok');
-                        error.response = response;
-                        throw error;
-                    }
 
                     let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
                     this.alertHandler.alertHandler('success', response_msg);
