@@ -391,4 +391,128 @@ describe('staffRoles.vue', () => {
         wrapper.vm.unsavedUpdates();
         expect(wrapper.vm.unsaved_changes).toBe(true);
     });
+
+    it("truncates long permission text", () => {
+        const long = 'urn:collab:group:app.example.org:some_very_long_group_name';
+        const result = wrapper.vm.truncatePermissionText(long);
+        expect(result).toContain('\u2026');
+        expect(result).toContain('some_very_long_group_name');
+    });
+
+    it("does not truncate short permission text", () => {
+        const short = 'test_user';
+        expect(wrapper.vm.truncatePermissionText(short)).toEqual(short);
+    });
+
+    it("copyPermission writes to clipboard and alerts on success", async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        vi.stubGlobal('navigator', { clipboard: { writeText } });
+
+        await wrapper.vm.copyPermission('test_user');
+        expect(writeText).toHaveBeenCalledWith('test_user');
+        expect(mockAlertHandler).toHaveBeenCalledWith('success', expect.stringContaining('test_user'));
+
+        vi.unstubAllGlobals();
+    });
+
+    it("copyPermission alerts error when clipboard fails", async () => {
+        const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+        vi.stubGlobal('navigator', { clipboard: { writeText } });
+
+        await wrapper.vm.copyPermission('test_user');
+        expect(mockAlertHandler).toHaveBeenCalledWith('error', expect.stringContaining('Unable to copy'));
+
+        vi.unstubAllGlobals();
+    });
+
+    it("assignedToName returns '--' when objectPath is undefined", async () => {
+        store.setMetadata({ ...metadata(), objectPath: undefined });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.assignedToName({ assignedTo: 'anything' })).toEqual('--');
+    });
+
+    it("assignedToName returns '--' when pid is not in objectPath", () => {
+        expect(wrapper.vm.assignedToName({ assignedTo: 'unknown-pid' })).toEqual('--');
+    });
+
+    it("assignedToName returns name when pid matches", async () => {
+        store.setMetadata({
+            ...metadata(),
+            objectPath: [{ pid: 'abc-123', name: 'My Container', container: true }]
+        });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.assignedToName({ assignedTo: 'abc-123' })).toEqual('My Container');
+    });
+
+    it("revertRemoveUser removes user from deleted list and returns them", async () => {
+        await wrapper.setData({ deleted_users: [response.assigned.roles[0]] });
+        const reverted = wrapper.vm.revertRemoveUser(response.assigned.roles[0]);
+        expect(reverted).toEqual(response.assigned.roles[0]);
+        expect(wrapper.vm.deleted_users).toHaveLength(0);
+    });
+
+    it("revertRemoveUser returns undefined if user not in deleted list", () => {
+        const result = wrapper.vm.revertRemoveUser({ principal: 'nobody', role: 'canAccess' });
+        expect(result).toBeUndefined();
+    });
+
+    it("fullyRemoveUser removes user from updated list", async () => {
+        await wrapper.setData({ updated_staff_roles: [user_role] });
+        wrapper.vm.fullyRemoveUser(0);
+        expect(wrapper.vm.updated_staff_roles).toHaveLength(0);
+    });
+
+    it("getRoles alerts on fetch error", async () => {
+        fetchMock.mockRejectOnce(new Error('network failure'));
+        await wrapper.vm.getRoles();
+        await flushPromises();
+        expect(mockAlertHandler).toHaveBeenCalledWith('error', expect.stringContaining('Unable load current staff roles'));
+    });
+
+    it("setRoles alerts on PUT error", async () => {
+        fetchMock.mockRejectOnce(new Error('server error'));
+        await wrapper.vm.setRoles();
+        await flushPromises();
+        expect(mockAlertHandler).toHaveBeenCalledWith('error', expect.stringContaining('Unable to update staff roles'));
+    });
+
+    it("setRoles alerts on success and resets state", async () => {
+        fetchMock.mockResponseOnce(JSON.stringify({ success: true }), jsonHeader);
+        fetchMock.mockResponseOnce(JSON.stringify(response), jsonHeader);
+
+        await wrapper.setData({ deleted_users: response.assigned.roles });
+        await wrapper.vm.setRoles();
+        await flushPromises();
+
+        expect(mockAlertHandler).toHaveBeenCalledWith('success', expect.stringContaining('successfully updated'));
+        expect(wrapper.vm.unsaved_changes).toBe(false);
+        expect(wrapper.vm.deleted_users).toHaveLength(0);
+    });
+
+    it("shows tooltip on hover for inherited row", async () => {
+        await wrapper.find('.inherited-permissions td span').trigger('mouseover');
+        expect(wrapper.vm.hover_row_inherited).toBe(0);
+
+        await wrapper.find('.inherited-permissions td span').trigger('mouseleave');
+        expect(wrapper.vm.hover_row_inherited).toBe('');
+    });
+
+    it("shows tooltip on hover for assigned row", async () => {
+        await wrapper.find('.assigned-permissions td span').trigger('mouseover');
+        expect(wrapper.vm.hover_row).toBe(0);
+
+        await wrapper.find('.assigned-permissions td span').trigger('mouseleave');
+        expect(wrapper.vm.hover_row).toBe('');
+    });
+
+    it("updateErrorMsg clears the response message", async () => {
+        await wrapper.setData({ response_message: 'some message' });
+        wrapper.vm.updateErrorMsg('');
+        expect(wrapper.vm.response_message).toEqual('');
+    });
+
+    it("shows a message if add is clicked with no username", async () => {
+        await wrapper.find('.btn-add').trigger('click');
+        expect(wrapper.vm.response_message).toEqual('Please add a username before adding');
+    });
 });
