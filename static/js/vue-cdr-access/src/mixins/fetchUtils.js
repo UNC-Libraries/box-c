@@ -1,3 +1,6 @@
+/*
+Utility to return request data from the Box-c backend  as JSON or text, and to throw errors for non-OK responses
+*/
 export default {
     methods: {
         async fetchWrapper(url, json_response = true, options = { method: 'GET',  headers: { 'Content-Type': 'application/json' } }) {
@@ -8,7 +11,7 @@ export default {
                 throw error;
             }
 
-            return json_response ? await response.json() : response.text();
+            return json_response ? await response.json() : await response.text();
         },
     }
 }

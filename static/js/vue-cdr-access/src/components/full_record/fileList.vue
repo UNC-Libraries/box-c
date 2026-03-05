@@ -58,9 +58,6 @@ export default {
             default: false,
             type: Boolean
         },
-        // This prop is always the default as it is never set in any usage of this component.
-        // Prop name is what it is to avoid a conflict with the resourceType computed property in fullRecordUtils mixin, which is used to determine if the record is a Work or File for permission purposes. This prop is used to determine how to access the file list in the ajax response,
-        // which differs for Works and Files.
         resourceTypeProp: {
             default: 'Work',
             type: String
