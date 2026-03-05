@@ -96,6 +96,37 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(false);
     });
 
+    it("re-fetches brief object and search results when navigating to a different record path", async () => {
+        await router.push(`/record/${response.container.id}`);
+        mountApp({ is_page_loading: true });
+
+        await flushPromises();
+
+        const firstRecordCount = wrapper.vm.record_count;
+        expect(firstRecordCount).toEqual(response.resultCount);
+
+        const secondUuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+        const secondResponse = {
+            ...response,
+            container: { ...response.container, id: secondUuid, title: 'Second Admin Unit' },
+            resultCount: 2,
+            metadata: [response.metadata[0], response.metadata[1]]
+        };
+        const secondBriefObject = {
+            ...briefObjectData,
+            resourceType: 'Collection'
+        };
+
+        fetchMock.mockResponseOnce(JSON.stringify(secondBriefObject));
+        fetchMock.mockResponseOnce(JSON.stringify(secondResponse));
+
+        await router.push(`/record/${secondUuid}`);
+        await flushPromises();
+
+        expect(wrapper.vm.record_count).toEqual(secondResponse.resultCount);
+        expect(wrapper.vm.container_name).toEqual(secondResponse.container.title);
+    });
+
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp({ is_page_loading: false });

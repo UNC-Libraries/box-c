@@ -110,4 +110,84 @@ describe('notFound.vue', () => {
         expect(linkTexts).toContain('logging in (UNC Onyen)');
         expect(linkTexts).toContain('Contact Wilson Library for access information');
     });
+
+    it('hides the header when displayHeader prop is passed as false at mount time', () => {
+        const localWrapper = shallowMount(notFound, {
+            props: { displayHeader: false },
+            global: {
+                plugins: [router, i18n, createTestingPinia({ stubActions: false })]
+            }
+        });
+        expect(localWrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(false);
+    });
+
+    it('shows the header when displayHeader prop is passed as true at mount time', () => {
+        const localWrapper = shallowMount(notFound, {
+            props: { displayHeader: true },
+            global: {
+                plugins: [router, i18n, createTestingPinia({ stubActions: false })]
+            }
+        });
+        expect(localWrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(true);
+    });
+
+    it('displays "return to the previous page" text', () => {
+        expect(wrapper.text()).toContain('return to the previous page in your browser');
+    });
+
+    it('displays "try logging in" suggestion text when user is not logged in', () => {
+        expect(wrapper.text()).toContain('try');
+        expect(wrapper.text()).toContain('logging in (UNC Onyen)');
+    });
+
+    it('does not display "try logging in" suggestion text when user is logged in', async () => {
+        const localWrapper = shallowMount(notFound, {
+            global: {
+                plugins: [router, i18n, createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'testUser'
+                        }
+                    },
+                    stubActions: false
+                })]
+            }
+        });
+        expect(localWrapper.text()).not.toContain('logging in (UNC Onyen)');
+    });
+
+    it('report and contact links have the same href', () => {
+        const links = wrapper.findAll('a');
+        const reportLink = links.find(l => l.text() === 'report');
+        const contactLink = links.find(l => l.text() === 'Contact Wilson Library for access information');
+        expect(reportLink.attributes('href')).toEqual(contactLink.attributes('href'));
+    });
+
+    it('renders three paragraphs of text', () => {
+        const paragraphs = wrapper.findAll('p');
+        expect(paragraphs.length).toBe(3);
+    });
+
+    it('only shows one link when logged in and displayHeader is false', async () => {
+        const localWrapper = shallowMount(notFound, {
+            props: { displayHeader: false },
+            global: {
+                plugins: [router, i18n, createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'testUser'
+                        }
+                    },
+                    stubActions: false
+                })]
+            }
+        });
+        expect(localWrapper.findComponent({ name: 'headerSmall' }).exists()).toBe(false);
+        const links = localWrapper.findAll('a');
+        expect(links.length).toEqual(2);
+        expect(links[0].text()).toEqual('report');
+        expect(links[1].text()).toEqual('Contact Wilson Library for access information');
+    });
 });
