@@ -1,6 +1,5 @@
-import { shallowMount } from '@vue/test-utils'
+import {flushPromises, shallowMount} from '@vue/test-utils'
 import collectionBrowseWrapper from '@/components/collectionBrowseWrapper.vue';
-import moxios from "moxios";
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 
@@ -63,42 +62,39 @@ describe('collectionBrowseWrapper.vue', () => {
     });
 
     beforeEach(() => {
-        moxios.install();
+        fetchMock.resetMocks();
+        fetchMock.mockResponse(JSON.stringify({ metadata: [] }));
 
         wrapper = shallowMount(collectionBrowseWrapper, {
             global: {
-                plugins: [i18n]
+                plugins: [i18n],
+                stubs: {
+                    'header-small': true,
+                    'list-display': true,
+                    'not-found': true,
+                    'not-available': true
+                }
             }
         });
     });
 
-    it("retrieves data", (done) => {
-        moxios.stubRequest('api/collectionsJson', {
-            status: 200,
-            response: JSON.stringify(response)
-        });
+    it("retrieves data", async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(response));
         wrapper.vm.retrieveData();
 
-        moxios.wait(() => {
-            expect(wrapper.vm.records).toEqual(response.metadata);
-            done();
-        });
+        await flushPromises();
+
+        expect(wrapper.vm.records).toEqual(response.metadata);
     });
 
-    it("displays a '503 page' if JSON responds with an error", (done) => {
-        moxios.stubRequest('api/collectionsJson', {
-            status: 503,
-            response: JSON.stringify({ message: 'bad stuff happened' })
-        });
+    it("displays a '503 page' if JSON responds with an error", async () => {
+        fetchMock.mockResponseOnce(
+            JSON.stringify({ message: 'bad stuff happened' }),
+            { status: 503 }
+        );
         wrapper.vm.retrieveData();
+        await flushPromises();
 
-        moxios.wait(() => {
-            expect(wrapper.findComponent({ name: 'notAvailable'}).exists()).toBe(true);
-            done();
-        });
-    });
-
-    afterEach(() => {
-        moxios.uninstall();
+        expect(wrapper.findComponent({ name: 'notAvailable'}).exists()).toBe(true);
     });
 });

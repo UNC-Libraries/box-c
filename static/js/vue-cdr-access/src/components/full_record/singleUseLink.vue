@@ -49,15 +49,6 @@ export default {
     methods: {
         async createLink() {
             try {
-                const response = await fetch(`/services/api/single_use_link/create/${this.uuid}`, {
-                    method: 'POST'
-                });
-                if (!response.ok) {
-                    const error = new Error('Network response was not ok');
-                    error.response = response;
-                    throw error;
-                }
-
                 const data = await this.fetchWrapper(`/services/api/single_use_link/create/${this.uuid}`, true,
                     { method: 'POST',  headers: { 'Content-Type': 'application/json' } });
                 let basePath = window.location.hostname;

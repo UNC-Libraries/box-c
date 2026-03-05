@@ -4,41 +4,53 @@ import {useAccessStore} from '@/stores/access';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
+
+// Mock the fullRecordUtils mixin to get around the following warning.
+// [Vue warn]: Computed property "childCount" is already defined in Props.
+vi.mock('../../mixins/fullRecordUtils', () => ({
+    default: {
+        computed: {
+            resourceType() { return this.recordData?.type ?? ''; },
+            restrictedContent() { return false; }
+        }
+    }
+}));
+
 import downloadOptions from '@/components/full_record/downloadOptions.vue';
 
 const record = {
-        filesize: 694904,
-        added: "2023-03-27T13:01:58.067Z",
-        format: [
-            "Image"
-        ],
-        title: "beez",
-        type: "File",
-        fileDesc: [
-            "JPEG Image"
-        ],
-        datastream: [
-            "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
-            "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2848x1536",
-            "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
-            "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
-        ],
-        permissions: [
-            "viewMetadata"
-        ],
-        groupRoleMap: {
-            authenticated: 'canViewOriginals',
-            everyone: 'canViewMetadata'
-        },
-        id: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
-        fileType: [
-            "image/jpeg"
-        ],
-        status: [
-            "Parent Is Embargoed",
-            "Parent Has Staff-Only Access",
-            "Inherited Patron Settings"
-        ]
+    filesize: 694904,
+    added: "2023-03-27T13:01:58.067Z",
+    format: [
+        "Image"
+    ],
+    title: "beez",
+    type: "File",
+    fileDesc: [
+        "JPEG Image"
+    ],
+    datastream: [
+        "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
+        "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2848x1536",
+        "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
+        "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
+    ],
+    permissions: [
+        "viewMetadata"
+    ],
+    groupRoleMap: {
+        authenticated: 'canViewOriginals',
+        everyone: 'canViewMetadata'
+    },
+    id: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
+    fileType: [
+        "image/jpeg"
+    ],
+    status: [
+        "Parent Is Embargoed",
+        "Parent Has Staff-Only Access",
+        "Inherited Patron Settings"
+    ]
 }
 
 const collectionRecord = {
@@ -80,12 +92,12 @@ describe('downloadOption.vue', () => {
             global: {
                 plugins: [i18n, createTestingPinia({
                     stubActions: false,
-                        initialState: {
-                            access: {
-                                isLoggedIn: true,
-                                username: 'test_user'
-                            }
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'test_user'
                         }
+                    }
                 })],
                 stubs: {
                     RouterLink: RouterLinkStub
@@ -93,7 +105,7 @@ describe('downloadOption.vue', () => {
             },
             props: {
                 recordData: record,
-                t: jest.fn()
+                t: vi.fn()
             }
         });
         store = useAccessStore();
@@ -274,7 +286,6 @@ describe('downloadOption.vue', () => {
         await wrapper.setProps({
             recordData: updatedBriefObj
         });
-        // Download button
         expect(wrapper.find('.download.button').exists()).toBe(true);
     });
 
@@ -295,7 +306,6 @@ describe('downloadOption.vue', () => {
         await wrapper.setProps({
             recordData: updatedBriefObj
         });
-        // Download button
         expect(wrapper.find('.download.button').exists()).toBe(true);
     });
 
@@ -310,7 +320,6 @@ describe('downloadOption.vue', () => {
         await wrapper.setProps({
             recordData: updatedBriefObj
         });
-        // Download button
         expect(wrapper.find('.download.button').exists()).toBe(false);
     });
 

@@ -5,7 +5,6 @@ import { useAccessStore } from '@/stores/access';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
-import moxios from 'moxios';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
@@ -502,7 +501,7 @@ describe('facets.vue', () => {
         expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
 
-    it("selecting Unknown date does not select Unknown format", (done) => {
+    it("selecting Unknown date does not select Unknown format", async (done) => {
         wrapper = mount(facets, {
             global: {
                 plugins: [router, i18n, createTestingPinia({
@@ -553,20 +552,17 @@ describe('facets.vue', () => {
         });
         store = useAccessStore();
 
-        moxios.wait(async () => {
-            await router.push('/search?createdYear=unknown');
+        await router.push('/search?createdYear=unknown');
 
-            let facet_headers = wrapper.findAll('.facet-display h3');
-            expect(facet_headers[1].text()).toBe('Date Created');
-            expect(wrapper.find('form').exists()).toBe(false);
+        let facet_headers = wrapper.findAll('.facet-display h3');
+        expect(facet_headers[1].text()).toBe('Date Created');
+        expect(wrapper.find('form').exists()).toBe(false);
 
-            let created_facets = listFacetEntries('createdYear');
-            expectFacetValueSelected(created_facets, 'unknown');
+        let created_facets = listFacetEntries('createdYear');
+        expectFacetValueSelected(created_facets, 'unknown');
 
-            let format_facets = listFacetEntries('format')
-            expectFacetValueNotSelected(format_facets, 'Unknown');
-            done();
-        });
+        let format_facets = listFacetEntries('format')
+        expectFacetValueNotSelected(format_facets, 'Unknown');
     });
 
     /**
