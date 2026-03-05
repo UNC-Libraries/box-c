@@ -58,7 +58,7 @@ export default {
             default: false,
             type: Boolean
         },
-        resourceType: {
+        resourceTypeProp: {
             default: 'Work',
             type: String
         },
@@ -87,7 +87,7 @@ export default {
         ajaxOptions() {
             return  {
                 url: `/api/listJson/${this.workId}?rows=10`,
-                dataSrc: (d) => this.resourceType === 'Work' ? d.metadata : [d.container],
+                dataSrc: (d) => this.resourceTypeProp === 'Work' ? d.metadata : [d.container],
                 data: (d) => {
                     const sorts = ['title', 'fileFormatDescription', 'fileSize'];
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};

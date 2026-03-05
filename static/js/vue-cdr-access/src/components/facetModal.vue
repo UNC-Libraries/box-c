@@ -74,11 +74,13 @@ Modal facet component, used to display all the values of a particular facet in a
 </template>
 
 <script>
-import axios from 'axios';
 import cloneDeep from "lodash.clonedeep";
+import fetchUtils from "../mixins/fetchUtils";
 
 export default {
     name: "facetModal",
+
+    mixins: [fetchUtils],
 
     props: {
         facetId: String,
@@ -139,13 +141,13 @@ export default {
     },
 
     methods: {
-        retrieveResults() {
-            axios.get(this.facetUrl).then((response) => {
-                this.facet_data = response.data;
+        async retrieveResults() {
+            try {
+                this.facet_data = await this.fetchWrapper(this.facetUrl);
                 this.show_modal = true;
-            }).catch(function (error) {
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
 
         selectedFacet(facetValue) {

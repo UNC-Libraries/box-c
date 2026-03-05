@@ -28,7 +28,7 @@ describe('matomoUtils', () => {
         ]
     });
 
-    const matomoSetup = jest.spyOn(matomoUtils.methods, 'matomoSetup');
+    const matomoSetup = vi.spyOn(matomoUtils.methods, 'matomoSetup');
 
     beforeEach(() => {
         const div = document.createElement('div');
@@ -36,7 +36,7 @@ describe('matomoUtils', () => {
         div.appendChild(document.createElement('script'));
         document.body.appendChild(div);
 
-        jest.resetAllMocks();
+        vi.resetAllMocks();
     });
 
     afterEach(() => {

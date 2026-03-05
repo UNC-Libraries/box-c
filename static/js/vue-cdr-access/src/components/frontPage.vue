@@ -46,16 +46,16 @@
 </template>
 
 <script>
-import get from "axios";
 import headerHome from "@/components/header/headerHome.vue";
 import analyticsUtils from '../mixins/analyticsUtils';
+import fetchUtils from '../mixins/fetchUtils';
 
 export default {
     name: "frontPage",
 
     components: {headerHome},
 
-    mixins: [analyticsUtils],
+    mixins: [analyticsUtils, fetchUtils],
 
     data() {
         return {
@@ -72,12 +72,12 @@ export default {
     },
 
     methods: {
-        getCollectionStats() {
-            get('/api/collectionStats').then((response) => {
-                this.collectionStats = response.data;
-            }).catch(function (error) {
+        async getCollectionStats() {
+            try {
+                this.collectionStats = await this.fetchWrapper('/api/collectionStats');
+            } catch (error) {
                 console.log(error);
-            });
+            }
         }
     },
 

@@ -1,13 +1,11 @@
-import { shallowMount } from '@vue/test-utils';
+import {flushPromises, shallowMount} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
-import moxios from 'moxios'
 import pretty from 'pretty';
 import modalMetadata from '@/components/modalMetadata.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
-const updated_uuid = 'c03a4bd7-25f4-4a6c-a68d-fedc4251b680';
 const title = 'Test Collection';
 const response = pretty(`<table><tbody><tr><th>Creator</th><td><p>Real Dean</p></td></tr></tbody></table>`);
 let router, wrapper;
@@ -20,6 +18,8 @@ describe('modalMetadata.vue', () => {
     });
 
     beforeEach(async () => {
+        fetchMock.resetMocks();
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -48,21 +48,13 @@ describe('modalMetadata.vue', () => {
         router = null;
     });
 
-    it("fetches the record metadata when the modal is opened", () => {
-        moxios.install();
-        moxios.stubRequest(`api/record/${updated_uuid}/metadataView`, {
-            status: 200,
-            responseText: {
-                data: response
-            }
-        });
+    it("fetches the record metadata when the modal is opened", async () => {
+        fetchMock.mockResponseOnce(response); // Don't need JSON stringify since it's returning HTML
 
-        moxios.wait(() => {
-            expect(wrapper.vm.metadata).toEqual(response);
-            done();
-        });
-
-        moxios.uninstall();
+        // Trigger the method that loads metadata (e.g., opening the modal)
+        wrapper.vm.loadMetadata();
+        await flushPromises();
+        expect(wrapper.vm.metadata).toEqual(response);
     });
 
     it("is hidden by default", async () => {
