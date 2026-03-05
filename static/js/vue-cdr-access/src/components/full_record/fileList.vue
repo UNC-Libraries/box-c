@@ -58,7 +58,10 @@ export default {
             default: false,
             type: Boolean
         },
-        resourceType: {
+        // This prop is always the default as it is never set in any usage of this component.
+        // Prop name is what it is to avoid a conflict with the resourceType computed property in fullRecordUtils mixin, which is used to determine if the record is a Work or File for permission purposes. This prop is used to determine how to access the file list in the ajax response,
+        // which differs for Works and Files.
+        resourceTypeProp: {
             default: 'Work',
             type: String
         },
@@ -87,7 +90,7 @@ export default {
         ajaxOptions() {
             return  {
                 url: `/api/listJson/${this.workId}?rows=10`,
-                dataSrc: (d) => this.resourceType === 'Work' ? d.metadata : [d.container],
+                dataSrc: (d) => this.resourceTypeProp === 'Work' ? d.metadata : [d.container],
                 data: (d) => {
                     const sorts = ['title', 'fileFormatDescription', 'fileSize'];
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};

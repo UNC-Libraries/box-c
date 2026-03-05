@@ -52,9 +52,9 @@ Top level component wrapper for search pages
     import pagination from "@/components/pagination.vue";
     import analyticsUtils from '../mixins/analyticsUtils';
     import errorUtils from "../mixins/errorUtils";
+    import fetchUtils from "../mixins/fetchUtils";
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
-    import get from 'axios';
     import cloneDeep from 'lodash.clonedeep';
 
     export default {
@@ -71,7 +71,7 @@ Top level component wrapper for search pages
             pagination
         },
 
-        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, fetchUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -123,25 +123,27 @@ Top level component wrapper for search pages
         },
 
         methods: {
-            retrieveData() {
+            async retrieveData() {
                 let query = cloneDeep(this.$route.query);
                 let param_string = `${this.formatParamsString(query)}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
-                get(`api/${search_path}${param_string}`).then((response) => {
-                    this.emptyJsonResponseCheck(response);
-                    this.records = response.data.metadata;
-                    this.total_records = response.data.resultCount;
-                    this.facet_list = response.data.facetFields;
-                    this.filter_parameters = response.data.filterParameters;
-                    this.min_created_year = response.data.minSearchYear;
+                try {
+                    const data = await this.fetchWrapper(`api/${search_path}${param_string}`);
+                    this.emptyJsonResponseCheck(data);
+                    this.records = data.metadata;
+                    this.total_records = data.resultCount;
+                    this.facet_list = data.facetFields;
+                    this.filter_parameters = data.filterParameters;
+                    this.min_created_year = data.minSearchYear;
                     this.is_loading = false;
-                }).catch(error => {
+                } catch (error) {
                     this.setErrorResponse(error);
                     this.is_loading = false;
+                    this.facet_list = [];
                     console.log(error);
-                });
+                }
             }
         },
 

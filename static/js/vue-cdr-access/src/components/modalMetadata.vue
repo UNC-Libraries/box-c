@@ -33,7 +33,7 @@ Displays the MODS descriptive record for an object inside of a modal
 </template>
 
 <script>
-    import get from 'axios';
+    import fetchUtils from '../mixins/fetchUtils';
     import imageUtils from '../mixins/imageUtils';
 
     export default {
@@ -56,7 +56,7 @@ Displays the MODS descriptive record for an object inside of a modal
 
         emits: ['display-metadata'],
 
-        mixins: [imageUtils],
+        mixins: [fetchUtils, imageUtils],
 
         data() {
             return {
@@ -74,15 +74,15 @@ Displays the MODS descriptive record for an object inside of a modal
         },
 
         methods: {
-            loadMetadata() {
-                get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                    this.metadata = response.data;
+            async loadMetadata() {
+                try {
+                    this.metadata = await this.fetchWrapper(`/api/record/${this.uuid}/metadataView`,  false);
                     this.hasLoaded = true;
-                }).catch((error) => {
+                } catch (error) {
                     console.log(error);
                     this.metadata = `<p>${this.$t('modal.error')}</p>`;
                     this.hasLoaded = true;
-                });
+                }
             },
 
             closeModal() {

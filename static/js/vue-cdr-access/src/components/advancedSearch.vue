@@ -156,16 +156,16 @@
 </template>
 
 <script>
-import get from 'axios';
 import headerSmall from '@/components/header/headerSmall.vue';
 import analyticsUtils from '../mixins/analyticsUtils';
+import fetchUtils from "@/mixins/fetchUtils";
 
 export default {
     name: "advancedSearch",
 
     components: {headerSmall},
 
-    mixins: [analyticsUtils],
+    mixins: [analyticsUtils, fetchUtils],
 
     data() {
         return {
@@ -181,20 +181,20 @@ export default {
     },
 
     methods: {
-        getCollections() {
-            get('/api/advancedSearch/collectionsJson').then((response) => {
-                this.collections = response.data;
-            }).catch(function (error) {
+        async getCollections() {
+            try {
+                this.collections = await this.fetchWrapper('/api/advancedSearch/collectionsJson');
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
 
-        getFormats() {
-            get('/api/advancedSearch/formats').then((response) => {
-                this.formats = response.data;
-            }).catch(function (error) {
+        async getFormats() {
+            try {
+                this.formats = await this.fetchWrapper('/api/advancedSearch/formats');
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
     },
 
