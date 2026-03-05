@@ -8,5 +8,4 @@ fetchMocker.enableMocks();
 
 beforeEach(() => {
     fetchMock.resetMocks();
-    //fetchMock.mockResponse(JSON.stringify(''));
 });
