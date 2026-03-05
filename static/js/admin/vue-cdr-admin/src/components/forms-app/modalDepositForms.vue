@@ -31,12 +31,14 @@
 </template>
 
 <script>
-import get from 'axios';
 import {mapActions, mapState} from 'pinia';
 import {useFormsStore} from '@/stores/forms';
+import fetchUtils from '@/mixins/fetchUtils';
 
 export default {
     name: 'modalDepositForms',
+
+    mixins: [fetchUtils],
 
     data() {
         return {
@@ -54,12 +56,11 @@ export default {
 
         async getSchema() {
             if (this.form !== '') {
-                get(`/static/deposit-forms/${this.form}.json`)
-                    .then((response) => {
-                        this.schema = response.data;
-                    }).catch(function (error) {
+                try {
+                    this.schema = await this.fetchWrapper(`/static/deposit-forms/${this.form}.json`);
+                } catch (error) {
                     console.log(error);
-                });
+                }
             }
         },
 

@@ -48,51 +48,53 @@
                 </div>
             </transition>
             <table class="assigned-permissions">
-                <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
-                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
-                      <div class="text-only">
-                        <span @mouseover="hover_row = index" @mouseleave="hover_row = ''">
-                          {{ truncatePermissionText(updated_staff_role.principal) }}</span>
-                        <span @click="copyPermission(updated_staff_role.principal)">
-                          <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
-                      </div>
-                      <div class="tooltip" v-if="hover_row === index">
-                        {{ updated_staff_role.principal }}
-                      </div>
-                    </td>
-                    <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
-                        <staff-roles-select
-                                :container-type="containerType"
-                                :are-deleted="deleted_users"
-                                :user="updated_staff_role">
-                        </staff-roles-select>
-                    </td>
-                    <td class="btn">
-                        <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="fullyRemoveUser(index)">Undo Add</button>
-                        <button v-else-if="checkUserRemoved(updated_staff_role)"
-                                class="btn-revert"
-                                @click="revertRemoveUser(updated_staff_role)">Undo Remove</button>
-                        <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border size">
-                        <input @focus="updateErrorMsg('')"
-                               type="text"
-                               placeholder="ONYEN/Group"
-                               v-model.trim="user_name">
-                    </td>
-                    <td class="border select-box">
-                        <div class="select-wrapper">
-                            <select v-model="selected_role" @focus="updateErrorMsg('')">
-                                <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
-                            </select>
-                        </div>
-                    </td>
-                    <td class="btn">
-                        <button class="btn-add" @click.prevent="updateUserList">Add</button>
-                    </td>
-                </tr>
+                <tbody>
+                    <tr v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
+                        <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
+                          <div class="text-only">
+                            <span @mouseover="hover_row = index" @mouseleave="hover_row = ''">
+                              {{ truncatePermissionText(updated_staff_role.principal) }}</span>
+                            <span @click="copyPermission(updated_staff_role.principal)">
+                              <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
+                          </div>
+                          <div class="tooltip" v-if="hover_row === index">
+                            {{ updated_staff_role.principal }}
+                          </div>
+                        </td>
+                        <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
+                            <staff-roles-select
+                                    :container-type="containerType"
+                                    :are-deleted="deleted_users"
+                                    :user="updated_staff_role">
+                            </staff-roles-select>
+                        </td>
+                        <td class="btn">
+                            <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="fullyRemoveUser(index)">Undo Add</button>
+                            <button v-else-if="checkUserRemoved(updated_staff_role)"
+                                    class="btn-revert"
+                                    @click="revertRemoveUser(updated_staff_role)">Undo Remove</button>
+                            <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border size">
+                            <input @focus="updateErrorMsg('')"
+                                   type="text"
+                                   placeholder="ONYEN/Group"
+                                   v-model.trim="user_name">
+                        </td>
+                        <td class="border select-box">
+                            <div class="select-wrapper">
+                                <select v-model="selected_role" @focus="updateErrorMsg('')">
+                                    <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td class="btn">
+                            <button class="btn-add" @click.prevent="updateUserList">Add</button>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <p class="message" :class="{error: is_error_message}">{{ response_message }}</p>
         </div>
@@ -113,13 +115,14 @@
 
 <script>
     import staffRolesSelect from "@/components/permissions-editor/staffRolesSelect.vue";
-    import staffRoleList from "../../mixins/staffRoleList";
     import displayModal from "../../mixins/displayModal";
-    import axios from 'axios';
+    import fetchUtils from "../../mixins/fetchUtils";
+    import staffRoleList from "../../mixins/staffRoleList";
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
     import { mapState, mapStores } from 'pinia';
     import {usePermissionsStore} from "@/stores/permissions";
+
 
     export default {
         name: 'staffRoles',
@@ -128,7 +131,7 @@
             staffRolesSelect
         },
 
-        mixins: [staffRoleList, displayModal],
+        mixins: [displayModal, fetchUtils, staffRoleList],
 
         data() {
             return {
@@ -167,20 +170,21 @@
         },
 
         methods: {
-            getRoles() {
-                axios.get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
-                    if (!isEmpty(response.data)) {
-                        this.current_staff_roles = response.data;
+            async getRoles() {
+                try {
+                    const data = await this.fetchWrapper(`/services/api/acl/staff/${this.uuid}`);
+                    if (!isEmpty(data)) {
+                        this.current_staff_roles = data;
                         /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
                            when a user is added/updated */
-                        let update_roles = cloneDeep(response.data);
+                        const update_roles = cloneDeep(data);
                         this.updated_staff_roles = update_roles.assigned.roles;
                     }
-                }).catch((error) => {
-                    let response_msg = `Unable load current staff roles for: ${this.title}`;
+                } catch (error) {
+                    const response_msg = `Unable load current staff roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
             setSubmitting() {
@@ -189,31 +193,32 @@
                 this.setRoles();
             },
 
-            setRoles() {
+            async setRoles() {
                 this.updated_staff_roles = this.removeDeletedAssignedRoles();
                 this.is_error_message = false;
                 this.response_message = 'Saving permissions \u2026';
 
-                axios({
-                    method: 'put',
-                    url: `/services/api/edit/acl/staff/${this.uuid}`,
-                    data: JSON.stringify( { roles: this.updated_staff_roles } ),
-                    headers: {'content-type': 'application/json; charset=utf-8'}
-                }).then((response) => {
+                try {
+                    await this.fetchWrapper(`/services/api/edit/acl/staff/${this.uuid}`, true, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                        body: JSON.stringify({ roles: this.updated_staff_roles })
+                     });
+
                     this.getRoles(); // Reset role list so user can close modal without a prompt.
-                    let response_msg = `Staff roles successfully updated for: ${this.title}`;
+                    const response_msg = `Staff roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.unsaved_changes = false;
                     this.is_submitting = false;
                     this.deleted_users = [];
                     this.is_error_message = true; // Reset, as "save" is the only non-error status
                     this.response_message = '';
-                }).catch((error) => {
-                    let response_msg = `Unable to update staff roles for: ${this.title}`;
+                } catch (error) {
+                    const response_msg = `Unable to update staff roles for: ${this.title}`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
-                });
+                }
             },
 
             getUserIndex(user, use_update_list = true) {
