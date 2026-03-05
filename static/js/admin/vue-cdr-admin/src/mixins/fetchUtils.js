@@ -8,7 +8,7 @@ export default {
                 throw error;
             }
 
-            return json_response ? await response.json() : response.text();
+            return json_response ? await response.json() : await response.text();
         },
     }
 }
