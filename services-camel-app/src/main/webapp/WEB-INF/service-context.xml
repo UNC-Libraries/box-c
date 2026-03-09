@@ -248,6 +248,13 @@
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
     </bean>
 
+    <bean id="machineGenDescriptionProcessor" class="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="connectionManager" ref="httpClientConnectionManager" />
+        <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
+        <property name="boxctronApiPath" value="${cdr.boxctron.api.path}" />
+    </bean>
+
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
         <constructor-arg value="${mp44u.threads}" />
         <constructor-arg value="${mp44u.timeout}" />
@@ -660,5 +667,6 @@
         <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.collectionDisplay</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.aspace</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
 </beans>
