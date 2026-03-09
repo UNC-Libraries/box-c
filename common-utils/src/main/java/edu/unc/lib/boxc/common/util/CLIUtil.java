@@ -33,8 +33,8 @@ public class CLIUtil {
      */
     public static List<String> executeCommand(List<String> command, long timeout) {
         log.debug("Executing command with timeout {}s: {}", timeout, String.join(" ", command));
-        CommandLine cmdLine = CommandLine.parse(command.getFirst());
-        cmdLine.addArguments(command.subList(1, command.size()).toArray(new String[0]));
+        CommandLine cmdLine = new CommandLine(command.getFirst());
+        command.subList(1, command.size()).forEach(arg -> cmdLine.addArgument(arg, false));
 
         DefaultExecutor executor = DefaultExecutor.builder().get();
         ExecuteWatchdog watchdog = null;
