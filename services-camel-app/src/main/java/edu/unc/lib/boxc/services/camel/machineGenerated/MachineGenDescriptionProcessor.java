@@ -45,8 +45,6 @@ public class MachineGenDescriptionProcessor implements Processor {
     private CloseableHttpClient httpClient;
     @BeanInject("machineGenDescriptionUpdateService")
     private MachineGenUpdateService machineGenDescriptionUpdateService;
-    @BeanInject("accessGroups")
-    private AccessGroupSet accessGroupSet;
     private String boxctronApiPath;
     private RepositoryObjectLoader repositoryObjectLoader;
     private MachineGenRequest request;
@@ -57,7 +55,6 @@ public class MachineGenDescriptionProcessor implements Processor {
 
         String fcrepoUri = MessageUtil.getFcrepoUri(in);
         PID pid = PIDs.get(fcrepoUri);
-        AgentPrincipals agentPrincipals = new AgentPrincipalsImpl("admin", accessGroupSet);
 
         if (pid != null) {
             var id = pid.getId();
@@ -89,7 +86,6 @@ public class MachineGenDescriptionProcessor implements Processor {
                     request = new MachineGenRequest();
                     request.setPidString(id);
                     request.setText(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
-                    request.setAgent(agentPrincipals);
                     machineGenDescriptionUpdateService.updateMachineGenText(request);
                 }
             }

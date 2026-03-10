@@ -236,14 +236,12 @@
 
     <bean id="machineGenDescriptionUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
         <property name="type" value="description" />
-        <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
     </bean>
 
     <bean id="machineGenAltTextUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
         <property name="type" value="altText" />
-        <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
     </bean>

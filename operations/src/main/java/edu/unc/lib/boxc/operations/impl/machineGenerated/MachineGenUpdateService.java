@@ -1,7 +1,5 @@
 package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -23,16 +21,11 @@ import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.wri
 public class MachineGenUpdateService {
     private static final Logger log = LoggerFactory.getLogger(MachineGenUpdateService.class);
     private String type;
-    private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private String derivativeBasePath;
 
     public Path updateMachineGenText(MachineGenRequest request) {
-        var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
-
-        aclService.assertHasAccess("User does not have permission to update machine generated " + type,
-                pid, agent.getPrincipals(), Permission.editDescription);
 
         var binaryId = pid.getId();
 
@@ -53,11 +46,6 @@ public class MachineGenUpdateService {
     public void setType(String type) {
         this.type = type;
     }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
-    }
-
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
