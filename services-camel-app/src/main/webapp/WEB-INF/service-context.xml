@@ -250,7 +250,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="connectionManager" ref="httpClientConnectionManager" />
         <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
-        <property name="boxctronApiPath" value="${cdr.boxctron.api.path}" />
+        <property name="boxctronApiPath" value="${boxctron.describes.uri.path}" />
     </bean>
 
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">

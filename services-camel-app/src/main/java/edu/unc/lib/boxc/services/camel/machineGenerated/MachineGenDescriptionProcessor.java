@@ -1,9 +1,6 @@
 package edu.unc.lib.boxc.services.camel.machineGenerated;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -35,10 +32,10 @@ import java.util.Map;
  */
 public class MachineGenDescriptionProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(MachineGenDescriptionProcessor.class);
-    private static String CONTEXT = "context";
-    private static String FILENAME = "filename";
-    private static String MIMETYPE = "mimetype";
-    private static String URI = "uri";
+    private static final String CONTEXT = "context";
+    private static final String FILENAME = "filename";
+    private static final String MIMETYPE = "mimetype";
+    private static final String URI = "uri";
 
     private HttpClientConnectionManager connectionManager;
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -65,8 +62,11 @@ public class MachineGenDescriptionProcessor implements Processor {
                     .setConnectionManager(connectionManager)
                     .build();
 
-            var bodyMap = Map.of(CONTEXT, "", FILENAME, originalFile.getFilename(),
-                    MIMETYPE, originalFile.getMimetype(), URI, originalFile.getUri());
+            var bodyMap = Map.of(
+                    CONTEXT, "",
+                    FILENAME, originalFile.getFilename(),
+                    MIMETYPE, originalFile.getMimetype(),
+                    URI, originalFile.getUri());
 
             // Serialize the body map to JSON and set it as the entity of the post method
             HttpEntity entity = EntityBuilder.create()
