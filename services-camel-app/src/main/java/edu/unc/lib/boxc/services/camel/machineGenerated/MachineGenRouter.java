@@ -22,8 +22,7 @@ public class MachineGenRouter extends RouteBuilder {
                 .log(DEBUG, log,
                         "Processing machine gen update description request")
                 // trigger machine gen description followed by indexing
-                .bean(machineGenDescriptionProcessor)
-                .to("direct:solrIndexing");
+                .bean(machineGenDescriptionProcessor);
     }
 
     public void setMachineGenDescriptionProcessor(MachineGenDescriptionProcessor machineGenDescriptionProcessor) {

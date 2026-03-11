@@ -6,6 +6,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenRequest;
 import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Exchange;
@@ -45,6 +47,7 @@ public class MachineGenDescriptionProcessor implements Processor {
     private String boxctronApiPath;
     private RepositoryObjectLoader repositoryObjectLoader;
     private MachineGenRequest request;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -87,6 +90,7 @@ public class MachineGenDescriptionProcessor implements Processor {
                     request.setPidString(id);
                     request.setText(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
                     machineGenDescriptionUpdateService.updateMachineGenText(request);
+                    indexingMessageSender.sendIndexingOperation("automated", pid, IndexingActionType.UPDATE_DATASTREAMS);
                 }
             }
         }
@@ -114,5 +118,9 @@ public class MachineGenDescriptionProcessor implements Processor {
 
     public void setBoxctronApiPath(String boxctronApiPath) {
         this.boxctronApiPath = boxctronApiPath;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

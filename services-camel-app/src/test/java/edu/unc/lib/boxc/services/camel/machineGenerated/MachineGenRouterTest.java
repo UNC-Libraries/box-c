@@ -41,11 +41,7 @@ public class MachineGenRouterTest extends CamelTestSupport {
     @Test
     public void requestSentTest() throws Exception {
         TestHelper.createContext(context,"MachineGenDescription");
-
         template.sendBodyAndHeaders("", createHeaders());
-
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(1);
 
         verify(processor).process(any());
     }
