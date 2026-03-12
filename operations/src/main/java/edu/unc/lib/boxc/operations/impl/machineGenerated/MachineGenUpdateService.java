@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

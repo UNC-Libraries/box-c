@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.machineGenerated;
+package edu.unc.lib.boxc.operations.jms.machineGenerated;
 
 /**
  * Request object for updating machine generated descriptions
