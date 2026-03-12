@@ -144,7 +144,7 @@ public class ExportDominoMetadataService {
         // Limit to only publicly accessible works
         searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.READ_GROUP, List.of(PUBLIC_PRINC)));
         searchState.setResourceTypes(List.of(Work.name()));
-        searchState.getRangeFields().put(SearchFieldKey.DATE_UPDATED.name(), new RangePair(startDate, endDate));
+        searchState.getRangeFields().put(SearchFieldKey.TIMESTAMP.name(), new RangePair(startDate, endDate));
         searchState.setSortType("default");
         searchState.setResultFields(METADATA_FIELDS);
         var searchRequest = new SearchRequest(searchState, principals);
