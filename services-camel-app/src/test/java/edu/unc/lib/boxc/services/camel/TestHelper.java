@@ -3,6 +3,8 @@ package edu.unc.lib.boxc.services.camel;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AdviceWith;
@@ -56,5 +58,15 @@ public class TestHelper {
 
     public static void assertEmailNotSent(EmailHandler emailHandler) {
         verify(emailHandler, never()).sendEmail(any(), any(), any(), any(), any());
+    }
+
+    public static void assertIndexingMessageSent(PID pid, IndexingMessageSender indexingMessageSender, String username) {
+        verify(indexingMessageSender).sendIndexingOperation(username, pid,
+                IndexingActionType.UPDATE_DATASTREAMS);
+    }
+
+    public static void assertIndexingMessageNotSent(PID pid, IndexingMessageSender indexingMessageSender, String username) {
+        verify(indexingMessageSender, never()).sendIndexingOperation(username, pid,
+                IndexingActionType.UPDATE_DATASTREAMS);
     }
 }

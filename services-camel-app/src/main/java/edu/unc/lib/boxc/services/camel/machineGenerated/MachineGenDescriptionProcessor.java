@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.machineGenerated;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -20,7 +21,6 @@ import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class MachineGenDescriptionProcessor implements Processor {
     private HttpClientConnectionManager connectionManager;
     @BeanInject("machineGenDescriptionUpdateService")
     private MachineGenUpdateService machineGenDescriptionUpdateService;
-    private String boxctronApiPath;
+    private String boxctronDescribesBasePath;
     private RepositoryObjectLoader repositoryObjectLoader;
     private IndexingMessageSender indexingMessageSender;
 
@@ -57,7 +57,7 @@ public class MachineGenDescriptionProcessor implements Processor {
         var fileObject = repositoryObjectLoader.getFileObject(pid);
         var originalFile = fileObject.getOriginalFile();
 
-        var postMethod = new HttpPost(boxctronApiPath);
+        var postMethod = new HttpPost(URIUtil.join(boxctronDescribesBasePath, "api", "v1", "describe", "uri"));
         postMethod.setEntity(getEntity(originalFile));
 
         try (
@@ -104,8 +104,8 @@ public class MachineGenDescriptionProcessor implements Processor {
         this.repositoryObjectLoader = repositoryObjectLoader;
     }
 
-    public void setBoxctronApiPath(String boxctronApiPath) {
-        this.boxctronApiPath = boxctronApiPath;
+    public void setBoxctronDescribesBasePath(String boxctronDescribesBasePath) {
+        this.boxctronDescribesBasePath = boxctronDescribesBasePath;
     }
 
     public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {

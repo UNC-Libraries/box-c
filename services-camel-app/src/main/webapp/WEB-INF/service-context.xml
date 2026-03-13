@@ -250,7 +250,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="connectionManager" ref="httpClientConnectionManager" />
         <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
-        <property name="boxctronApiPath" value="${boxctron.describes.uri.path}" />
+        <property name="boxctronDescribesBasePath" value="${boxctron.describes.base.path}" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 

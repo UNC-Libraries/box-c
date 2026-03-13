@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.machineGenerated;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -17,18 +18,31 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @WireMockTest(httpPort = 46887)
 public class MachineGenDescriptionProcessorTest {
-    private static final String BOXCTRON_API_PATH = "/boxctron/describes";
+    private static final String BOXCTRON_API_BASE_PATH = "http://localhost:46887/boxctron/describes";
+    private static final String SUCCESS_RESPONSE = "{\"filename\":\"photo.jpg\",\"processing_time_ms\":1250.5,\"result\"" +
+            ":{\"alt_text\":\"Mountainlandscapewithsnow-coveredpeaks\",\"full_description\":\"" +
+            "Ascenicmountainlandscapewithsnow-cappedpeaksrisingaboveaforestedvalley\",\"review_assessment\":" +
+            "{\"biased_language\":\"NO\"},\"safety_assessment\":{\"atrocities_depicted\":\"NO\",\"text_characteristics\":" +
+            "{\"legibility\":\"N/A\"}},\"transcript\":\"\",\"version\":{\"models\":{\"full_desc\":\"gpt-4o-2024-08-06\"" +
+            "},\"timestamp\":\"2024-08-15T10:30:00Z\",\"version\":\"0.1.0\"}},\"success\":true}";
+    private static final String FAIL_RESPONSE = "{\"detail\": \"string\"}";
     private MachineGenDescriptionProcessor processor;
     private AutoCloseable closeable;
     private PID filePid;
@@ -59,7 +73,7 @@ public class MachineGenDescriptionProcessorTest {
 
         processor = new MachineGenDescriptionProcessor();
 
-        processor.setBoxctronApiPath(BOXCTRON_API_PATH);
+        processor.setBoxctronDescribesBasePath(BOXCTRON_API_BASE_PATH);
         processor.setConnectionManager(connectionManager);
         processor.setIndexingMessageSender(indexingMessageSender);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -73,9 +87,32 @@ public class MachineGenDescriptionProcessorTest {
     }
 
     @Test
-    public void testUpdateMachineGenDescriptionSuccess() throws IOException {
+    public void testUpdateMachineGenDescriptionSuccess() throws Exception {
+        stubFor(WireMock.post(urlMatching("/api/v1/describe/uri"))
+                .willReturn(aResponse()
+                        .withBody(SUCCESS_RESPONSE)
+                        .withHeader("Content-Type", "text/json")
+                        .withStatus(HttpStatus.ACCEPTED.value())));
         var exchange = createExchange();
 
+        processor.process(exchange);
+        verify(machineGenUpdateService).updateMachineGenText(any());
+        TestHelper.assertIndexingMessageSent(filePid, indexingMessageSender, "automated");
+    }
+
+    @Test
+    public void testUpdateMachineGenDescriptionAPIReturnsError() throws Exception {
+        stubFor(WireMock.post(urlMatching("/api/v1/describe/uri"))
+                .willReturn(aResponse()
+                        .withBody(FAIL_RESPONSE)
+                        .withHeader("Content-Type", "text/json")
+                        .withStatus(HttpStatus.BAD_REQUEST.value())));
+        var value = HttpStatus.BAD_REQUEST.value();
+        var exchange = createExchange();
+
+        processor.process(exchange);
+        verify(machineGenUpdateService, never()).updateMachineGenText(any());
+        TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
     }
 
     private Exchange createExchange() throws IOException {
