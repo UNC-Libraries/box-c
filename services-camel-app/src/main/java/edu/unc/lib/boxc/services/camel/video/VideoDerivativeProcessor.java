@@ -20,6 +20,8 @@ public class VideoDerivativeProcessor implements Processor {
         "^(video.(mp4|quicktime|m2ts|mpeg|mpg|x-ms-wmv|x-msvideo|avi|x-matroska|x-flv|x-m4v|webm|x-ms-asf|3gpp))" +
                 "|(application.x-shockwave-flash)$");
 
+    private static final Pattern DISALLOWED_PATTERN = Pattern.compile("^(application/octet-stream)$");
+
     /**
      * Returns true if the subject of the exchange is a binary which
      * is eligible for having video derivatives generated from it.
@@ -33,6 +35,11 @@ public class VideoDerivativeProcessor implements Processor {
 
         if (!MIMETYPE_PATTERN.matcher(mimetype).matches()) {
             log.debug("File type {} on object {} is not applicable for video derivatives", mimetype, binPath);
+            return false;
+        }
+
+        if (DISALLOWED_PATTERN.matcher(mimetype).matches()) {
+            log.debug("File type {} on object {} is disallowed for video derivatives", mimetype, binPath);
             return false;
         }
 
