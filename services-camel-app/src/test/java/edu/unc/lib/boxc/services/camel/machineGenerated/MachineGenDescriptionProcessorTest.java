@@ -35,7 +35,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 @WireMockTest(httpPort = 46887)
 public class MachineGenDescriptionProcessorTest {
-    private static final String BOXCTRON_API_BASE_PATH = "http://localhost:46887/boxctron/describes";
+    private static final String BOXCTRON_API_BASE_PATH = "http://localhost:46887";
     private static final String SUCCESS_RESPONSE = "{\"filename\":\"photo.jpg\",\"processing_time_ms\":1250.5,\"result\"" +
             ":{\"alt_text\":\"Mountainlandscapewithsnow-coveredpeaks\",\"full_description\":\"" +
             "Ascenicmountainlandscapewithsnow-cappedpeaksrisingaboveaforestedvalley\",\"review_assessment\":" +
@@ -92,10 +92,9 @@ public class MachineGenDescriptionProcessorTest {
                 .willReturn(aResponse()
                         .withBody(SUCCESS_RESPONSE)
                         .withHeader("Content-Type", "text/json")
-                        .withStatus(HttpStatus.ACCEPTED.value())));
-        var exchange = createExchange();
+                        .withStatus(HttpStatus.OK.value())));
 
-        processor.process(exchange);
+        processor.process(createExchange());
         verify(machineGenUpdateService).updateMachineGenText(any());
         TestHelper.assertIndexingMessageSent(filePid, indexingMessageSender, "automated");
     }
@@ -107,10 +106,8 @@ public class MachineGenDescriptionProcessorTest {
                         .withBody(FAIL_RESPONSE)
                         .withHeader("Content-Type", "text/json")
                         .withStatus(HttpStatus.BAD_REQUEST.value())));
-        var value = HttpStatus.BAD_REQUEST.value();
-        var exchange = createExchange();
 
-        processor.process(exchange);
+        processor.process(createExchange());
         verify(machineGenUpdateService, never()).updateMachineGenText(any());
         TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
     }

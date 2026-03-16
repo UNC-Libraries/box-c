@@ -24,6 +24,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class MachineGenDescriptionProcessor implements Processor {
             var response = ignored.execute(postMethod);
         ) {
             var statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode == 400 || statusCode == 422) {
+            if (statusCode != HttpStatus.OK.value()) {
                 log.warn("Failed to generate boxctron description for {}, status {}: {}",
                         id, statusCode, response.getEntity().toString());
             } else {
