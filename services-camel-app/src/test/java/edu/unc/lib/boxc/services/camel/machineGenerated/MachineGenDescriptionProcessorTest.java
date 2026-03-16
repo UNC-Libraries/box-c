@@ -43,6 +43,7 @@ public class MachineGenDescriptionProcessorTest {
             "{\"legibility\":\"N/A\"}},\"transcript\":\"\",\"version\":{\"models\":{\"full_desc\":\"gpt-4o-2024-08-06\"" +
             "},\"timestamp\":\"2024-08-15T10:30:00Z\",\"version\":\"0.1.0\"}},\"success\":true}";
     private static final String FAIL_RESPONSE = "{\"detail\": \"string\"}";
+    private static final String API_KEY = "api key";
     private MachineGenDescriptionProcessor processor;
     private AutoCloseable closeable;
     private PID filePid;
@@ -78,6 +79,7 @@ public class MachineGenDescriptionProcessorTest {
         processor.setIndexingMessageSender(indexingMessageSender);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setMachineGenDescriptionUpdateService(machineGenUpdateService);
+        processor.setApiKey(API_KEY);
     }
 
     @AfterEach

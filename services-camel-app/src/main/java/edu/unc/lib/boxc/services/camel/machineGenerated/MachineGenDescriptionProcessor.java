@@ -45,6 +45,7 @@ public class MachineGenDescriptionProcessor implements Processor {
     @BeanInject("machineGenDescriptionUpdateService")
     private MachineGenUpdateService machineGenDescriptionUpdateService;
     private String boxctronDescribesBasePath;
+    private String apiKey;
     private RepositoryObjectLoader repositoryObjectLoader;
     private IndexingMessageSender indexingMessageSender;
 
@@ -60,6 +61,7 @@ public class MachineGenDescriptionProcessor implements Processor {
 
         var postMethod = new HttpPost(URIUtil.join(boxctronDescribesBasePath, "api", "v1", "describe", "uri"));
         postMethod.setEntity(getEntity(originalFile));
+        postMethod.setHeader("X-API-Key", apiKey);
 
         try (
             var ignored = HttpClients.custom()
@@ -111,5 +113,9 @@ public class MachineGenDescriptionProcessor implements Processor {
 
     public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
         this.indexingMessageSender = indexingMessageSender;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 }

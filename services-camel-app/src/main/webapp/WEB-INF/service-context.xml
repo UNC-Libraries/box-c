@@ -252,6 +252,7 @@
         <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
         <property name="boxctronDescribesBasePath" value="${boxctron.describes.base.path}" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="apiKey" value="${boxctron.describes.api.key}" />
     </bean>
 
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
