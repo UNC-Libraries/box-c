@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.services.camel.video;
+package edu.unc.lib.boxc.services.camel.audio;
 
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
@@ -16,13 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class VideoDerivativeProcessorTest {
+public class AudioDerivativeProcessorTest {
     @Mock
     private Exchange exchange;
     @Mock
     private Message messageIn;
     private AutoCloseable closeable;
-    private VideoDerivativeProcessor processor;
+    private AudioDerivativeProcessor processor;
     @TempDir
     public Path tmpFolder;
 
@@ -33,7 +33,7 @@ public class VideoDerivativeProcessorTest {
         when(exchange.getIn()).thenReturn(messageIn);
         when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryPath)).thenReturn("path/to/binary");
 
-        processor = new VideoDerivativeProcessor();
+        processor = new AudioDerivativeProcessor();
     }
 
     @AfterEach
@@ -42,23 +42,23 @@ public class VideoDerivativeProcessorTest {
     }
 
     @Test
-    public void testAllowedVideoTypeOctetStream() {
+    public void testAllowedAudioTypeOctetStream() {
         when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType)).thenReturn("application/octet-stream");
 
-        assertFalse(VideoDerivativeProcessor.allowedVideoType(exchange));
+        assertFalse(AudioDerivativeProcessor.allowedAudioType(exchange));
     }
 
     @Test
-    public void testAllowedVideoTypeWordperfect() {
+    public void testAllowedAudioTypeWordperfect() {
         when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType)).thenReturn("application/vnd.wordperfect");
 
-        assertFalse(VideoDerivativeProcessor.allowedVideoType(exchange));
+        assertFalse(AudioDerivativeProcessor.allowedAudioType(exchange));
     }
 
     @Test
-    public void testAllowedVideoTypeMp4() {
-        when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType)).thenReturn("video/mp4");
+    public void testAllowedAudioTypeMpeg() {
+        when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType)).thenReturn("audio/mpeg");
 
-        assertTrue(VideoDerivativeProcessor.allowedVideoType(exchange));
+        assertTrue(AudioDerivativeProcessor.allowedAudioType(exchange));
     }
 }

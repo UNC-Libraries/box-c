@@ -20,7 +20,8 @@ public class VideoDerivativeProcessor implements Processor {
         "^(video.(mp4|quicktime|m2ts|mpeg|mpg|x-ms-wmv|x-msvideo|avi|x-matroska|x-flv|x-m4v|webm|x-ms-asf|3gpp))" +
                 "|(application.x-shockwave-flash)$");
 
-    private static final Pattern DISALLOWED_PATTERN = Pattern.compile("^(application/octet-stream)$");
+    private static final Pattern DISALLOWED_PATTERN = Pattern.compile("^(application.(octet-stream" +
+            "|vnd\\.wordperfect))$");
 
     /**
      * Returns true if the subject of the exchange is a binary which

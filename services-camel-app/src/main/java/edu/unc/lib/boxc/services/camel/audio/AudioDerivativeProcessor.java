@@ -19,6 +19,9 @@ public class AudioDerivativeProcessor implements Processor {
     private static final Pattern MIMETYPE_PATTERN =
             Pattern.compile("^(audio.(basic|mpeg|mp4|x-aiff|x-ms-wma|x-wave|x-wav|wav|wave|3gpp))$");
 
+    private static final Pattern DISALLOWED_PATTERN = Pattern.compile("^(application.(octet-stream" +
+            "|vnd\\.wordperfect))$");
+
     /**
      * Returns true if the subject of the exchange is a binary which
      * is eligible for having audio derivatives generated from it.
@@ -32,6 +35,11 @@ public class AudioDerivativeProcessor implements Processor {
 
         if (!MIMETYPE_PATTERN.matcher(mimetype).matches()) {
             log.debug("File type {} on object {} is not applicable for audio derivatives", mimetype, binPath);
+            return false;
+        }
+
+        if (DISALLOWED_PATTERN.matcher(mimetype).matches()) {
+            log.debug("File type {} on object {} is disallowed for audio derivatives", mimetype, binPath);
             return false;
         }
 
