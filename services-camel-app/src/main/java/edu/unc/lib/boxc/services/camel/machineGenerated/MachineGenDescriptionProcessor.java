@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequest;
+import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -71,8 +72,10 @@ public class MachineGenDescriptionProcessor implements Processor {
         ) {
             var statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.OK.value()) {
-                log.warn("Failed to generate boxctron description for {}, status {}: {}",
-                        id, statusCode, response.getEntity().toString());
+                var responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+                var errorMessage = "Failed to generate boxctron description for " + id + "with response: " +
+                        response.getStatusLine() + "\n" + responseBody;
+                throw new AddDerivativeProcessor.DerivativeGenerationException(errorMessage);
             } else {
                 log.debug("Successfully requested boxctron description for {}", id);
                 var request = new MachineGenRequest();

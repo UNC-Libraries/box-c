@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.machineGenerated;
 
+import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
@@ -25,6 +26,7 @@ public class MachineGenRouter extends RouteBuilder {
                 .routeId("MachineGenDescription")
                 .log(DEBUG, log, "Processing machine gen update description request")
                 .filter().method(machineGenDescriptionProcessor, "needsRun")
+                .filter().method(ImageDerivativeProcessor.class, "allowedImageType")
                 .bean(machineGenDescriptionProcessor);
     }
 

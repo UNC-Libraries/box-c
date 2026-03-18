@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.services.camel.TestHelper;
+import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -32,6 +33,7 @@ import static edu.unc.lib.boxc.services.camel.TestHelper.FILENAME;
 import static edu.unc.lib.boxc.services.camel.TestHelper.RESC_ID;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -112,16 +114,18 @@ public class MachineGenDescriptionProcessorTest {
     }
 
     @Test
-    public void testUpdateMachineGenDescriptionAPIReturnsError() throws Exception {
-        stubFor(WireMock.post(urlMatching("/api/v1/describe/uri"))
-                .willReturn(aResponse()
-                        .withBody(FAIL_RESPONSE)
-                        .withHeader("Content-Type", "text/json")
-                        .withStatus(HttpStatus.BAD_REQUEST.value())));
+    public void testUpdateMachineGenDescriptionAPIReturnsError() {
+        assertThrows(AddDerivativeProcessor.DerivativeGenerationException.class, () -> {
+            stubFor(WireMock.post(urlMatching("/api/v1/describe/uri"))
+                    .willReturn(aResponse()
+                            .withBody(FAIL_RESPONSE)
+                            .withHeader("Content-Type", "text/json")
+                            .withStatus(HttpStatus.BAD_REQUEST.value())));
 
-        processor.process(mockMachineGenExchange(false));
-        verify(machineGenUpdateService, never()).updateMachineGenText(any());
-        TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
+            processor.process(mockMachineGenExchange(false));
+            verify(machineGenUpdateService, never()).updateMachineGenText(any());
+            TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
+        });
     }
 
     @Test

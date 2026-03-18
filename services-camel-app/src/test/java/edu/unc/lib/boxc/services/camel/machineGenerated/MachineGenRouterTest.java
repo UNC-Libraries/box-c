@@ -48,7 +48,9 @@ public class MachineGenRouterTest extends CamelTestSupport {
     public void requestSentTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(true);
         TestHelper.createContext(context,"MachineGenDescription");
-        template.sendBodyAndHeaders("", createHeaders());
+        var headers = createHeaders();
+        headers.put(CdrBinaryMimeType, "image/jpeg");
+        template.sendBodyAndHeaders("", headers);
 
         verify(processor).process(any());
     }
@@ -57,7 +59,20 @@ public class MachineGenRouterTest extends CamelTestSupport {
     public void requestSentRunNotNeededTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(false);
         TestHelper.createContext(context,"MachineGenDescription");
-        template.sendBodyAndHeaders("", createHeaders());
+        var headers = createHeaders();
+        headers.put(CdrBinaryMimeType, "image/jpeg");
+        template.sendBodyAndHeaders("", headers);
+
+        verify(processor, never()).process(any());
+    }
+
+    @Test
+    public void requestSentNotImageTest() throws Exception {
+        when(processor.needsRun(any())).thenReturn(true);
+        TestHelper.createContext(context,"MachineGenDescription");
+        var headers = createHeaders();
+        headers.put(CdrBinaryMimeType, "audio/wave");
+        template.sendBodyAndHeaders("", headers);
 
         verify(processor, never()).process(any());
     }
@@ -68,7 +83,6 @@ public class MachineGenRouterTest extends CamelTestSupport {
         headers.put(FcrepoJmsConstants.EVENT_TYPE, "ResourceCreation");
         headers.put(FcrepoJmsConstants.IDENTIFIER, "original_file");
         headers.put(FcrepoJmsConstants.RESOURCE_TYPE, Binary.getURI());
-        headers.put(CdrBinaryMimeType, "audio/wav");
 
         return headers;
     }
