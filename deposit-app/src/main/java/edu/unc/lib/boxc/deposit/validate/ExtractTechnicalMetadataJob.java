@@ -45,15 +45,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -233,7 +226,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
                 // Record the format info for this file
-                addFileIdentification(fitsDoc, premisObjCharsEl);
+                String extensionMimetype = Files.probeContentType(linkPath);
+                addFileIdentification(fitsDoc, premisObjCharsEl, extensionMimetype);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -265,9 +259,9 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
          * @param fitsDoc
          * @param premisObjCharsEl
          */
-        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl) {
+        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl, String extensionMimetype) {
             // Retrieve the FITS generate mimetype if available
-            Element identity = getFitsIdentificationInformation(fitsDoc);
+            Element identity = getFitsIdentificationInformation(fitsDoc, extensionMimetype);
 
             String fitsMimetype = null;
             String format;
@@ -512,7 +506,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * @param fitsDoc
      * @return
      */
-    private Element getFitsIdentificationInformation(Document fitsDoc) {
+    private Element getFitsIdentificationInformation(Document fitsDoc, String extensionMimetype) {
         Element identification = fitsDoc.getRootElement().getChild("identification", FITS_NS);
         String identityStatus = identification.getAttributeValue("status");
         // If there was no conflict, use the first identity
@@ -527,6 +521,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             var identityEls = identification.getChildren("identity", FITS_NS).stream()
                     // Filter out any invalid entries
                     .filter(el -> MimetypeHelpers.isValidMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
+                    // Filter out conflicting mimetypes that don't match file extension mimetype
+                    .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).equals(extensionMimetype))
                     // Primarily sort by the best ranking mimetype
                     .sorted(Comparator.comparingInt((Element el) -> rankMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
                     // Then rank by the number of tools that agreed on the mimetype
