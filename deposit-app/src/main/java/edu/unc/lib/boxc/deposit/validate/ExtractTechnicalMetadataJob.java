@@ -521,8 +521,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             var identityEls = identification.getChildren("identity", FITS_NS).stream()
                     // Filter out any invalid entries
                     .filter(el -> MimetypeHelpers.isValidMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
-                    // Filter out conflicting mimetypes that don't match file extension mimetype
-                    .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).equals(extensionMimetype))
                     // Primarily sort by the best ranking mimetype
                     .sorted(Comparator.comparingInt((Element el) -> rankMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
                     // Then rank by the number of tools that agreed on the mimetype
@@ -531,7 +529,12 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                     .reversed()
                     // And then favor more application specific mimetypes
                     .thenComparingInt(el -> el.getAttributeValue(MIMETYPE_ATTR).contains("x-") ? -1 : 0))
-                    .collect(Collectors.toList());
+                    .toList();
+            // Filter out conflicting mimetypes that don't match file extension mimetype
+            if (extensionMimetype != null) {
+                identityEls = identityEls.stream()
+                        .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).equals(extensionMimetype)).toList();
+            }
             // Return the best ranking identification, or null if none are valid
             return identityEls.isEmpty() ? null : identityEls.get(0);
         }
