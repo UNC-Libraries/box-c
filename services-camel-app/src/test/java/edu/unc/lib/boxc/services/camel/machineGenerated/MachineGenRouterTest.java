@@ -1,6 +1,8 @@
 package edu.unc.lib.boxc.services.camel.machineGenerated;
 
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
@@ -9,9 +11,11 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +23,9 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class MachineGenRouterTest extends CamelTestSupport {
@@ -40,10 +46,20 @@ public class MachineGenRouterTest extends CamelTestSupport {
 
     @Test
     public void requestSentTest() throws Exception {
+        when(processor.needsRun(any())).thenReturn(true);
         TestHelper.createContext(context,"MachineGenDescription");
         template.sendBodyAndHeaders("", createHeaders());
 
         verify(processor).process(any());
+    }
+
+    @Test
+    public void requestSentRunNotNeededTest() throws Exception {
+        when(processor.needsRun(any())).thenReturn(false);
+        TestHelper.createContext(context,"MachineGenDescription");
+        template.sendBodyAndHeaders("", createHeaders());
+
+        verify(processor, never()).process(any());
     }
 
     private Map<String, Object> createHeaders() {

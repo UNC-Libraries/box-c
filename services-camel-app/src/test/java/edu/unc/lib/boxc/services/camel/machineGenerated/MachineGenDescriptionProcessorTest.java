@@ -6,28 +6,36 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
-import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequest;
-import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static edu.unc.lib.boxc.services.camel.TestHelper.FILENAME;
+import static edu.unc.lib.boxc.services.camel.TestHelper.RESC_ID;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,8 +54,9 @@ public class MachineGenDescriptionProcessorTest {
     private static final String API_KEY = "api key";
     private MachineGenDescriptionProcessor processor;
     private AutoCloseable closeable;
-    private PID filePid;
+    private PID filePid = PIDs.get(RESC_ID);
     private HttpClientConnectionManager connectionManager;
+    private Path derivativePath;
     @Mock
     private FileObject fileObject;
     @Mock
@@ -58,17 +67,18 @@ public class MachineGenDescriptionProcessorTest {
     private IndexingMessageSender indexingMessageSender;
     @Mock
     private BinaryObject binaryObject;
+    @TempDir
+    public Path tmpFolder;
 
     @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
-        filePid = TestHelper.makePid();
         when(repositoryObjectLoader.getFileObject(eq(filePid))).thenReturn(fileObject);
         when(fileObject.getOriginalFile()).thenReturn(binaryObject);
         when(binaryObject.getFilename()).thenReturn("filename.txt");
         when(binaryObject.getMimetype()).thenReturn("text/plain");
-        var path = Paths.get("path/to/file/filename.txt");
-        when(binaryObject.getUri()).thenReturn(path.toUri());
+        derivativePath = tmpFolder.resolve(FILENAME);
+        when(binaryObject.getUri()).thenReturn(derivativePath.toUri());
 
         connectionManager = new PoolingHttpClientConnectionManager();
 
@@ -96,7 +106,7 @@ public class MachineGenDescriptionProcessorTest {
                         .withHeader("Content-Type", "text/json")
                         .withStatus(HttpStatus.OK.value())));
 
-        processor.process(createExchange());
+        processor.process(mockMachineGenExchange(false));
         verify(machineGenUpdateService).updateMachineGenText(any());
         TestHelper.assertIndexingMessageSent(filePid, indexingMessageSender, "automated");
     }
@@ -109,14 +119,41 @@ public class MachineGenDescriptionProcessorTest {
                         .withHeader("Content-Type", "text/json")
                         .withStatus(HttpStatus.BAD_REQUEST.value())));
 
-        processor.process(createExchange());
+        processor.process(mockMachineGenExchange(false));
         verify(machineGenUpdateService, never()).updateMachineGenText(any());
         TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
     }
 
-    private Exchange createExchange() throws IOException {
-        var request = new MachineGenRequest();
-        request.setPidString(filePid.getId());
-        return TestHelper.mockExchange(MachineGenRequestSerializationHelper.toJson(request));
+    @Test
+    public void testNeedsRunNewDerivative() {
+        when(machineGenUpdateService.getMachineGenDerivativePath(any())).thenReturn(derivativePath);
+        assertTrue(processor.needsRun(mockMachineGenExchange(false)));
+    }
+
+    @Test
+    public void testNeedsRunDerivativeExists() throws IOException {
+        Files.createDirectories(derivativePath.getParent());
+        Files.createFile(derivativePath);
+        when(machineGenUpdateService.getMachineGenDerivativePath(any())).thenReturn(derivativePath);
+        assertFalse(processor.needsRun(mockMachineGenExchange(false)));
+    }
+
+    @Test
+    public void testNeedsRunDerivativeExistsForceIsTrue() throws IOException {
+        Files.createDirectories(derivativePath.getParent());
+        Files.createFile(derivativePath);
+        when(machineGenUpdateService.getMachineGenDerivativePath(any())).thenReturn(derivativePath);
+        assertTrue(processor.needsRun(mockMachineGenExchange(true)));
+    }
+
+    private Exchange mockMachineGenExchange(boolean force) {
+        var exchange = mock(Exchange.class);
+        var message = mock(Message.class);
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(eq(FCREPO_URI))).thenReturn(RESC_ID);
+        if (force) {
+            when(message.getHeader(eq("force"))).thenReturn("true");
+        }
+        return exchange;
     }
 }

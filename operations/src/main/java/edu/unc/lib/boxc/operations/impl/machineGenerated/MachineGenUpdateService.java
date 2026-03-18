@@ -33,7 +33,7 @@ public class MachineGenUpdateService {
         try {
             // check that object is a file object
             repositoryObjectLoader.getFileObject(pid);
-            var derivativePath = getDerivativePath(derivativeBasePath, binaryId);
+            var derivativePath = getMachineGenDerivativePath(binaryId);
             writeToFile(derivativePath, request.getText());
             return derivativePath;
         } catch (ObjectTypeMismatchException e) {
@@ -42,6 +42,15 @@ public class MachineGenUpdateService {
         } catch (IOException e) {
             throw new ServiceException("Unable to write to machine generated " + type +  " file for: " + binaryId, e);
         }
+    }
+
+    /**
+     * Get path for machine gen desc derivative
+     * @param id binary ID
+     * @return path to derivative
+     */
+    public Path getMachineGenDerivativePath(String id) {
+        return getDerivativePath(derivativeBasePath, id);
     }
 
     public void setType(String type) {

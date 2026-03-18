@@ -8,6 +8,10 @@ import org.slf4j.Logger;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Router for processing machine gen description updates via boxctron
+ * @author snluong
+ */
 public class MachineGenRouter extends RouteBuilder {
     private static final Logger log = getLogger(MachineGenRouter.class);
     @BeanInject("machineGenDescriptionProcessor")
@@ -19,9 +23,8 @@ public class MachineGenRouter extends RouteBuilder {
     public void configure() throws Exception {
         from(machineGenDescriptionStreamCamel)
                 .routeId("MachineGenDescription")
-                .log(DEBUG, log,
-                        "Processing machine gen update description request")
-                // trigger machine gen description followed by indexing
+                .log(DEBUG, log, "Processing machine gen update description request")
+                .filter().method(machineGenDescriptionProcessor, "needsRun")
                 .bean(machineGenDescriptionProcessor);
     }
 

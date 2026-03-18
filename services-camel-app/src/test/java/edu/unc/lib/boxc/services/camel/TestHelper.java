@@ -14,6 +14,7 @@ import org.apache.camel.model.ModelCamelContext;
 import java.io.File;
 import java.util.UUID;
 
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -24,11 +25,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Basic methods used in several processor and router tests
+ * Basic methods and constants used in several processor and router tests
  *
  * @author snluong
  */
 public class TestHelper {
+    public static final String FEDORA_BASE = "http://example.com/rest/";
+    public static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    public static final String FILENAME = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     public static PID makePid() {
         return PIDs.get(UUID.randomUUID().toString());
     }
