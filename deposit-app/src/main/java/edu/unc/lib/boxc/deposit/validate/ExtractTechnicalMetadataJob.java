@@ -537,9 +537,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                     .thenComparingInt(el -> el.getAttributeValue(MIMETYPE_ATTR).contains("x-") ? -1 : 0))
                     .toList();
             // Filter out conflicting mimetypes that don't match file extension mimetype
-            if (extensionMimetype != null) {
+            if (!identityEls.isEmpty() && extensionMimetype != null && identityEls.stream()
+                    .anyMatch(el -> el.getAttributeValue(MIMETYPE_ATTR).contains(extensionMimetype))) {
                 identityEls = identityEls.stream()
-                        .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).equals(extensionMimetype)).toList();
+                        .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).contains(extensionMimetype)).toList();
             }
             // Return the best ranking identification, or null if none are valid
             return identityEls.isEmpty() ? null : identityEls.get(0);
