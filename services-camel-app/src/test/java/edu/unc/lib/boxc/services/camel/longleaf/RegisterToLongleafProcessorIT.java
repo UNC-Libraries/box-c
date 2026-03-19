@@ -1,5 +1,9 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -21,6 +25,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.fcrepo.client.FcrepoClient;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.jupiter.api.AfterEach;
@@ -34,27 +39,37 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * @author bbpennel
  * @author smithjp
  */
+@WireMockTest
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration("/spring-test/cdr-client-container.xml")
 public class RegisterToLongleafProcessorIT {
+    private static final String REGISTER_PATH = "/register";
+
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
     private static final String TEXT1_MD5 = DigestUtils.md5Hex(TEXT1_BODY);
@@ -85,31 +100,34 @@ public class RegisterToLongleafProcessorIT {
     private BinaryTransferService transferService;
     private BinaryTransferSession transferSession;
 
-    private String longleafScript;
-    private String outputPath;
-    private List<String> output;
+    private PoolingHttpClientConnectionManager connectionManager;
 
     private RegisterToLongleafProcessor processor;
 
     @BeforeEach
-    public void initTest() throws Exception {
+    public void initTest(WireMockRuntimeInfo wireMockInfo) {
         TestHelper.setContentBase(baseAddress);
+
+        connectionManager = new PoolingHttpClientConnectionManager();
 
         processor = new RegisterToLongleafProcessor();
         processor.setFcrepoClient(fcrepoClient);
         processor.setRepositoryObjectLoader(repoObjLoader);
-        outputPath = Files.createFile(tmpFolder.resolve("output")).toString();
-        output = null;
-        longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
-        processor.setLongleafBaseCommand(longleafScript);
+        processor.setLongleafBaseUri(wireMockInfo.getHttpBaseUrl());
+        processor.setHttpClientConnectionManager(connectionManager);
 
         transferSession = transferService.getSession(storageLocationTestHelper.getTestStorageLocation());
+
+        stubSuccessfulRegister();
     }
 
     @AfterEach
     public void tearDown() throws Exception {
         transferSession.close();
+        processor.destroy();
+        connectionManager.shutdown();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        WireMock.reset();
     }
 
     @Test
@@ -120,8 +138,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertRegisterCalled(1);
+        assertRegisterCalled();
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
     }
 
@@ -149,8 +166,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(modsBin, modsHistoryBin, premisBin, origBin);
         processor.process(exchange);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertRegisterCalled(1);
+        assertRegisterCalled();
         assertManifestEntry("md5", TEXT1_MD5, storageUri);
         assertManifestEntry("md5", TEXT2_MD5, modsStorageUri);
         assertManifestEntry("md5", TEXT3_MD5, modsHistoryStorageUri);
@@ -168,8 +184,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin, techBin);
         processor.process(exchange);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertRegisterCalled(1);
+        assertRegisterCalled();
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
         assertManifestEntry("md5", TEXT1_MD5, origBin.getContentUri());
         assertManifestEntry("sha1", TEXT2_SHA1, techBin.getContentUri());
@@ -184,9 +199,78 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertRegisterCalled(1);
+        assertRegisterCalled();
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
+    }
+
+    @Test
+    public void registerApiReturnsNon200() {
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(500)));
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        Exchange exchange = createBatchExchange(origBin);
+        assertThrows(ServiceException.class, () -> processor.process(exchange));
+
+        assertRegisterCalled();
+    }
+
+    @Test
+    public void registerPartialFailure() {
+        FileObject fileObj1 = repoObjFactory.createFileObject(null);
+        BinaryObject origBin1 = createOriginalBinary(fileObj1, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObject fileObj2 = repoObjFactory.createFileObject(null);
+        BinaryObject origBin2 = createOriginalBinary(fileObj2, TEXT2_BODY, TEXT2_SHA1, null);
+        FileObject fileObj3 = repoObjFactory.createFileObject(null);
+        BinaryObject origBin3 = createOriginalBinary(fileObj3, TEXT3_BODY, null, TEXT3_MD5);
+
+        String successPath1 = Paths.get(origBin1.getContentUri()).toString();
+        String successPath2 = Paths.get(origBin2.getContentUri()).toString();
+        String failurePath = Paths.get(origBin3.getContentUri()).toString();
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"event\":\"register\","
+                                + "\"success\":[\"" + successPath1 + "\",\"" + successPath2 + "\"],"
+                                + "\"failure\":[\"" + failurePath + "\"]}")));
+
+        var exchangeWithTemplate = createBatchExchangeWithTemplate(origBin1, origBin2, origBin3);
+        assertThrows(ServiceException.class, () -> processor.process(exchangeWithTemplate.exchange));
+
+        assertRegisterCalled();
+        // The two successful registrations should have been sent downstream
+        verify(exchangeWithTemplate.producerTemplate).sendBody(
+                isNull(String.class),
+                eq(Map.of(origBin1.getPid().getRepositoryPath(), origBin1.getContentUri().toString(),
+                          origBin2.getPid().getRepositoryPath(), origBin2.getContentUri().toString())));
+    }
+
+    private void stubSuccessfulRegister() {
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"event\":\"register\",\"success\":[],\"failure\":[]}")));
+    }
+
+    private void assertRegisterCalled() {
+        WireMock.verify(1, postRequestedFor(urlPathEqualTo(REGISTER_PATH)));
+    }
+
+    private void assertManifestEntry(String alg, String expectedDigest, URI storageUri) {
+        Path storagePath = Paths.get(storageUri);
+        String expectedBase = FileSystemTransferHelpers.getBaseBinaryPath(storagePath);
+        String expectedPath = storagePath.toString();
+        // The manifest line format is: "<digest> <basePath> <fullPath>\n"
+        // We check that the "body" field of the JSON request contains the section header and the entry line.
+        String expectedLine = expectedDigest + " " + expectedBase + " " + expectedPath;
+        WireMock.verify(postRequestedFor(urlPathEqualTo(REGISTER_PATH))
+                .withRequestBody(matchingJsonPath("$.body", WireMock.containing(alg + ":\n")))
+                .withRequestBody(matchingJsonPath("$.body", WireMock.containing(expectedLine))));
     }
 
     private BinaryObject createBinary(PID binPid, String content, String sha1, String md5) {
@@ -202,42 +286,16 @@ public class RegisterToLongleafProcessorIT {
         return fileObj.addOriginalFile(storageUri, "original.txt", "plain/text", sha1, md5);
     }
 
-    private void assertRegisterCalled(int expectedCount) {
-        int count = 0;
-        for (String line : output) {
-            if (("register --force -m @-").equals(line)) {
-                count++;
-            }
-        }
-
-        assertEquals(expectedCount, count);
-    }
-
-    private void assertManifestEntry(String alg, String expectedDigest, URI storageUri) {
-        int algIndex = output.indexOf(alg + ":");
-        assertNotEquals(-1, algIndex, "Expected digest algorithm " + alg + " not found in manifest");
-
-        Path storagePath = Paths.get(storageUri);
-        String expectedBase = FileSystemTransferHelpers.getBaseBinaryPath(storagePath);
-        String expectedPath = storagePath.toString();
-        for (int i = algIndex + 1; i < output.size(); i++) {
-            String line = output.get(i);
-            if (line.matches("\\S+:")) {
-                break;
-            }
-            if (line.matches(expectedDigest + " +" + expectedBase + " +" + expectedPath)) {
-                return;
-            }
-        }
-        fail("Did not find entry for " + alg + " "
-                + expectedDigest + " " + expectedPath + " in manifest:\n" + output);
-    }
 
     private InputStream streamString(String text) {
         return new ByteArrayInputStream(text.getBytes(UTF_8));
     }
 
     private Exchange createBatchExchange(RepositoryObject... objects) {
+        return createBatchExchangeWithTemplate(objects).exchange;
+    }
+
+    private ExchangeWithTemplate createBatchExchangeWithTemplate(RepositoryObject... objects) {
         Exchange exchange = mock(Exchange.class);
         Message msg = mock(Message.class);
         CamelContext context = mock(CamelContext.class);
@@ -248,6 +306,9 @@ public class RegisterToLongleafProcessorIT {
         when(msg.getBody(List.class)).thenReturn(Arrays.stream(objects)
                 .map(ro -> ro.getPid().getRepositoryPath())
                 .collect(Collectors.toList()));
-        return exchange;
+        return new ExchangeWithTemplate(exchange, template);
+    }
+
+    private record ExchangeWithTemplate(Exchange exchange, ProducerTemplate producerTemplate) {
     }
 }
