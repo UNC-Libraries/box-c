@@ -67,13 +67,12 @@ public class MachineGenDescriptionProcessor implements Processor {
         postMethod.setHeader("X-API-Key", apiKey);
 
         try (
-                var ignored = getHttpClient();
-                var response = ignored.execute(postMethod);
+                var response = getHttpClient().execute(postMethod);
         ) {
             var statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.OK.value()) {
                 var responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                var errorMessage = "Failed to generate boxctron description for " + id + "with response: " +
+                var errorMessage = "Failed to generate boxctron description for " + id + " with response: " +
                         response.getStatusLine() + "\n" + responseBody;
                 throw new AddDerivativeProcessor.DerivativeGenerationException(errorMessage);
             } else {
