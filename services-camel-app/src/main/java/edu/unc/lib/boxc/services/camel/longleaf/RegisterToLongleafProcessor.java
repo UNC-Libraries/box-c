@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
@@ -23,14 +21,6 @@ import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -81,15 +71,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
     private String registrationSuccessfulEndpoint;
 
-    private String longleafBaseUri;
-
-    private HttpClientConnectionManager httpClientConnectionManager;
-
-    private CloseableHttpClient httpClient;
-
     private ProducerTemplate producerTemplate;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * The exchange here is expected to be a batch message containing a List
@@ -200,65 +182,39 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         batchSizeHistogram.update(entryCount);
 
         String requestUrl = URIUtil.join(longleafBaseUri, "register");
-        var postMethod = new HttpPost(requestUrl);
-        try {
-            var bodyMap = Map.of(
-                    "manifest", "@-",
-                    "body", sb.toString(),
-                    "force", true);
-            HttpEntity entity = EntityBuilder.create()
-                    .setText(objectMapper.writeValueAsString(bodyMap))
-                    .setContentType(ContentType.APPLICATION_JSON).build();
-            postMethod.setEntity(entity);
+        Map<String, Object> bodyMap = Map.of(
+                "manifest", "@-",
+                "body", sb.toString(),
+                "force", true
+        );
+        LongleafApiResult result = executeHttpPost(requestUrl, bodyMap);
 
-            try (var response = getHttpClient().execute(postMethod)) {
-                int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode != 200) {
-                    log.error("Longleaf registration request failed with status {}", statusCode);
-                    throw new ServiceException("Failed to register " + entryCount
-                            + " entries to Longleaf. HTTP status: " + statusCode);
-                }
+        Map<String, String> successful = new HashMap<>();
+        if (!result.hasFailures()) {
+            log.info("Successfully registered {} entries to longleaf", entryCount);
 
-                String responseBody = EntityUtils.toString(response.getEntity());
-                JsonNode responseJson = objectMapper.readTree(responseBody);
-
-                JsonNode successNode = responseJson.get("success");
-                JsonNode failureNode = responseJson.get("failure");
-                boolean hasFailures = failureNode != null && !failureNode.isEmpty();
-
-                Map<String, String> successful = new HashMap<>();
-                if (!hasFailures) {
-                    log.info("Successfully registered {} entries to longleaf", entryCount);
-
-                    digestsMap.values().stream().flatMap(Collection::stream)
-                              .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
-                    sendSuccessMessage(successful, exchange);
-                } else {
-                    // Partial failure: extract successes from the response and remove them from messages
-                    if (successNode != null && !successNode.isEmpty()) {
-                        for (JsonNode successPath : successNode) {
-                            String completedPath = successPath.asText();
-                            DigestEntry digestEntry = findDigestEntry(completedPath, digestsMap);
-                            if (digestEntry != null) {
-                                messages.remove(digestEntry.fcrepoUri);
-                                successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
-                            }
-                        }
-                        sendSuccessMessage(successful, exchange);
-                    }
-                    if (messages.isEmpty()) {
-                        log.error("Result from longleaf indicates registration failed, but there are "
-                                + "no failed URIs remaining. See longleaf logs for details.");
-                        return;
-                    }
-                    throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf. "
-                            + failureNode.size() + " failures reported.");
+            digestsMap.values().stream().flatMap(Collection::stream)
+                      .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
+            sendSuccessMessage(successful, exchange);
+        } else {
+            // Partial failure: extract successes from the response and remove them from messages
+            for (String completedPath : result.successes) {
+                DigestEntry digestEntry = findDigestEntry(completedPath, digestsMap);
+                if (digestEntry != null) {
+                    messages.remove(digestEntry.fcrepoUri);
+                    successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
                 }
             }
-        } catch (IOException e) {
-            throw new ServiceException("Error communicating with longleaf at " + requestUrl, e);
-        } finally {
-            postMethod.releaseConnection();
+            if (!successful.isEmpty()) {
+                sendSuccessMessage(successful, exchange);
+            }
+            if (messages.isEmpty()) {
+                log.error("Result from longleaf indicates registration failed, but there are "
+                        + "no failed URIs remaining. See longleaf logs for details.");
+                return;
+            }
+            throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf. "
+                    + result.failures.size() + " failures reported.");
         }
 
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
@@ -282,15 +238,6 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         return entry.orElse(null);
     }
 
-    private CloseableHttpClient getHttpClient() {
-        if (httpClient == null) {
-            httpClient = HttpClients.custom()
-                    .setConnectionManager(httpClientConnectionManager)
-                    .build();
-        }
-        return httpClient;
-    }
-
     public void destroy() {
         if (producerTemplate != null) {
             try {
@@ -299,13 +246,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
                 log.error("Failed to close producer template", e);
             }
         }
-        if (httpClient != null) {
-            try {
-                httpClient.close();
-            } catch (Exception e) {
-                log.error("Failed to close http client", e);
-            }
-        }
+        super.destroy();
     }
 
     private static class DigestEntry {
@@ -339,13 +280,6 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         this.registrationSuccessfulEndpoint = registrationSuccessfulEndpoint;
     }
 
-    public void setLongleafBaseUri(String longleafBaseUri) {
-        this.longleafBaseUri = longleafBaseUri;
-    }
-
-    public void setHttpClientConnectionManager(HttpClientConnectionManager httpClientConnectionManager) {
-        this.httpClientConnectionManager = httpClientConnectionManager;
-    }
 
     /**
      * @param exchange

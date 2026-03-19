@@ -23,6 +23,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -234,24 +235,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
      * contains the base path of each provided content URI.
      */
     private void assertDeregisterRequestedForPaths(long timeout, String... contentUris) throws Exception {
-        long start = System.currentTimeMillis();
-        do {
-            try {
-                for (String contentUri : contentUris) {
-                    URI uri = URI.create(contentUri);
-                    Path contentPath = uri.getScheme() == null ? Paths.get(contentUri) : Paths.get(uri);
-                    String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
-                    WireMock.verify(postRequestedFor(urlPathEqualTo(DEREGISTER_PATH))
-                            .withRequestBody(matchingJsonPath("$.body", WireMock.containing(basePath))));
-                }
-                return;
-            } catch (AssertionError e) {
-                if ((System.currentTimeMillis() - start) > timeout) {
-                    throw e;
-                }
-                Thread.sleep(25);
-            }
-        } while (true);
+        assertPostRequestedForPaths(timeout, DEREGISTER_PATH, Arrays.stream(contentUris)
+                .map(URI::create).toArray(URI[]::new));
     }
 
     private String generateContentUri() {
