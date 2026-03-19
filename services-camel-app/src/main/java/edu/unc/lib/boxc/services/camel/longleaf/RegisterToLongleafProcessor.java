@@ -13,12 +13,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -68,6 +78,14 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private FcrepoClient fcrepoClient;
 
     private String registrationSuccessfulEndpoint;
+
+    private String longleafBaseUri;
+
+    private HttpClientConnectionManager httpClientConnectionManager;
+
+    private CloseableHttpClient httpClient;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * The exchange here is expected to be a batch message containing a List
@@ -138,7 +156,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     /**
-     * Executes longleaf register command for a batch of files with digests
+     * Executes longleaf register via HTTP API for a batch of files with digests
      *
      * @param messages list of fcrepoUris from the exchange
      * @param digestsMap mapping of digest algorithms to paths plus digest values
@@ -178,35 +196,41 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         // Record statistics about the number of objects registered
         batchSizeHistogram.update(entryCount);
 
-        ExecuteResult result = executeCommand("register --force -m @-", sb.toString());
+        String requestUrl = URIUtil.join(longleafBaseUri, "register");
+        var postMethod = new HttpPost(requestUrl);
+        try {
+            var bodyMap = Map.of(
+                    "manifest", "@-",
+                    "body", sb.toString(),
+                    "force", true);
+            HttpEntity entity = EntityBuilder.create()
+                    .setText(objectMapper.writeValueAsString(bodyMap))
+                    .setContentType(ContentType.APPLICATION_JSON).build();
+            postMethod.setEntity(entity);
 
-        Map<String, String> successful = new HashMap<>();
-        if (result.exitVal == 0) {
-            log.info("Successfully registered {} entries to longleaf", entryCount);
+            try (var response = getHttpClient().execute(postMethod)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode == 200) {
+                    log.info("Successfully registered {} entries to longleaf", entryCount);
 
-            digestsMap.values().stream().flatMap(values -> values.stream())
-                      .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
-            sendSuccessMessage(successful, exchange);
-        } else {
-            // trim successfully registered files out of the message before failing
-            if (!result.completed.isEmpty()) {
-                result.completed.stream()
-                    .map(completedPath -> findDigestEntry(completedPath, digestsMap))
-                    .filter(digestEntry -> digestEntry != null)
-                    .forEach(digestEntry -> {
-                        messages.remove(digestEntry.fcrepoUri);
-                        successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
-                    });
+                    Map<String, String> successful = new HashMap<>();
+                    digestsMap.values().stream().flatMap(values -> values.stream())
+                              .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
+                    sendSuccessMessage(successful, exchange);
 
-                sendSuccessMessage(successful, exchange);
+                    // TODO process response body when ready
+                } else {
+                    log.error("Longleaf registration failed with status {}", statusCode);
+                    throw new ServiceException("Failed to register " + entryCount
+                            + " entries to Longleaf. HTTP status: " + statusCode);
+                }
             }
-            if (messages.isEmpty()) {
-                log.error("Result from longleaf indicates registration failed, but there are "
-                        + "no failed URIs remaining. See longleaf logs for details.");
-                return;
-            }
-            throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
-                    + "Check longleaf logs, command returned: " + result.exitVal);
+        } catch (ServiceException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ServiceException("Error communicating with longleaf at " + requestUrl, e);
+        } finally {
+            postMethod.releaseConnection();
         }
 
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
@@ -229,6 +253,25 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
             return entry.get();
         } else {
             return null;
+        }
+    }
+
+    private CloseableHttpClient getHttpClient() {
+        if (httpClient == null) {
+            httpClient = HttpClients.custom()
+                    .setConnectionManager(httpClientConnectionManager)
+                    .build();
+        }
+        return httpClient;
+    }
+
+    public void destroy() {
+        if (httpClient != null) {
+            try {
+                httpClient.close();
+            } catch (Exception e) {
+                log.error("Failed to close http client", e);
+            }
         }
     }
 
@@ -261,6 +304,14 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
     public void setRegistrationSuccessfulEndpoint(String registrationSuccessfulEndpoint) {
         this.registrationSuccessfulEndpoint = registrationSuccessfulEndpoint;
+    }
+
+    public void setLongleafBaseUri(String longleafBaseUri) {
+        this.longleafBaseUri = longleafBaseUri;
+    }
+
+    public void setHttpClientConnectionManager(HttpClientConnectionManager httpClientConnectionManager) {
+        this.httpClientConnectionManager = httpClientConnectionManager;
     }
 
     /**

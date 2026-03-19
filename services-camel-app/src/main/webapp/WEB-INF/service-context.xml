@@ -470,10 +470,12 @@
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
-    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor">
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor"
+            destroy-method="destroy">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="registrationSuccessfulEndpoint" value="${cdr.registration.successful.dest}" />
     </bean>
     
