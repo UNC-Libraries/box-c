@@ -1,50 +1,59 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
  */
+@WireMockTest
 public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String FILTER_DEREGISTER_ENDPOINT = "direct:filter.longleaf.deregister";
+    private static final String DEREGISTER_PATH = "/api/deregister";
 
     @EndpointInject("mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;
 
     private DeregisterLongleafProcessor deregisterLongleafProcessor;
+    private PoolingHttpClientConnectionManager connectionManager;
 
     @TempDir
     public Path tmpFolder;
-
-    private String longleafScript;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -55,14 +64,21 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     }
 
     @BeforeEach
-    public void setup() throws Exception {
+    public void setup(WireMockRuntimeInfo wireMockInfo) throws Exception {
         deregisterLongleafProcessor = applicationContext.getBean(DeregisterLongleafProcessor.class);
 
-        Path tmpPath = tmpFolder.resolve("output_file");
-        Files.createFile(tmpPath);
-        outputPath = tmpPath.toAbsolutePath().toString();
-        longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
-        deregisterLongleafProcessor.setLongleafBaseCommand(longleafScript);
+        connectionManager = new PoolingHttpClientConnectionManager();
+        deregisterLongleafProcessor.setLongleafBaseUri(wireMockInfo.getHttpBaseUrl());
+        deregisterLongleafProcessor.setHttpClientConnectionManager(connectionManager);
+
+        stubSuccessfulDeregister();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        deregisterLongleafProcessor.destroy();
+        connectionManager.shutdown();
+        WireMock.reset();
     }
 
     @Test
@@ -78,7 +94,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
 
-        assertSubmittedPaths(2000, contentUri);
+        assertDeregisterRequestedForPaths(2000, contentUri);
     }
 
     @Test
@@ -94,7 +110,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
 
-        assertSubmittedPaths(2000, contentUris);
+        assertDeregisterRequestedForPaths(2000, contentUris);
     }
 
     @Test
@@ -109,7 +125,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
 
-        assertSubmittedPaths(5000, contentUris);
+        assertDeregisterRequestedForPaths(5000, contentUris);
     }
 
     // Should process file uris, and absolute paths without file://, but not http uris or relative
@@ -134,7 +150,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
 
-        assertSubmittedPaths(10000, successUris);
+        assertDeregisterRequestedForPaths(10000, successUris);
     }
 
     @Test
@@ -146,34 +162,37 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 .create();
 
         String[] contentUris = generateContentUris(3);
+        String successPath1 = Paths.get(URI.create(contentUris[0])).toString();
+        String successPath3 = Paths.get(URI.create(contentUris[2])).toString();
+        String failurePath = Paths.get(URI.create(contentUris[1])).toString();
 
-        // Append to existing script
-        FileUtils.writeStringToFile(new File(longleafScript),
-                "\necho \"SUCCESS register " + Paths.get(URI.create(contentUris[0])).toString() + "\"" +
-                "\necho \"FAILURE register " + Paths.get(URI.create(contentUris[1])).toString() + "\"" +
-                "\necho \"SUCCESS register " + Paths.get(URI.create(contentUris[2])).toString() + "\"" +
-                "\nexit 2",
-                UTF_8, true);
+        stubFor(post(urlPathEqualTo(DEREGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"event\":\"deregister\","
+                                + "\"success\":[\"" + successPath1 + "\",\"" + successPath3 + "\"],"
+                                + "\"failure\":[\"" + failurePath + "\"]}")));
 
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(20L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
 
-        assertSubmittedPaths(5000, contentUris);
+        assertDeregisterRequestedForPaths(5000, contentUris);
 
         mockDlq.assertIsSatisfied(1000);
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
 
         Exchange failed = dlqExchanges.get(0);
         var failedList = failed.getIn().getBody(List.class);
-        assertEquals(1, failedList.size(), "Only two uris should be in the failed message body");
+        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
         assertTrue(failedList.contains(contentUris[1]),
                 "Exchange in DLQ must contain the fcrepo uri of the failed binary");
     }
 
     @Test
-    public void deregisterCommandErrorSuccessExit() throws Exception {
+    public void deregisterApiError() throws Exception {
         mockDlq.expectedMessageCount(1);
 
         NotifyBuilder notify = new NotifyBuilder(context)
@@ -182,17 +201,14 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         String[] contentUris = generateContentUris(1);
 
-        // Append to existing script
-        FileUtils.writeStringToFile(new File(longleafScript),
-                "\necho 'ERROR: \"longleaf deregister\" was called with arguments [\"--ohno\"]'",
-                UTF_8, true);
+        stubFor(post(urlPathEqualTo(DEREGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(500)));
 
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Deregister route not satisfied");
-
-        assertSubmittedPaths(5000, contentUris);
 
         mockDlq.assertIsSatisfied(1000);
 
@@ -203,6 +219,39 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         assertTrue(failedList.contains(contentUris[0]),
                 "Exchange in DLQ must contain the fcrepo uri of the unprocessed binary");
+    }
+
+    private void stubSuccessfulDeregister() {
+        stubFor(post(urlPathEqualTo(DEREGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"event\":\"deregister\",\"success\":[],\"failure\":[]}")));
+    }
+
+    /**
+     * Waits up to timeout ms for WireMock to have received a POST request whose body field
+     * contains the base path of each provided content URI.
+     */
+    private void assertDeregisterRequestedForPaths(long timeout, String... contentUris) throws Exception {
+        long start = System.currentTimeMillis();
+        do {
+            try {
+                for (String contentUri : contentUris) {
+                    URI uri = URI.create(contentUri);
+                    Path contentPath = uri.getScheme() == null ? Paths.get(contentUri) : Paths.get(uri);
+                    String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
+                    WireMock.verify(postRequestedFor(urlPathEqualTo(DEREGISTER_PATH))
+                            .withRequestBody(matchingJsonPath("$.body", WireMock.containing(basePath))));
+                }
+                return;
+            } catch (AssertionError e) {
+                if ((System.currentTimeMillis() - start) > timeout) {
+                    throw e;
+                }
+                Thread.sleep(25);
+            }
+        } while (true);
     }
 
     private String generateContentUri() {

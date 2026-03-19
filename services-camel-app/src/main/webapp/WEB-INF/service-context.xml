@@ -489,8 +489,11 @@
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
     
-    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor">
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor"
+            destroy-method="destroy">
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+    </bean>
     </bean>
 
     <!-- Service operates via spring scheduling -->
