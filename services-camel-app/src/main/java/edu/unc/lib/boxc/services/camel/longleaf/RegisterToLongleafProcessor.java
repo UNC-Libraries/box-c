@@ -8,17 +8,18 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -29,6 +30,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -84,6 +86,8 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private HttpClientConnectionManager httpClientConnectionManager;
 
     private CloseableHttpClient httpClient;
+
+    private ProducerTemplate producerTemplate;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -167,22 +171,21 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
         StringBuilder sb = new StringBuilder();
         MutableInt cnt = new MutableInt(0);
-        digestsMap.entrySet().forEach(digestGroup -> {
-            List<DigestEntry> digestEntries = digestGroup.getValue();
-            if (digestEntries.size() == 0) {
+        digestsMap.forEach((key, digestEntries) -> {
+            if (digestEntries.isEmpty()) {
                 return;
             }
-            sb.append(digestGroup.getKey()).append(":\n");
+            sb.append(key).append(":\n");
 
             digestEntries.forEach(manifestEntry -> {
                 Path filePath = Paths.get(manifestEntry.storageUri);
                 String basePath = FileSystemTransferHelpers.getBaseBinaryPath(filePath);
                 sb.append(manifestEntry.digest)
-                    .append(' ')
-                    .append(basePath)
-                    .append(' ')
-                    .append(filePath)
-                    .append('\n');
+                        .append(' ')
+                        .append(basePath)
+                        .append(' ')
+                        .append(filePath)
+                        .append('\n');
                 cnt.increment();
             });
         });
@@ -210,23 +213,48 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
             try (var response = getHttpClient().execute(postMethod)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
-                    log.info("Successfully registered {} entries to longleaf", entryCount);
-
-                    Map<String, String> successful = new HashMap<>();
-                    digestsMap.values().stream().flatMap(values -> values.stream())
-                              .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
-                    sendSuccessMessage(successful, exchange);
-
-                    // TODO process response body when ready
-                } else {
-                    log.error("Longleaf registration failed with status {}", statusCode);
+                if (statusCode != 200) {
+                    log.error("Longleaf registration request failed with status {}", statusCode);
                     throw new ServiceException("Failed to register " + entryCount
                             + " entries to Longleaf. HTTP status: " + statusCode);
                 }
+
+                String responseBody = EntityUtils.toString(response.getEntity());
+                JsonNode responseJson = objectMapper.readTree(responseBody);
+
+                JsonNode successNode = responseJson.get("success");
+                JsonNode failureNode = responseJson.get("failure");
+                boolean hasFailures = failureNode != null && !failureNode.isEmpty();
+
+                Map<String, String> successful = new HashMap<>();
+                if (!hasFailures) {
+                    log.info("Successfully registered {} entries to longleaf", entryCount);
+
+                    digestsMap.values().stream().flatMap(Collection::stream)
+                              .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
+                    sendSuccessMessage(successful, exchange);
+                } else {
+                    // Partial failure: extract successes from the response and remove them from messages
+                    if (successNode != null && !successNode.isEmpty()) {
+                        for (JsonNode successPath : successNode) {
+                            String completedPath = successPath.asText();
+                            DigestEntry digestEntry = findDigestEntry(completedPath, digestsMap);
+                            if (digestEntry != null) {
+                                messages.remove(digestEntry.fcrepoUri);
+                                successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
+                            }
+                        }
+                        sendSuccessMessage(successful, exchange);
+                    }
+                    if (messages.isEmpty()) {
+                        log.error("Result from longleaf indicates registration failed, but there are "
+                                + "no failed URIs remaining. See longleaf logs for details.");
+                        return;
+                    }
+                    throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf. "
+                            + failureNode.size() + " failures reported.");
+                }
             }
-        } catch (ServiceException e) {
-            throw e;
         } catch (IOException e) {
             throw new ServiceException("Error communicating with longleaf at " + requestUrl, e);
         } finally {
@@ -237,11 +265,13 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     private void sendSuccessMessage(Map<String, String> successful, Exchange exchange) {
-        if (successful.size() == 0) {
+        if (successful.isEmpty()) {
             return;
         }
-        ProducerTemplate template = exchange.getContext().createProducerTemplate();
-        template.sendBody(registrationSuccessfulEndpoint, successful);
+        if (producerTemplate == null) {
+            producerTemplate = exchange.getContext().createProducerTemplate();
+        }
+        producerTemplate.sendBody(registrationSuccessfulEndpoint, successful);
     }
 
     private DigestEntry findDigestEntry(String seekPath, Map<String, List<DigestEntry>> digestsMap) {
@@ -249,11 +279,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         Optional<DigestEntry> entry = digestsMap.values().stream().flatMap(List::stream)
             .filter(de -> de.storageUri.equals(seekUri))
             .findFirst();
-        if (entry.isPresent()) {
-            return entry.get();
-        } else {
-            return null;
-        }
+        return entry.orElse(null);
     }
 
     private CloseableHttpClient getHttpClient() {
@@ -266,6 +292,13 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     public void destroy() {
+        if (producerTemplate != null) {
+            try {
+                producerTemplate.close();
+            } catch (Exception e) {
+                log.error("Failed to close producer template", e);
+            }
+        }
         if (httpClient != null) {
             try {
                 httpClient.close();
