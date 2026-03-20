@@ -25,6 +25,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -37,6 +39,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEER;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,6 +56,7 @@ import static org.mockito.Mockito.when;
  */
 @WireMockTest
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class RegisterToLongleafProcessorTest {
     private static final String REGISTER_PATH = "/register";
 
@@ -218,6 +222,37 @@ public class RegisterToLongleafProcessorTest {
                 isNull(String.class),
                 eq(Map.of(sha1Pid1.getRepositoryPath(), sha1File1.toUri().toString(),
                            sha1Pid2.getRepositoryPath(), sha1File2.toUri().toString())));
+    }
+
+    @Test
+    public void processConnectionError() throws Exception {
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withFault(CONNECTION_RESET_BY_PEER)));
+
+        PID sha1Pid = DatastreamPids.getOriginalFilePid(pidMinter.mintContentPid());
+        Path sha1File = Files.createTempFile(tmpFolder, "sha1file", ".bin");
+        mockBinaryObject(sha1Pid, sha1File.toUri(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", null);
+
+
+        Exchange exchange = createBatchExchange(mock(ProducerTemplate.class),
+                sha1Pid.getRepositoryPath());
+        assertThrows(LongleafConnectionException.class, () -> processor.process(exchange));
+    }
+
+    @Test
+    public void processBadRequest() throws Exception {
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(400)));
+
+        PID sha1Pid = DatastreamPids.getOriginalFilePid(pidMinter.mintContentPid());
+        Path sha1File = Files.createTempFile(tmpFolder, "sha1file", ".bin");
+        mockBinaryObject(sha1Pid, sha1File.toUri(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", null);
+
+        Exchange exchange = createBatchExchange(mock(ProducerTemplate.class),
+                sha1Pid.getRepositoryPath());
+        assertThrows(LongleafBadRequestException.class, () -> processor.process(exchange));
     }
 
     private BinaryObject mockBinaryObject(PID pid, URI storageUri, String sha1, String md5) {

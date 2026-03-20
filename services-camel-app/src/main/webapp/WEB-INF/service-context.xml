@@ -494,7 +494,6 @@
         <property name="longleafBaseUri" value="${longleaf.baseUri}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
-    </bean>
 
     <!-- Service operates via spring scheduling -->
     <bean id="expireEmbargoService" class="edu.unc.lib.boxc.operations.impl.acl.ExpireEmbargoService">

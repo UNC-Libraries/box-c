@@ -9,7 +9,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.services.camel.AddFailedRouteProcessor;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Router for longleaf operations
@@ -30,10 +29,11 @@ public class LongleafRouter extends RouteBuilder {
 
     @BeanInject("longleafAggregationStrategy")
     private LongleafAggregationStrategy longleafAggregationStrategy;
-    @Value("${longleaf.maxRedelivieries:3}")
+
+    @PropertyInject("longleaf.maxRedelivieries:3")
     private int longleafMaxRedelivieries;
 
-    @Value("${longleaf.redeliveryDelay:10000}")
+    @PropertyInject("longleaf.redeliveryDelay:10000")
     private long longleafRedeliveryDelay;
     private int batchSize;
     private long batchTimeout;
@@ -49,6 +49,13 @@ public class LongleafRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         AddFailedRouteProcessor failedRouteProcessor = new AddFailedRouteProcessor();
+
+        // Connection failures and bad requests are not retryable — route straight to DLQ
+        onException(LongleafConnectionException.class, LongleafBadRequestException.class)
+                .handled(true)
+                .log(LoggingLevel.ERROR, log, "Non-retryable longleaf failure: ${exception.message}")
+                .process(failedRouteProcessor)
+                .to("{{longleaf.dlq.dest}}");
 
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)

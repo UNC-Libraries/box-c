@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import org.apache.camel.Processor;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -28,6 +29,11 @@ import java.util.Map;
 public abstract class AbstractLongleafProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AbstractLongleafProcessor.class);
 
+    // 5 second timeout to establish a connection
+    private static final int CONNECTION_TIMEOUT_MS = 5000;
+    // 2 minute timeout waiting for response data, to allow for large batches
+    private static final int SOCKET_TIMEOUT_MS = 2 * 60 * 1000;
+
     protected String longleafBaseUri;
 
     private HttpClientConnectionManager httpClientConnectionManager;
@@ -45,6 +51,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
      */
     protected LongleafApiResult executeHttpPost(String requestUrl, Map<String, Object> bodyMap) {
         var postMethod = new HttpPost(requestUrl);
+        log.debug("Executing longleaf API request to {} with body {}", requestUrl, bodyMap);
         try {
             HttpEntity entity = EntityBuilder.create()
                     .setText(objectMapper.writeValueAsString(bodyMap))
@@ -53,12 +60,17 @@ public abstract class AbstractLongleafProcessor implements Processor {
 
             try (var response = getHttpClient().execute(postMethod)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode != 200) {
+                log.debug("Longleaf API response status: {}", statusCode);
+                if (statusCode >= 400 && statusCode < 500) {
+                    throw new LongleafBadRequestException("Longleaf API request to " + requestUrl
+                            + " rejected with HTTP status: " + statusCode);
+                } else if (statusCode != 200) {
                     throw new ServiceException("Longleaf API request to " + requestUrl
                             + " failed with HTTP status: " + statusCode);
                 }
 
                 String responseBody = EntityUtils.toString(response.getEntity());
+                log.debug("Longleaf API response from {}: {}", requestUrl, responseBody);
                 JsonNode responseJson = objectMapper.readTree(responseBody);
 
                 List<String> successes = parsePathList(responseJson.get("success"));
@@ -66,7 +78,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
                 return new LongleafApiResult(successes, failures);
             }
         } catch (IOException e) {
-            throw new ServiceException("Error communicating with longleaf at " + requestUrl, e);
+            throw new LongleafConnectionException("Unable to connect to longleaf at " + requestUrl, e);
         } finally {
             postMethod.releaseConnection();
         }
@@ -82,8 +94,13 @@ public abstract class AbstractLongleafProcessor implements Processor {
 
     private CloseableHttpClient getHttpClient() {
         if (httpClient == null) {
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(CONNECTION_TIMEOUT_MS)
+                    .setSocketTimeout(SOCKET_TIMEOUT_MS)
+                    .build();
             httpClient = HttpClients.custom()
                     .setConnectionManager(httpClientConnectionManager)
+                    .setDefaultRequestConfig(requestConfig)
                     .build();
         }
         return httpClient;

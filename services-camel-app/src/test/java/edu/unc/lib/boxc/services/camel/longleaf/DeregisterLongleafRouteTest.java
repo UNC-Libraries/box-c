@@ -34,6 +34,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEER;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -217,9 +218,61 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         Exchange failed = dlqExchanges.get(0);
         var failedList = failed.getIn().getBody(List.class);
         assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
-
         assertTrue(failedList.contains(contentUris[0]),
                 "Exchange in DLQ must contain the fcrepo uri of the unprocessed binary");
+
+        // 500 is retryable: expect initial attempt + 2 redeliveries = 3 total calls
+        WireMock.verify(3, postRequestedFor(urlPathEqualTo(DEREGISTER_PATH)));
+    }
+
+    @Test
+    public void deregisterConnectionError() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenDone(1)
+                .create();
+
+        String[] contentUris = generateContentUris(1);
+
+        stubFor(post(urlPathEqualTo(DEREGISTER_PATH))
+                .willReturn(aResponse()
+                        .withFault(CONNECTION_RESET_BY_PEER)));
+
+        sendMessages(contentUris);
+
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
+
+        mockDlq.assertIsSatisfied(1000);
+
+        // Connection errors are not retried — expect exactly 1 call
+        WireMock.verify(1, postRequestedFor(urlPathEqualTo(DEREGISTER_PATH)));
+    }
+
+    @Test
+    public void deregisterBadRequest() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenDone(1)
+                .create();
+
+        String[] contentUris = generateContentUris(1);
+
+        stubFor(post(urlPathEqualTo(DEREGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(400)));
+
+        sendMessages(contentUris);
+
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
+
+        mockDlq.assertIsSatisfied(1000);
+
+        // Bad requests are not retried — expect exactly 1 call
+        WireMock.verify(1, postRequestedFor(urlPathEqualTo(DEREGISTER_PATH)));
     }
 
     private void stubSuccessfulDeregister() {

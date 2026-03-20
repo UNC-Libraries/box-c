@@ -47,6 +47,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.http.Fault.CONNECTION_RESET_BY_PEER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -191,6 +192,65 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         mockDlq.assertIsSatisfied(1000);
         mockSuccess.assertIsSatisfied();
+
+        // 500 is retryable: expect initial attempt + 2 redeliveries = 3 total calls
+        WireMock.verify(3, postRequestedFor(urlPathEqualTo(REGISTER_PATH)));
+    }
+
+    @Test
+    public void registerConnectionError() throws Exception {
+        mockDlq.expectedMessageCount(1);
+        mockSuccess.expectedMessageCount(0);
+
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withFault(CONNECTION_RESET_BY_PEER)));
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Register route not satisfied");
+
+        mockDlq.assertIsSatisfied(1000);
+        mockSuccess.assertIsSatisfied();
+
+        // Connection errors are not retried — expect exactly 1 call
+        WireMock.verify(1, postRequestedFor(urlPathEqualTo(REGISTER_PATH)));
+    }
+
+    @Test
+    public void registerBadRequest() throws Exception {
+        mockDlq.expectedMessageCount(1);
+        mockSuccess.expectedMessageCount(0);
+
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(400)));
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Register route not satisfied");
+
+        mockDlq.assertIsSatisfied(1000);
+        mockSuccess.assertIsSatisfied();
+
+        // Bad requests are not retried — expect exactly 1 call
+        WireMock.verify(1, postRequestedFor(urlPathEqualTo(REGISTER_PATH)));
     }
 
     @SuppressWarnings("unchecked")
