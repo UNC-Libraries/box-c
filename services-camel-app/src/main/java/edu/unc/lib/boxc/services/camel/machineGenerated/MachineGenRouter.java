@@ -25,6 +25,7 @@ public class MachineGenRouter extends RouteBuilder {
         from(machineGenDescriptionStreamCamel)
                 .routeId("MachineGenDescription")
                 .log(DEBUG, log, "Processing machine gen update description request")
+                .filter(simple("${properties:cdr.machine.gen.description.enabled} == 'true'"))
                 .filter().method(machineGenDescriptionProcessor, "needsRun")
                 .filter().method(ImageDerivativeProcessor.class, "allowedImageType")
                 .bean(machineGenDescriptionProcessor);
