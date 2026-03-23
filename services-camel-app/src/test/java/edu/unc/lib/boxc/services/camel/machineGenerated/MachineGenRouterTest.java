@@ -9,11 +9,15 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.context.TestPropertySource;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -28,12 +32,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class MachineGenRouterTest extends CamelTestSupport {
+public class MachineGenRouterTest extends CamelSpringTestSupport {
     private static final String FILE_ID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
 
     @Produce("direct:start")
     protected ProducerTemplate template;
-    @Mock
+    @BeanInject
     private MachineGenDescriptionProcessor processor;
 
     @Override
@@ -42,6 +46,10 @@ public class MachineGenRouterTest extends CamelTestSupport {
         router.setMachineGenDescriptionProcessor(processor);
         router.setMachineGenDescriptionStreamCamel("direct:start");
         return router;
+    }
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("/service-context.xml", "/machine-gen-context.xml");
     }
 
     @Test

@@ -15,9 +15,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class MachineGenRouter extends RouteBuilder {
     private static final Logger log = getLogger(MachineGenRouter.class);
-    @BeanInject("machineGenDescriptionProcessor")
     private MachineGenDescriptionProcessor machineGenDescriptionProcessor;
-
     private String machineGenDescriptionStreamCamel;
 
     @Override
