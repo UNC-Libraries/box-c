@@ -17,11 +17,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -66,6 +68,21 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
     @Test
     public void requestSentRunNotNeededTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(false);
+        TestHelper.createContext(context,"MachineGenDescription");
+        var headers = createHeaders();
+        headers.put(CdrBinaryMimeType, "image/jpeg");
+        template.sendBodyAndHeaders("", headers);
+
+        verify(processor, never()).process(any());
+    }
+
+    @DirtiesContext
+    @Test
+    public void descriptionGenNotEnabledTest() throws Exception {
+        var properties = new Properties();
+        properties.put("cdr.machine.gen.description.enabled", "false");
+        context.getPropertiesComponent().setOverrideProperties(properties);
+
         TestHelper.createContext(context,"MachineGenDescription");
         var headers = createHeaders();
         headers.put(CdrBinaryMimeType, "image/jpeg");
