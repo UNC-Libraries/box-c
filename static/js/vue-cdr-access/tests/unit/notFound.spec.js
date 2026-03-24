@@ -66,7 +66,7 @@ describe('notFound.vue', () => {
     it('does not display a login link if a user is already logged in"', async () => {
         const wrapper = shallowMount(notFound, {
             global: {
-                plugins: [store, i18n, createTestingPinia({
+                plugins: [i18n, createTestingPinia({
                     initialState: {
                         access: {
                             isLoggedIn: true,

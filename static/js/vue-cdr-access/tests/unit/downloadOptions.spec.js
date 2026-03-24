@@ -4,18 +4,6 @@ import {useAccessStore} from '@/stores/access';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
-
-// Mock the fullRecordUtils mixin to get around the following warning.
-// [Vue warn]: Computed property "childCount" is already defined in Props.
-vi.mock('../../mixins/fullRecordUtils', () => ({
-    default: {
-        computed: {
-            resourceType() { return this.recordData?.type ?? ''; },
-            restrictedContent() { return false; }
-        }
-    }
-}));
-
 import downloadOptions from '@/components/full_record/downloadOptions.vue';
 
 const record = {
