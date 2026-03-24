@@ -475,6 +475,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="registrationSuccessfulEndpoint" value="${cdr.registration.successful.dest}" />
     </bean>
@@ -492,6 +493,7 @@
     <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor"
             destroy-method="destroy">
         <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
 

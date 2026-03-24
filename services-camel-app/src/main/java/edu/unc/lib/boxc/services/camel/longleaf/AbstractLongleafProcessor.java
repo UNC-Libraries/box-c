@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.EntityBuilder;
@@ -35,6 +36,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
     private static final int SOCKET_TIMEOUT_MS = 2 * 60 * 1000;
 
     protected String longleafBaseUri;
+    private String longleafApiKey;
 
     private HttpClientConnectionManager httpClientConnectionManager;
     private CloseableHttpClient httpClient;
@@ -51,6 +53,9 @@ public abstract class AbstractLongleafProcessor implements Processor {
      */
     protected LongleafApiResult executeHttpPost(String requestUrl, Map<String, Object> bodyMap) {
         var postMethod = new HttpPost(requestUrl);
+        if (longleafApiKey != null) {
+            postMethod.setHeader("X-Api-Key", longleafApiKey);
+        }
         log.debug("Executing longleaf API request to {} with body {}", requestUrl, bodyMap);
         try {
             HttpEntity entity = EntityBuilder.create()
@@ -118,6 +123,10 @@ public abstract class AbstractLongleafProcessor implements Processor {
 
     public void setLongleafBaseUri(String longleafBaseUri) {
         this.longleafBaseUri = longleafBaseUri;
+    }
+
+    public void setLongleafApiKey(String longleafApiKey) {
+        this.longleafApiKey = StringUtils.isEmpty(longleafApiKey) ? null : longleafApiKey;
     }
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager httpClientConnectionManager) {
