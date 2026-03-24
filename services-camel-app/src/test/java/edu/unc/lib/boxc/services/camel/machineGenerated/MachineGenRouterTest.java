@@ -39,7 +39,7 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
 
     @Produce("direct:start")
     protected ProducerTemplate template;
-    @BeanInject
+    @BeanInject("machineGenDescriptionProcessor")
     private MachineGenDescriptionProcessor processor;
 
     @Override
