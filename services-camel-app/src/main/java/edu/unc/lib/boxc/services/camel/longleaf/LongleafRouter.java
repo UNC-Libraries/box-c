@@ -2,10 +2,14 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.util.concurrent.CamelThreadFactory;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.services.camel.AddFailedRouteProcessor;
@@ -37,6 +41,7 @@ public class LongleafRouter extends RouteBuilder {
     private long longleafRedeliveryDelay;
     private int batchSize;
     private long batchTimeout;
+    private int workerCount;
 
     private String longleafRegisterConsumer;
     private String longleafRegisterBatchConsumer;
@@ -81,6 +86,8 @@ public class LongleafRouter extends RouteBuilder {
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
                 .completionTimeout(batchTimeout)
+                .parallelProcessing()
+                .executorService(createWorkerPool("LongleafRegister"))
             .bean(registerProcessor);
 
         from(longleafFilterDeregister)
@@ -102,6 +109,8 @@ public class LongleafRouter extends RouteBuilder {
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
                 .completionTimeout(batchTimeout)
+                .parallelProcessing()
+                .executorService(createWorkerPool("LongleafDeregister"))
             .bean(deregisterProcessor);
     }
 
@@ -172,5 +181,15 @@ public class LongleafRouter extends RouteBuilder {
     @PropertyInject("longleaf.batchTimeout")
     public void setBatchTimeout(long batchTimeout) {
         this.batchTimeout = batchTimeout;
+    }
+
+    @PropertyInject("longleaf.workerCount:3")
+    public void setWorkerCount(int workerCount) {
+        this.workerCount = workerCount;
+    }
+
+    private ExecutorService createWorkerPool(String name) {
+        return Executors.newFixedThreadPool(workerCount,
+                new CamelThreadFactory("Camel-" + name + "-#", name, true));
     }
 }
