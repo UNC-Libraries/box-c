@@ -198,7 +198,7 @@ export default {
                 {
                     render: (data, type, row) => {
                         const view = this.$t('full_record.view');
-                        const aria_title = this.$t('full_record.edit_title', { title: row.title });
+                        const aria_title = this.$t('full_record.view_title', { title: row.title });
                         return `<a href="/record/${row.id}" aria-label="${aria_title}">` +
                             ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
@@ -218,7 +218,8 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            return `<a href="/admin/describe/${row.id}" class="button action is-primary" aria-label="${this.ariaLabelText(row)}">` +
+                            const label = this.$t('full_record.edit_title', { title: row.title });
+                            return `<a href="/admin/describe/${row.id}" class="button action is-primary" aria-label="${label}">` +
                                 '<span class="icon"><i class="fa fa-edit" title="Edit"></span></i></a>'
                         },
                         targets: column_number
