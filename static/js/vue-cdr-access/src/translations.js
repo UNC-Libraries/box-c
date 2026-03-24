@@ -58,7 +58,7 @@ export default {
             download_title: "Download {title}",
             download_unavailable: "Download Unavailable",
             edit: "Edit",
-            edit_title: "@:edit {title}",
+            edit_title: "@:full_record.edit {title}",
             embargo_date: "Embargoed Until",
             filesize: "Filesize",
             file_type: "File Type",
