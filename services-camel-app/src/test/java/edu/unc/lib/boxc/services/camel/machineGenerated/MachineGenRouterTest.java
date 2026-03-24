@@ -55,7 +55,7 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void requestSentTest() throws Exception {
+    public void imageSuccessfullyProcessedTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(true);
         TestHelper.createContext(context,"MachineGenDescription");
         var headers = createHeaders();
@@ -66,7 +66,7 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void requestSentRunNotNeededTest() throws Exception {
+    public void imageRunNotNeededTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(false);
         TestHelper.createContext(context,"MachineGenDescription");
         var headers = createHeaders();
@@ -78,7 +78,7 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
 
     @DirtiesContext
     @Test
-    public void descriptionGenNotEnabledTest() throws Exception {
+    public void descriptionGenNotEnabledTes() throws Exception {
         var properties = new Properties();
         properties.put("cdr.machine.gen.description.enabled", "false");
         context.getPropertiesComponent().setOverrideProperties(properties);
@@ -92,7 +92,7 @@ public class MachineGenRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void requestSentNotImageTest() throws Exception {
+    public void nonImageNotProcessedTest() throws Exception {
         when(processor.needsRun(any())).thenReturn(true);
         TestHelper.createContext(context,"MachineGenDescription");
         var headers = createHeaders();

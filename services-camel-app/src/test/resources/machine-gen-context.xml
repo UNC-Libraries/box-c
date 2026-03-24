@@ -24,8 +24,4 @@
     <camel:camelContext id="MachineGenDescription">
         <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
-
-<!--    <camel:camelContext id="MachineGenRouter">-->
-<!--        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>-->
-<!--    </camel:camelContext>-->
 </beans>

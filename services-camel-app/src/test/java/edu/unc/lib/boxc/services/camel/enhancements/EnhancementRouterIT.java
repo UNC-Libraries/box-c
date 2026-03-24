@@ -176,15 +176,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
             message.setHeader(CdrImagePath, message.getHeader(CdrBinaryPath, String.class));
             return null;
         }).when(imageDerivativeProcessor).process(any(Exchange.class));
-
-        doAnswer((Answer<Void>) invocation -> {
-            Exchange exchange = (Exchange) invocation.getArguments()[0];
-            var message = exchange.getIn();
-            message.setHeader(CdrImagePath, message.getHeader(CdrBinaryPath, String.class));
-            message.setHeader(CdrBinaryMimeType, "image/png");
-            message.setHeader(CdrImagePathCleanup, true);
-            return null;
-        }).when(machineGenDescriptionProcessor).process(any(Exchange.class));
     }
 
     @AfterEach
@@ -429,7 +420,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
