@@ -56,11 +56,9 @@ public class MachineGenDescriptionProcessorTest {
     private static final String API_KEY = "api key";
     private MachineGenDescriptionProcessor processor;
     private AutoCloseable closeable;
-    private PID filePid = PIDs.get(RESC_ID);
+    private PID pid = PIDs.get(RESC_ID);
     private HttpClientConnectionManager connectionManager;
     private Path derivativePath;
-    @Mock
-    private FileObject fileObject;
     @Mock
     private MachineGenUpdateService machineGenUpdateService;
     @Mock
@@ -75,12 +73,11 @@ public class MachineGenDescriptionProcessorTest {
     @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
-        when(repositoryObjectLoader.getFileObject(eq(filePid))).thenReturn(fileObject);
-        when(fileObject.getOriginalFile()).thenReturn(binaryObject);
+        when(repositoryObjectLoader.getBinaryObject(eq(pid))).thenReturn(binaryObject);
         when(binaryObject.getFilename()).thenReturn("filename.txt");
         when(binaryObject.getMimetype()).thenReturn("text/plain");
         derivativePath = tmpFolder.resolve(FILENAME);
-        when(binaryObject.getUri()).thenReturn(derivativePath.toUri());
+        when(binaryObject.getContentUri()).thenReturn(derivativePath.toUri());
 
         connectionManager = new PoolingHttpClientConnectionManager();
 
@@ -110,7 +107,7 @@ public class MachineGenDescriptionProcessorTest {
 
         processor.process(mockMachineGenExchange(false));
         verify(machineGenUpdateService).updateMachineGenText(any());
-        TestHelper.assertIndexingMessageSent(filePid, indexingMessageSender, "automated");
+        TestHelper.assertIndexingMessageSent(pid, indexingMessageSender, "automated");
     }
 
     @Test
@@ -124,7 +121,7 @@ public class MachineGenDescriptionProcessorTest {
 
             processor.process(mockMachineGenExchange(false));
             verify(machineGenUpdateService, never()).updateMachineGenText(any());
-            TestHelper.assertIndexingMessageNotSent(filePid, indexingMessageSender, "automated");
+            TestHelper.assertIndexingMessageNotSent(pid, indexingMessageSender, "automated");
         });
     }
 

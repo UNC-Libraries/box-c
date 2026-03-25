@@ -58,12 +58,10 @@ public class MachineGenDescriptionProcessor implements Processor {
         final Message in = exchange.getIn();
         var pid = getPid(in);
         var id = pid.getId();
-
-        var fileObject = repositoryObjectLoader.getFileObject(pid);
-        var originalFile = fileObject.getOriginalFile();
+        var binaryObject = repositoryObjectLoader.getBinaryObject(pid);
 
         var postMethod = new HttpPost(URIUtil.join(boxctronDescribesBasePath, "api", "v1", "describe", "uri"));
-        postMethod.setEntity(getRequestJsonEntity(originalFile));
+        postMethod.setEntity(getRequestJsonEntity(binaryObject));
         postMethod.setHeader("X-API-Key", apiKey);
 
         try (
@@ -97,17 +95,17 @@ public class MachineGenDescriptionProcessor implements Processor {
 
         Path derivativeFinalPath = machineGenDescriptionUpdateService.getMachineGenDerivativePath(binaryId);
         if (Files.notExists(derivativeFinalPath)) {
-            log.debug("Derivative run needed, no existing derivative at {}", derivativeFinalPath);
+            log.debug("MachineGen derivative run needed, no existing derivative at {}", derivativeFinalPath);
             return true;
         }
 
         String force = (String) in.getHeader("force");
         if (Boolean.parseBoolean(force)) {
-            log.debug("Force flag was provided, forcing run of already existing derivative at {}",
+            log.debug("Force flag was provided, forcing run of already existing MachineGen derivative at {}",
                     derivativeFinalPath);
             return true;
         } else {
-            log.debug("Derivative already exists at {}, run not needed", derivativeFinalPath);
+            log.debug("MachineGen derivative already exists at {}, run not needed", derivativeFinalPath);
             return false;
         }
     }
@@ -117,7 +115,7 @@ public class MachineGenDescriptionProcessor implements Processor {
                 CONTEXT, "",
                 FILENAME, originalFile.getFilename(),
                 MIMETYPE, originalFile.getMimetype(),
-                URI, originalFile.getUri());
+                URI, originalFile.getContentUri());
 
         return EntityBuilder.create()
                 .setText(objectMapper.writeValueAsString(bodyMap))
