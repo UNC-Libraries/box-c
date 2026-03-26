@@ -34,10 +34,12 @@ force it to reload
 <script>
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
+import sanitizeUtils from "@/mixins/sanitizeUtils";
 import DownloadOptions from '@/components/full_record/downloadOptions.vue';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
+import DomPurify from 'dompurify';
 
 
 DataTable.use(DataTablesLib);
@@ -45,7 +47,7 @@ DataTable.use(DataTablesLib);
 export default {
     name: 'fileList',
 
-    mixins: [fileUtils, fullRecordUtils],
+    mixins: [fileUtils, fullRecordUtils, sanitizeUtils],
 
     components: {DownloadOptions, DataTable},
 
@@ -148,10 +150,10 @@ export default {
                         let img;
 
                         if ('thumbnail_url' in row && this.hasPermission(row,'viewAccessCopies')) {
-                            const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
-                            const thumbnail_url = row.thumbnail_url.replace('/large', '/small');;
+                            const thumbnail_title = this.$t('full_record.thumbnail_title', { title: this.sanitizeText(row.title) })
+                            const thumbnail_url = row.thumbnail_url.replace('/large', '/small');
                             img = `<img class="data-thumb" loading="lazy" src="${thumbnail_url}"` +
-                                ` alt="${thumbnail_title}">`;
+                                ` alt="${this.sanitizeText(thumbnail_title)}">`;
                         } else {
                             const thumbnail_default = this.$t('full_record.thumbnail_default');
                             img = `<i class="fa fa-file default-img-icon data-thumb" title="${thumbnail_default}"></i>`;
@@ -182,7 +184,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return `<a href="/record/${row.id}" aria-label="${this.ariaLabelText(row)}">${row.title}</a>`;
+                        return `<a href="/record/${row.id}" aria-label="${this.ariaLabelText(row)}">${this.sanitizeText(row.title)}</a>`;
                     }, targets: 1
                 },
                 {
@@ -198,7 +200,7 @@ export default {
                 {
                     render: (data, type, row) => {
                         const view = this.$t('full_record.view');
-                        const aria_title = this.$t('full_record.view_title', { title: row.title });
+                        const aria_title = this.$t('full_record.view_title', { title: this.sanitizeText(row.title) });
                         return `<a href="/record/${row.id}" aria-label="${aria_title}">` +
                             ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
@@ -218,7 +220,7 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            const label = this.$t('full_record.edit_title', { title: row.title });
+                            const label = this.$t('full_record.edit_title', { title: this.sanitizeText(row.title) });
                             return `<a href="/admin/describe/${row.id}" class="button action is-primary" aria-label="${label}">` +
                                 '<span class="icon"><i class="fa fa-edit" title="Edit"></span></i></a>'
                         },
@@ -233,7 +235,7 @@ export default {
 
     methods: {
         ariaLabelText(brief_object) {
-            return this.$t('full_record.view_title', { title: brief_object.title });
+            return this.$t('full_record.view_title', { title: this.sanitizeText(brief_object.title) });
         },
 
         showBadge(brief_object) {
