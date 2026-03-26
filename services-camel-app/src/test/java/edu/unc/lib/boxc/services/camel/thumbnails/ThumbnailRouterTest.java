@@ -39,7 +39,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void requestSentTest() throws Exception {
+    public void messageSentTest() throws Exception {
         createContext("DcrThumbnails");
         var pid = TestHelper.makePid();
 

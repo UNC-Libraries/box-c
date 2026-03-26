@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import org.apache.jena.rdf.model.Resource;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
@@ -141,8 +140,7 @@ public class ThumbnailProcessorTest {
     }
 
     private void assertIndexingMessageSent(PID pid) {
-        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), pid,
-                IndexingActionType.UPDATE_DATASTREAMS);
+        TestHelper.assertIndexingMessageSent(pid, indexingMessageSender, agent.getUsername());
     }
 
     private Exchange createRequestExchange(String action) throws IOException {
