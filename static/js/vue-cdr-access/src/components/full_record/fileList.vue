@@ -39,8 +39,6 @@ import DownloadOptions from '@/components/full_record/downloadOptions.vue';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
-import DomPurify from 'dompurify';
-
 
 DataTable.use(DataTablesLib);
 
