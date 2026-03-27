@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static edu.unc.lib.boxc.services.camel.TestHelper.FEDORA_BASE;
 import static edu.unc.lib.boxc.services.camel.TestHelper.FILENAME;
 import static edu.unc.lib.boxc.services.camel.TestHelper.RESC_ID;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -56,7 +57,7 @@ public class MachineGenDescriptionProcessorTest {
     private static final String API_KEY = "api key";
     private MachineGenDescriptionProcessor processor;
     private AutoCloseable closeable;
-    private PID pid = PIDs.get(RESC_ID);
+    private PID pid;
     private HttpClientConnectionManager connectionManager;
     private Path derivativePath;
     @Mock
@@ -73,6 +74,8 @@ public class MachineGenDescriptionProcessorTest {
     @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
+        edu.unc.lib.boxc.model.fcrepo.test.TestHelper.setContentBase(FEDORA_BASE);
+        pid = PIDs.get(RESC_ID);
         when(repositoryObjectLoader.getBinaryObject(eq(pid))).thenReturn(binaryObject);
         when(binaryObject.getFilename()).thenReturn("filename.txt");
         when(binaryObject.getMimetype()).thenReturn("text/plain");

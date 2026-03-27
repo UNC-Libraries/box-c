@@ -42,8 +42,13 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			filterParams : "",
 			skipLast : false
 		});
-		
-		$(".results_header_hierarchy_path").html(containerPath);
+
+		const sanitizeText = function(text) {
+			const doc = new DOMParser().parseFromString(text, 'text/html');
+			return doc.body.textContent || '';
+		};
+
+		$(".results_header_hierarchy_path").html(sanitizeText(containerPath));
 	
 		var originalUrl = module.config().originalUrl;
 		var recordUrl = module.config().recordUrl;
