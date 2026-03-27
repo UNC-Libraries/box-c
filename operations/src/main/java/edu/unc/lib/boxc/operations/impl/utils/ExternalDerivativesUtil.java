@@ -20,7 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ExternalDerivativesUtil {
 
     public static Path getDerivativePath(String basePath, String binaryId) {
-        return Paths.get(basePath, getBinaryPath(binaryId), binaryId + ".txt");
+        return Paths.get(basePath, getBinaryPath(binaryId), binaryId + ".json");
     }
 
     public static void writeToFile(Path derivativePath, String text) throws IOException {

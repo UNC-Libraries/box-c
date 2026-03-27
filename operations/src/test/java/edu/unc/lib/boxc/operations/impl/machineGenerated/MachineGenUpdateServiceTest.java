@@ -1,16 +1,12 @@
 package edu.unc.lib.boxc.operations.impl.machineGenerated;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequest;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +25,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
@@ -46,12 +41,6 @@ public class MachineGenUpdateServiceTest {
     @TempDir
     public Path tmpFolder;
     @Mock
-    private AccessControlService aclService;
-    @Mock
-    private AccessGroupSet mockAccessSet;
-    @Mock
-    private AgentPrincipals mockAgent;
-    @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
     private FileObject fileObject;
@@ -62,33 +51,20 @@ public class MachineGenUpdateServiceTest {
         derivBasePath = tmpFolder.toString();
 
         service = new MachineGenUpdateService();
-        service.setAclService(aclService);
         service.setDerivativeBasePath(derivBasePath);
         service.setRepositoryObjectLoader(repoObjLoader);
         filePid = PIDs.get(FILE_UUID);
 
         request = new MachineGenRequest();
-        request.setAgent(mockAgent);
         request.setText("Best machine generated words ever");
         request.setPidString(FILE_UUID);
 
-        when(mockAgent.getUsername()).thenReturn("user");
-        when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
         when(repoObjLoader.getFileObject(eq(filePid))).thenReturn(fileObject);
     }
 
     @AfterEach
     public void after() throws Exception {
         closeable.close();
-    }
-
-    @Test
-    public void noAccessToEditDescriptionTest() {
-        Assertions.assertThrows(AccessRestrictionException.class, () -> {
-            doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
-                    anyString(), eq(filePid), any(), eq(Permission.editDescription));
-            service.updateMachineGenText(request);
-        });
     }
 
     @Test

@@ -18,6 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import static edu.unc.lib.boxc.services.camel.TestHelper.FEDORA_BASE;
+import static edu.unc.lib.boxc.services.camel.TestHelper.FILENAME;
+import static edu.unc.lib.boxc.services.camel.TestHelper.RESC_ID;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,18 +31,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AddDerivativeProcessorTest {
-
-    private final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private final String fileExtension = "PNG";
     private String pathId;
     private Path destinationPath;
     private Path generatedDerivPath;
 
     private AddDerivativeProcessor processor;
-
-    private static final String FEDORA_BASE = "http://example.com/rest/";
-
-    private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
     private AutoCloseable closeable;
 
@@ -88,7 +85,7 @@ public class AddDerivativeProcessorTest {
         ));
         when(message.getBody()).thenReturn(result);
 
-        destinationPath = moveFolder.resolve(fileName + ".PNG");
+        destinationPath = moveFolder.resolve(FILENAME + ".PNG");
     }
 
     @AfterEach

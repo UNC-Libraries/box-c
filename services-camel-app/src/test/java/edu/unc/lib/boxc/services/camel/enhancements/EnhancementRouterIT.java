@@ -47,6 +47,7 @@ import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
+import edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
 import edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor;
 import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
@@ -115,6 +116,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private AddDerivativeProcessor addVideoAccessCopyProcessor;
 
+    private MachineGenDescriptionProcessor machineGenDescriptionProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -148,10 +151,12 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
+        machineGenDescriptionProcessor = applicationContext.getBean(MachineGenDescriptionProcessor.class);
 
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addVideoAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(machineGenDescriptionProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
@@ -402,6 +407,24 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addVideoAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Happens twice due to video route causing a second indexing
         verify(solrIngestProcessor, timeout(ALLOW_WAIT).times(2)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testMachineGenDescription() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "image/png", null, null);
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {

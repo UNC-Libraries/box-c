@@ -236,16 +236,23 @@
 
     <bean id="machineGenDescriptionUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
         <property name="type" value="description" />
-        <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
     </bean>
 
     <bean id="machineGenAltTextUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
         <property name="type" value="altText" />
-        <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
+    </bean>
+
+    <bean id="machineGenDescriptionProcessor" class="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="connectionManager" ref="httpClientConnectionManager" />
+        <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
+        <property name="boxctronDescribesBasePath" value="${boxctron.describes.base.path}" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="apiKey" value="${boxctron.describes.api.key}" />
     </bean>
 
     <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
@@ -660,5 +667,6 @@
         <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.collectionDisplay</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.aspace</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
 </beans>
