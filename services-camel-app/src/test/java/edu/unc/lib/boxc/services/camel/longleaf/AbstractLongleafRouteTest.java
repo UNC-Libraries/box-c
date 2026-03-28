@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.slf4j.Logger;
@@ -9,6 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -23,25 +27,26 @@ public abstract class AbstractLongleafRouteTest extends CamelSpringTestSupport {
     protected List<String> output;
 
     /**
-     * Assert that all of the provided content uris are present in the longleaf output
-     * @param timeout time in milliseconds allowed for the condition to become true,
-     *      to accommodate asynchronous unpredictable batch cutoffs
-     * @param contentUris list of expected content uris
-     * @throws Exception
+     * Waits up to timeout ms for WireMock to have received a POST request whose body field
+     * contains the base path of each provided content URI.
      */
-    protected void assertSubmittedPaths(long timeout, String... contentUris) throws Exception {
+    protected void assertPostRequestedForPaths(long timeout, String apiPath, URI... contentUris) throws Exception {
         long start = System.currentTimeMillis();
         do {
             try {
-                output = LongleafTestHelpers.readOutput(outputPath);
-                assertSubmittedPaths(contentUris);
+                for (URI contentUri : contentUris) {
+                    Path contentPath = contentUri.getScheme() == null
+                            ? Paths.get(contentUri.toString()) : Paths.get(contentUri);
+                    String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
+                    WireMock.verify(postRequestedFor(urlPathEqualTo(apiPath))
+                            .withRequestBody(matchingJsonPath("$.body", WireMock.containing(basePath))));
+                }
                 return;
             } catch (AssertionError e) {
                 if ((System.currentTimeMillis() - start) > timeout) {
                     throw e;
                 }
                 Thread.sleep(25);
-                log.debug("DeregisterPaths not yet satisfied, retrying");
             }
         } while (true);
     }

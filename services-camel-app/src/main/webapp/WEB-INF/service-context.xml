@@ -477,10 +477,13 @@
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
-    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor">
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor"
+            destroy-method="destroy">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="registrationSuccessfulEndpoint" value="${cdr.registration.successful.dest}" />
     </bean>
     
@@ -494,8 +497,11 @@
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
     
-    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor">
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor"
+            destroy-method="destroy">
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
 
     <!-- Service operates via spring scheduling -->

@@ -2,14 +2,17 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.util.concurrent.CamelThreadFactory;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.services.camel.AddFailedRouteProcessor;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Router for longleaf operations
@@ -30,13 +33,15 @@ public class LongleafRouter extends RouteBuilder {
 
     @BeanInject("longleafAggregationStrategy")
     private LongleafAggregationStrategy longleafAggregationStrategy;
-    @Value("${longleaf.maxRedelivieries:3}")
+
+    @PropertyInject("longleaf.maxRedelivieries:3")
     private int longleafMaxRedelivieries;
 
-    @Value("${longleaf.redeliveryDelay:10000}")
+    @PropertyInject("longleaf.redeliveryDelay:10000")
     private long longleafRedeliveryDelay;
     private int batchSize;
     private long batchTimeout;
+    private int workerCount;
 
     private String longleafRegisterConsumer;
     private String longleafRegisterBatchConsumer;
@@ -49,6 +54,13 @@ public class LongleafRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         AddFailedRouteProcessor failedRouteProcessor = new AddFailedRouteProcessor();
+
+        // Connection failures and bad requests are not retryable — route straight to DLQ
+        onException(LongleafConnectionException.class, LongleafBadRequestException.class)
+                .handled(true)
+                .log(LoggingLevel.ERROR, log, "Non-retryable longleaf failure: ${exception.message}")
+                .process(failedRouteProcessor)
+                .to("{{longleaf.dlq.dest}}");
 
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)
@@ -74,6 +86,8 @@ public class LongleafRouter extends RouteBuilder {
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
                 .completionTimeout(batchTimeout)
+                .parallelProcessing()
+                .executorService(createWorkerPool("LongleafRegister"))
             .bean(registerProcessor);
 
         from(longleafFilterDeregister)
@@ -95,6 +109,8 @@ public class LongleafRouter extends RouteBuilder {
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
                 .completionTimeout(batchTimeout)
+                .parallelProcessing()
+                .executorService(createWorkerPool("LongleafDeregister"))
             .bean(deregisterProcessor);
     }
 
@@ -165,5 +181,15 @@ public class LongleafRouter extends RouteBuilder {
     @PropertyInject("longleaf.batchTimeout")
     public void setBatchTimeout(long batchTimeout) {
         this.batchTimeout = batchTimeout;
+    }
+
+    @PropertyInject("longleaf.workerCount:3")
+    public void setWorkerCount(int workerCount) {
+        this.workerCount = workerCount;
+    }
+
+    private ExecutorService createWorkerPool(String name) {
+        return Executors.newFixedThreadPool(workerCount,
+                new CamelThreadFactory("Camel-" + name + "-#", name, true));
     }
 }
