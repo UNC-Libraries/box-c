@@ -5,6 +5,7 @@ require.config({
 		"jquery" : "assets/admin/cdr-admin",
 		"jquery-ui" : "assets/admin/cdr-admin",
 		"text" : "js/admin/lib/text",
+		"dompurify" : "js/admin/lib/dompurify.min",
 		"underscore" : "js/admin/lib/underscore",
 		"tpl" : "js/admin/lib/tpl",
 		"autosize" : "js/xmleditor/lib/jquery.autosize-min",
@@ -24,7 +25,7 @@ require.config({
 	}
 });
 
-define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", "tpl!templates/admin/pathTrail"], function(module, $, ui, ace, xmleditor, pathTemplate) {
+define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", "xmleditor", "tpl!templates/admin/pathTrail"], function(module, $, ui, DomPurify, ace, xmleditor, pathTemplate) {
 	
 	var pid = window.location.pathname;
 	pid = pid.substring(pid.lastIndexOf("/") + 1);
@@ -43,13 +44,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			skipLast : false
 		});
 
-		const sanitizeText = function(text) {
-			const doc = new DOMParser().parseFromString(text, 'text/html');
-			return doc.body.textContent || '';
-		};
+		$(".results_header_hierarchy_path").html(DomPurify.sanitize(containerPath), { ALLOWED_TAGS: ['#text'] });
 
-		$(".results_header_hierarchy_path").html(sanitizeText(containerPath));
-	
 		var originalUrl = module.config().originalUrl;
 		var recordUrl = module.config().recordUrl;
 		var menuEntries = [{
