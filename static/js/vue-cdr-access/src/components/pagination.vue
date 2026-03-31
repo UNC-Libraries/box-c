@@ -161,7 +161,7 @@ Pagination component for search results, listing pages, previous/next buttons, c
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .is-current {
         background-color: #1A698C;
         color: #FFFFFF;

@@ -109,50 +109,52 @@
     }
 </script>
 
-<style lang="scss">
+<style>
     /* Overrides of common Vue modal styles found here: cdr_ui_styles.scss */
-    $unc-blue: #4B9CD3;
-    $light-gray: #E1E1E1;
+    :root {
+        --unc-blue: #4B9CD3;
+        --light-gray: #E1E1E1;
+    }
 
     .modal-header {
         background-image: linear-gradient(to bottom, #FAFAFA, #EBF5FA);
         border-radius: 5px 5px 0 0;
         margin-top: -20px;
         padding: 20px 0;
+    }
 
-        button {
-            background: #e6e6e6 50% 50% repeat-x;
-            border-color: $light-gray;
-            margin-top: -6px;
-            padding: 2px 5px;
-        }
+    .modal-header button {
+        background: #e6e6e6 50% 50% repeat-x;
+        border-color: var(--light-gray);
+        margin-top: -6px;
+        padding: 2px 5px;
+    }
 
-        div {
-            width: 100%;
-        }
+    .modal-header div {
+        width: 100%;
+    }
 
-        h3 {
-            font-size: 18px;
-            line-height: 18px;
+    .modal-header h3 {
+        font-size: 18px;
+        line-height: 18px;
+    }
 
-            span {
-                color: black;
-            }
-        }
+    .modal-header h3 span {
+        color: black;
     }
 
     .modal-container {
         background-color: white;
         padding: 20px 0;
+    }
 
-        h3 {
-            color: $unc-blue;
-        }
+    .modal-container h3 {
+        color: var(--unc-blue);
+    }
 
-        .modal-body {
-            background-color: white;
-            border-radius: 0 0 5px 5px;
-            padding: 20px;
-        }
+    .modal-container .modal-body {
+        background-color: white;
+        border-radius: 0 0 5px 5px;
+        padding: 20px;
     }
 </style>

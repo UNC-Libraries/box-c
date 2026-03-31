@@ -647,7 +647,7 @@
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #patron-roles {
         text-align: left;
         margin: 5px 25px;

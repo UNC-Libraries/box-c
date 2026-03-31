@@ -212,7 +212,7 @@ export default {
     }
 }
 </script>
-<style scoped lang="scss">
+<style scoped>
     .modal-card-title {
         font-weight: bold;
         text-align: center;

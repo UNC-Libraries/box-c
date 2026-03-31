@@ -244,8 +244,11 @@ export default {
 </script>
 
 <style lang="scss">
-    @import 'datatables.net-bm';
-    @import 'datatables.net-buttons-bm';
+    /* Modern CSS variables and nesting for fileList.vue */
+    :root {
+        --primary-blue: #1A698C;
+    }
+
     #data-display {
         overflow: visible;
 
@@ -276,8 +279,8 @@ export default {
         }
 
         .pagination-link.is-current {
-            background-color: #1A698C;;
-            border-color: #1A698C;
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
         }
 
         .dtr-details {
@@ -294,7 +297,7 @@ export default {
 
         tr.deleted {
             a.dropdown-item {
-                color: black
+                color: black;
             }
         }
 
@@ -333,7 +336,7 @@ export default {
 
     td {
         .actionlink {
-            margin: 0
+            margin: 0;
         }
     }
 
@@ -348,7 +351,7 @@ export default {
             }
 
             .dataTables_filter {
-                margin-top: -25px
+                margin-top: -25px;
             }
 
             .child-files_wrapper {

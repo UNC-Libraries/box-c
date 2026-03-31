@@ -1,26 +1,28 @@
 @import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600');
 
-$unc-blue: #4B9CD3;
-$unc-navy: #13294B;
-$light-gray: #E1E1E1;
-$dark-gray: #767676;
-$black: #151515;
+:root {
+  --unc-blue: #4B9CD3;
+  --unc-navy: #13294B;
+  --light-gray: #E1E1E1;
+  --dark-gray: #767676;
+  --black: #151515;
+}
 
 body {
   font-family: 'Open Sans', sans-serif;
 }
 
 .logo-row {
-  background-color: $unc-blue;
+  background-color: var(--unc-blue);
 }
 
 .logo-row-small {
-  background-color: $unc-blue;
+  background-color: var(--unc-blue);
   padding: 5px 0;
 }
 
 .menu-row, .banner-row {
-  background-color: $unc-navy;
+  background-color: var(--unc-navy);
 }
 
 .info-row {
@@ -66,10 +68,8 @@ body {
       color: white;
       line-height: 1.5;
       margin-left: 15px;
-      &:hover {
-        text-decoration: underline;
-      }
 
+      &:hover,
       &:active {
         text-decoration: underline;
       }
@@ -113,7 +113,7 @@ body {
 }
 
 .menu-row-small {
-  background-color: $unc-navy;
+  background-color: var(--unc-navy);
 }
 
 .search {
@@ -161,6 +161,7 @@ body {
   align-items: center;
   justify-content: space-around;
   min-height: 300px;
+
   h2 {
     max-width: 700px;
     padding: 24px 32px;
@@ -170,8 +171,9 @@ body {
     background-color: rgba(0,0,0,0.75);
     line-height: 1.5;
   }
+
   a.button {
-    background-color: $unc-navy;
+    background-color: var(--unc-navy);
   }
 }
 
@@ -181,12 +183,12 @@ header {
     a:active,
     a:focus {
       background-color: white;
-      color: $unc-blue !important;
+      color: var(--unc-blue) !important;
     }
   }
 
   .search-row-large {
-    background-color: $unc-navy;
+    background-color: var(--unc-navy);
   }
 }
 
@@ -197,9 +199,11 @@ header {
 .collection-link-row {
   display: flex;
   justify-content: center;
+
   &:not(:first-child) {
     margin-top: 32px;
   }
+
   a {
     display: flex;
     flex-direction: column;
@@ -214,10 +218,12 @@ header {
       text-decoration-color: white;
     }
   }
+
   img {
     max-width: 300px;
     width: 100%;
   }
+
   span {
     display: inline-block;
     width: 100%;
@@ -228,13 +234,16 @@ header {
     background-color: rgba(0,0,0,0.55);
     padding: 5px 0;
   }
+
   @media only screen and (max-width: 720px) {
     display: block;
     width: 100%;
     margin: auto 16px;
+
     &:not(:first-child) {
       margin-top: 0;
     }
+
     a {
       margin: 16px auto;
     }
@@ -243,6 +252,7 @@ header {
 
 .info-row {
   box-shadow: inset 0 0 8px grey;
+
   .info {
     padding: 24px 0;
     text-align: center;

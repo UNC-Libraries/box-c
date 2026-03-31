@@ -64,7 +64,7 @@ Top level component used for the collection browse page
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     ul {
         margin: inherit;
     }

@@ -68,7 +68,7 @@
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #modal-permissions-editor {
         .border {
             td {

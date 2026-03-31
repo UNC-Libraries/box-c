@@ -4,7 +4,7 @@
 
 Requirements
 ============
-Box-c requires Java 11 in order to build and test. On a Mac, this can be installed using brew as follows:
+Box-c requires Java 21 in order to build and test. On a Mac, this can be installed using brew as follows:
 ```
 brew tap adoptopenjdk/openjdk
 brew install --cask adoptopenjdk11
@@ -28,8 +28,6 @@ Building the project
 git clone https://github.com/UNC-Libraries/box-c
 # initialize submodules
 git submodule update --init --recursive
-# Install SASS parser to build CSS
-gem install sass
 # Install Homebrew, if not already installed
 See https://brew.sh/ for instructions.
 # Install Node.js to build JavaScript and run JavaScript tests

@@ -18,14 +18,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
-    @mixin mobile-margin {
-        @media only screen and (max-width: 1088px) {
-            margin-left: 5px;
-            margin-right: 16px;
-        }
-    }
-
+<style scoped>
     footer {
         color: white;
         background-color: #13294B;
@@ -35,14 +28,19 @@ export default {
         flex-wrap: wrap;
 
         .footer-menu {
-            @include mobile-margin;
             padding: 12px 0;
+
+            @media only screen and (max-width: 1088px) {
+                margin-left: 5px;
+                margin-right: 16px;
+            }
         }
 
         a {
             color: white;
             font-size: 16px;
             padding: 5px;
+
             &:hover, &:active {
                 background-color: #fafafa;
                 color: #4B9CD3;
