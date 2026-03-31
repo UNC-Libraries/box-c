@@ -15,7 +15,7 @@
 							<% if (resultField.colClass != "collection_id" || container.type == "AdminUnit") { %>
 								<th class="<%= resultField.colClass%><%= ('sortField' in resultField)? ' sort_col' : '' %>" <%=
 								('sortField' in resultField)? ' data-field="' + resultField.sortField + '"' : '' %> <%=
-								('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>><a><%= resultField.name %></a></th>
+								('dataType' in resultField)? ' data-type="' + resultField.dataType + '"' : '' %>><a><%= DomPurify.sanitize(resultField.name, { ALLOWED_TAGS: ['#text'] }) %></a></th>
 						<% }}); %>
 					</tr>
 				</thead>

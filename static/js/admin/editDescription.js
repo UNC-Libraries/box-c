@@ -41,7 +41,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 			objectPath : resultObject.objectPath? resultObject.objectPath : [],
 			queryMethod : 'list',
 			filterParams : "",
-			skipLast : false
+			skipLast : false,
+			DomPurify : DomPurify
 		});
 
 		$(".results_header_hierarchy_path").html(DomPurify.sanitize(containerPath), { ALLOWED_TAGS: ['#text'] });

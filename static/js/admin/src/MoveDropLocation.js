@@ -1,5 +1,5 @@
-define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'], 
-		function($, ui, ConfirmationDialog) {
+define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'dompurify', 'ConfirmationDialog'],
+		function($, ui, DomPurify, ConfirmationDialog) {
 			
 	var defaultOptions = {
 		dropTargetSelector : undefined,
@@ -254,7 +254,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 			title = title.substring(0, 50) + "...";
 		}
 
-		return title;
+		return DomPurify.sanitize(title, { ALLOWED_TAGS: ['#text'] });
 	}
 
 	/**

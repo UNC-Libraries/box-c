@@ -5,7 +5,7 @@
 			var url = "/admin/" + queryMethod + "/" + objectPath[tier].pid;
 			if (filterParams)
 				url += "?" + filterParams;
-				%><a class="res_link" href="<%= url %>"><%= objectPath[tier].name %></a><%
+				%><a class="res_link" href="<%= url %>"><%= DomPurify.sanitize(objectPath[tier].name, { ALLOWED_TAGS: ['#text'] }) %></a><%
 		}
 	} %>
 </span>
