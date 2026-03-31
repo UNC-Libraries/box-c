@@ -11,7 +11,7 @@
                                         <div class="column is-12">
                                             <h3>
                                                 <span>{{ permissionType }} Permission Settings for</span>
-                                                {{ metadata.title }} <i class="fa" :class="iconType" aria-hidden="true"></i>
+                                                {{ sanitizedTitle }} <i class="fa" :class="iconType" aria-hidden="true"></i>
                                             </h3>
 
                                             <button @click="closeModalCheck" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-icon" role="button" aria-disabled="false" title="close">
@@ -45,10 +45,14 @@
     import staffRoles from "@/components/permissions-editor/staffRoles.vue";
     import { mapActions, mapState } from 'pinia';
     import { usePermissionsStore } from '@/stores/permissions';
+    import sanitizeUtils from "@/mixins/sanitizeUtils";
 
     export default {
         name: 'modalPermissionsEditor',
+
         components: {patronRoles, staffRoles},
+
+        mixins: [sanitizeUtils],
 
         computed: {
             ...mapState(usePermissionsStore, {
@@ -80,6 +84,10 @@
                     return '';
                 }
                 return this.metadata.objectPath[record_index - 1].name;
+            },
+
+            sanitizedTitle() {
+                return this.sanitizeText(this.metadata.title);
             }
         },
 

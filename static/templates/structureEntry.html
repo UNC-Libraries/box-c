@@ -8,7 +8,7 @@
 			<i class="<%= icon %>" title="<%= metadata.type %>"></i>
 			<% var path_ids = metadata.objectPath.map(function(d) { return d.pid; }).join(','); %>
 			<a href="<%- primaryAction %>" class="primary_action res_link"  data-type="<%= metadata.type %>"
-			   data-id="<%= metadata.id %>" data-path="<%= path_ids %>"><%= metadata.title %></a>
+			   data-id="<%= metadata.id %>" data-path="<%= path_ids %>"><%= DomPurify.sanitize(metadata.title, { ALLOWED_TAGS: ['#text'] }) %></a>
 			
 			<% if (downloadUrl && secondaryActions) { %>
 				<p class="secondary_actions"><a href="<%= downloadUrl %>">Download</a></p>

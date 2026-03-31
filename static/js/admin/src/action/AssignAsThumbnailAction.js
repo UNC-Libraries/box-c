@@ -1,4 +1,4 @@
-define('AssignAsThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
+define('AssignAsThumbnailAction', [ 'jquery', 'dompurify', 'AjaxCallbackAction'], function($, DomPurify, AjaxCallbackAction) {
 
     function AssignAsThumbnailAction(context) {
         this._create(context);
@@ -35,7 +35,7 @@ define('AssignAsThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], function($,
             action : 'RefreshResult',
             target : this.context.target
         });
-        this.alertHandler.alertHandler("success", "Assignment of object \"" + this.context.target.metadata.title + "\" as the assigned thumbnail has completed.");
+        this.alertHandler.alertHandler("success", "Assignment of object \"" + DomPurify.sanitize(this.context.target.metadata.title, { ALLOWED_TAGS: ['#text'] }) + "\" as the assigned thumbnail has completed.");
         this.context.target.enable();
     };
 

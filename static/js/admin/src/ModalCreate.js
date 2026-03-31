@@ -1,5 +1,5 @@
-define('ModalCreate', [ 'jquery', 'jquery-ui', 'ResultObject'],
-	function($, ui, ResultObject) {
+define('ModalCreate', [ 'jquery', 'jquery-ui', 'underscore', 'dompurify', 'ResultObject'],
+	function($, ui, _, DOMPurify, ResultObject) {
 
 		function ModalCreate(options) {
 			this.options = options;
@@ -8,9 +8,12 @@ define('ModalCreate', [ 'jquery', 'jquery-ui', 'ResultObject'],
 		ModalCreate.prototype.formContents = function(resultObject) {
 			var pid;
 			var metadata;
+
 			if (resultObject instanceof ResultObject) {
 				pid = resultObject.metadata.id;
-				metadata = resultObject.metadata;
+				metadata = _.mapObject(resultObject.metadata, function (value, key) {
+					return DOMPurify.sanitize(value, { ALLOWED_TAGS: ['#text'] });
+				});
 				this.resultObject = resultObject;
 			} else {
 				pid = resultObject;

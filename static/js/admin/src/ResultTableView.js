@@ -1,6 +1,6 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'dompurify', 'ResultObjectList', 'URLUtilities', 'IsSorted',
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'ResourceTypeUtilities', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation, ResourceTypeUtilities) {
+		function($, ui, DomPurify, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation, ResourceTypeUtilities) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -68,7 +68,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					objectPath : container.objectPath,
 					queryMethod : 'list',
 					filterParams : data.searchQueryUrl,
-					skipLast : true
+					skipLast : true,
+					DomPurify : DomPurify
 				});
 			}
 			
@@ -92,7 +93,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self.$resultView.remove();
 			}
 			self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
-					resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
+					resultHeader : resultTableHeader, headerHeightClass : headerHeightClass, DomPurify: DomPurify}));
 			self.$resultTable = self.$resultView.find('.result_table').eq(0);
 			self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
 			self.$noResults = self.$resultView.find('.no_results').eq(0);

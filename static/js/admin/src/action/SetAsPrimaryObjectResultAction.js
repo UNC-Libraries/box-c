@@ -1,4 +1,4 @@
-define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
+define('SetAsPrimaryObjectResultAction', [ 'jquery', 'dompurify', 'AjaxCallbackAction'], function($, DomPurify, AjaxCallbackAction) {
 
 	function SetAsPrimaryObjectResultAction(context) {
 		this._create(context);
@@ -35,7 +35,7 @@ define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction'], func
 			action : 'RefreshResult',
 			target : this.context.target
 		});
-		this.alertHandler.alertHandler("success", "Assignment of object \"" + this.context.target.metadata.title + "\" as primary object has completed.");
+		this.alertHandler.alertHandler("success", "Assignment of object \"" + DomPurify.sanitize(this.context.target.metadata.title, { ALLOWED_TAGS: ['#text'] }) + "\" as primary object has completed.");
 		this.context.target.enable();
 	};
 
