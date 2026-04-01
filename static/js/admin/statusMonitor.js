@@ -8,6 +8,7 @@ require.config({
 		'underscore' : 'js/admin/lib/underscore',
 		'tpl' : 'js/admin/lib/tpl',
 		'qtip' : 'js/admin/lib/jquery.qtip.min',
+		'dompurify' : 'js/admin/lib/dompurify.min',
 		
 		'StatusMonitorManager' : 'assets/admin/cdr-admin',
 		'AbstractStatusMonitor' : 'assets/admin/cdr-admin',
@@ -26,9 +27,10 @@ require.config({
 	}
 });
 
-define('statusMonitor', ['module', 'jquery', 'StatusMonitorManager'], function(module, $, StatusMonitorManager) {
+define('statusMonitor', ['module', 'jquery', 'dompurify', 'StatusMonitorManager'], function(module, $, DomPurify, StatusMonitorManager) {
 	var options = {
-			username : module.config().username
+			username : module.config().username,
+			DomPurify: DomPurify
 		};
 	var statusMonitorManager = new StatusMonitorManager($("#status_monitor"), options);
 	statusMonitorManager.activate();
