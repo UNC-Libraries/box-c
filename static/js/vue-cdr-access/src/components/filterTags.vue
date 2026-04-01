@@ -152,7 +152,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     i.fa-greater-than {
         font-size: .6rem;
     }

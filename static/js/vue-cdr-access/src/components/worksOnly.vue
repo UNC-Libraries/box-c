@@ -87,7 +87,7 @@ and including all types with hierarchy retained.
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     label.button {
         border: none;
         box-shadow: none;

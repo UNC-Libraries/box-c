@@ -87,7 +87,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
     #slider-round {
         height: 10px;
         margin: 50px auto 25px auto;

@@ -20,7 +20,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #streaming-player {
         border: none;
         display: flex;

@@ -1,0 +1,13 @@
+:root {
+    /* cdr_ui_styles.css */
+    --unc-blue: #4B9CD3;
+    --unc-navy: #13294B;
+    --unc-text-blue: #0A5274;
+    --container-blue: #1A698C;
+    --container-dark-blue: #084b6b;
+    --container-hover-blue: #2193AF;
+    --light-gray: #E1E1E1;
+    --border-style: 1px solid var(--light-gray);
+    --box-shadow-color: rgba(211, 211, 211, 0.5);
+
+}

@@ -378,9 +378,7 @@
     }
 </script>
 
-<style scoped lang="scss">
-    $border-style: 1px solid lightgray;
-
+<style scoped>
     #staff-roles {
         margin: 0 15px;
         text-align: left;

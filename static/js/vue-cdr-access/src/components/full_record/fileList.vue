@@ -243,9 +243,10 @@ export default {
 }
 </script>
 
-<style lang="scss">
-    @import 'datatables.net-bm';
-    @import 'datatables.net-buttons-bm';
+<style>
+    @import 'datatables.net-bm/css/dataTables.bulma.css';
+    @import 'datatables.net-buttons-bm/css/buttons.bulma.css';
+
     #data-display {
         overflow: visible;
 
@@ -276,7 +277,7 @@ export default {
         }
 
         .pagination-link.is-current {
-            background-color: #1A698C;;
+            background-color: #1A698C;
             border-color: #1A698C;
         }
 
@@ -294,7 +295,7 @@ export default {
 
         tr.deleted {
             a.dropdown-item {
-                color: black
+                color: black;
             }
         }
 
@@ -333,7 +334,7 @@ export default {
 
     td {
         .actionlink {
-            margin: 0
+            margin: 0;
         }
     }
 
@@ -348,7 +349,7 @@ export default {
             }
 
             .dataTables_filter {
-                margin-top: -25px
+                margin-top: -25px;
             }
 
             .child-files_wrapper {

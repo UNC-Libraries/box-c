@@ -168,7 +168,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .thumbnail {
         color: #1A698C;
     }

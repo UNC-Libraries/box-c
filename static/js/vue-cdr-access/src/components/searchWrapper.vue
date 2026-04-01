@@ -157,7 +157,7 @@ Top level component wrapper for search pages
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     img {
         display: block;
         margin: 25px auto;
