@@ -171,6 +171,10 @@ Pagination component for search results, listing pages, previous/next buttons, c
         text-decoration: none;
     }
 
+    .pagination {
+        margin-top: 15px;
+    }
+
     .pagination-link.is-disabled, .pagination-next.is-disabled, .pagination-previous.is-disabled {
         color: #494B55;
         opacity: 1;
