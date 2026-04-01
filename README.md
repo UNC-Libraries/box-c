@@ -7,11 +7,11 @@ Requirements
 Box-c requires Java 21 in order to build and test. On a Mac, this can be installed using brew as follows:
 ```
 brew tap adoptopenjdk/openjdk
-brew install --cask adoptopenjdk11
+brew install --cask adoptopenjdk21
 ```
 Then set `JAVA_HOME` to the installed version. This can be done by editing your .bash_profile or .bashrc file to add the following line:
 ```
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-21.jdk/Contents/Home/
 ```
 
 Maven 3.x is required in order to build the project, which can be installed with:
