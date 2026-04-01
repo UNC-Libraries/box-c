@@ -121,40 +121,40 @@
         border-radius: 5px 5px 0 0;
         margin-top: -20px;
         padding: 20px 0;
-    }
 
-    .modal-header button {
-        background: #e6e6e6 50% 50% repeat-x;
-        border-color: var(--light-gray);
-        margin-top: -6px;
-        padding: 2px 5px;
-    }
+        button {
+            background: #e6e6e6 50% 50% repeat-x;
+            border-color: var(--light-gray);
+            margin-top: -6px;
+            padding: 2px 5px;
+        }
 
-    .modal-header div {
-        width: 100%;
-    }
+        div {
+            width: 100%;
+        }
 
-    .modal-header h3 {
-        font-size: 18px;
-        line-height: 18px;
-    }
+        h3 {
+            font-size: 18px;
+            line-height: 18px;
 
-    .modal-header h3 span {
-        color: black;
+            span {
+                color: black;
+            }
+        }
     }
 
     .modal-container {
         background-color: white;
         padding: 20px 0;
-    }
 
-    .modal-container h3 {
-        color: var(--unc-blue);
-    }
+        h3 {
+            color: var(--unc-blue);
+        }
 
-    .modal-container .modal-body {
-        background-color: white;
-        border-radius: 0 0 5px 5px;
-        padding: 20px;
+        .modal-body {
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+            padding: 20px;
+        }
     }
 </style>
