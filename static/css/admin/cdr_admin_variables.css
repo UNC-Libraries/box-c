@@ -1,0 +1,60 @@
+:root {
+	/* cdradmin.css */
+	--admin-action-blue: #1A698C;
+	--admin-header-blue: #3584A8;
+	--admin-accent-blue: #5AABCF;
+	--admin-text-muted: #666;
+	--admin-tab-border: #D8EDf5;
+	--admin-btn-gray: #F4F4F4;
+
+	/* Shared admin/common palette */
+	--cdr-white: #fff;
+	--cdr-blue-darkest: #001B28;
+	--cdr-blue-dark: #053a53;
+	--cdr-blue-text: #0A5274;
+	--cdr-blue-light: #dfebf1;
+	--cdr-blue-lightest: #ebf5fa;
+	--cdr-menu-font: helvetica;
+
+	/* admin_forms.css */
+	--admin-browse-text: #333;
+	--admin-button-gradient-start: #72AAC3;
+	--admin-button-gradient-end: #3E8DB0;
+	--admin-button-disabled-text: #E7E7E7;
+	--admin-button-disabled-bg: rgb(188, 188, 188);
+	--admin-font-size-base: 14px;
+	--admin-font-size-large: 18px;
+	--admin-button-border-none: medium none var(--admin-button-gradient-end);
+
+	/* search_results.css */
+	--color-accent-blue: #59AACE;
+	--color-light-blue: #DDF0FA;
+	--color-pale-blue: #F5F9FE;
+	--color-pale-bg: #FBFBFE;
+	--color-sky-blue: #E5EFFF;
+	--color-dark-blue: #0F80B3;
+	--color-glow-blue: #55ABE0;
+	--color-teal: #0C7889;
+	--color-icon-blue: #1D759F;
+	--color-gray-light: #889;
+	--color-gray-medium: #444;
+	--color-gray-dark: #555;
+	--color-gray-disabled: #AAA;
+	--color-gray-deleted: #8CB4C6;
+	--color-gray-status: #B6BAB8;
+	--color-green-moving: #8CC6B4;
+	--width-result-table: calc(100vw - 360px);
+	--width-column-collection: 120px;
+	--width-column-creator: 120px;
+	--width-column-date: 75px;
+	--width-column-path: 300px;
+	--shadow-header: 0 4px 6px -6px #AAAAFF;
+	--shadow-glow: 0 0 8px 0 #55ABE0;
+	--shadow-inset-accent: 0 3px 0 0 #0F80B3 inset;
+	--font-size-sm: 70%;
+	--font-size-xs: 85%;
+	--font-size-icon: 18px;
+	--border-style: 1px solid #CCD;
+	--border-light: 1px solid #EEEEEE;
+	--border-dashed-accent: 1px dashed #59AACE;
+}

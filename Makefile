@@ -31,6 +31,7 @@ build-admin-concat:
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
 		static/css/reset.css \
+		static/css/admin/cdr_admin_variables.css \
 		static/css/cdr_common.css \
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
@@ -71,6 +72,7 @@ build-access-concat:
 	rm -f static/assets/access/cdr-access.*
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
+		static/css/public-ui/cdr_access_variables.css \
 		static/css/public-ui/cdr_homepage.css \
 		static/css/public-ui/cdr_ui_styles.css \
 		static/css/public-ui/cdr_vue_modal_styles.css \

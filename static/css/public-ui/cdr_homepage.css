@@ -1,12 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600');
 
-:root {
-  --unc-blue: #4B9CD3;
-  --unc-navy: #13294B;
-  --light-gray: #E1E1E1;
-  --dark-gray: #767676;
-  --black: #151515;
-}
 
 body {
   font-family: 'Open Sans', sans-serif;

@@ -1,12 +1,3 @@
-:root {
-	--cdr-white: #fff;
-	--cdr-blue-darkest: #001B28;
-	--cdr-blue-dark: #053a53;
-	--cdr-blue-text: #0A5274;
-	--cdr-blue-light: #dfebf1;
-	--cdr-blue-lightest: #ebf5fa;
-	--cdr-menu-font: helvetica;
-}
 
 body {
 	color: #222;

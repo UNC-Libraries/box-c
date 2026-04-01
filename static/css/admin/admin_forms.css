@@ -1,21 +1,8 @@
-:root {
-	--admin-white: #fff;
-	--admin-link-blue: #0A5274;
-	--admin-text-dark: #555;
-	--admin-browse-text: #333;
-	--admin-button-gradient-start: #72AAC3;
-	--admin-button-gradient-end: #3E8DB0;
-	--admin-button-disabled-text: #E7E7E7;
-	--admin-button-disabled-bg: rgb(188, 188, 188);
-	--admin-font-size-base: 14px;
-	--admin-font-size-large: 18px;
-	--admin-button-border-none: medium none var(--admin-button-gradient-end);
-}
 
 .edit_form {
 	float: none;
 	font-size: 13px;
-	background-color: var(--admin-white);
+	background-color: var(--cdr-white);
 	font-family: Verdana, Arial, sans-serif;
 	margin-top: 25px;
 
@@ -36,7 +23,7 @@
 
 	h3 {
 		font-weight: bold;
-		color: var(--admin-text-dark);
+		color: var(--color-gray-dark);
 		text-align: left;
 		padding-top: 5px;
 		margin-bottom: 0;
@@ -59,7 +46,7 @@
 
 	input,
 	textarea {
-		background-color: var(--admin-white);
+		background-color: var(--cdr-white);
 		border: 1px solid #C8D8E0;
 		color: #666666;
 		padding: 2px;
@@ -76,7 +63,7 @@
 
 	.update_button {
 		background-color: #165D7F;
-		color: var(--admin-white);
+		color: var(--cdr-white);
 		padding: 4px 8px;
 		background-image: linear-gradient(to bottom, var(--admin-button-gradient-start), var(--admin-button-gradient-end));
 		border: var(--admin-button-gradient-end);
@@ -102,8 +89,8 @@
 
 	a {
 		text-decoration: none;
-		color: var(--admin-link-blue);
-		border-bottom: 1px dashed var(--admin-link-blue);
+		color: var(--cdr-blue-text);
+		border-bottom: 1px dashed var(--cdr-blue-text);
 		cursor: pointer;
 	}
 
@@ -236,7 +223,7 @@
 #xml_editor {
 	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
 	font-size: var(--admin-font-size-base);
-	background-color: var(--admin-white);
+	background-color: var(--cdr-white);
 
 	.xml_node li {
 		text-indent: 0;
@@ -285,7 +272,7 @@
 	margin: 0 6px 0 0;
 	background: transparent linear-gradient(to bottom, var(--admin-button-gradient-start), var(--admin-button-gradient-end)) repeat scroll 0 0;
 	border: var(--admin-button-border-none);
-	color: var(--admin-white);
+	color: var(--cdr-white);
 	padding: 4px 8px;
 	border-radius: 0;
 	font-size: var(--admin-font-size-base);
@@ -375,7 +362,7 @@
 
 	input {
 		background-color: var(--admin-button-gradient-start);
-		color: var(--admin-white);
+		color: var(--cdr-white);
 		padding: 4px 8px;
 		border: var(--admin-button-border-none);
 		margin: 0 0 6px 0;
@@ -410,7 +397,7 @@
 	label {
 		width: auto;
 		font-weight: bold;
-		color: var(--admin-text-dark);
+		color: var(--color-gray-dark);
 	}
 }
 
@@ -457,12 +444,12 @@
 	}
 
 	input {
-		background-color: var(--admin-white);
+		background-color: var(--cdr-white);
 		border: 1px solid #CCD;
 		border-radius: 8px;
 		padding: 2px 6px;
 		font-size: 16px;
-		color: var(--admin-text-dark);
+		color: var(--color-gray-dark);
 	}
 
 	.select_all_col {

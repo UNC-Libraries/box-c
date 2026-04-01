@@ -1,15 +1,3 @@
-:root {
-  --unc-blue: #4B9CD3;
-  --unc-navy: #13294B;
-  --unc-text-blue: #0A5274;
-  --container-blue: #1A698C;
-  --container-dark-blue: #084b6b;
-  --container-hover-blue: #2193AF;
-  --light-gray: #E1E1E1;
-  --border-style: 1px solid var(--light-gray);
-  --box-shadow-color: rgba(211, 211, 211, 0.5);
-  --box-shadow: inset 3px 3px 10px -1px var(--box-shadow-color), 0 16px 22px -15px var(--box-shadow-color);
-}
 
 a {
     color: var(--container-blue);
