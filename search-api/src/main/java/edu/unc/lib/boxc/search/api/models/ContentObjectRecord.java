@@ -1,5 +1,11 @@
 package edu.unc.lib.boxc.search.api.models;
 
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_DESCRIPTION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_CONTENT_TAGS;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_DESCRIPTION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_RISK_SCORE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.TRANSCRIPT;
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -158,4 +164,39 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
     String getAltText();
 
     void setAltText(String altText);
+
+    /**
+     * @return The full content description for this object.
+     */
+    String getFullDescription();
+
+    void setFullDescription(String fullDescription);
+
+    /**
+     * @return A list of content tags generated for this object.
+     */
+    List<String> getMgContentTags();
+
+    void setMgContentTags(List<String> mgContentTags);
+
+    /**
+     * @return The full machine generated description output for this object.
+     */
+    String getMgDescription();
+
+    void setMgDescription(String mgDescription);
+
+    /**
+     * @return A risk score generated for this object based on its content and machine generated output.
+     */
+    Integer getMgRiskScore();
+
+    void setMgRiskScore(Double mgRiskScore);
+
+    /**
+     * @return The transcript for this object.
+     */
+    String getTranscript();
+
+    void setTranscript(String transcript);
 }
