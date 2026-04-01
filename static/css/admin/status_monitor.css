@@ -1,233 +1,233 @@
 /** Status manager */
 
 #status_monitor {
-	padding: 10px;
-	white-space: nowrap;
-	border: none;
+    padding: 10px;
+    white-space: nowrap;
+    border: none;
 
-	.ui-tabs-panel {
-		padding: 10px 0;
-	}
+    .ui-tabs-panel {
+        padding: 10px 0;
+    }
 
-	.ui-tabs-nav {
-		.ui-state-default {
-			border: 1px solid #C8D8E0;
-			border-radius: 12px;
-			background: #ffffff;
-			font-size: 17px;
-			text-indent: 0;
-			margin-right: 12px;
+    .ui-tabs-nav {
+        .ui-state-default {
+            border: 1px solid #C8D8E0;
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 17px;
+            text-indent: 0;
+            margin-right: 12px;
 
-			&.ui-tabs-active {
-				background: #59AACE;
-				border: 1px solid #0F80B3;
-				box-shadow: 0 0 8px 0 #55ABE0;
-			}
-		}
+            &.ui-tabs-active {
+                background: #59AACE;
+                border: 1px solid #0F80B3;
+                box-shadow: 0 0 8px 0 #55ABE0;
+            }
+        }
 
-		.ui-tabs-active a {
-			color: #ffffff;
-		}
+        .ui-tabs-active a {
+            color: #ffffff;
+        }
 
-		li a {
-			float: none;
-			padding: 6px 10px;
-			display: inline-block;
+        li a {
+            float: none;
+            padding: 6px 10px;
+            display: inline-block;
 
-			&:focus {
-				outline: none;
-			}
-		}
-	}
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 
-	/** Default table settings */
+    /** Default table settings */
 
-	table {
-		width: 100%;
-		margin-bottom: 10px;
-		table-layout: fixed;
-		font-size: 12px;
-		border-collapse: separate;
-		border-spacing: 0;
-		box-sizing: border-box;
+    table {
+        width: 100%;
+        margin-bottom: 10px;
+        table-layout: fixed;
+        font-size: 12px;
+        border-collapse: separate;
+        border-spacing: 0;
+        box-sizing: border-box;
 
-		tr.column_headers {
-			background-color: #FBFBFE;
-			color: #000000;
-			cursor: default;
-		}
+        tr.column_headers {
+            background-color: #FBFBFE;
+            color: #000000;
+            cursor: default;
+        }
 
-		th {
-			vertical-align: middle;
-		}
+        th {
+            vertical-align: middle;
+        }
 
-		th, td {
-			padding: 6px 10px;
-			white-space: nowrap;
-			overflow-x: hidden;
-			text-overflow: ellipsis;
-		}
+        th, td {
+            padding: 6px 10px;
+            white-space: nowrap;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
 
-		tr:first-child th:first-child {
-			border-top-left-radius: 6px;
-		}
+        tr:first-child th:first-child {
+            border-top-left-radius: 6px;
+        }
 
-		tr:first-child th:last-child {
-			border-top-right-radius: 6px;
-		}
+        tr:first-child th:last-child {
+            border-top-right-radius: 6px;
+        }
 
-		tr:last-child td:first-child {
-			border-bottom-left-radius: 6px;
-		}
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 6px;
+        }
 
-		tr:last-child td:last-child {
-			border-bottom-right-radius: 6px;
-		}
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 6px;
+        }
 
-		@media (min-width: 1600px) {
-			font-size: 13px;
-		}
+        @media (min-width: 1600px) {
+            font-size: 13px;
+        }
 
-		@media (max-width: 1100px) {
-			font-size: 11px;
-		}
-	}
+        @media (max-width: 1100px) {
+            font-size: 11px;
+        }
+    }
 }
 
 .column_headers_shadow {
-	position: absolute;
-	box-shadow: 0 4px 6px -6px #AAAAFF;
-	top: 0;
-	left: 0;
-	height: 30px;
-	width: 100%;
+    position: absolute;
+    box-shadow: 0 4px 6px -6px #AAAAFF;
+    top: 0;
+    left: 0;
+    height: 30px;
+    width: 100%;
 }
 
 
 /** Job details view */
 
 .status_details {
-	display: none;
-	border: 1px solid #C8D8E0;
-	border-radius: 6px 6px 0 0;
-	background-color: #fff;
+    display: none;
+    border: 1px solid #C8D8E0;
+    border-radius: 6px 6px 0 0;
+    background-color: #fff;
 
-	p {
-		color: #000;
-		text-indent: -20px;
-		padding-left: 20px;
+    p {
+        color: #000;
+        text-indent: -20px;
+        padding-left: 20px;
 
-		> label {
-			font-weight: bold;
-			color: #444;
-			padding-right: 8px;
-		}
-	}
+        > label {
+            font-weight: bold;
+            color: #444;
+            padding-right: 8px;
+        }
+    }
 
-	a {
-		text-decoration: underline;
-	}
+    a {
+        text-decoration: underline;
+    }
 
-	h3 {
-		font-size: 1.1em;
-		display: inline-block;
-		color: #222;
-	}
+    h3 {
+        font-size: 1.1em;
+        display: inline-block;
+        color: #222;
+    }
 
-	pre.stacktrace {
-		white-space: pre;
-		font-family: monospace;
-	}
+    pre.stacktrace {
+        white-space: pre;
+        font-family: monospace;
+    }
 
-	.error_message {
-		color: #111;
-		background-color: #f7b2ac;
-		padding: 6px 8px;
-		text-indent: 0;
-		font-style: normal;
+    .error_message {
+        color: #111;
+        background-color: #f7b2ac;
+        padding: 6px 8px;
+        text-indent: 0;
+        font-style: normal;
 
-		label {
-			color: #d00;
-		}
-	}
+        label {
+            color: #d00;
+        }
+    }
 
-	.ingested_files {
-		padding-left: 1.5em;
+    .ingested_files {
+        padding-left: 1.5em;
 
-		> li {
-			font-style: italic;
-			color: #777;
+        > li {
+            font-style: italic;
+            color: #777;
 
-			> span {
-				font-style: normal;
-				color: #000;
-				padding-right: 1em;
-			}
-		}
-	}
+            > span {
+                font-style: normal;
+                color: #000;
+                padding-right: 1em;
+            }
+        }
+    }
 
-	&.active .ingested_files > li:first-child {
-		span {
-			color: #00AA00;
-		}
+    &.active .ingested_files > li:first-child {
+        span {
+            color: #00AA00;
+        }
 
-		&::before {
-			font-style: normal;
-			content: "\25B8  ";
-		}
-	}
+        &::before {
+            font-style: normal;
+            content: "\25B8  ";
+        }
+    }
 
-	&.failed .ingested_files > li:first-child {
-		span {
-			color: #D00;
-		}
+    &.failed .ingested_files > li:first-child {
+        span {
+            color: #D00;
+        }
 
-		&::before {
-			font-style: normal;
-			content: "\25B8  ";
-		}
-	}
+        &::before {
+            font-style: normal;
+            content: "\25B8  ";
+        }
+    }
 }
 
 .show_details .status_details {
-	display: inline-block;
-	margin-left: 20px;
-	width: 47%;
-	width: calc(50% - 20px);
-	width: -webkit-calc(50% - 20px);
-	vertical-align: top;
+    display: inline-block;
+    margin-left: 20px;
+    width: 47%;
+    width: calc(50% - 20px);
+    width: -webkit-calc(50% - 20px);
+    vertical-align: top;
 }
 
 .status_details_wrapper {
-	position: relative;
+    position: relative;
 }
 
 .status_details_header {
-	width: 100%;
-	border-bottom: 1px solid #C8D8E0;
-	border-radius: 6px 6px 0 0;
-	box-shadow: 0 4px 6px -6px #AAAAFF;
-	background-color: #FBFBFE;
-	display: inline-block;
-	white-space: normal;
+    width: 100%;
+    border-bottom: 1px solid #C8D8E0;
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 4px 6px -6px #AAAAFF;
+    background-color: #FBFBFE;
+    display: inline-block;
+    white-space: normal;
 
-	> h1 {
-		display: inline-block;
-		padding: 6px 10px;
-	}
+    > h1 {
+        display: inline-block;
+        padding: 6px 10px;
+    }
 
-	> a {
-		display: inline-block;
-		float: right;
-		padding: 6px 10px;
-		text-decoration: underline;
-	}
+    > a {
+        display: inline-block;
+        float: right;
+        padding: 6px 10px;
+        text-decoration: underline;
+    }
 }
 
 .status_details_content {
-	padding: 10px;
-	overflow-x: auto;
-	white-space: normal;
+    padding: 10px;
+    overflow-x: auto;
+    white-space: normal;
 }
 
 
@@ -235,163 +235,163 @@
 /** Jobs table */
 
 #status_monitor .status_monitor_jobs {
-	tr.column_headers {
-		background: linear-gradient(to bottom, #FFFFFF, #F5F5FE);
-		background: -webkit-linear-gradient(to bottom, #FFFFFF, #F5F5FE);
-		background-color: #fff;
-	}
+    tr.column_headers {
+        background: linear-gradient(to bottom, #FFFFFF, #F5F5FE);
+        background: -webkit-linear-gradient(to bottom, #FFFFFF, #F5F5FE);
+        background-color: #fff;
+    }
 
-	tr:first-child th {
-		border-bottom: 1px solid #C8D8E0;
-	}
+    tr:first-child th {
+        border-bottom: 1px solid #C8D8E0;
+    }
 
-	tr {
-		cursor: pointer;
+    tr {
+        cursor: pointer;
 
-		&.selected {
-			background-color: #f5f5ff;
-			cursor: default;
-		}
-	}
+        &.selected {
+            background-color: #f5f5ff;
+            cursor: default;
+        }
+    }
 
-	.monitor_job {
-		&.active {
-			background-color: #ddffdd;
+    .monitor_job {
+        &.active {
+            background-color: #ddffdd;
 
-			td:first-child {
-				color: #000000;
-				text-transform: lowercase;
-			}
-		}
+            td:first-child {
+                color: #000000;
+                text-transform: lowercase;
+            }
+        }
 
-		&.queued td:first-child {
-			color: #888888;
-			text-transform: lowercase;
-		}
+        &.queued td:first-child {
+            color: #888888;
+            text-transform: lowercase;
+        }
 
-		&.finished td:first-child {
-			color: #00AA00;
-			text-transform: lowercase;
-		}
+        &.finished td:first-child {
+            color: #00AA00;
+            text-transform: lowercase;
+        }
 
-		&.failed td:first-child {
-			color: #DD0000;
-			text-transform: lowercase;
-		}
-	}
+        &.failed td:first-child {
+            color: #DD0000;
+            text-transform: lowercase;
+        }
+    }
 
-	.col_Status {
-		width: 7em;
-	}
+    .col_Status {
+        width: 7em;
+    }
 }
 
 .status_monitor_job_container {
-	overflow-x: hidden;
-	position: relative;
-	box-shadow: 3px 7px 10px 0 #f0f0FF;
-	border-radius: 6px;
-	margin-bottom: 10px;
+    overflow-x: hidden;
+    position: relative;
+    box-shadow: 3px 7px 10px 0 #f0f0FF;
+    border-radius: 6px;
+    margin-bottom: 10px;
 }
 
 .show_details .status_monitor_job_container {
-	width: 50%;
-	float: left;
+    width: 50%;
+    float: left;
 }
 
 .status_details {
-	.active {
-		color: #000000;
-		text-transform: lowercase;
-	}
+    .active {
+        color: #000000;
+        text-transform: lowercase;
+    }
 
-	.queued {
-		color: #888888;
-		text-transform: lowercase;
-	}
+    .queued {
+        color: #888888;
+        text-transform: lowercase;
+    }
 
-	.finished {
-		color: #00AA00;
-		text-transform: lowercase;
-	}
+    .finished {
+        color: #00AA00;
+        text-transform: lowercase;
+    }
 
-	.failed {
-		color: #DD0000;
-		text-transform: lowercase;
-	}
+    .failed {
+        color: #DD0000;
+        text-transform: lowercase;
+    }
 }
 
 
 /** Overview panel */
 
 .status_monitor_overview {
-	tr:first-child th {
-		border-top: 1px solid #C8D8E0;
-		border-bottom: 1px solid #C8D8E0;
-	}
+    tr:first-child th {
+        border-top: 1px solid #C8D8E0;
+        border-bottom: 1px solid #C8D8E0;
+    }
 
-	tr:last-child td {
-		border-bottom: 1px solid #C8D8E0;
-	}
+    tr:last-child td {
+        border-bottom: 1px solid #C8D8E0;
+    }
 
-	tr th:first-child,
-	tr td:first-child {
-		border-left: 1px solid #C8D8E0;
-	}
+    tr th:first-child,
+    tr td:first-child {
+        border-left: 1px solid #C8D8E0;
+    }
 
-	tr th:last-child,
-	tr td:last-child {
-		border-right: 1px solid #C8D8E0;
-	}
+    tr th:last-child,
+    tr td:last-child {
+        border-right: 1px solid #C8D8E0;
+    }
 }
 
 /** Ingest monitor */
 
 #ingest_monitor_jobs {
-	.col_Submitter {
-		width: 8em;
-	}
+    .col_Submitter {
+        width: 8em;
+    }
 
-	.col_Submit_time {
-		width: 14em;
-	}
+    .col_Submit_time {
+        width: 14em;
+    }
 
-	.col_Ingested {
-		width: 8em;
-	}
+    .col_Ingested {
+        width: 8em;
+    }
 
-	.col_Note {
-		width: 0;
-	}
+    .col_Note {
+        width: 0;
+    }
 
-	th:last-child,
-	td:last-child {
-		width: 0;
-		visibility: hidden;
-	}
+    th:last-child,
+    td:last-child {
+        width: 0;
+        visibility: hidden;
+    }
 }
 
 .show_details #ingest_monitor_jobs .col_Note {
-	width: 0;
+    width: 0;
 }
 
 .show_details #ingest_monitor_jobs td:last-child,
 .show_details #ingest_monitor_jobs th:last-child {
-	width: 0;
-	visibility: hidden;
+    width: 0;
+    visibility: hidden;
 }
 
 /** Enhancement monitor */
 
 #enhancement_monitor_jobs {
-	.col_Triggered_by {
-		width: 8em;
-	}
+    .col_Triggered_by {
+        width: 8em;
+    }
 
-	td {
-		border-bottom: 1px solid #f5f5ff;
-	}
+    td {
+        border-bottom: 1px solid #f5f5ff;
+    }
 
-	.active_service {
-		font-weight: bold;
-	}
+    .active_service {
+        font-weight: bold;
+    }
 }
