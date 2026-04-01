@@ -111,11 +111,6 @@
 
 <style>
     /* Overrides of common Vue modal styles found here: cdr_ui_styles.scss */
-    :root {
-        --unc-blue: #4B9CD3;
-        --light-gray: #E1E1E1;
-    }
-
     .modal-header {
         background-image: linear-gradient(to bottom, #FAFAFA, #EBF5FA);
         border-radius: 5px 5px 0 0;
@@ -124,7 +119,7 @@
 
         button {
             background: #e6e6e6 50% 50% repeat-x;
-            border-color: var(--light-gray);
+            border-color: #E1E1E1;
             margin-top: -6px;
             padding: 2px 5px;
         }
@@ -148,7 +143,7 @@
         padding: 20px 0;
 
         h3 {
-            color: var(--unc-blue);
+            color: #4B9CD3;
         }
 
         .modal-body {

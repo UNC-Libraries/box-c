@@ -243,11 +243,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
-    /* Modern CSS variables and nesting for fileList.vue */
-    :root {
-        --primary-blue: #1A698C;
-    }
+<style>
+    @import 'datatables.net-bm/css/dataTables.bulma.css';
+    @import 'datatables.net-buttons-bm/css/buttons.bulma.css';
 
     #data-display {
         overflow: visible;
@@ -279,8 +277,8 @@ export default {
         }
 
         .pagination-link.is-current {
-            background-color: var(--primary-blue);
-            border-color: var(--primary-blue);
+            background-color: #1A698C;
+            border-color: #1A698C;
         }
 
         .dtr-details {

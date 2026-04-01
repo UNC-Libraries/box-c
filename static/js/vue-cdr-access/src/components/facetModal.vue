@@ -199,11 +199,7 @@ export default {
 
 <style scoped>
 :root {
-    --grey-border: 1px solid lightgray;
-    --modal-btn-bg: #007FAE;
-    --modal-active-bg: #e6e6e6;
-    --modal-active-border: #adadad;
-    --modal-active-color: #333;
+    --facet-modal-gray-border: 1px solid lightgray;
 }
 
 .more.button.is-focused,
@@ -221,7 +217,7 @@ export default {
 }
 
 .modal-header {
-    border-bottom: var(--grey-border);
+    border-bottom: var(--facet-modal-gray-border);
     padding: 0 15px;
     margin: 0;
 
@@ -268,7 +264,7 @@ export default {
 }
 
 .modal-footer {
-    border-top: var(--grey-border);
+    border-top: var(--facet-modal-gray-border);
     margin-top: 5px;
 
     .columns {
@@ -286,7 +282,7 @@ export default {
     }
 
     .button[disabled] {
-        background-color: var(--modal-btn-bg);
+        background-color: #007FAE;
     }
 
     .sorting {
@@ -301,9 +297,9 @@ export default {
 
         .active {
             box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
-            color: var(--modal-active-color);
-            background-color: var(--modal-active-bg) !important;
-            border-color: var(--modal-active-border);
+            color: #333;
+            background-color: #e6e6e6 !important;
+            border-color: #adadad;
             pointer-events: none;
             cursor: pointer;
         }

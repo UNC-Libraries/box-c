@@ -432,10 +432,8 @@ Facet list component, used to display all the values of facets and provide links
 </script>
 
 <style scoped>
-    /* Modern CSS variables and nesting for facets.vue */
     :root {
-        --cdr-blue: #1A698C;
-        --date-error-color: #cc0f35;
+        --cdr-facet-blue: #1A698C;
     }
 
     #facetList {
@@ -455,7 +453,7 @@ Facet list component, used to display all the values of facets and provide links
             text-transform: capitalize;
 
             i {
-                color: var(--cdr-blue);
+                color: var(--cdr-facet-blue);
                 position: relative;
                 vertical-align: text-top;
             }
@@ -477,14 +475,14 @@ Facet list component, used to display all the values of facets and provide links
             }
             input[type=submit] {
                 margin-left: 8px;
-                background-color: var(--cdr-blue);
+                background-color: var(--cdr-facet-blue);
                 color: white;
                 font-weight: bold;
                 border-radius: 5px;
             }
         }
         .date_error {
-            color: var(--date-error-color);
+            color: #cc0f35;
             font-size: 15px;
             margin-top: 10px;
         }
