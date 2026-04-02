@@ -591,7 +591,7 @@ public class IndexDocumentBean {
     }
 
     @Field
-    public void setMgRiskScore(Double mgRiskScore) {
+    public void setMgRiskScore(Integer mgRiskScore) {
         fields.put(MG_RISK_SCORE.getSolrField(), mgRiskScore);
     }
 
