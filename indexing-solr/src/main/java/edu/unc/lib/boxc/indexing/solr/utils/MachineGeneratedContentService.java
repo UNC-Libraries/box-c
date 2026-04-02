@@ -18,7 +18,7 @@ import java.util.List;
  * Service for deserialization and interaction with machine generated content datastreams.
  * @author bbpennel
  */
-public class MachineGenerateContentService {
+public class MachineGeneratedContentService {
     public static final String MG_DESCRIPTION_FIELD = "full_description";
     public static final String MG_RISK_SCORE_FIELD = "overall_risk_Score";
     public static final String MG_ALT_TEXT = "alt_text";
@@ -45,10 +45,12 @@ public class MachineGenerateContentService {
     public static final String MG_REVIEW_STEREOTYPING = "model_stereotyping";
     public static final String MG_REVIEW_JUDGMENTS = "model_value_judgments";
     public static final String MG_REVIEW_DESC_CONTRADICTIONS = "contradictions_within_description";
+    public static final String MG_REVIEW_TEXT_CONTRADICTIONS = "contradictions_between_texts";
     public static final String MG_REVIEW_INCON_DEMOS = "inconsistent_demographics";
-    public static final String MG_REVIEW_EUPH_LANG = "euphemistic_language";
-    public static final String MG_REVIEW_PEOPLE_FIRST = "people_first_language";
+    public static final String MG_REVIEW_EUPH_LANG = "model_euphemistic_language";
+    public static final String MG_REVIEW_PEOPLE_FIRST = "model_people_first_language";
     public static final String MG_REVIEW_SUPPORTED_CLAIMS = "unsupported_claims";
+    public static final String MG_REVIEW_SAFETY_ASSESS_INCON = "safety_assessment_inconsistent";
 
     public static final String RESULT_FIELD = "result";
     public static final ObjectMapper MAPPER = new ObjectMapper();
@@ -129,6 +131,7 @@ public class MachineGenerateContentService {
             addYesNoTag(tags, safetyNode, "minors_present", MG_MINORS_PRESENT);
             addYesNoTag(tags, safetyNode, "named_individuals_claimed", MG_NAMED_INDIVS);
             addYesNoTag(tags, safetyNode, "stereotyping_present", MG_STEREOTYPING);
+            addYesNoTag(tags, safetyNode, "atrocities_depicted", MG_ATROCITIES);
 
             // misidentification_risk_people: add tag if value is not LOW
             JsonNode misidNode = safetyNode.path("misidentification_risk_people");
@@ -144,7 +147,6 @@ public class MachineGenerateContentService {
             addNoneBasedTag(tags, safetyNode, "racial_violence_oppression", MG_RACIAL_OPPRESSION);
             addNoneBasedTag(tags, safetyNode, "nudity", MG_NUDITY);
             addNoneBasedTag(tags, safetyNode, "sexual_content", MG_SEXUAL);
-            addNoneBasedTag(tags, safetyNode, "atrocities_depicted", MG_ATROCITIES);
 
             // symbols_present: add tag unless types contains "NONE"
             JsonNode typesNode = safetyNode.path("symbols_present").path("types");
@@ -189,7 +191,21 @@ public class MachineGenerateContentService {
         }
         JsonNode reviewNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
         if (!reviewNode.isMissingNode()) {
-            // Populate tags based on review assessment fields
+            addYesNoTag(tags, reviewNode, "biased_language", MG_REVIEW_BIASED);
+            addYesNoTag(tags, reviewNode, "stereotyping", MG_REVIEW_STEREOTYPING);
+            addYesNoTag(tags, reviewNode, "value_judgments", MG_REVIEW_JUDGMENTS);
+            addYesNoTag(tags, reviewNode, "contradictions_within_description", MG_REVIEW_DESC_CONTRADICTIONS);
+            addYesNoTag(tags, reviewNode, "contradictions_between_texts", MG_REVIEW_TEXT_CONTRADICTIONS);
+            addYesNoTag(tags, reviewNode, "inconsistent_demographics", MG_REVIEW_INCON_DEMOS);
+            addYesNoTag(tags, reviewNode, "euphemistic_language", MG_REVIEW_EUPH_LANG);
+            addYesNoTag(tags, reviewNode, "people_first_language", MG_REVIEW_PEOPLE_FIRST);
+            addYesNoTag(tags, reviewNode, "unsupported_inferential_claims", MG_REVIEW_SUPPORTED_CLAIMS);
+
+            JsonNode safetyConsistencyNode = reviewNode.path("safety_assessment_consistency");
+            if (!safetyConsistencyNode.isMissingNode()
+                    && "INCONSISTENT".equalsIgnoreCase(safetyConsistencyNode.asText())) {
+                tags.add(MG_REVIEW_SAFETY_ASSESS_INCON);
+            }
         }
         return tags;
     }

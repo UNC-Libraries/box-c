@@ -5,7 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.indexing.solr.utils.MachineGenerateContentService;
+import edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -26,7 +26,7 @@ import java.io.IOException;
 public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetContentDescriptionMetadataFilter.class);
     private RepositoryObjectLoader repositoryObjectLoader;
-    private MachineGenerateContentService mgContentService;
+    private MachineGeneratedContentService mgContentService;
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -90,7 +90,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         this.repositoryObjectLoader = repositoryObjectLoader;
     }
 
-    public void setMgContentService(MachineGenerateContentService mgContentService) {
+    public void setMgContentService(MachineGeneratedContentService mgContentService) {
         this.mgContentService = mgContentService;
     }
 }

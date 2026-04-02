@@ -191,7 +191,7 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
      */
     Integer getMgRiskScore();
 
-    void setMgRiskScore(Double mgRiskScore);
+    void setMgRiskScore(Integer mgRiskScore);
 
     /**
      * @return The transcript for this object.

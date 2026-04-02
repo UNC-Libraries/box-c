@@ -448,7 +448,7 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public void setMgRiskScore(Double mgRiskScore) {
+    public void setMgRiskScore(Integer mgRiskScore) {
         representative.setMgRiskScore(mgRiskScore);
     }
 
