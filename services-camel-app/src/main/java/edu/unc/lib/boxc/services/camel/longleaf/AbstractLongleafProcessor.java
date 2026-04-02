@@ -1,113 +1,152 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Abstract processor for executing longleaf commands
+ * Abstract processor for executing longleaf HTTP API requests
  *
  * @author bbpennel
  */
 public abstract class AbstractLongleafProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AbstractLongleafProcessor.class);
-    protected static final Logger longleafLog = LoggerFactory.getLogger("longleaf");
 
-    private String longleafBaseCommand;
+    // 5 second timeout to establish a connection
+    private static final int CONNECTION_TIMEOUT_MS = 5000;
+    // 2 minute timeout waiting for response data, to allow for large batches
+    private static final int SOCKET_TIMEOUT_MS = 2 * 60 * 1000;
 
-    private Pattern SUCCESS_PATTERN = Pattern.compile("^SUCCESS \\w+ (.+)$");
-    private Pattern FAILURE_PATTERN = Pattern.compile("^(FAILURE|ERROR).+");
+    protected String longleafBaseUri;
+    private String longleafApiKey;
+
+    private HttpClientConnectionManager httpClientConnectionManager;
+    private CloseableHttpClient httpClient;
+    protected final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Execute a command in longleaf, using the configured base command
+     * Execute a POST request to the longleaf API, parse the JSON response, and return
+     * the success and failure path lists.
      *
-     * @param command longleaf command
-     * @param pipedContent content to pipe into the command. Optional.
-     * @return exit code from register command
+     * @param requestUrl full URL to POST to
+     * @param bodyMap map of fields to serialize as the JSON request body
+     * @return parsed result containing success and failure path lists
+     * @throws ServiceException if the server returns a non-200 status or communication fails
      */
-    protected ExecuteResult executeCommand(String command, String pipedContent) {
+    protected LongleafApiResult executeHttpPost(String requestUrl, Map<String, Object> bodyMap) {
+        var postMethod = new HttpPost(requestUrl);
+        if (longleafApiKey != null) {
+            postMethod.setHeader("X-Api-Key", longleafApiKey);
+        }
+        log.debug("Executing longleaf API request to {} with body {}", requestUrl, bodyMap);
         try {
-            // only register binaries with md5sum
-            String longleafCommmand = longleafBaseCommand + " " + command;
-            log.debug("Executing longleaf commandlongleaf: {}", longleafCommmand);
+            HttpEntity entity = EntityBuilder.create()
+                    .setText(objectMapper.writeValueAsString(bodyMap))
+                    .setContentType(ContentType.APPLICATION_JSON).build();
+            postMethod.setEntity(entity);
 
-            Process process = Runtime.getRuntime().exec(longleafCommmand);
-            // Pipe the manifest data into the command
-            if (pipedContent != null) {
-                try (OutputStream pipeOut = process.getOutputStream()) {
-                    pipeOut.write(pipedContent.getBytes(UTF_8));
+            try (var response = getHttpClient().execute(postMethod)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                log.debug("Longleaf API response status: {}", statusCode);
+                if (statusCode >= 400 && statusCode < 500) {
+                    throw new LongleafBadRequestException("Longleaf API request to " + requestUrl
+                            + " rejected with HTTP status: " + statusCode);
+                } else if (statusCode != 200) {
+                    throw new ServiceException("Longleaf API request to " + requestUrl
+                            + " failed with HTTP status: " + statusCode);
                 }
-            }
 
-            ExecuteResult result = new ExecuteResult(process.waitFor());
-            boolean encounteredFailures = result.failuresEncountered();
+                String responseBody = EntityUtils.toString(response.getEntity());
+                log.debug("Longleaf API response from {}: {}", requestUrl, responseBody);
+                JsonNode responseJson = objectMapper.readTree(responseBody);
 
-            // log longleaf output
-            String line;
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                while ((line = in.readLine()) != null) {
-                    longleafLog.info(line);
-                    // record uris of any commands that succeed
-                    Matcher matcher = SUCCESS_PATTERN.matcher(line);
-                    if (matcher.matches()) {
-                        result.completed.add(matcher.group(1));
-                    } else if (!encounteredFailures) {
-                        // Check for failures in the output that were not reflected in the exit code
-                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
-                    }
-                }
+                List<String> successes = parsePathList(responseJson.get("success"));
+                List<String> failures = parsePathList(responseJson.get("failure"));
+                return new LongleafApiResult(successes, failures);
             }
-            try (BufferedReader err = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream()))) {
-                while ((line = err.readLine()) != null) {
-                    longleafLog.error(line);
-                    if (!encounteredFailures) {
-                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
-                    }
-                }
-            }
-
-            // Escalate the result to indicate errors were encountered if there were errors in the output
-            if (encounteredFailures && result.exitVal == 0) {
-                result.exitVal = 1;
-            }
-
-            return result;
         } catch (IOException e) {
-            log.error("IOException while executing longleaf command: {}", command, e);
-        } catch (InterruptedException e) {
-            log.error("InterruptedException while executing longleaf command: {}", command, e);
-        }
-
-        return new ExecuteResult(1);
-    }
-
-    protected static class ExecuteResult {
-        protected int exitVal;
-        protected List<String> completed = new ArrayList<>();
-
-        protected ExecuteResult(int exitVal) {
-            this.exitVal = exitVal;
-        }
-
-        protected boolean failuresEncountered() {
-            return exitVal != 0;
+            throw new LongleafConnectionException("Unable to connect to longleaf at " + requestUrl, e);
+        } finally {
+            postMethod.releaseConnection();
         }
     }
 
-    public void setLongleafBaseCommand(String longleafBaseCommand) {
-        this.longleafBaseCommand = longleafBaseCommand;
+    private List<String> parsePathList(JsonNode node) {
+        List<String> paths = new ArrayList<>();
+        if (node != null) {
+            node.forEach(n -> paths.add(n.asText()));
+        }
+        return paths;
+    }
+
+    private CloseableHttpClient getHttpClient() {
+        if (httpClient == null) {
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(CONNECTION_TIMEOUT_MS)
+                    .setSocketTimeout(SOCKET_TIMEOUT_MS)
+                    .build();
+            httpClient = HttpClients.custom()
+                    .setConnectionManager(httpClientConnectionManager)
+                    .setDefaultRequestConfig(requestConfig)
+                    .build();
+        }
+        return httpClient;
+    }
+
+    public void destroy() {
+        if (httpClient != null) {
+            try {
+                httpClient.close();
+            } catch (Exception e) {
+                log.error("Failed to close http client", e);
+            }
+        }
+    }
+
+    public void setLongleafBaseUri(String longleafBaseUri) {
+        this.longleafBaseUri = longleafBaseUri;
+    }
+
+    public void setLongleafApiKey(String longleafApiKey) {
+        this.longleafApiKey = StringUtils.isEmpty(longleafApiKey) ? null : longleafApiKey;
+    }
+
+    public void setHttpClientConnectionManager(HttpClientConnectionManager httpClientConnectionManager) {
+        this.httpClientConnectionManager = httpClientConnectionManager;
+    }
+
+    /**
+     * Result of a longleaf API call, containing lists of paths that succeeded and failed.
+     */
+    protected static class LongleafApiResult {
+        protected final List<String> successes;
+        protected final List<String> failures;
+
+        protected LongleafApiResult(List<String> successes, List<String> failures) {
+            this.successes = successes;
+            this.failures = failures;
+        }
+
+        protected boolean hasFailures() {
+            return !failures.isEmpty();
+        }
     }
 }
