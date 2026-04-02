@@ -431,8 +431,11 @@ Facet list component, used to display all the values of facets and provide links
     }
 </script>
 
-<style scoped lang="scss">
-    $cdr-blue: #1A698C;
+<style scoped>
+    :root {
+        --cdr-facet-blue: #1A698C;
+    }
+
     #facetList {
         .columns {
             margin: 0;
@@ -450,7 +453,7 @@ Facet list component, used to display all the values of facets and provide links
             text-transform: capitalize;
 
             i {
-                color: $cdr-blue;
+                color: var(--cdr-facet-blue);
                 position: relative;
                 vertical-align: text-top;
             }
@@ -472,7 +475,7 @@ Facet list component, used to display all the values of facets and provide links
             }
             input[type=submit] {
                 margin-left: 8px;
-                background-color: $cdr-blue;
+                background-color: var(--cdr-facet-blue);
                 color: white;
                 font-weight: bold;
                 border-radius: 5px;

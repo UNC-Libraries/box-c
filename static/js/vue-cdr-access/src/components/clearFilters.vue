@@ -57,7 +57,7 @@ export default {
 }
 </script>
 
-<style scoped  lang="scss">
+<style scoped>
     .clear-options {
         flex-wrap: wrap;
         margin-bottom: 30px;

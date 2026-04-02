@@ -60,7 +60,7 @@ export default {
     }
 }
 </script>
-<style scoped lang="scss">
+<style scoped>
     .relateditem {
         text-align: center;
         overflow: hidden;

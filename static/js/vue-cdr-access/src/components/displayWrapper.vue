@@ -323,7 +323,7 @@ Top level component for full record pages with searching/browsing, including Adm
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .loading-icon {
         margin-top: 50px;
         text-align: center;
