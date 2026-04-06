@@ -48,6 +48,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         idb.setFullDescription(getFullDescription(filePid, mgdNode));
         idb.setTranscript(getTranscript(filePid, mgdNode));
         idb.setMgRiskScore(mgContentService.extractRiskScore(mgdNode));
+        idb.setMgContentTags(mgContentService.extractContentTags(mgdNode));
     }
 
     private String getMachineGeneratedDescriptionJson(PID filePid) throws IndexingException {
