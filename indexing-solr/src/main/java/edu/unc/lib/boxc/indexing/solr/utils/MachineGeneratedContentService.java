@@ -57,11 +57,22 @@ public class MachineGeneratedContentService {
 
     private DerivativeService derivativeService;
 
+    /**
+     * Loads the machine generated description JSON string for the given file PID, if it exists.
+     * @param filePid file
+     * @return
+     * @throws IOException
+     */
     public String loadMachineGeneratedDescription(PID filePid) throws IOException {
         Path mgdPath = derivativeService.getDerivativePath(filePid, DatastreamType.GENERATED_DESCRIPTION);
         return Files.readString(mgdPath);
     }
 
+    /**
+     * Deserializes the machine generated description JSON string into a JsonNode for easier interaction.
+     * @param mgdJson
+     * @return
+     */
     public JsonNode deserializeMachineGeneratedDescription(String mgdJson) {
         try {
             return MAPPER.readTree(mgdJson);
