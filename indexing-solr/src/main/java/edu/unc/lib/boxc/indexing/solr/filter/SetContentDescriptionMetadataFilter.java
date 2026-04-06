@@ -17,8 +17,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 /**
  * Filter which populates content description metadata fields for the object being indexed, from both
@@ -58,7 +58,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
     private String getMachineGeneratedDescriptionJson(PID filePid) throws IndexingException {
         try {
             return mgContentService.loadMachineGeneratedDescription(filePid);
-        } catch (FileNotFoundException e) {
+        } catch (NoSuchFileException e) {
             log.debug("No machine generated description datastream found for {}", filePid);
             return null;
         } catch (IOException e) {

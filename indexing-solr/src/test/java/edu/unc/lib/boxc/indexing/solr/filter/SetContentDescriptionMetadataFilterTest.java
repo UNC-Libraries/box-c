@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -20,13 +21,17 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -134,13 +139,17 @@ public class SetContentDescriptionMetadataFilterTest {
     public void filter_noMachineGeneratedDescription_setsNullFields() throws Exception {
         when(dip.getContentObject()).thenReturn(fileObj);
 
-        when(mgContentService.loadMachineGeneratedDescription(filePid)).thenReturn(null);
-        when(mgContentService.deserializeMachineGeneratedDescription(null)).thenReturn(null);
-        when(mgContentService.extractAltText(null)).thenReturn(null);
-        when(mgContentService.extractFullDescription(null)).thenReturn(null);
-        when(mgContentService.extractTranscript(null)).thenReturn(null);
-        when(mgContentService.extractRiskScore(null)).thenReturn(null);
-        when(mgContentService.extractContentTags(null)).thenReturn(null);
+        String defaultJson = Files.readString(Path.of(DEFAULT_JSON_PATH));
+        JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
+
+        when(mgContentService.loadMachineGeneratedDescription(filePid))
+                .thenThrow(new NoSuchFileException("Not found"));
+        when(mgContentService.extractAltText(defaultNode)).thenReturn(null);
+        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
+        when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
+        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
+        // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
 
@@ -150,8 +159,29 @@ public class SetContentDescriptionMetadataFilterTest {
         verify(idb).setAltText(null);
         verify(idb).setFullDescription(null);
         verify(idb).setTranscript(null);
-        verify(idb).setMgRiskScore(null);
-        verify(idb).setMgContentTags(null);
+        verify(idb).setMgRiskScore(0);
+        verify(idb).setMgContentTags(argThat(List::isEmpty));
+    }
+
+    @Test
+    public void filter_machineGeneratedDescriptionThrowsIOException() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+
+        String defaultJson = Files.readString(Path.of(DEFAULT_JSON_PATH));
+        JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
+
+        when(mgContentService.loadMachineGeneratedDescription(filePid))
+                .thenThrow(new IOException("Bad IO"));
+        when(mgContentService.extractAltText(defaultNode)).thenReturn(null);
+        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
+        when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
+        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
+        // No alt text in fedora
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
+                .thenThrow(new NotFoundException("No alt text"));
+
+        assertThrows(IndexingException.class, () -> filter.filter(dip));
     }
 
     @Test
