@@ -22,7 +22,7 @@
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
-                <ref bean="setAltTextFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
                 <ref bean="setMemberOrderFilter" />
@@ -67,7 +67,7 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
-                <ref bean="setAltTextFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
@@ -314,8 +314,13 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
-    <bean id="setAltTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAltTextFilter">
+    <bean id="mgContentService" class="edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService" />
+    </bean>
+
+    <bean id="setContentDescriptionMetadataFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentDescriptionMetadataFilter">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="mgContentService" ref="mgContentService" />
     </bean>
     
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

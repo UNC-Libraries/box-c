@@ -26,8 +26,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -115,9 +113,9 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn("A scenic mountain landscape");
-        when(mgContentService.extractTranscript(defaultNode)).thenReturn("");
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(0);
-        when(mgContentService.extractContentTags(defaultNode)).thenReturn(List.of());
+        when(mgContentService.extractTranscript(defaultNode)).thenReturn("text");
+        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(10);
+        when(mgContentService.extractContentTags(defaultNode)).thenReturn(List.of("tag1", "tag2"));
         // No alt text in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
@@ -127,9 +125,9 @@ public class SetContentDescriptionMetadataFilterTest {
         verify(idb).setMgDescription(defaultJson);
         verify(idb).setAltText(ALT_TEXT_FROM_MG);
         verify(idb).setFullDescription("A scenic mountain landscape");
-        verify(idb).setTranscript("");
-        verify(idb).setMgRiskScore(0);
-        verify(idb).setMgContentTags(List.of());
+        verify(idb).setTranscript("text");
+        verify(idb).setMgRiskScore(10);
+        verify(idb).setMgContentTags(List.of("tag1", "tag2"));
     }
 
     @Test

@@ -21,6 +21,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
+ * Filter which populates content description metadata fields for the object being indexed, from both
+ * fedora and the machine generated description datastream. The machine generated description is expected to be a JSON.
+ * This includes alt text, full description, transcript, risk score, and content tags.
+ *
  * @author bbpennel
  */
 public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter {
