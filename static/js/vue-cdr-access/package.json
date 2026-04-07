@@ -52,7 +52,7 @@
         "jsdom": "^26.1.0",
         "patch-package": "^8.0.1",
         "pretty": "^2.0.0",
-        "vite": "6.4.1",
+        "vite": "6.4.2",
         "vitest": "^4.0.18",
         "vitest-fetch-mock": "^0.4.5",
         "vitest-localstorage-mock": "^0.1.2"
