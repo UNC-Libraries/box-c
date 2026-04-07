@@ -98,6 +98,11 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
     private final static String UNKNOWN_FORMAT = "Unknown";
 
+    private final static String AUDIO_FILEPATH = "path/audio.m4a";
+    private final static String AUDIO_MD5 = "1d442d115b472b21437893000b79c97a";
+    private final static String AUDIO_MIMETYPE = "audio/mp4";
+    private final static String AUDIO_FORMAT = "MPEG-4 Audio";
+
     private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
 
     @Mock
@@ -350,6 +355,20 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         verifyRequestParameters(IMAGE_FILEPATH);
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
+    }
+
+    @Test
+    public void preferMimetypeMatchingFileExtensionTest() throws Exception {
+        respondWithFile("/fitsReports/multipleTypeReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, AUDIO_FILEPATH, AUDIO_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyRequestParameters(AUDIO_FILEPATH);
+        verifyFileResults(filePid, AUDIO_MIMETYPE, AUDIO_FORMAT, AUDIO_MD5, 1);
     }
 
     @Test

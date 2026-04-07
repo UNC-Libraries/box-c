@@ -232,8 +232,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
                 // Record the format info for this file
-                String extensionMimetype = Files.probeContentType(linkPath);
-                addFileIdentification(fitsDoc, premisObjCharsEl, extensionMimetype);
+                addFileIdentification(fitsDoc, premisObjCharsEl, linkPath);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -265,9 +264,9 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
          * @param fitsDoc
          * @param premisObjCharsEl
          */
-        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl, String extensionMimetype) {
+        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl, Path linkPath) throws IOException {
             // Retrieve the FITS generate mimetype if available
-            Element identity = getFitsIdentificationInformation(fitsDoc, extensionMimetype);
+            Element identity = getFitsIdentificationInformation(fitsDoc, linkPath);
 
             String fitsMimetype = null;
             String format;
@@ -512,7 +511,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * @param fitsDoc
      * @return
      */
-    private Element getFitsIdentificationInformation(Document fitsDoc, String extensionMimetype) {
+    private Element getFitsIdentificationInformation(Document fitsDoc, Path linkPath) throws IOException {
         Element identification = fitsDoc.getRootElement().getChild("identification", FITS_NS);
         String identityStatus = identification.getAttributeValue("status");
         // If there was no conflict, use the first identity
@@ -537,10 +536,16 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                     .thenComparingInt(el -> el.getAttributeValue(MIMETYPE_ATTR).contains("x-") ? -1 : 0))
                     .toList();
             // Filter out conflicting mimetypes that don't match file extension mimetype
-            if (!identityEls.isEmpty() && extensionMimetype != null && identityEls.stream()
-                    .anyMatch(el -> el.getAttributeValue(MIMETYPE_ATTR).contains(extensionMimetype))) {
-                identityEls = identityEls.stream()
-                        .filter(el -> el.getAttributeValue(MIMETYPE_ATTR).contains(extensionMimetype)).toList();
+            if (!identityEls.isEmpty()) {
+                String extensionMimetype = Files.probeContentType(linkPath);
+                if (extensionMimetype != null) {
+                    var matchingEls = identityEls.stream()
+                            .filter(el -> extensionMimetype.equals(el.getAttributeValue(MIMETYPE_ATTR)))
+                            .toList();
+                    if (!matchingEls.isEmpty()) {
+                        identityEls = matchingEls;
+                    }
+                }
             }
             // Return the best ranking identification, or null if none are valid
             return identityEls.isEmpty() ? null : identityEls.get(0);
