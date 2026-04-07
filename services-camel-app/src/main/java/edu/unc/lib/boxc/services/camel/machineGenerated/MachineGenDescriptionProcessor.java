@@ -79,7 +79,9 @@ public class MachineGenDescriptionProcessor implements Processor {
                 request.setPidString(id);
                 request.setText(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
                 machineGenDescriptionUpdateService.updateMachineGenText(request);
-                indexingMessageSender.sendIndexingOperation("automated", pid, IndexingActionType.UPDATE_DATASTREAMS);
+                indexingMessageSender.sendIndexingOperation("automated",
+                        binaryObject.getParentPid(), // Index the file object the binary belongs to
+                        IndexingActionType.UPDATE_DATASTREAMS);
             }
         }
     }

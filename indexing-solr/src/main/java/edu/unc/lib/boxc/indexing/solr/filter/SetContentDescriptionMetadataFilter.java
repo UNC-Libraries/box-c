@@ -41,10 +41,14 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         }
         PID filePid = contentObj.getPid();
         IndexDocumentBean idb = dip.getDocument();
-
+        log.debug("Processing content description metadata for {}", contentObj.getPid());
 
         String mgdString = getMachineGeneratedDescriptionJson(filePid);
-        JsonNode mgdNode = mgContentService.deserializeMachineGeneratedDescription(mgdString);
+        JsonNode mgdNode = null;
+        if (mgdString != null) {
+            mgdNode = mgContentService.deserializeMachineGeneratedDescription(mgdString);
+            log.debug("Loaded machine gen datastream for {}", contentObj.getPid());
+        }
 
         // Store the raw string in the index for reviewing
         idb.setMgDescription(mgdString);

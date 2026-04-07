@@ -79,6 +79,7 @@ public class MachineGenDescriptionProcessorTest {
         when(repositoryObjectLoader.getBinaryObject(eq(pid))).thenReturn(binaryObject);
         when(binaryObject.getFilename()).thenReturn("filename.txt");
         when(binaryObject.getMimetype()).thenReturn("text/plain");
+        when(binaryObject.getParentPid()).thenReturn(pid);
         derivativePath = tmpFolder.resolve(FILENAME);
         when(binaryObject.getContentUri()).thenReturn(derivativePath.toUri());
 

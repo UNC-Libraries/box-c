@@ -31,7 +31,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -144,6 +146,8 @@ public class SetContentDescriptionMetadataFilterTest {
 
         when(mgContentService.loadMachineGeneratedDescription(filePid))
                 .thenThrow(new NoSuchFileException("Not found"));
+        when(mgContentService.deserializeMachineGeneratedDescription(isNull()))
+                .thenThrow(new NullPointerException("Null pointer in deserialization"));
         when(mgContentService.extractAltText(defaultNode)).thenReturn(null);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);

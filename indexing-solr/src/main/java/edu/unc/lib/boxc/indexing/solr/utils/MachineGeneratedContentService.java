@@ -7,6 +7,8 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +21,8 @@ import java.util.List;
  * @author bbpennel
  */
 public class MachineGeneratedContentService {
+    private static final Logger log = LoggerFactory.getLogger(MachineGeneratedContentService.class);
+
     public static final String MG_DESCRIPTION_FIELD = "full_description";
     public static final String MG_RISK_SCORE_FIELD = "overall_risk_Score";
     public static final String MG_ALT_TEXT = "alt_text";
@@ -65,6 +69,7 @@ public class MachineGeneratedContentService {
      */
     public String loadMachineGeneratedDescription(PID filePid) throws IOException {
         Path mgdPath = derivativeService.getDerivativePath(filePid, DatastreamType.GENERATED_DESCRIPTION);
+        log.debug("Loading MGD content for {} at path {}", filePid, mgdPath);
         return Files.readString(mgdPath);
     }
 
@@ -129,6 +134,13 @@ public class MachineGeneratedContentService {
         return scoreNode.isMissingNode() ? null : scoreNode.asInt();
     }
 
+    /**
+     * Extracts content tags based on the machine generated description JSON. Tags are generated based review
+     * and safety assessments in the JSON. Examples include: "people_visible", "minors_present_unknown",
+     * "model_biased_language", etc.
+     * @param mgdNode root node of the machine generated description JSON
+     * @return list of content tags from the JSON, or empty list if there were none, or null if input was null
+     */
     public List<String> extractContentTags(JsonNode mgdNode) {
         if (mgdNode == null) {
             return null;
@@ -218,6 +230,7 @@ public class MachineGeneratedContentService {
                 tags.add(MG_REVIEW_SAFETY_ASSESS_INCON);
             }
         }
+        log.debug("Generated content tags: {}", tags);
         return tags;
     }
 
