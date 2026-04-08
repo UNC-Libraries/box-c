@@ -1,5 +1,43 @@
 package edu.unc.lib.boxc.indexing.solr.utils;
 
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_ATROCITIES;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_DEMOGRAPHICS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_MINORS_PRESENT;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_MISID_RISK;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_NAMED_INDIVS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_NUDITY;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_PEOPLE_VISIBLE;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_RACIAL_OPPRESSION;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_ASSESS_FIELD;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_BIASED;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_DESC_CONTRADICTIONS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_EUPH_LANG;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_INCON_DEMOS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_JUDGMENTS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_PEOPLE_FIRST;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_SAFETY_ASSESS_INCON;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_STEREOTYPING;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_SUPPORTED_CLAIMS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_TEXT_CONTRADICTIONS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SAFETY_ASSESS_FIELD;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SEXUAL;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_STEREOTYPING;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SYMBOLS;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_HANDWRITTEN;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_PRESENT;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_SENSITIVE;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_VIOLENT;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_FIELD;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_TEXT_MIXED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,8 +56,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author bbpennel
@@ -237,7 +273,7 @@ public class MachineGeneratedContentServiceTest {
         JsonNode node = parseDefaultJson();
         setNestedArrayValue((ObjectNode) node.path(RESULT_FIELD)
                 .path(MG_SAFETY_ASSESS_FIELD)
-                .path("symbols_present"), "types", "FLAG");
+                .path("symbols_present"));
         List<String> tags = service.extractContentTags(node);
         assertContainsTag(tags, MG_SYMBOLS);
     }
@@ -263,7 +299,7 @@ public class MachineGeneratedContentServiceTest {
         JsonNode node = parseDefaultJson();
         ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
                 .path("text_characteristics"))
-                .put("text_type", "HANDWRITTEN_PRINT");
+                .put("text_type", RESULT_HANDWRITTEN_PRINT);
         List<String> tags = service.extractContentTags(node);
         assertContainsTag(tags, MG_TEXT_HANDWRITTEN);
     }
@@ -273,7 +309,7 @@ public class MachineGeneratedContentServiceTest {
         JsonNode node = parseDefaultJson();
         ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
                 .path("text_characteristics"))
-                .put("text_type", "HANDWRITTEN_CURSIVE");
+                .put("text_type", RESULT_HANDWRITTEN_CURSIVE);
         List<String> tags = service.extractContentTags(node);
         assertContainsTag(tags, MG_TEXT_HANDWRITTEN);
     }
@@ -283,7 +319,7 @@ public class MachineGeneratedContentServiceTest {
         JsonNode node = parseDefaultJson();
         ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
                 .path("text_characteristics"))
-                .put("text_type", "MIXED");
+                .put("text_type", RESULT_TEXT_MIXED);
         List<String> tags = service.extractContentTags(node);
         assertContainsTag(tags, MG_TEXT_HANDWRITTEN);
     }
@@ -324,8 +360,8 @@ public class MachineGeneratedContentServiceTest {
         return baseNode;
     }
 
-    private void setNestedArrayValue(ObjectNode parent, String field, String value) {
-        parent.putArray(field).add(value);
+    private void setNestedArrayValue(ObjectNode parent) {
+        parent.putArray("types").add("FLAG");
     }
 
     private void writeGeneratedDescriptionFile(PID pid, String content) throws Exception {
@@ -357,7 +393,7 @@ public class MachineGeneratedContentServiceTest {
 
         // symbols_present with non-NONE type
         ObjectNode symbolsNode = (ObjectNode) safety.path("symbols_present");
-        setNestedArrayValue(symbolsNode, "types", "FLAG");
+        setNestedArrayValue(symbolsNode);
 
         // text_characteristics
         ObjectNode textChars = (ObjectNode) safety.path("text_characteristics");

@@ -57,6 +57,9 @@ public class MachineGeneratedContentService {
     public static final String MG_REVIEW_SAFETY_ASSESS_INCON = "safety_assessment_inconsistent";
 
     public static final String RESULT_FIELD = "result";
+    public static final String RESULT_HANDWRITTEN_PRINT = "HANDWRITTEN_PRINT";
+    public static final String RESULT_HANDWRITTEN_CURSIVE = "HANDWRITTEN_CURSIVE";
+    public static final String RESULT_TEXT_MIXED = "MIXED";
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
     private DerivativeService derivativeService;
@@ -204,9 +207,9 @@ public class MachineGeneratedContentService {
                 JsonNode textTypeNode = textCharsNode.path("text_type");
                 if (!textTypeNode.isMissingNode()) {
                     String textType = textTypeNode.asText();
-                    if ("HANDWRITTEN_PRINT".equalsIgnoreCase(textType)
-                            || "HANDWRITTEN_CURSIVE".equalsIgnoreCase(textType)
-                            || "MIXED".equalsIgnoreCase(textType)) {
+                    if (RESULT_HANDWRITTEN_PRINT.equalsIgnoreCase(textType)
+                            || RESULT_HANDWRITTEN_CURSIVE.equalsIgnoreCase(textType)
+                            || RESULT_TEXT_MIXED.equalsIgnoreCase(textType)) {
                         tags.add(MG_TEXT_HANDWRITTEN);
                     }
                 }
