@@ -68,6 +68,10 @@ public class Cdr {
    /** Relationship indicating the binary containing the alt text for this object */
    public static final Property hasAltText = createProperty("http://cdr.unc.edu/definitions/model#hasAltText");
 
+    /** Relationship indicating the binary containing the full description for this object */
+    public static final Property hasFullDescription = createProperty(
+            "http://cdr.unc.edu/definitions/model#hasFullDescription");
+
    /** The size (e.g., in bytes) of this binary object */
    public static final Property hasSize = createProperty(
            "http://cdr.unc.edu/definitions/model#hasSize" );
