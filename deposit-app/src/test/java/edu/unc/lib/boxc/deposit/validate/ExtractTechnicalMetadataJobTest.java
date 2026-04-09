@@ -54,6 +54,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
@@ -360,15 +362,19 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     @Test
     public void preferMimetypeMatchingFileExtensionTest() throws Exception {
         respondWithFile("/fitsReports/multipleTypeReport.xml");
+        try(MockedStatic<Files> mockedStatic = Mockito.mockStatic(Files.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedStatic.when(() -> Files.probeContentType(Mockito.any(Path.class)))
+                    .thenReturn(AUDIO_MIMETYPE);
 
-        // Providing octet stream mimetype to be overrridden
-        PID filePid = addFileObject(depositBag, AUDIO_FILEPATH, AUDIO_MIMETYPE, null);
-        job.closeModel();
+            // Providing octet stream mimetype to be overrridden
+            PID filePid = addFileObject(depositBag, AUDIO_FILEPATH, AUDIO_MIMETYPE, null);
+            job.closeModel();
 
-        job.run();
+            job.run();
 
-        verifyRequestParameters(AUDIO_FILEPATH);
-        verifyFileResults(filePid, AUDIO_MIMETYPE, AUDIO_FORMAT, AUDIO_MD5, 1);
+            verifyRequestParameters(AUDIO_FILEPATH);
+            verifyFileResults(filePid, AUDIO_MIMETYPE, AUDIO_FORMAT, AUDIO_MD5, 1);
+        }
     }
 
     @Test
