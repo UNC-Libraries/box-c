@@ -362,7 +362,20 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     @Test
     public void preferMimetypeMatchingFileExtensionTest() throws Exception {
         respondWithFile("/fitsReports/multipleTypeReport.xml");
-        try(MockedStatic<Files> mockedStatic = Mockito.mockStatic(Files.class, Mockito.CALLS_REAL_METHODS)) {
+        // Use a direct/same-thread executor so that Files.probeContentType is called on the test thread,
+        // where the MockedStatic is active (MockedStatic is thread-local).
+        ExecutorService directExecutor = new java.util.concurrent.AbstractExecutorService() {
+            private boolean shutdown = false;
+            @Override public void execute(Runnable command) { command.run(); }
+            @Override public void shutdown() { shutdown = true; }
+            @Override public List<Runnable> shutdownNow() { shutdown = true; return List.of(); }
+            @Override public boolean isShutdown() { return shutdown; }
+            @Override public boolean isTerminated() { return shutdown; }
+            @Override public boolean awaitTermination(long timeout, java.util.concurrent.TimeUnit unit) { return true; }
+        };
+        setField(job, "executorService", directExecutor);
+
+        try (MockedStatic<Files> mockedStatic = Mockito.mockStatic(Files.class, Mockito.CALLS_REAL_METHODS)) {
             mockedStatic.when(() -> Files.probeContentType(Mockito.any(Path.class)))
                     .thenReturn(AUDIO_MIMETYPE);
 
