@@ -94,7 +94,7 @@
         <commons-collections.version>4.5.0</commons-collections.version>
         <commons-exec.version>1.6.0</commons-exec.version>
 
-        <activemq.version>6.1.8</activemq.version>
+        <activemq.version>6.2.4</activemq.version>
 
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.25</logback.version>
