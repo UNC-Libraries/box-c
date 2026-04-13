@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.0" timestamp="2/19/24 11:32 AM">
+    <identification status="CONFLICT">
+        <identity format="MPEG-4" mimetype="video/mp4" toolname="FITS" toolversion="1.5.0">
+            <tool toolname="Droid" toolversion="6.4" />
+            <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">fmt/199</externalIdentifier>
+        </identity>
+        <identity format="MPEG-4 Audio" mimetype="audio/mp4" toolname="FITS" toolversion="1.5.0">
+            <tool toolname="Exiftool" toolversion="11.54" />
+        </identity>
+    </identification>
+    <fileinfo>
+        <lastmodified toolname="Exiftool" toolversion="11.54" status="SINGLE_RESULT">2018:01:14 20:07:59</lastmodified>
+        <created toolname="Exiftool" toolversion="11.54" status="SINGLE_RESULT">2018:01:14 20:07:35</created>
+        <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/mnt/ginkgo_cdr_archive/prod_archive/home/fedora/datastreams/2019/0223/00/22/uuid_ff42af1b-bfdd-430a-8cc9-2dfa8db0a018+DATA_FILE+DATA_FILE.0</filepath>
+        <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">uuid_ff42af1b-bfdd-430a-8cc9-2dfa8db0a018+DATA_FILE+DATA_FILE.0</filename>
+        <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">35023343</size>
+        <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">4fecf2dc798f2ca77fd4f5b7e11ef36a</md5checksum>
+        <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1550899496000</fslastmodified>
+    </fileinfo>
+    <filestatus />
+    <metadata />
+    <statistics fitsExecutionTime="535">
+        <tool toolname="MediaInfo" toolversion="0.7.75" status="did not run" />
+        <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+        <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+        <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+        <tool toolname="Droid" toolversion="6.4" executionTime="534" />
+        <tool toolname="Exiftool" toolversion="11.54" executionTime="209" />
+        <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+        <tool toolname="OIS File Information" toolversion="1.0" executionTime="397" />
+        <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+        <tool toolname="Tika" toolversion="1.21" executionTime="430" />
+    </statistics>
+</fits>

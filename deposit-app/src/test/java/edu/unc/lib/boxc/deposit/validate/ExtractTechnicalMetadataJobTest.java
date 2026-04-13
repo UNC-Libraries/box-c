@@ -54,6 +54,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
@@ -97,6 +99,11 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private final static String UNKNOWN_FILEPATH = "path/unknown.stuff";
     private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
     private final static String UNKNOWN_FORMAT = "Unknown";
+
+    private final static String AUDIO_FILEPATH = "path/audio.m4a";
+    private final static String AUDIO_MD5 = "1d442d115b472b21437893000b79c97a";
+    private final static String AUDIO_MIMETYPE = "audio/mp4";
+    private final static String AUDIO_FORMAT = "MPEG-4 Audio";
 
     private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
 
@@ -350,6 +357,37 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         verifyRequestParameters(IMAGE_FILEPATH);
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
+    }
+
+    @Test
+    public void preferMimetypeMatchingFileExtensionTest() throws Exception {
+        respondWithFile("/fitsReports/multipleTypeReport.xml");
+        // Use a direct/same-thread executor so that Files.probeContentType is called on the test thread,
+        // where the MockedStatic is active (MockedStatic is thread-local).
+        ExecutorService directExecutor = new java.util.concurrent.AbstractExecutorService() {
+            private boolean shutdown = false;
+            @Override public void execute(Runnable command) { command.run(); }
+            @Override public void shutdown() { shutdown = true; }
+            @Override public List<Runnable> shutdownNow() { shutdown = true; return List.of(); }
+            @Override public boolean isShutdown() { return shutdown; }
+            @Override public boolean isTerminated() { return shutdown; }
+            @Override public boolean awaitTermination(long timeout, java.util.concurrent.TimeUnit unit) { return true; }
+        };
+        setField(job, "executorService", directExecutor);
+
+        try (MockedStatic<Files> mockedStatic = Mockito.mockStatic(Files.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedStatic.when(() -> Files.probeContentType(Mockito.any(Path.class)))
+                    .thenReturn(AUDIO_MIMETYPE);
+
+            // Providing octet stream mimetype to be overrridden
+            PID filePid = addFileObject(depositBag, AUDIO_FILEPATH, AUDIO_MIMETYPE, null);
+            job.closeModel();
+
+            job.run();
+
+            verifyRequestParameters(AUDIO_FILEPATH);
+            verifyFileResults(filePid, AUDIO_MIMETYPE, AUDIO_FORMAT, AUDIO_MD5, 1);
+        }
     }
 
     @Test
