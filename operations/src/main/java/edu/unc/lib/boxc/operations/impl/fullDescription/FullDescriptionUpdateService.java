@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.impl.altText;
+package edu.unc.lib.boxc.operations.impl.fullDescription;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -10,25 +10,24 @@ import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
+import edu.unc.lib.boxc.operations.jms.fullDescription.FullDescriptionUpdateRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ALT_TEXT;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULL_DESCRIPTION;
 import static edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.getNewDatastreamVersion;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
- * Service for updating the alt text of a file object
+ * Service for updating the user-provided full description of a file object
  *
- * @author bbpennel
+ * @author snluong
  */
-public class AltTextUpdateService {
-    private static final Logger log = LoggerFactory.getLogger(AltTextUpdateService.class);
-
+public class FullDescriptionUpdateService {
+    private static final Logger log = LoggerFactory.getLogger(FullDescriptionUpdateService.class);
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
@@ -36,25 +35,25 @@ public class AltTextUpdateService {
     private OperationsMessageSender operationsMessageSender;
     private boolean sendsMessages;
 
-    public BinaryObject updateAltText(AltTextUpdateRequest request) {
+    public BinaryObject updateFullDescription(FullDescriptionUpdateRequest request) {
         var pid = PIDs.get(request.getPidString());
-        aclService.assertHasAccess("User does not have permission to update alt text",
+        aclService.assertHasAccess("User does not have permission to update full description",
                 pid, request.getAgent().getPrincipals(), Permission.editDescription);
 
         var fileObj = repositoryObjectLoader.getFileObject(pid);
-        var altTextPid = DatastreamPids.getAltTextPid(pid);
+        var fullDescPid = DatastreamPids.getFullDescriptionPid(pid);
 
-        BinaryObject altTextBinary;
-        var newVersion = getNewDatastreamVersion(altTextPid, ALT_TEXT,
-                request.getAltText(), request.getTransferSession());
+        BinaryObject fullDescriptionBinary;
+        var newVersion = getNewDatastreamVersion(fullDescPid, FULL_DESCRIPTION,
+                request.getFullDescriptionText(), request.getTransferSession());
+        fullDescriptionBinary = versionedDatastreamService.addVersion(newVersion);
 
-        altTextBinary = versionedDatastreamService.addVersion(newVersion);
         var resource = fileObj.getResource();
-        if (resource != null && resource.hasProperty(Cdr.hasAltText)) {
-            log.debug("Successfully updated alt text for {}", fileObj.getPid());
+        if (resource != null && resource.hasProperty(Cdr.hasFullDescription)) {
+            log.debug("Successfully updated full description for {}", fileObj.getPid());
         } else {
-            repositoryObjectFactory.createRelationship(fileObj, Cdr.hasAltText, createResource(altTextPid.getRepositoryPath()));
-            log.debug("Successfully add new alt text for {}", fileObj.getPid());
+            repositoryObjectFactory.createRelationship(fileObj, Cdr.hasFullDescription, createResource(fullDescPid.getRepositoryPath()));
+            log.debug("Successfully add new full description for {}", fileObj.getPid());
         }
 
         if (sendsMessages) {
@@ -62,7 +61,7 @@ public class AltTextUpdateService {
                     request.getAgent().getUsername(), Collections.singletonList(fileObj.getPid()), IndexingPriority.normal);
         }
 
-        return altTextBinary;
+        return fullDescriptionBinary;
     }
 
     public void setAclService(AccessControlService aclService) {
