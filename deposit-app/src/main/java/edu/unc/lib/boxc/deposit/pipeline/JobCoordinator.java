@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -67,6 +68,10 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
             LOG.info("Job {} in deposit {} was interrupted: {}", jobId, depositId, e.getMessage());
             jobStatusFactory.interrupted(jobId);
             sendDepositOperationMessage(buildInterruptedMessage(jobMessage, e));
+        } catch (JobFailedException e) {
+            LOG.error("Job {} for deposit {} failed. Details: {}", jobId, depositId, e.getDetails(), e);
+            jobStatusFactory.failed(jobId);
+            sendDepositOperationMessage(buildFailureMessage(jobMessage, e));
         } catch (Exception e) {
             LOG.error("Error processing job message {} for deposit {}", jobId, depositId, e);
             jobStatusFactory.failed(jobId);
