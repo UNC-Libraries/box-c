@@ -35,7 +35,7 @@ Renders search results in a gallery view display in full record pages.
     };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .browse-records-display {
         .record-title {
             -ms-hyphens: auto;

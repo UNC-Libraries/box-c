@@ -62,8 +62,9 @@
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         <jp24u.version>1.0-SNAPSHOT</jp24u.version>
         <mp44u.version>1.0-SNAPSHOT</mp44u.version>
+        <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
-        <spring.version>6.2.14</spring.version>
+        <spring.version>6.2.17</spring.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
@@ -164,6 +165,7 @@
         <module>integration</module>
         <module>jp24u</module>
         <module>mp44u</module>
+        <module>pdf4u</module>
     </modules>
 
     <reporting>
@@ -521,6 +523,11 @@
                 <groupId>edu.unc.lib</groupId>
                 <artifactId>mp44u</artifactId>
                 <version>${mp44u.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib</groupId>
+                <artifactId>pdf4u</artifactId>
+                <version>${pdf4u.version}</version>
             </dependency>
             <dependency>
                 <groupId>fi.solita.clamav</groupId>

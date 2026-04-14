@@ -79,7 +79,7 @@ Buttons for switching display modes in a search result between gallery and list 
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #browse-display-type {
         justify-content: flex-end;
     }

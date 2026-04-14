@@ -100,7 +100,7 @@ jobs:
     - run: npm --prefix static/js/admin/vue-cdr-admin run test
 
     - name: Generate coverage
-      run: mvn -pl !clamav-java,!jp24u,!mp44u verify
+      run: mvn -pl !clamav-java,!jp24u,!mp44u,!pdf4u verify
 
     - name: Debug lcov paths
       run: head -20 ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info

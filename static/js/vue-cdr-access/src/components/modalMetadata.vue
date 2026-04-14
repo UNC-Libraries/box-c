@@ -92,7 +92,7 @@ Displays the MODS descriptive record for an object inside of a modal
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .meta-modal {
         float: right;
     }

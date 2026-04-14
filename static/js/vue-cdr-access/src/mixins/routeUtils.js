@@ -186,9 +186,11 @@ export default {
             }
             return undefined;
         },
+
         allPossibleSearchParameters() {
             return this.possibleFacetFields.concat(['anywhere']);
         },
+
         routeParams() {
             let params = {};
             let match = UUID_REGEX.exec(this.$route.path);
@@ -197,6 +199,7 @@ export default {
             }
             return params;
         },
+
         routeHasPathId() {
             return UUID_REGEX.test(this.$route.path);
         }

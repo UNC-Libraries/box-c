@@ -28,10 +28,10 @@ build-admin-concat:
 		static/js/admin/src/*.js \
 		static/js/admin/src/*/*.js \
 		>> static/build/admin/cdr-admin.js
-	sass static/css/sass/cdr_vue_modal_styles.scss static/build/admin/cdr_vue_modal_styles.css --style "expanded"
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
 		static/css/reset.css \
+		static/css/admin/cdr_admin_variables.css \
 		static/css/cdr_common.css \
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
@@ -43,7 +43,7 @@ build-admin-concat:
 		static/css/fontawesome.min.css \
 		static/css/structure_browse.css \
 		static/css/admin/status_monitor.css \
-		static/build/admin/cdr_vue_modal_styles.css \
+		static/css/public-ui/cdr_vue_modal_styles.css \
 		static/js/admin/vue-cdr-admin/dist/assets/index.css \
 		> static/build/admin/cdr-admin.css
 
@@ -72,11 +72,11 @@ build-access-concat:
 	rm -f static/assets/access/cdr-access.*
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
-		static/css/sass/cdr_homepage.scss \
-		static/css/sass/cdr_ui_styles.scss \
-		static/css/sass/cdr_vue_modal_styles.scss \
-		> static/build/access/cdr-ui.scss
-	sass static/build/access/cdr-ui.scss  static/build/access/cdr-ui.css --style "expanded"
+		static/css/public-ui/cdr_access_variables.css \
+		static/css/public-ui/cdr_homepage.css \
+		static/css/public-ui/cdr_ui_styles.css \
+		static/css/public-ui/cdr_vue_modal_styles.css \
+		> static/build/access/cdr-ui.css
 
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
 		static/css/bulma-no-dark-mode.min.css \

@@ -1,0 +1,105 @@
+package edu.unc.lib.boxc.indexing.solr.filter;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
+
+/**
+ * Filter which populates content description metadata fields for the object being indexed, from both
+ * fedora and the machine generated description datastream. The machine generated description is expected to be a JSON.
+ * This includes alt text, full description, transcript, risk score, and content tags.
+ *
+ * @author bbpennel
+ */
+public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter {
+    private static final Logger log = LoggerFactory.getLogger(SetContentDescriptionMetadataFilter.class);
+    private RepositoryObjectLoader repositoryObjectLoader;
+    private MachineGeneratedContentService mgContentService;
+
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        ContentObject contentObj = dip.getContentObject();
+        // object being indexed must be a file object
+        if (!(contentObj instanceof FileObject)) {
+            return;
+        }
+        PID filePid = contentObj.getPid();
+        IndexDocumentBean idb = dip.getDocument();
+        log.debug("Processing content description metadata for {}", contentObj.getPid());
+
+        String mgdString = getMachineGeneratedDescriptionJson(filePid);
+        JsonNode mgdNode = null;
+        if (mgdString != null) {
+            mgdNode = mgContentService.deserializeMachineGeneratedDescription(mgdString);
+            log.debug("Loaded machine gen datastream for {}", contentObj.getPid());
+        }
+
+        // Store the raw string in the index for reviewing
+        idb.setMgDescription(mgdString);
+        idb.setAltText(getAltText(filePid, mgdNode));
+        idb.setFullDescription(getFullDescription(filePid, mgdNode));
+        idb.setTranscript(getTranscript(filePid, mgdNode));
+        idb.setMgRiskScore(mgContentService.extractRiskScore(mgdNode));
+        idb.setMgContentTags(mgContentService.extractContentTags(mgdNode));
+    }
+
+    private String getMachineGeneratedDescriptionJson(PID filePid) throws IndexingException {
+        try {
+            return mgContentService.loadMachineGeneratedDescription(filePid);
+        } catch (NoSuchFileException e) {
+            log.debug("No machine generated description datastream found for {}", filePid);
+            return null;
+        } catch (IOException e) {
+            throw new IndexingException("Failed to read machine generated description for " + filePid, e);
+        }
+    }
+
+    private String getAltText(PID filePid, JsonNode mgdNode) throws IndexingException {
+        // Preferentially use the alt text stored in fedora if it exists
+        try {
+            var altTextPid = DatastreamPids.getAltTextPid(filePid);
+            var altTextBinary = repositoryObjectLoader.getBinaryObject(altTextPid);
+            return IOUtils.toString(altTextBinary.getBinaryStream(), UTF_8);
+        } catch (NotFoundException e) {
+            log.debug("No alt text datastream found for {}", filePid);
+        } catch (IOException e) {
+            throw new IndexingException("Failed to retrieve alt text datastream for {}" + filePid, e);
+        }
+        // Fall back to using the machine generated alt text if it exists
+        return mgContentService.extractAltText(mgdNode);
+    }
+
+    private String getFullDescription(PID filePid, JsonNode mgdNode) {
+        // TODO implement retrieval from fedora when that functionality is in place
+        return mgContentService.extractFullDescription(mgdNode);
+    }
+
+    private String getTranscript(PID filePid, JsonNode mgdNode) {
+        // TODO implement retrieval from fedora when that functionality is in place
+        return mgContentService.extractTranscript(mgdNode);
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setMgContentService(MachineGeneratedContentService mgContentService) {
+        this.mgContentService = mgContentService;
+    }
+}

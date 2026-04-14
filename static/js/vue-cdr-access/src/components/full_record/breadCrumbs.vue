@@ -64,7 +64,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #full_record_trail {
         background-color: #E0E0E0;
         border-radius: 5px;

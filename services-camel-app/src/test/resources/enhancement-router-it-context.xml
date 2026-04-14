@@ -89,6 +89,10 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
+    <bean id="machineGenDescriptionProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor" />
+    </bean>
+
     <camel:camelContext id="cdrEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
@@ -96,6 +100,7 @@
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
 
 </beans>

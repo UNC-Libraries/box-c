@@ -6,20 +6,6 @@ import searchWrapper from '@/components/searchWrapper.vue';
 
 let wrapper, facet_tags, router;
 
-// Mock the routeUtils mixin to avoid requiring Pinia setup for possibleFacetFields.
-vi.mock('@/mixins/routeUtils', () => ({
-    default: {
-        computed: {
-            routeParams() { return this.$route.params || {}; }
-        },
-        methods: {
-            routeWithParams(params, routeName, routeParams) {
-                return this.$router.push({ name: routeName, params: routeParams, query: params });
-            }
-        }
-    }
-}));
-
 describe('filterTags.vue', () => {
     beforeEach(() => {
         router = createRouter({

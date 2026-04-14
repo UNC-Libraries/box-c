@@ -3,6 +3,8 @@ package edu.unc.lib.boxc.services.camel;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.AdviceWith;
@@ -12,6 +14,7 @@ import org.apache.camel.model.ModelCamelContext;
 import java.io.File;
 import java.util.UUID;
 
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -22,11 +25,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Basic methods used in several processor and router tests
+ * Basic methods and constants used in several processor and router tests
  *
  * @author snluong
  */
 public class TestHelper {
+    public static final String FEDORA_BASE = "http://example.com/rest/";
+    public static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    public static final String FILENAME = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     public static PID makePid() {
         return PIDs.get(UUID.randomUUID().toString());
     }
@@ -56,5 +62,15 @@ public class TestHelper {
 
     public static void assertEmailNotSent(EmailHandler emailHandler) {
         verify(emailHandler, never()).sendEmail(any(), any(), any(), any(), any());
+    }
+
+    public static void assertIndexingMessageSent(PID pid, IndexingMessageSender indexingMessageSender, String username) {
+        verify(indexingMessageSender).sendIndexingOperation(username, pid,
+                IndexingActionType.UPDATE_DATASTREAMS);
+    }
+
+    public static void assertIndexingMessageNotSent(PID pid, IndexingMessageSender indexingMessageSender, String username) {
+        verify(indexingMessageSender, never()).sendIndexingOperation(username, pid,
+                IndexingActionType.UPDATE_DATASTREAMS);
     }
 }

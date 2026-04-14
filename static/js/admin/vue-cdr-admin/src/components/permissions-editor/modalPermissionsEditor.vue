@@ -11,7 +11,7 @@
                                         <div class="column is-12">
                                             <h3>
                                                 <span>{{ permissionType }} Permission Settings for</span>
-                                                {{ metadata.title }} <i class="fa" :class="iconType" aria-hidden="true"></i>
+                                                {{ sanitizedTitle }} <i class="fa" :class="iconType" aria-hidden="true"></i>
                                             </h3>
 
                                             <button @click="closeModalCheck" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-icon" role="button" aria-disabled="false" title="close">
@@ -45,10 +45,14 @@
     import staffRoles from "@/components/permissions-editor/staffRoles.vue";
     import { mapActions, mapState } from 'pinia';
     import { usePermissionsStore } from '@/stores/permissions';
+    import sanitizeUtils from "@/mixins/sanitizeUtils";
 
     export default {
         name: 'modalPermissionsEditor',
+
         components: {patronRoles, staffRoles},
+
+        mixins: [sanitizeUtils],
 
         computed: {
             ...mapState(usePermissionsStore, {
@@ -80,6 +84,10 @@
                     return '';
                 }
                 return this.metadata.objectPath[record_index - 1].name;
+            },
+
+            sanitizedTitle() {
+                return this.sanitizeText(this.metadata.title);
             }
         },
 
@@ -101,11 +109,8 @@
     }
 </script>
 
-<style lang="scss">
+<style>
     /* Overrides of common Vue modal styles found here: cdr_ui_styles.scss */
-    $unc-blue: #4B9CD3;
-    $light-gray: #E1E1E1;
-
     .modal-header {
         background-image: linear-gradient(to bottom, #FAFAFA, #EBF5FA);
         border-radius: 5px 5px 0 0;
@@ -114,7 +119,7 @@
 
         button {
             background: #e6e6e6 50% 50% repeat-x;
-            border-color: $light-gray;
+            border-color: #E1E1E1;
             margin-top: -6px;
             padding: 2px 5px;
         }
@@ -138,7 +143,7 @@
         padding: 20px 0;
 
         h3 {
-            color: $unc-blue;
+            color: #4B9CD3;
         }
 
         .modal-body {

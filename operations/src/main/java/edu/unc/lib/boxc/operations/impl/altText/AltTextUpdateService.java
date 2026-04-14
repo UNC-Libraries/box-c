@@ -15,11 +15,10 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ALT_TEXT;
+import static edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.getNewDatastreamVersion;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
@@ -46,11 +45,8 @@ public class AltTextUpdateService {
         var altTextPid = DatastreamPids.getAltTextPid(pid);
 
         BinaryObject altTextBinary;
-        var newVersion = new VersionedDatastreamService.DatastreamVersion(altTextPid);
-        newVersion.setContentStream(new ByteArrayInputStream(request.getAltText().getBytes(StandardCharsets.UTF_8)));
-        newVersion.setContentType(ALT_TEXT.getMimetype());
-        newVersion.setFilename(ALT_TEXT.getDefaultFilename());
-        newVersion.setTransferSession(request.getTransferSession());
+        var newVersion = getNewDatastreamVersion(altTextPid, ALT_TEXT,
+                request.getAltText(), request.getTransferSession());
 
         altTextBinary = versionedDatastreamService.addVersion(newVersion);
         var resource = fileObj.getResource();

@@ -90,7 +90,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .header-button-single-download {
         text-align: right;
 

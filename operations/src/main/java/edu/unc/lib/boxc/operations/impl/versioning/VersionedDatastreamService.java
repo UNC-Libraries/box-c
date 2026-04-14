@@ -1,16 +1,20 @@
 package edu.unc.lib.boxc.operations.impl.versioning;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.ALT_TEXT;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDatastreamHistoryPid;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import edu.unc.lib.boxc.persist.impl.InputStreamDigestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -243,6 +247,16 @@ public class VersionedDatastreamService {
         }
         RepositoryObject parentObj = repoObjLoader.getRepositoryObject(parentPid);
         return transferService.getSession(parentObj);
+    }
+
+    public static VersionedDatastreamService.DatastreamVersion getNewDatastreamVersion(
+            PID pid, DatastreamType type, String text, BinaryTransferSession session) {
+        var newVersion = new VersionedDatastreamService.DatastreamVersion(pid);
+        newVersion.setContentStream(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+        newVersion.setContentType(type.getMimetype());
+        newVersion.setFilename(type.getDefaultFilename());
+        newVersion.setTransferSession(session);
+        return newVersion;
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {

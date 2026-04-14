@@ -26,6 +26,11 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
+        alias: {
+            // Suppresses Warning: Please use the `legacy` build in Node.js environments for PDFjs as
+            // there's nothing we can do about it. It's a dependency of a dependency.
+            'pdfjs-dist': 'pdfjs-dist/legacy/build/pdf.mjs',
+        },
         environmentOptions: {
             jsdom: {
                 url: 'https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a',

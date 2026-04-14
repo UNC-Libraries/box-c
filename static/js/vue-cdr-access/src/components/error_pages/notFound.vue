@@ -17,7 +17,7 @@
 import headerSmall from "@/components/header/headerSmall.vue";
 import loginUrlUtils from "../../mixins/loginUrlUtils";
 import { mapState } from 'pinia';
-import { useAccessStore } from '../../stores/access';
+import { useAccessStore } from '@/stores/access';
 
 
 export default {
