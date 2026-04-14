@@ -132,7 +132,12 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
             job.closeModel();
 
-            job.run();
+            try {
+                job.run();
+            } catch (JobFailedException e) {
+                assertTrue(e.getDetails().contains("missing.pdf"));
+                throw e;
+            }
         });
     }
 
