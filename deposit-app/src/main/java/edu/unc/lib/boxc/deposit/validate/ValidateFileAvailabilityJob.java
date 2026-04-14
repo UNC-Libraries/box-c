@@ -79,7 +79,6 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
                 sbInvalid.append(" - ").append(file).append("\n");
             }
 
-            var string = sbInvalid.toString();
             failJob("Deposit references invalid files", (sbInvalid.toString()));
         }
     }

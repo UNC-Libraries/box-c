@@ -121,24 +121,17 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
     @Test
     public void invalidSourceTest() {
-        Assertions.assertThrows(JobFailedException.class, () -> {
+        var e = Assertions.assertThrows(JobFailedException.class, () -> {
             Model model = job.getWritableModel();
             Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
             when(sourceManager.getIngestSourceForUri(any(URI.class)))
                     .thenThrow(new UnknownIngestSourceException("Not source"));
-
             addFileObject(depBag, "missing.pdf");
 
             job.closeModel();
-
-            try {
-                job.run();
-            } catch (JobFailedException e) {
-                assertTrue(e.getDetails().contains("missing.pdf"));
-                throw e;
-            }
+            job.run();
         });
+        assertTrue(e.getDetails().contains("missing.pdf"));
     }
 
     @Test
