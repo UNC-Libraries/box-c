@@ -225,6 +225,30 @@ public class RegisterToLongleafProcessorTest {
     }
 
     @Test
+    public void processServerErrorEmptyArrays() throws Exception {
+        // Simulate a misconfigured server that returns 500 with empty success/failure arrays
+        stubFor(post(urlPathEqualTo(REGISTER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"event\":\"register\",\"success\":[],\"failure\":[]}")));
+
+        PID sha1Pid = DatastreamPids.getOriginalFilePid(pidMinter.mintContentPid());
+        Path sha1File = Files.createTempFile(tmpFolder, "sha1file", ".bin");
+        mockBinaryObject(sha1Pid, sha1File.toUri(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", null);
+
+        ProducerTemplate producerTemplate = mock(ProducerTemplate.class);
+        Exchange exchange = createBatchExchange(producerTemplate, sha1Pid.getRepositoryPath());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> processor.process(exchange));
+        assertTrue(ex.getMessage().contains("500"), "Exception message should include the HTTP status code");
+
+        // No success message should be sent downstream since nothing succeeded
+        verify(producerTemplate, org.mockito.Mockito.never()).sendBody(
+                org.mockito.ArgumentMatchers.any(String.class), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
     public void processConnectionError() throws Exception {
         stubFor(post(urlPathEqualTo(REGISTER_PATH))
                 .willReturn(aResponse()

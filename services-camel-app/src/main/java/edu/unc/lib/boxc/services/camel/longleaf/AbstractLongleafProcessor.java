@@ -80,7 +80,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
 
                 List<String> successes = parsePathList(responseJson.get("success"));
                 List<String> failures = parsePathList(responseJson.get("failure"));
-                return new LongleafApiResult(successes, failures);
+                return new LongleafApiResult(statusCode, successes, failures);
             }
         } catch (IOException e) {
             throw new LongleafConnectionException("Unable to connect to longleaf at " + requestUrl, e);
@@ -137,16 +137,18 @@ public abstract class AbstractLongleafProcessor implements Processor {
      * Result of a longleaf API call, containing lists of paths that succeeded and failed.
      */
     protected static class LongleafApiResult {
+        protected final int statusCode;
         protected final List<String> successes;
         protected final List<String> failures;
 
-        protected LongleafApiResult(List<String> successes, List<String> failures) {
+        protected LongleafApiResult(int statusCode, List<String> successes, List<String> failures) {
+            this.statusCode = statusCode;
             this.successes = successes;
             this.failures = failures;
         }
 
         protected boolean hasFailures() {
-            return !failures.isEmpty();
+            return statusCode >= 400 || !failures.isEmpty();
         }
     }
 }

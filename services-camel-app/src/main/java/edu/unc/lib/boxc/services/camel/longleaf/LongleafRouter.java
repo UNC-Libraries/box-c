@@ -6,9 +6,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.spi.CamelLogger;
 import org.apache.camel.util.concurrent.CamelThreadFactory;
 import org.slf4j.Logger;
 
@@ -65,7 +67,15 @@ public class LongleafRouter extends RouteBuilder {
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)
                 .redeliveryDelay(longleafRedeliveryDelay)
-                .onPrepareFailure(failedRouteProcessor));
+                .onPrepareFailure(failedRouteProcessor)
+                .retriesExhaustedLogLevel(LoggingLevel.ERROR)
+                .retryAttemptedLogLevel(LoggingLevel.INFO)
+                .logger(new CamelLogger(log, LoggingLevel.ERROR))
+                .logExhausted(true)
+                .logExhaustedMessageBody(true)
+                .logExhaustedMessageHistory(false)
+                .logRetryAttempted(true)
+                );
 
         from("direct:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
@@ -109,7 +119,6 @@ public class LongleafRouter extends RouteBuilder {
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
                 .completionTimeout(batchTimeout)
-                .parallelProcessing()
                 .executorService(createWorkerPool("LongleafDeregister"))
             .bean(deregisterProcessor);
     }
