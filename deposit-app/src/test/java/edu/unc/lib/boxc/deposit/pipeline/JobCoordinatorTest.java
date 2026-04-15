@@ -25,6 +25,7 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,6 +133,36 @@ public class JobCoordinatorTest {
         assertEquals(DEPOSIT_ID, failureMessage.getDepositId());
         assertEquals(RuntimeException.class.getName(), failureMessage.getExceptionClassName());
         assertEquals("Job failed", failureMessage.getExceptionMessage());
+
+        verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+        verify(jobStatusFactory).failed(jobMessage.getJobId());
+        verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
+        assertFalse(coordinator.hasActiveJobs());
+    }
+
+    @Test
+    public void testJobFailedException() throws Exception {
+        // Given a job that throws a JobFailed exception
+        var jobException = new JobFailedException("Deposit references invalid files",
+                "1 files referenced by the deposit are located in invalid staging areas:\n - missing.pdf\n");
+        doThrow(jobException).when(jobRunnable).run();
+
+        // When the job is executed
+        coordinator.onMessage(message);
+
+        // Then message should still be acknowledged
+        verify(message).acknowledge();
+
+        // And failure message should be sent
+        ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
+        verify(depositOperationMessageService).sendDepositOperationMessage(messageCaptor.capture());
+        DepositOperationMessage failureMessage = messageCaptor.getValue();
+
+        assertEquals(DepositOperation.JOB_FAILURE, failureMessage.getAction());
+        assertEquals(JOB_ID, failureMessage.getJobId());
+        assertEquals(DEPOSIT_ID, failureMessage.getDepositId());
+        assertEquals(JobFailedException.class.getName(), failureMessage.getExceptionClassName());
+        assertEquals("Deposit references invalid files", failureMessage.getExceptionMessage());
 
         verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
         verify(jobStatusFactory).failed(jobMessage.getJobId());
