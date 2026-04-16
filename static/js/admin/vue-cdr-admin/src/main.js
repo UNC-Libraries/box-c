@@ -4,7 +4,6 @@ import router from './router'
 import { createPinia } from 'pinia'
 import {useFormsStore} from './stores/forms';
 import {usePermissionsStore} from './stores/permissions';
-import {useAltTextStore} from "@/stores/alt-text";
 import Vueform from '@vueform/vueform';
 import vueformConfig from './../vueform.config';
 import './assets/vueform.nodark.css';
@@ -28,7 +27,3 @@ window.perms_editor_store = usePermissionsStore();
  * Used by addMenu.js
  */
 window.forms_app_store = useFormsStore();
-/**
- * Used by machine alt text editor
- */
-window.alt_text_store = useAltTextStore();

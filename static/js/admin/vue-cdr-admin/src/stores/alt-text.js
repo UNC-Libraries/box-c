@@ -3,10 +3,9 @@ import { defineStore } from 'pinia'
 export const useAltTextStore = defineStore( 'alt-text',{
     state: () => ({
         activeField: '',
-        alertHandler: {
-            alertHandler: () => {}
-        },
-        currentRow: {},
+        alertMessage: '',
+        alertMessageType: '', // valid options success, error
+        currentRow: null,
         error: null,
         items: [],
         showAltTextModal: false,
@@ -16,8 +15,11 @@ export const useAltTextStore = defineStore( 'alt-text',{
         setActiveField(activeField) {
             this.activeField = activeField
         },
-        setAlertHandler(alertHandler) {
-            this.alertHandler = alertHandler;
+        setAlertMessage(alertMessage) {
+            this.alertMessage = alertMessage;
+        },
+        setAlertMessageType(alertMessageType) {
+            this.alertMessageType = alertMessageType;
         },
         setCurrentRow(row) {
             this.currentRow = row;
