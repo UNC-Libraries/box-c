@@ -31,12 +31,15 @@ import altTextEditorModal from '@/components/machine-alt-text/altTextEditorModal
 import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
+import FixedHeader from 'datatables.net-fixedheader';
+import 'datatables.mark.js';
 import 'datatables.net-searchpanes-bm';
 import 'datatables.net-select-bm';
 import {mapActions, mapState} from "pinia";
 import {useAltTextStore} from '@/stores/alt-text';
 
 DataTable.use(DataTablesLib);
+DataTable.use(FixedHeader);
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -60,7 +63,8 @@ export default {
         tableOptions() {
             return {
                 columnDefs: this.columnDefs,
-                searchHighlight: true,
+                mark: true, // Enables the mark.js integration
+                searching: true,
                 order: [[1, 'asc']],
                 fixedHeader: true,
                 pageLength: 25,
@@ -288,19 +292,11 @@ export default {
         margin: auto;
     }
     td.filename {
-        /* Forces the URL to wrap */
         overflow-wrap: break-word;
-        word-break: break-all; /* Alternative for stricter breaking */
+        word-break: break-all;
     }
     div.dt-container div.dt-length select {
         min-width: 70px;
-    }
-    table.dataTable tbody tr {
-        max-height: 300px;
-        overflow-y: scroll;
-    }
-    table.dataTable {
-        margin-top: 0 !important
     }
 }
 </style>
