@@ -50,7 +50,7 @@ export default {
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['activeField', 'alertHandler', 'currentRow', 'showAltTextModal', 'viewType']),
+        ...mapState(useAltTextStore, ['activeField', 'currentRow', 'showAltTextModal', 'viewType']),
 
         fieldTitle() {
             return this.activeField.split('_').join(' ');
@@ -81,12 +81,14 @@ export default {
     },
 
     methods: {
-        ...mapActions(useAltTextStore, ['setActiveField', 'setAlertHandler', 'setCurrentRow', 'setCurrentRowFieldValue', 'setShowAltTextModal', 'setViewType']),
+        ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage', 'setAlertMessageType',
+            'setCurrentRow', 'setCurrentRowFieldValue', 'setShowAltTextModal', 'setViewType']),
 
         updateValue() {
             this.saving_data = true;
             this.setCurrentRowFieldValue(this.activeField, this.updated_text);
-            this.setAlertHandler({message: 'Value updated successfully updated', type: 'success'});
+            this.setAlertMessage('Value updated successfully updated');
+            this.setAlertMessageType('success');
             this.saving_data = false;
             this.closeModal();
         },
@@ -95,13 +97,11 @@ export default {
             this.setShowAltTextModal(false);
             this.setViewType('view');
             this.setActiveField('');
-            this.setCurrentRow({});
+            this.setCurrentRow(null);
         }
     }
 }
 </script>
-
-
 
 <style scoped>
     .modal-head {

@@ -20,6 +20,7 @@
                 </thead>
                 <tbody></tbody>
             </data-table>
+            <alt-text-messages></alt-text-messages>
             <alt-text-editor-modal></alt-text-editor-modal>
         </div>
     </teleport>
@@ -27,12 +28,13 @@
 
 <script>
 import altTextEditorModal from '@/components/machine-alt-text/altTextEditorModal.vue';
+import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-searchpanes-bm';
 import 'datatables.net-select-bm';
 import {mapActions, mapState} from "pinia";
-import {useAltTextStore} from "@/stores/alt-text";
+import {useAltTextStore} from '@/stores/alt-text';
 
 DataTable.use(DataTablesLib);
 
@@ -41,7 +43,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}
 export default {
     name: 'modalAltText',
 
-    components: {altTextEditorModal, DataTable},
+    components: {AltTextMessages, altTextEditorModal, DataTable},
 
     data() {
         return {
@@ -53,7 +55,7 @@ export default {
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['items']),
+        ...mapState(useAltTextStore, ['items', 'alertMessage']),
 
         tableOptions() {
             return {
@@ -140,7 +142,7 @@ export default {
     },
 
     methods: {
-        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setCurrentRow', 'setShowAltTextModal', 'setViewType']),
+        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setAlertMessage', 'setCurrentRow', 'setShowAltTextModal', 'setViewType']),
 
         fieldName(field) {
             const parts = field.split('_')
