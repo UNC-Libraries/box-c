@@ -223,3 +223,11 @@
     display: flex;
     justify-content: flex-end;
 }
+
+/**
+Used in altTextViewer.vue, but the CSS doesn't work if placed in the component's style block, so it's placed here instead.
+ */
+table.dataTable {
+    margin-top: 0 !important;
+}
+
