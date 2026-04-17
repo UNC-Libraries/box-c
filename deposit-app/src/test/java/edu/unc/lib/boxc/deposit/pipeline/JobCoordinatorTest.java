@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessage;
@@ -245,6 +246,33 @@ public class JobCoordinatorTest {
         verify(jobRunnable, never()).run();
         verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
         verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
+    }
+
+    @Test
+    public void testDepositNotActiveForCleanupJob() throws Exception {
+        // Given an inactive deposit
+        when(activeDeposits.isDepositActive(DEPOSIT_ID)).thenReturn(false);
+        jobMessage.setJobClassName(CleanupDepositJob.class.getName());
+
+        // When a message is received
+        coordinator.onMessage(message);
+
+        // Then message should be acknowledged
+        verify(message).acknowledge();
+
+        // And job should be executed
+        verify(jobRunnable).run();
+
+        // And success message should be sent
+        ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
+        verify(depositOperationMessageService).sendDepositOperationMessage(messageCaptor.capture());
+        DepositOperationMessage successMessage = messageCaptor.getValue();
+        assertEquals(DepositOperation.JOB_SUCCESS, successMessage.getAction());
+        assertEquals(JOB_ID, successMessage.getJobId());
+        assertEquals(DEPOSIT_ID, successMessage.getDepositId());
+        verify(jobStatusFactory).started(jobMessage.getJobId(), jobMessage.getDepositId(), jobRunnable.getClass());
+        verify(jobStatusFactory).completed(jobMessage.getJobId());
+        assertFalse(coordinator.hasActiveJobs());
     }
 
     @Test

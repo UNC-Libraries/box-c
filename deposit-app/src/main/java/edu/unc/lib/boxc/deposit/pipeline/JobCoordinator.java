@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
+import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.jms.DepositJobMessage;
@@ -49,7 +50,7 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         var jobMessage = loadJobMessage(message);
         String depositId = jobMessage.getDepositId();
         String jobId = jobMessage.getJobId();
-        if (!activeDeposits.isDepositActive(depositId)) {
+        if (!activeDeposits.isDepositActive(depositId) && !runnableWhenInactive(jobMessage)) {
             LOG.warn("Skipping job message {} for deposit {} because the deposit is not active", jobId, depositId);
             acknowledgeMessage(message);
             return;
@@ -89,6 +90,10 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
     private boolean isAcceptingMessages() {
         var pipelineState = depositPipelineStatusFactory.getPipelineState();
         return DepositPipelineState.active.equals(pipelineState) || DepositPipelineState.starting.equals(pipelineState);
+    }
+
+    private boolean runnableWhenInactive(DepositJobMessage jobMessage) {
+        return CleanupDepositJob.class.getName().equals(jobMessage.getJobClassName());
     }
 
     private void acknowledgeMessage(Message message) {
