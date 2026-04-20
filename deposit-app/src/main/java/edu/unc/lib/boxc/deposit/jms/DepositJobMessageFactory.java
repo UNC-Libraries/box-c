@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  */
 public class DepositJobMessageFactory {
     private static final Logger LOG = LoggerFactory.getLogger(DepositJobMessageFactory.class);
-    private static final Set<String> VALID_DEPOSIT_JOBS = Stream.of(
+    public static final Set<String> VALID_DEPOSIT_JOBS = Stream.of(
             PackageIntegrityCheckJob.class,
             UnpackDepositJob.class,
             PreconstructedDepositJob.class,
