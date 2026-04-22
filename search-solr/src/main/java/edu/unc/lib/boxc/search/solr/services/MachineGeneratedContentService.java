@@ -1,10 +1,10 @@
-package edu.unc.lib.boxc.indexing.solr.utils;
+package edu.unc.lib.boxc.search.solr.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import org.slf4j.Logger;
@@ -85,7 +85,7 @@ public class MachineGeneratedContentService {
         try {
             return MAPPER.readTree(mgdJson);
         } catch (JsonProcessingException e) {
-            throw new IndexingException("Unable to deserialize machine generated JSON", e);
+            throw new RepositoryException("Unable to deserialize machine generated JSON", e);
         }
     }
 
@@ -135,6 +135,32 @@ public class MachineGeneratedContentService {
         }
         JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_RISK_SCORE_FIELD);
         return scoreNode.isMissingNode() ? null : scoreNode.asInt();
+    }
+
+    /**
+     * Extracts the review assessment from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return review assessment if it exists, otherwise null
+     */
+    public JsonNode extractReviewAssessment(JsonNode mgdNode) {
+        if (mgdNode == null) {
+            return null;
+        }
+        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
+        return scoreNode.isMissingNode() ? null : scoreNode;
+    }
+
+    /**
+     * Extracts the safety assessment from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return safety assessment if it exists, otherwise null
+     */
+    public JsonNode extractSafetyAssessment(JsonNode mgdNode) {
+        if (mgdNode == null) {
+            return null;
+        }
+        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD);
+        return scoreNode.isMissingNode() ? null : scoreNode;
     }
 
     /**
