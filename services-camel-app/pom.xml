@@ -214,6 +214,10 @@
         <groupId>edu.unc.lib</groupId>
         <artifactId>mp44u</artifactId>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib</groupId>
+        <artifactId>pdf4u</artifactId>
+    </dependency>
 
     <dependency>
         <groupId>jakarta.annotation</groupId>
