@@ -6,6 +6,8 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
@@ -19,6 +21,11 @@ import org.mockito.Mock;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +54,8 @@ public class MachineGeneratedControllerTest {
     private SearchState searchState;
     @Mock
     private MachineGeneratedContentService machineGeneratedContentService;
+    @Mock
+    private SearchResultResponse searchResultResponse;
     @InjectMocks
     private MachineGeneratedSearchController controller;
     private MockMvc mvc;
@@ -87,10 +96,29 @@ public class MachineGeneratedControllerTest {
 
     @Test
     public void testSuccessResponse() throws Exception {
+        when(queryLayer.performSearch(any())).thenReturn(searchResultResponse);
+        var fileRec1 = createContentObjectRecord(FILE1_ID, "1");
+        var fileRec2 = createContentObjectRecord(FILE2_ID,"2");
+        when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(fileRec1, fileRec2));
+
         MvcResult result1 = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
     }
 
+    private ContentObjectSolrRecord createContentObjectRecord(String id, String suffix) throws Exception {
+        var rec = new ContentObjectSolrRecord();
+        rec.setId(id);
+        rec.setTitle("title" + suffix);
+        rec.setAltText("alt text " + suffix);
+        rec.setMgContentTags(List.of("content", "tag"));
+        rec.setMgDescription(loadDefaultJson());
 
+        return rec;
+    }
+
+    private String loadDefaultJson() throws Exception {
+        return Files.readString(
+                Path.of("src/test/resources/datastream/machineGeneratedDescriptionDefaults.json"));
+    }
 }
