@@ -53,14 +53,14 @@ describe('galleryDisplay.vue', () => {
         expect(first_cell.find('.record-title').text()).toEqual('Test Collection');
         let first_thumbnail = first_cell.find('thumbnail-stub');
         expect(first_thumbnail.exists()).toBe(true);
-        expect(first_thumbnail.attributes('linktourl')).toEqual('/record/dd8890d6-5756-4924-890c-48bc54e3edda/?browse_type=gallery-display');
+        expect(first_thumbnail.attributes('linktourl')).toEqual('/record/dd8890d6-5756-4924-890c-48bc54e3edda?browse_type=gallery-display');
         expect(first_thumbnail.attributes('size')).toEqual('large');
 
         let last_cell = cells[7];
         expect(last_cell.find('.record-title').text()).toEqual('Test Collection 2');
         let last_thumbnail = last_cell.find('thumbnail-stub');
         expect(last_thumbnail.exists()).toBe(true);
-        expect(last_thumbnail.attributes('linktourl')).toEqual('/record/87f54f12-5c50-4a14-bf8c-66cf64b00533/?browse_type=gallery-display');
+        expect(last_thumbnail.attributes('linktourl')).toEqual('/record/87f54f12-5c50-4a14-bf8c-66cf64b00533?browse_type=gallery-display');
         expect(last_thumbnail.attributes('size')).toEqual('large');
     });
 });

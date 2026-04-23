@@ -9,25 +9,31 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.common.test.TestHelpers;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
 import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
+import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.persist.api.PackagingType;
 import edu.unc.lib.boxc.web.common.auth.AccessLevel;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -37,39 +43,28 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.DepositMethod;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
-import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.persist.api.PackagingType;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import redis.clients.jedis.JedisPool;
+
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  *
  * @author bbpennel
  *
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration("/spring-test/redis-server-context.xml")
 public class IngestControllerIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
@@ -84,18 +79,19 @@ public class IngestControllerIT {
     private CDRMETSDepositHandler metsHandler;
     private SimpleObjectDepositHandler simpleHandler;
     private DepositSubmissionService depositSubmissionService;
-    @Autowired
-    private JedisPool jedisPool;
-    private DepositStatusFactory depositStatusFactory;
     private RepositoryPIDMinter pidMinter;
     @Mock
     private AccessControlService aclService;
     @Mock
     private AccessLevel accessLevel;
+    @Mock
+    private DepositOperationMessageService depositOperationMessageService;
     @InjectMocks
     private IngestController controller;
     private AutoCloseable closeable;
     private MockMvc mvc;
+    @Captor
+    private ArgumentCaptor<DepositOperationMessage> operationCaptor;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -108,17 +104,14 @@ public class IngestControllerIT {
         stagingPath = tmpFolder.resolve("staging");
         Files.createDirectory(stagingPath);
 
-        depositStatusFactory = new DepositStatusFactory();
-        depositStatusFactory.setJedisPool(jedisPool);
-
         metsHandler = new CDRMETSDepositHandler();
         metsHandler.setPidMinter(pidMinter);
-        metsHandler.setDepositStatusFactory(depositStatusFactory);
         metsHandler.setDepositsDirectory(depositsDir);
+        metsHandler.setDepositOperationMessageService(depositOperationMessageService);
         simpleHandler = new SimpleObjectDepositHandler();
         simpleHandler.setDepositsDirectory(depositsDir);
-        simpleHandler.setDepositStatusFactory(depositStatusFactory);
         simpleHandler.setPidMinter(pidMinter);
+        simpleHandler.setDepositOperationMessageService(depositOperationMessageService);
 
         depositSubmissionService = new DepositSubmissionService();
         depositSubmissionService.setAclService(aclService);
@@ -144,7 +137,6 @@ public class IngestControllerIT {
 
     @AfterEach
     public void teardownLocal() throws Exception {
-        jedisPool.getResource().flushAll();
         closeable.close();
         GroupsThreadStore.clearStore();
     }
@@ -185,7 +177,11 @@ public class IngestControllerIT {
         String depositId = (String) respMap.get("depositId");
         assertNotNull(depositId);
 
-        Map<String, String> status = depositStatusFactory.get(depositId);
+        verify(depositOperationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        DepositOperationMessage operationMessage = operationCaptor.getValue();
+        assertEquals(depositId, operationMessage.getDepositId());
+
+        Map<String, String> status = operationMessage.getAdditionalInfo();
         assertEquals(destPid.getId(), status.get(DepositField.containerId.name()));
         assertEquals(DepositMethod.CDRAPI1.getLabel(), status.get(DepositField.depositMethod.name()));
 
@@ -220,7 +216,11 @@ public class IngestControllerIT {
         String depositId = (String) respMap.get("depositId");
         assertNotNull(depositId);
 
-        Map<String, String> status = depositStatusFactory.get(depositId);
+        verify(depositOperationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        DepositOperationMessage operationMessage = operationCaptor.getValue();
+        assertEquals(depositId, operationMessage.getDepositId());
+
+        Map<String, String> status = operationMessage.getAdditionalInfo();
         assertEquals(filename, status.get(DepositField.fileName.name()));
         assertEquals(mimetype, status.get(DepositField.fileMimetype.name()));
         assertEquals(METS_CDR.getUri(), status.get(DepositField.packagingType.name()));
@@ -229,6 +229,8 @@ public class IngestControllerIT {
 
         String metsContent = IOUtils.toString(getTestMETSInputStream(), "UTF-8");
         assertDepositFileStored(depositId, filename, metsContent);
+
+        verify(depositOperationMessageService).sendDepositOperationMessage(any(DepositOperationMessage.class));
     }
 
     @Test

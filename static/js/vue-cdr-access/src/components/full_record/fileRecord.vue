@@ -30,6 +30,10 @@
                         <dt>{{ $t('full_record.creator') }}</dt>
                         <dd>{{ recordData.briefObject.creator.join('; ') }}</dd>
                     </template>
+                    <template v-if="fieldExists(getChecksum(this.recordData.briefObject.datastream))">
+                        <dt>{{ $t('full_record.checksum') }}</dt>
+                        <dd class="checksum">{{ getChecksum(this.recordData.briefObject.datastream) }}</dd>
+                    </template>
                     <template v-if="fieldExists(recordData.briefObject.filesize)">
                         <dt>{{ $t('full_record.filesize') }}</dt>
                         <dd>{{ formatFilesize(recordData.briefObject.filesize) }}</dd>

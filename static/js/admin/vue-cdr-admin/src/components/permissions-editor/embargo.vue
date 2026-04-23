@@ -198,7 +198,7 @@
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     #set-embargo {
         border-top: 1px solid gray;
         margin: 25px -25px 55px -25px;

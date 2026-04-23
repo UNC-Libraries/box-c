@@ -18,7 +18,7 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.ImageServerV2Service;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -170,6 +170,14 @@ public class ImageServerV2ControllerTest {
         mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/full/full/0/default.jpg")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetRegionInvalidRegionFormat() throws Exception {
+        // Valid value would be /full/full/0/default.jpg
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/full/full/0/default")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

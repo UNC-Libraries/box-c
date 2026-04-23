@@ -33,10 +33,10 @@
             <div class="info container">
                 <h3>What's in the repository?</h3>
                 <div class="info-icons">
-                    <div><router-link to="/search?format=Image"><i class="fas fa-image"></i>{{ collectionStats.formatCounts.image }} images</router-link></div>
-                    <div><router-link to="/search?format=Video"><i class="fas fa-video"></i>{{ collectionStats.formatCounts.video }} video files</router-link></div>
-                    <div><router-link to="/search?format=Audio"><i class="fas fa-music"></i>{{ collectionStats.formatCounts.audio }} audio files</router-link></div>
-                    <div><router-link to="/search?format=Text"><i class="fas fa-file-alt"></i>{{ collectionStats.formatCounts.text }} texts</router-link></div>
+                    <div><router-link to="/search?format=Image" class="has-text-white"><i class="fas fa-image"></i>{{ collectionStats.formatCounts.image }} images</router-link></div>
+                    <div><router-link to="/search?format=Video" class="has-text-white"><i class="fas fa-video"></i>{{ collectionStats.formatCounts.video }} video files</router-link></div>
+                    <div><router-link to="/search?format=Audio" class="has-text-white"><i class="fas fa-music"></i>{{ collectionStats.formatCounts.audio }} audio files</router-link></div>
+                    <div><router-link to="/search?format=Text" class="has-text-white"><i class="fas fa-file-alt"></i>{{ collectionStats.formatCounts.text }} texts</router-link></div>
                 </div>
                 <p>Interested in seeing more?</p>
                 <p>See <a href="https://library.unc.edu/special-collection/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
@@ -46,16 +46,16 @@
 </template>
 
 <script>
-import get from "axios";
 import headerHome from "@/components/header/headerHome.vue";
 import analyticsUtils from '../mixins/analyticsUtils';
+import fetchUtils from '../mixins/fetchUtils';
 
 export default {
     name: "frontPage",
 
     components: {headerHome},
 
-    mixins: [analyticsUtils],
+    mixins: [analyticsUtils, fetchUtils],
 
     data() {
         return {
@@ -72,12 +72,12 @@ export default {
     },
 
     methods: {
-        getCollectionStats() {
-            get('/api/collectionStats').then((response) => {
-                this.collectionStats = response.data;
-            }).catch(function (error) {
+        async getCollectionStats() {
+            try {
+                this.collectionStats = await this.fetchWrapper('/api/collectionStats');
+            } catch (error) {
                 console.log(error);
-            });
+            }
         }
     },
 

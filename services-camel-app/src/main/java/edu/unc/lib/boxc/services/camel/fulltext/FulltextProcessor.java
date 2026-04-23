@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.fulltext;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -23,7 +24,6 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
@@ -73,7 +73,7 @@ public class FulltextProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 
-        String fedoraUri = (String) in.getHeader(FCREPO_URI);
+        String fedoraUri = MessageUtil.getFcrepoUri(in);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
         String binaryId = PIDs.get(fedoraUri).getId();
         String binarySubPath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);

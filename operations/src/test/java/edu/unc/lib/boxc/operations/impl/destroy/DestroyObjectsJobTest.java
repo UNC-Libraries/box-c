@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.fcrepo.exceptions.GoneException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
@@ -161,5 +162,49 @@ public class DestroyObjectsJobTest {
 
         verify(repoObjFactory).createOrTransformObject(eq(folderPid.getRepositoryUri()), any(Model.class));
         verify(repoObjFactory, never()).createOrTransformObject(eq(tombstonePid.getRepositoryUri()), any(Model.class));
+    }
+
+    @Test
+    public void testDestroyWithGoneExceptionContinuesProcessing() throws Exception {
+        Model model = ModelFactory.createDefaultModel();
+
+        var parentFolder = mock(FolderObject.class);
+
+        // First object that will throw GoneException
+        var goneFolder = mock(FolderObject.class);
+        var gonePid = TestHelper.makePid();
+        when(goneFolder.getPid()).thenReturn(gonePid);
+        when(repoObjLoader.getRepositoryObject(gonePid))
+                .thenThrow(new GoneException("Object is gone"));
+        when(inheritedAclFactory.isMarkedForDeletion(gonePid)).thenReturn(true);
+
+        // Second object that should be processed successfully
+        var folder = mock(FolderObject.class);
+        var folderPid = TestHelper.makePid();
+        when(folder.getPid()).thenReturn(folderPid);
+        when(folder.getParent()).thenReturn(parentFolder);
+        when(folder.getUri()).thenReturn(folderPid.getRepositoryUri());
+        when(repoObjLoader.getRepositoryObject(folderPid)).thenReturn(folder);
+        var folderResc = model.getResource(folderPid.getRepositoryPath());
+        folderResc.addProperty(RDF.type, Cdr.Folder);
+        when(folder.getResource(true)).thenReturn(folderResc);
+        when(folder.getTypes()).thenReturn(List.of(Cdr.Folder.getURI()));
+        when(folder.getMembers()).thenReturn(List.of());
+
+        var objPath = mock(ObjectPath.class);
+        when(pathFactory.getPath(folderPid)).thenReturn(objPath);
+        when(objPath.toNamePath()).thenReturn("/path/to/folder");
+        when(objPath.toIdPath()).thenReturn(folderPid.getId());
+
+        when(inheritedAclFactory.isMarkedForDeletion(folderPid)).thenReturn(true);
+
+        when(binaryTransferService.getSession()).thenReturn(transferSession);
+
+        setupJob(new DestroyObjectsRequest("1", agent, gonePid.getId(), folderPid.getId()));
+
+        job.run();
+
+        // Verify second object was still processed despite first throwing GoneException
+        verify(repoObjFactory).createOrTransformObject(eq(folderPid.getRepositoryUri()), any(Model.class));
     }
 }

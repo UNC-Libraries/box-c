@@ -18,7 +18,7 @@ public enum DigestAlgorithm {
     private final String name;
     private final Property depositProp;
 
-    private DigestAlgorithm(String name, Property depositProp) {
+    DigestAlgorithm(String name, Property depositProp) {
         this.depositProp = depositProp;
         this.name = name;
     }

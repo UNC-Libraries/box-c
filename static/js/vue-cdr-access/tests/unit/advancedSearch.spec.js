@@ -1,4 +1,4 @@
-import { shallowMount, RouterLinkStub } from '@vue/test-utils';
+import {shallowMount, RouterLinkStub, flushPromises} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
@@ -6,7 +6,6 @@ import advancedSearch from '@/components/advancedSearch.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import moxios from "moxios";
 
 let wrapper, router, store;
 
@@ -17,8 +16,13 @@ describe('advancedSearch.vue', () => {
         messages: translations
     });
 
-    beforeEach(() => {
-        moxios.install();
+    beforeEach(async () => {
+        fetchMock.resetMocks();
+        // Consume the two mounted() calls (getCollections + getFormats)
+        fetchMock.mockResponseOnce(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
+        fetchMock.mockResponseOnce(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
+        // Fallback for any additional calls
+        fetchMock.mockResponse(JSON.stringify([]), { headers: { 'Content-Type': 'application/json' } });
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -28,13 +32,14 @@ describe('advancedSearch.vue', () => {
                     name: 'advancedSearch',
                     component: advancedSearch
                 },
-                { // Add route to avoid test warnings
+                {
                     path: '/record/:uuid',
                     name: 'displayRecords',
                     component: displayWrapper
                 }
             ]
         });
+
         wrapper = shallowMount(advancedSearch, {
             global: {
                 plugins: [i18n, router, createTestingPinia({
@@ -45,14 +50,13 @@ describe('advancedSearch.vue', () => {
                 }
             }
         });
+
         store = useAccessStore();
     });
 
     afterEach(function () {
         store.$reset();
-        moxios.uninstall();
     });
-
 
     it("loads the advanced search form", () => {
         wrapper.find('form');
@@ -60,7 +64,7 @@ describe('advancedSearch.vue', () => {
         expect(wrapper.find('form').exists()).toBe(true);
     });
 
-    it("loads the list of collections", (done) => {
+    it("loads the list of collections", async () => {
         const collections = [{
             "objectPath":[
                 {"pid":"collections","name":"Content Collections Root", "container":true},
@@ -72,20 +76,16 @@ describe('advancedSearch.vue', () => {
                 {"id":"353ee09f-a4ed-461e-a436-18a1bee77b01","title":"353ee09f-a4ed-461e-a436-18a1bee77b01"}
             ],
             "id":"fc77a9be-b49d-4f4e-b656-1644c9e964fc", "title":"testCollection"
-            }];
-        moxios.stubRequest('/api/advancedSearch/collectionsJson', {
-            status: 200,
-            response: JSON.stringify(collections)
-        });
-        wrapper.vm.getCollections();
+        }];
 
-        moxios.wait(() => {
-            expect(wrapper.vm.collections).toEqual(collections);
-            done();
-        });
+        fetchMock.mockResponseOnce(JSON.stringify(collections));
+        await wrapper.vm.getCollections();
+        await flushPromises();
+
+        expect(wrapper.vm.collections).toEqual(collections);
     });
 
-    it("loads the list of available file formats", (done) => {
+    it("loads the list of available file formats", async () => {
         const formats = [
             "Archive File",
             "Audio",
@@ -100,15 +100,10 @@ describe('advancedSearch.vue', () => {
             "Video"
         ];
 
-        moxios.stubRequest('/api/advancedSearch/formats', {
-            status: 200,
-            response: JSON.stringify(formats)
-        });
-        wrapper.vm.getFormats();
+        fetchMock.mockResponseOnce(JSON.stringify(formats));
+        await wrapper.vm.getFormats();
+        await flushPromises();
 
-        moxios.wait(() => {
-            expect(wrapper.vm.formats).toEqual(formats);
-            done();
-        });
+        expect(wrapper.vm.formats).toEqual(formats);
     });
 });

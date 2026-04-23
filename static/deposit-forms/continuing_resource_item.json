@@ -9,7 +9,7 @@
   "p1": {
     "type": "static",
     "tag": "p",
-    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/wilson/contact/\">contact us</a>.",
+    "content": "Fields marked with <span class=\"required-note\">*</span> are required. If the problem persists or you have any questions, please <a target=\"_blank\" href=\"https://library.unc.edu/contact-us/?destination=wilson\">contact us</a>.",
     "addClass": "has-text-centered"
   },
   "p2": {
@@ -148,6 +148,7 @@
     "inputType": "search",
     "autocomplete": "off",
     "items": [
+      "",
       "Continuously updated",
       "Daily",
       "Semiweekly",

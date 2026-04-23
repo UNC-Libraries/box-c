@@ -4,3 +4,9 @@
 [submodule "jp24u"]
 	path = jp24u
 	url = https://github.com/UNC-Libraries/jp24u.git
+[submodule "mp44u"]
+	path = mp44u
+	url = https://github.com/UNC-Libraries/mp44u.git
+[submodule "pdf4u"]
+	path = pdf4u
+	url = https://github.com/UNC-Libraries/pdf4u.git

@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSender;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +78,8 @@ public class AccessSurrogateController {
 
         // uploaded file must be an image
         var mimeType = surrogateFile.getContentType();
-        if (!containsIgnoreCase(mimeType, "image")) {
-            log.error("Uploaded file for collection {} is not an image file", pidString);
+        if (!Strings.CI.contains(mimeType, "image")) {
+            log.warn("Uploaded file for collection {} is not an image file", pidString);
             throw new IllegalArgumentException("Uploaded file is not an image");
         }
         request.setMimetype(mimeType);

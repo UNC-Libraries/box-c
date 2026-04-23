@@ -83,7 +83,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
   .vpv-container {
     padding-top: 25px;
   }

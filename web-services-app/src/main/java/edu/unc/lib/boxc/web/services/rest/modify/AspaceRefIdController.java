@@ -36,6 +36,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.getPidsFromParamString;
+
 /**
  * API controller for editing the ArchivesSpace Ref ID associated with a WorkObject.
  */
@@ -93,16 +95,16 @@ public class AspaceRefIdController {
         }
     }
 
-    @GetMapping(value = "/edit/aspace/exportRefIds/{pid}")
-    public ResponseEntity<Resource> export(@PathVariable("pid") String pidString) {
+    @GetMapping(value = "/edit/aspace/exportRefIds")
+    public ResponseEntity<Resource> export(@RequestParam("ids") String ids) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
-        var pid = PIDs.get(pidString);
+        var pids = getPidsFromParamString(ids);
 
         try {
-            var csvPath = exporter.export(pid, agent);
+            var csvPath = exporter.export(pids, agent);
             UrlResource urlResource = new UrlResource(csvPath.toUri());
-            // get proper format for pid string
-            var filename = "export_ref_ids_" + pid.getId() + ".csv";
+
+            var filename = "export_ref_ids.csv";
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)

@@ -2,18 +2,20 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
@@ -68,6 +70,8 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private FcrepoClient fcrepoClient;
 
     private String registrationSuccessfulEndpoint;
+
+    private ProducerTemplate producerTemplate;
 
     /**
      * The exchange here is expected to be a batch message containing a List
@@ -138,7 +142,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     /**
-     * Executes longleaf register command for a batch of files with digests
+     * Executes longleaf register via HTTP API for a batch of files with digests
      *
      * @param messages list of fcrepoUris from the exchange
      * @param digestsMap mapping of digest algorithms to paths plus digest values
@@ -149,22 +153,21 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
         StringBuilder sb = new StringBuilder();
         MutableInt cnt = new MutableInt(0);
-        digestsMap.entrySet().forEach(digestGroup -> {
-            List<DigestEntry> digestEntries = digestGroup.getValue();
-            if (digestEntries.size() == 0) {
+        digestsMap.forEach((key, digestEntries) -> {
+            if (digestEntries.isEmpty()) {
                 return;
             }
-            sb.append(digestGroup.getKey()).append(":\n");
+            sb.append(key).append(":\n");
 
             digestEntries.forEach(manifestEntry -> {
                 Path filePath = Paths.get(manifestEntry.storageUri);
                 String basePath = FileSystemTransferHelpers.getBaseBinaryPath(filePath);
                 sb.append(manifestEntry.digest)
-                    .append(' ')
-                    .append(basePath)
-                    .append(' ')
-                    .append(filePath)
-                    .append('\n');
+                        .append(' ')
+                        .append(basePath)
+                        .append(' ')
+                        .append(filePath)
+                        .append('\n');
                 cnt.increment();
             });
         });
@@ -178,26 +181,31 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         // Record statistics about the number of objects registered
         batchSizeHistogram.update(entryCount);
 
-        ExecuteResult result = executeCommand("register --force -m @-", sb.toString());
+        String requestUrl = URIUtil.join(longleafBaseUri, "register");
+        Map<String, Object> bodyMap = Map.of(
+                "manifest", "@-",
+                "body", sb.toString(),
+                "force", true
+        );
+        LongleafApiResult result = executeHttpPost(requestUrl, bodyMap);
 
         Map<String, String> successful = new HashMap<>();
-        if (result.exitVal == 0) {
+        if (!result.hasFailures()) {
             log.info("Successfully registered {} entries to longleaf", entryCount);
 
-            digestsMap.values().stream().flatMap(values -> values.stream())
+            digestsMap.values().stream().flatMap(Collection::stream)
                       .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
             sendSuccessMessage(successful, exchange);
         } else {
-            // trim successfully registered files out of the message before failing
-            if (!result.completed.isEmpty()) {
-                result.completed.stream()
-                    .map(completedPath -> findDigestEntry(completedPath, digestsMap))
-                    .filter(digestEntry -> digestEntry != null)
-                    .forEach(digestEntry -> {
-                        messages.remove(digestEntry.fcrepoUri);
-                        successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
-                    });
-
+            // Partial failure: extract successes from the response and remove them from messages
+            for (String completedPath : result.successes) {
+                DigestEntry digestEntry = findDigestEntry(completedPath, digestsMap);
+                if (digestEntry != null) {
+                    messages.remove(digestEntry.fcrepoUri);
+                    successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
+                }
+            }
+            if (!successful.isEmpty()) {
                 sendSuccessMessage(successful, exchange);
             }
             if (messages.isEmpty()) {
@@ -205,19 +213,21 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
                         + "no failed URIs remaining. See longleaf logs for details.");
                 return;
             }
-            throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
-                    + "Check longleaf logs, command returned: " + result.exitVal);
+            throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf. "
+                    + result.failures.size() + " failures reported.");
         }
 
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
     }
 
     private void sendSuccessMessage(Map<String, String> successful, Exchange exchange) {
-        if (successful.size() == 0) {
+        if (successful.isEmpty()) {
             return;
         }
-        ProducerTemplate template = exchange.getContext().createProducerTemplate();
-        template.sendBody(registrationSuccessfulEndpoint, successful);
+        if (producerTemplate == null) {
+            producerTemplate = exchange.getContext().createProducerTemplate();
+        }
+        producerTemplate.sendBody(registrationSuccessfulEndpoint, successful);
     }
 
     private DigestEntry findDigestEntry(String seekPath, Map<String, List<DigestEntry>> digestsMap) {
@@ -225,11 +235,18 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         Optional<DigestEntry> entry = digestsMap.values().stream().flatMap(List::stream)
             .filter(de -> de.storageUri.equals(seekUri))
             .findFirst();
-        if (entry.isPresent()) {
-            return entry.get();
-        } else {
-            return null;
+        return entry.orElse(null);
+    }
+
+    public void destroy() {
+        if (producerTemplate != null) {
+            try {
+                producerTemplate.close();
+            } catch (Exception e) {
+                log.error("Failed to close producer template", e);
+            }
         }
+        super.destroy();
     }
 
     private static class DigestEntry {
@@ -263,12 +280,13 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         this.registrationSuccessfulEndpoint = registrationSuccessfulEndpoint;
     }
 
+
     /**
-     * @param fcrepuUri uri of object
+     * @param exchange
      * @return true if the object is a binary that should be registered in longleaf.
      */
     public static boolean registerableBinary(Exchange exchange) {
-        String fcrepoUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+        String fcrepoUri = MessageUtil.getFcrepoUri(exchange.getIn());
         String dsId = StringUtils.substringAfterLast(fcrepoUri, "/");
 
         if (dsId.equals("fcr:metadata")) {

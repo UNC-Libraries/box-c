@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.collections4.IteratorUtils;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,23 +35,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public class FacetRestControllerIT extends AbstractAPIIT {
-    // non-facet field selected
-    // invalid field
-    // with root id
-    // without root id
-    // with navigation params
-
     @Autowired
-    private EmbeddedSolrServer embeddedSolrServer;
+    private SolrClient solrClient;
     private TestCorpus testCorpus;
     private static boolean corpusPopulated;
 
     @BeforeEach
     public void setup() throws Exception {
         if (!corpusPopulated) {
+            solrClient.deleteByQuery("*:*");
+            solrClient.commit();
+
             testCorpus = new TestCorpus();
-            embeddedSolrServer.add(testCorpus.populate());
-            embeddedSolrServer.commit();
+            solrClient.add(testCorpus.populate());
+            solrClient.commit();
             corpusPopulated = true;
         }
     }

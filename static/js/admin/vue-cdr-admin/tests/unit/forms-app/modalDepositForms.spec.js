@@ -3,10 +3,16 @@ import ModalDepositForms from '@/components/forms-app/modalDepositForms.vue';
 import {createTestingPinia} from '@pinia/testing';
 import { useFormsStore } from '@/stores/forms';
 
+// Mock axios to prevent actual HTTP requests during testing.
+// Needed for the submitForm method which makes a POST request to the server.
+vi.mock('axios', () => ({
+    default: vi.fn().mockResolvedValue({ data: {} })
+}));
+
 let wrapper, store;
 
 describe('modalDepositForms.vue', () => {
-    const vueForm = jest.fn();
+    const vueForm = vi.fn();
 
     beforeEach(async () => {
         wrapper = mount(ModalDepositForms,
@@ -21,6 +27,7 @@ describe('modalDepositForms.vue', () => {
                 }
             });
         store = useFormsStore();
+        store.alertHandler = { alertHandler: vi.fn() };
     });
 
     afterEach(() => {
@@ -85,7 +92,7 @@ describe('modalDepositForms.vue', () => {
             $vueform: {
                 services: {
                     axios: {
-                        post: jest.fn(),
+                        post: vi.fn(),
                         CancelToken: {
                             source: () => ({
                                 token: 'mock-token'
@@ -95,12 +102,12 @@ describe('modalDepositForms.vue', () => {
                 }
             }
         };
-       let axios_submit = jest.spyOn(mockForm$.$vueform.services.axios, 'post').mockImplementation(() =>
+       let axios_submit = vi.spyOn(mockForm$.$vueform.services.axios, 'post').mockImplementation(() =>
             Promise.resolve({ status: 200, data: {} })
         );
         expect(store.showFormsModal).toEqual(false);
         await store.setShowFormsModal(true);
-        await wrapper.vm.submitForm(jest.fn(), mockForm$);
+        await wrapper.vm.submitForm(vi.fn(), mockForm$);
         expect(axios_submit).toHaveBeenCalled();
     });
 
@@ -117,7 +124,7 @@ describe('modalDepositForms.vue', () => {
             status: 200,
             statusText: 'OK'
         }
-        await wrapper.vm.handleResponse(axios_response, jest.fn());
+        await wrapper.vm.handleResponse(axios_response, vi.fn());
         expect(store.showFormsModal).toEqual(false);
     });
 
@@ -131,9 +138,9 @@ describe('modalDepositForms.vue', () => {
             }, // The actual data returned by the server
             status: 503
         }
-        console.log = jest.fn();
+        console.log = vi.fn();
 
-        await wrapper.vm.handleResponse(axios_response, jest.fn());
+        await wrapper.vm.handleResponse(axios_response, vi.fn());
         expect(store.showFormsModal).toEqual(true);
         expect(console.log).toHaveBeenCalledWith(axios_response);
     });

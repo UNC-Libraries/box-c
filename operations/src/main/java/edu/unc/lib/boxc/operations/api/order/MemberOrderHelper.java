@@ -40,6 +40,16 @@ public class MemberOrderHelper {
     }
 
     /**
+     * Format a standard message indicating the RepositoryObject could not be loaded
+     * @param pid PID of the object that cannot be found
+     * @return formatted message
+     */
+    public static String formatNotFoundMessage(OrderOperationType type, String parentId) {
+        return "Invalid request to " + type + " order for " + parentId
+                + ", RepositoryObjectLoader could not load object with that ID";
+    }
+
+    /**
      *
      * @param parentId UUID of parent object
      * @param reason reason child objects may not be ordered

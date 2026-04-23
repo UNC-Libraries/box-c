@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 public class PatronAccessAssignmentRouter extends RouteBuilder {
     private static final Logger log = getLogger(PatronAccessAssignmentRouter.class);
 
-    @BeanInject(value = "patronAccessAssignmentProcessor")
+    @BeanInject("patronAccessAssignmentProcessor")
     private PatronAccessAssignmentProcessor patronAccessAssignmentProcessor;
 
     @Override

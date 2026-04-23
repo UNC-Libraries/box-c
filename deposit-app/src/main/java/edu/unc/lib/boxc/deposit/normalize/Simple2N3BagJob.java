@@ -53,7 +53,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         PID depositPID = getDepositPID();
         Model depModel = getReadOnlyModel();
         Model model = ModelFactory.createDefaultModel().add(depModel);
-        Bag depositBag = model.createBag(depositPID.getURI().toString());
+        Bag depositBag = model.createBag(depositPID.getRepositoryPath());
 
         // Generate a uuid for the main object
         PID mainPID = pidMinter.mintContentPid();
@@ -65,7 +65,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
         // Create the main resource as a simple resource
-        Resource mainResource = model.createResource(mainPID.getURI());
+        Resource mainResource = model.createResource(mainPID.getRepositoryPath());
 
         populateFileObject(mainResource, slug, sourceUri, mimetype);
 

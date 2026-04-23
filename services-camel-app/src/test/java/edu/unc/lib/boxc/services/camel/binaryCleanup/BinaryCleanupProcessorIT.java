@@ -60,7 +60,7 @@ public class BinaryCleanupProcessorIT {
     private RepositoryInitializer repositoryInitializer;
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @javax.annotation.Resource(name = "repositoryObjectLoaderNoCache")
+    @jakarta.annotation.Resource(name = "repositoryObjectLoaderNoCache")
     private RepositoryObjectLoader repoObjectLoader;
     @Autowired
     private StorageLocationManager storageLocationManager;

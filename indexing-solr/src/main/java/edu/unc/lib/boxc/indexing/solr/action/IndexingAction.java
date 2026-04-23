@@ -15,5 +15,5 @@ public interface IndexingAction {
      * @param updateRequest
      * @throws IndexingException
      */
-    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException;
+    void performAction(SolrUpdateRequest updateRequest) throws IndexingException;
 }

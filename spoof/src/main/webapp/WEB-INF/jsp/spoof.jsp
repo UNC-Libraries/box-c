@@ -24,7 +24,7 @@ java.util.HashMap<String, String> values = new java.util.HashMap<String, String>
 
 if (request.getCookies() != null) {
 
-  for (javax.servlet.http.Cookie c : request.getCookies()) {
+  for (jakarta.servlet.http.Cookie c : request.getCookies()) {
   
     if (c.getName().startsWith(SPOOF_COOKIE_PREFIX)) {
     
@@ -96,7 +96,7 @@ if (request.getMethod() == "POST") {
   
   for (String key : params) {
     
-    javax.servlet.http.Cookie cookie;
+    jakarta.servlet.http.Cookie cookie;
     
     if (values.containsKey(key)) {
       

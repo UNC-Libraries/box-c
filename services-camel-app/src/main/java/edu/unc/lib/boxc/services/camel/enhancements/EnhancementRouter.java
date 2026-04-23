@@ -28,16 +28,17 @@ import edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor;
 public class EnhancementRouter extends RouteBuilder {
     private static final Logger log = getLogger(EnhancementRouter.class);
 
-    @BeanInject(value = "binaryEnhancementProcessor")
+    @BeanInject("binaryEnhancementProcessor")
     private BinaryEnhancementProcessor enProcessor;
 
-    @BeanInject(value = "binaryMetadataProcessor")
+    @BeanInject("binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
-    @PropertyInject(value = "cdr.enhancement.processingThreads")
+    @PropertyInject("cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
-    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy";
+    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
+            "videoAccessCopy,machineGenDescription";
     @Override
     public void configure() throws Exception {
 
@@ -102,6 +103,15 @@ public class EnhancementRouter extends RouteBuilder {
                 .log(LoggingLevel.WARN, log, "Shutdown interrupted processing of ${headers[CdrBinaryPath]}, requeuing")
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
                 .to(ExchangePattern.InOnly, "{{cdr.enhancement.perform.camel}}");
+
+        from("direct:process.enhancement.audioAccessCopy")
+                .to("{{cdr.enhancement.audio.stream.camel}}");
+
+        from("direct:process.enhancement.videoAccessCopy")
+                .to("{{cdr.enhancement.video.stream.camel}}");
+
+        from("direct:process.enhancement.machineGenDescription")
+                .to("{{cdr.machine.gen.description.stream.camel}}");
 
     }
 }

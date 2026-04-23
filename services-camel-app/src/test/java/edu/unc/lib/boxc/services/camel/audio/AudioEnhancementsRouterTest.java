@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.services.camel.audio;
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.BeanInject;
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -34,8 +33,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -50,7 +47,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     private final String audioAccessCopy = "AudioAccessCopy";
 
     @PropertyInject(value = "fcrepo.baseUrl")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     protected MockEndpoint resultEndpoint;
@@ -58,8 +55,11 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "addAudioAccessCopyProcessor")
+    @BeanInject("addAudioAccessCopyProcessor")
     private AddDerivativeProcessor addAudioAccessCopyProcessor;
+
+    @BeanInject("mp44uAudioProcessor")
+    private Mp44uAudioProcessor mp44uAudioProcessor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -76,40 +76,17 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(audioAccessCopy);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testAudioAccessCopyRouteScriptFails() throws Exception {
-        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(audioAccessCopy);
-
-        MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-        shEndpoint.whenAnyExchangeReceived(exchange -> {
-            throw new IllegalStateException("Failing run of exec");
-        });
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        try {
-            template.sendBodyAndHeaders("", headers);
-            fail("Exception expected to be thrown");
-        } catch (CamelExecutionException e) {
-            assertTrue(e.getCause() instanceof IllegalStateException);
-        }
-
-        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addAudioAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -117,15 +94,16 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(audioAccessCopy);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
-
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -136,16 +114,16 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(audioAccessCopy);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(0);
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(mp44uAudioProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -157,15 +135,16 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         createContext(audioAccessCopy);
 
-        var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
-        shEndpoint.expectedMessageCount(1);
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(1);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(mp44uAudioProcessor).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
-        shEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -176,13 +155,18 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         var audioEndpoint = getMockEndpoint("mock:process.enhancement.audioAccessCopy");
         audioEndpoint.expectedMessageCount(0);
 
+        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrIndexingEndpoint.expectedMessageCount(0);
+
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "audio/aac");
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(mp44uAudioProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         audioEndpoint.assertIsSatisfied();
+        solrIndexingEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {
@@ -193,7 +177,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String eventTypes,
+    private Map<String, Object> createEvent(final String identifier, final String eventTypes,
                                                    final String force) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, identifier);

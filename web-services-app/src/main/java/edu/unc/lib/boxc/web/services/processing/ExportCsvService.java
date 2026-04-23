@@ -20,17 +20,21 @@ import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -103,21 +107,33 @@ public class ExportCsvService {
     private RepositoryObjectLoader repositoryObjectLoader;
     private String baseUrl;
     private int pageSize = DEFAULT_PAGE_SIZE;
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
-
-    public void streamCsv(List<PID> pids, AgentPrincipals agent, OutputStream out) {
+    public Path exportCsv(List<PID> pids, AgentPrincipals agent) {
         AccessGroupSet accessGroups = agent.getPrincipals();
         validate(pids, accessGroups);
 
-        // Open the CSV
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        try (CSVPrinter printer = getPrinter(writer)) {
-            for (PID pid : pids) {
-                printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+        boolean successful = false;
+        Path csvFile = null;
+        try {
+            csvFile = Files.createTempFile("export-", ".csv");
+            try (var outputStream = Files.newOutputStream(csvFile);
+                 Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+                 CSVPrinter printer = getPrinter(writer);
+                ) {
+                for (PID pid : pids) {
+                    printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+                }
             }
+            successful = true;
+            return csvFile;
         } catch (IOException e) {
             throw new RepositoryException("Failed to stream CSV results: ", e);
+        } finally {
+            if (!successful && csvFile != null) {
+                FileUtils.deleteQuietly(csvFile.toFile());
+            }
         }
     }
 
@@ -244,22 +260,12 @@ public class ExportCsvService {
 
 
         // Dates: added, updated
-
         Date added = object.getDateAdded();
-
-        if (added != null) {
-            printer.print(dateFormat.format(added));
-        } else {
-            printer.print("");
-        }
+        printer.print(getFormattedDate(added));
 
         Date updated = object.getDateUpdated();
+        printer.print(getFormattedDate(updated));
 
-        if (updated != null) {
-            printer.print(dateFormat.format(updated));
-        } else {
-            printer.print("");
-        }
 
         // DATA_FILE info: mime type, checksum, file size
         Datastream dataFileDatastream = object.getDatastreamObject(ORIGINAL_FILE.getId());
@@ -369,6 +375,18 @@ public class ExportCsvService {
         String[] result = input.split(regex);
         // for the last one escape any backslashes in the title
         return result[result.length - 2].replace("\\/", "/");
+    }
+
+    /**
+     * formats CSV date values
+     * @param date Date object
+     * @return empty string if date is null, otherwise a formatted date string "yyyy-MM-dd HH:mm:ss"
+     */
+    private String getFormattedDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        return FORMATTER.withZone(ZoneId.systemDefault()).format(date.toInstant());
     }
 
     public void setChildrenCountService(ChildrenCountService childrenCountService) {

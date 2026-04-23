@@ -25,7 +25,7 @@ public class BulkRefIdRouterTest extends CamelSpringTestSupport {
     @Produce("direct:start")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "bulkRefIdRequestProcessor")
+    @BeanInject("bulkRefIdRequestProcessor")
     private BulkRefIdRequestProcessor processor;
 
     @Override

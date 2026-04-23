@@ -15,8 +15,8 @@ public interface SparqlUpdateService {
      * @param uri
      * @param updateString
      */
-    public void executeUpdate(String uri, String updateString);
+    void executeUpdate(String uri, String updateString);
 
-    public void executeUpdate(String updateString);
+    void executeUpdate(String updateString);
 
 }

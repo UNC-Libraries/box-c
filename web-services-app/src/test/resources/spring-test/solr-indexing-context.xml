@@ -5,11 +5,11 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
@@ -24,7 +24,7 @@
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
-                <ref bean="setAltTextFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
@@ -36,10 +36,7 @@
     </bean>
 
     <util:properties id="searchProperties" location="classpath:search.properties" />
-    <util:properties id="solrProperties" location="classpath:solr.properties">
-        <prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-        </prop>
-    </util:properties>
+    <util:properties id="solrProperties" location="classpath:solr.properties" />
 
     <bean id="searchSettings" class="edu.unc.lib.boxc.search.solr.config.SearchSettings">
         <property name="properties" ref="searchProperties" />
@@ -117,23 +114,8 @@
         <property name="solrClient" ref="solrClient" />
     </bean>
 
-    <bean id="solrClient" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer"
-          destroy-method="close">
-        <constructor-arg ref="coreContainer" />
-        <constructor-arg value="access" />
-    </bean>
-
-    <bean id="solrHomePath" class="java.io.File">
-        <constructor-arg value="../etc/solr-config" />
-    </bean>
-    
-    <bean id="solrConfigPath" class="java.io.File">
-        <constructor-arg value="../etc/solr-config/solr.xml" />
-    </bean>
-
-    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" destroy-method="shutdown">
-        <constructor-arg value="#{solrHomePath.toPath().toAbsolutePath()}" />
-        <constructor-arg value="#{solrConfigPath.toPath().toAbsolutePath()}" />
+    <bean id="solrClient" class="org.apache.solr.client.solrj.SolrClient"
+          factory-bean="solrSettings" factory-method="getSolrClient" destroy-method="close">
     </bean>
 
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
@@ -241,8 +223,13 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
-    <bean id="setAltTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAltTextFilter">
+    <bean id="mgContentService" class="edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService" />
+    </bean>
+
+    <bean id="setContentDescriptionMetadataFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentDescriptionMetadataFilter">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="mgContentService" ref="mgContentService" />
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

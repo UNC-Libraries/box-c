@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.operations.impl.order.OrderValidatorFactory;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.Exchange;
@@ -45,8 +46,9 @@ public class OrderRequestProcessor implements Processor {
         var errors = new ArrayList<String>();
         for (var requestEntry: request.getParentToOrdered().entrySet()) {
             try {
-                var singleRequest = OrderRequestFactory.createRequest(
-                        request.getOperation(), requestEntry.getKey(), requestEntry.getValue());
+                var children = requestEntry.getValue();
+                var operation = getOrderOperation(request.getOperation(), children);
+                var singleRequest = OrderRequestFactory.createRequest(operation, requestEntry.getKey(), children);
 
                 processSingleRequest(singleRequest, request.getAgent(), successes, errors);
             } catch (Exception e) {
@@ -95,6 +97,19 @@ public class OrderRequestProcessor implements Processor {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to deserialize order request", e);
         }
+    }
+
+    /**
+     * if the children are null, then this is a CLEAR job. otherwise return the original order operation type
+     * @param originalOperationType order operation type associated with the MultiParentOrderRequest
+     * @param children children of the parent object
+     * @return orderOperationType
+     */
+    private OrderOperationType getOrderOperation(OrderOperationType originalOperationType, List<String> children) {
+        if (children.isEmpty()) {
+            return OrderOperationType.CLEAR;
+        }
+        return originalOperationType;
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {

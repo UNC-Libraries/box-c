@@ -47,12 +47,13 @@ public enum IndexingActionType {
     UPDATE_TYPE_TREE("Update Resource Type Tree",
             "Update the resource type of a set of objects and all their children"),
     SET_PRIMARY_OBJECT("Set Primary Object", "Update the primary object for a work"),
+    UPDATE_COLLECTION_DISPLAY_PROPERTIES("Update default collection display", "Update the default display for a collection"),
     UPDATE_MEMBER_ORDER("Update Member Order", "Update the order of members within an object"),
     UPDATE_MEMBER_ORDER_CHILD("Update Member Order Child", "Update the order of a container member"),
     UPDATE_MEMBER_ORDER_PARENT("Update Member Order Parent", "Update a container after its order changed"),
     UPDATE_VIEW_BEHAVIOR("Update View Behavior", "Update the view behavior for a work"),
     UPDATE_STREAMING_PROPERTIES("Update Streaming URL", "Update the streaming URL for a file"),
-    ADD_ASPACE_REF_ID("Add Aspace Ref Id", "Update the Aspace Ref ID for a work"),
+    UPDATE_ASPACE_REF_ID("Update Aspace Ref Id", "Update the Aspace Ref ID for a work"),
     UNKNOWN("Unknown action", "Unknown action");
 
     private final String label;

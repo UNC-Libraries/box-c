@@ -1,53 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
-import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
-import edu.unc.lib.boxc.web.common.services.FedoraContentService;
-import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
-import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
-import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
-import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.io.File;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -74,6 +26,53 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
+import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.solr.client.solrj.SolrClient;
+import org.fcrepo.client.FcrepoClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.io.File;
+import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  *
@@ -108,7 +107,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
-    private EmbeddedSolrServer embeddedSolrServer;
+    private SolrClient solrClient;
     @Autowired
     private DownloadImageService downloadImageService;
     private DatastreamController controller;
@@ -119,7 +118,10 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void initLocal() {
+    public void initLocal() throws Exception {
+        solrClient.deleteByQuery("*:*");
+        solrClient.commit();
+
         closeable = openMocks(this);
         controller = new DatastreamController();
         controller.setAnalyticsTracker(analyticsTrackerUtil);
@@ -355,8 +357,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     private TestCorpus populateCorpus() throws Exception {
         var corpus = new TestCorpus();
-        embeddedSolrServer.add(corpus.populate());
-        embeddedSolrServer.commit();
+        solrClient.add(corpus.populate());
+        solrClient.commit();
         return corpus;
     }
 

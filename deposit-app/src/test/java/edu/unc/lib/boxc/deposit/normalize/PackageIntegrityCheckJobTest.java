@@ -11,11 +11,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.deposit.DepositTestUtils;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.utils.SpringJobFactory;
 import edu.unc.lib.boxc.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 
@@ -31,9 +29,6 @@ public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
         setField(job, "depositModelManager", depositModelManager);
         job.init();
     }
-
-    @Autowired
-    SpringJobFactory springJobFactory = null;
 
     @Test
     public void test() {

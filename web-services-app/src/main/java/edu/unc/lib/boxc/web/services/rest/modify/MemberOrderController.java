@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.getPidsFromParamString;
 import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
@@ -65,7 +66,7 @@ public class MemberOrderController {
         Path csvPath = null;
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         try {
-            var pids = Arrays.stream(ids.split(",")).map(String::trim).map(PIDs::get).collect(Collectors.toList());
+            var pids = getPidsFromParamString(ids);
             csvPath = memberOrderCsvExporter.export(pids, agent);
             String filename = getExportFilename();
             response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
@@ -93,6 +94,7 @@ public class MemberOrderController {
     public ResponseEntity<Object> importCsv(@RequestParam("file") MultipartFile csvFile) {
         var agent = AgentPrincipalsImpl.createFromThread();
         Path csvPath = null;
+        Map<String, Object> result = new HashMap<>();
         try {
             csvPath = CsvUtil.storeCsvToTemp(csvFile, "order");
             var orderRequest = memberOrderCsvTransformer.toRequest(csvPath);
@@ -100,13 +102,17 @@ public class MemberOrderController {
             orderRequest.setEmail(GroupsThreadStore.getEmail());
             memberOrderRequestSender.sendToQueue(orderRequest);
 
-            Map<String, Object> result = new HashMap<>();
             result.put("action", "import member order");
             result.put("timestamp", System.currentTimeMillis());
             return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            log.error("Error with CSV for {}", agent.getUsername(), e);
+            result.put("errorStack", e.getMessage());
+            return new ResponseEntity<>(result,HttpStatus.BAD_REQUEST);
         } catch (IOException e) {
             log.error("Error importing CSV for {}", agent.getUsername(), e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            result.put("errorStack", e.getMessage());
+            return new ResponseEntity<>(result,HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             CsvUtil.cleanupCsv(csvPath);
         }

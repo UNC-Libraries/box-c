@@ -46,8 +46,8 @@ public class ErrorControllerTest {
     public void testException() throws Exception {
         mvc.perform(get("/exception")
                 .with(request -> {
-                    request.setAttribute("javax.servlet.error.exception", new IllegalStateException("Test Exception"));
-                    request.setAttribute("javax.servlet.forward.request_uri", "/test-uri");
+                    request.setAttribute("jakarta.servlet.error.exception", new IllegalStateException("Test Exception"));
+                    request.setAttribute("jakarta.servlet.forward.request_uri", "/test-uri");
                     return request;
                 }))
                 .andExpect(status().isInternalServerError())

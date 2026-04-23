@@ -18,12 +18,14 @@
 </template>
 
 <script>
-import axios from 'axios';
+import fetchUtils from "../../mixins/fetchUtils";
 import {formatDistanceToNow} from "date-fns";
 import {toDate} from "date-fns";
 
 export default {
     name: 'singleUseLink',
+
+    mixins: [fetchUtils],
 
     props: {
         uuid: String
@@ -45,22 +47,22 @@ export default {
     },
 
     methods: {
-        createLink() {
-            axios({
-                method: 'post',
-                url: `/services/api/single_use_link/create/${this.uuid}`
-            }).then((response) => {
+        async createLink() {
+            try {
+                const data = await this.fetchWrapper(`/services/api/single_use_link/create/${this.uuid}`, true,
+                    { method: 'POST',  headers: { 'Content-Type': 'application/json' } });
                 let basePath = window.location.hostname;
-                let accessCode = response.data.key;
-                this.single_use_links.push({"link": this.generateUrl(basePath, accessCode),
-                                            "accessCode": accessCode.substring(0, 8),
-                                            "expires": this.formatTimestamp(response.data.expires)
-                                            });
-            }).catch((error) => {
+                let accessCode = data.key;
+                this.single_use_links.push({
+                    "link": this.generateUrl(basePath, accessCode),
+                    "accessCode": accessCode.substring(0, 8),
+                    "expires": this.formatTimestamp(data.expires)
+                });
+            } catch (error) {
                 console.log(error);
-                this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid});
+                this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid });
                 this.fadeOutMsg();
-            });
+            }
         },
 
         async copyUrl(text) {
@@ -88,7 +90,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .header-button-single-download {
         text-align: right;
 

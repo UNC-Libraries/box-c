@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.services.utils;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -14,9 +16,11 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
@@ -83,6 +87,15 @@ public class CsvUtil {
                 log.warn("Failed to cleanup CSV file: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Converts comma-separated string of IDs into a List of PIDs
+     * @param ids string of IDs like id1,id2,id3
+     * @return List of PIDs
+     */
+    public static List<PID> getPidsFromParamString(String ids) {
+        return Arrays.stream(ids.split(",")).map(String::trim).map(PIDs::get).collect(Collectors.toList());
     }
 
     /**

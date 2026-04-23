@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,7 +55,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
@@ -233,7 +232,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
                 // Record the format info for this file
-                addFileIdentification(fitsDoc, premisObjCharsEl);
+                addFileIdentification(fitsDoc, premisObjCharsEl, linkPath);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -265,9 +264,9 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
          * @param fitsDoc
          * @param premisObjCharsEl
          */
-        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl) {
+        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl, Path linkPath) throws IOException {
             // Retrieve the FITS generate mimetype if available
-            Element identity = getFitsIdentificationInformation(fitsDoc);
+            Element identity = getFitsIdentificationInformation(fitsDoc, linkPath);
 
             String fitsMimetype = null;
             String format;
@@ -512,7 +511,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * @param fitsDoc
      * @return
      */
-    private Element getFitsIdentificationInformation(Document fitsDoc) {
+    private Element getFitsIdentificationInformation(Document fitsDoc, Path linkPath) throws IOException {
         Element identification = fitsDoc.getRootElement().getChild("identification", FITS_NS);
         String identityStatus = identification.getAttributeValue("status");
         // If there was no conflict, use the first identity
@@ -535,7 +534,19 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                     .reversed()
                     // And then favor more application specific mimetypes
                     .thenComparingInt(el -> el.getAttributeValue(MIMETYPE_ATTR).contains("x-") ? -1 : 0))
-                    .collect(Collectors.toList());
+                    .toList();
+            // Filter out conflicting mimetypes that don't match file extension mimetype
+            if (!identityEls.isEmpty()) {
+                String extensionMimetype = Files.probeContentType(linkPath);
+                if (extensionMimetype != null) {
+                    var matchingEls = identityEls.stream()
+                            .filter(el -> extensionMimetype.equals(el.getAttributeValue(MIMETYPE_ATTR)))
+                            .toList();
+                    if (!matchingEls.isEmpty()) {
+                        identityEls = matchingEls;
+                    }
+                }
+            }
             // Return the best ranking identification, or null if none are valid
             return identityEls.isEmpty() ? null : identityEls.get(0);
         }

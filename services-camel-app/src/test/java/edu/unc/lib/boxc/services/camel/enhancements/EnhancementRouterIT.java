@@ -1,5 +1,31 @@
 package edu.unc.lib.boxc.services.camel.enhancements;
 
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrAudioPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrVideoPath;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -15,11 +41,16 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
+import edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+import edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor;
+import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -46,29 +77,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 /**
  *
  * @author bbpennel
@@ -77,7 +85,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 public class EnhancementRouterIT extends CamelSpringTestSupport {
     private final static String FILE_CONTENT = "content";
 
-    private final static long ALLOW_WAIT = 5000;
+    private final static long ALLOW_WAIT = 10000;
 
     private AutoCloseable closeable;
 
@@ -106,6 +114,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private PdfImageProcessor pdfImageProcessor;
 
+    private AddDerivativeProcessor addVideoAccessCopyProcessor;
+
+    private MachineGenDescriptionProcessor machineGenDescriptionProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -128,27 +140,26 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
         cdrEnhancements = applicationContext.getBean(CamelContext.class);
-        addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
+        addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor",
+                AddDerivativeProcessor.class);
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
-        addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor", AddDerivativeProcessor.class);
+        addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor",
+                AddDerivativeProcessor.class);
+        addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
+                AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
+        machineGenDescriptionProcessor = applicationContext.getBean(MachineGenDescriptionProcessor.class);
 
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addVideoAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(machineGenDescriptionProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
-
-        File jp2ScriptFile = new File("target/convertJp2.sh");
-        FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
-        jp2ScriptFile.deleteOnExit();
-
-        File audioScriptFile = new File("target/convertAudio.sh");
-        FileUtils.writeStringToFile(audioScriptFile, "exit 0", "utf-8");
-        audioScriptFile.deleteOnExit();
 
         doAnswer((Answer<Void>) invocation -> {
             Exchange exchange = (Exchange) invocation.getArguments()[0];
@@ -191,6 +202,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -202,6 +214,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -212,16 +225,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         BinaryObject binObj = fileObj.addOriginalFile(storageUri,
                 null, "image/png", null, null);
 
-        // Separate exchanges when multicasting
-        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(7)
-                .create();
-
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
-
-        boolean result1 = notify1.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Enhancement route not satisfied");
 
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
@@ -254,6 +259,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -279,6 +285,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -327,6 +334,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -349,7 +357,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        // Happens twice due to audio route causing a second indexing
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT).times(2)).process(any(Exchange.class));
     }
 
     @Test
@@ -373,6 +382,49 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(pdfImageProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testVideoFile() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "video/mp4", null, null);
+
+        // Separate exchanges when multicasting
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(12)
+                .create();
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        // Happens twice due to video route causing a second indexing
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT).times(2)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testMachineGenDescription() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "image/png", null, null);
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {

@@ -1,0 +1,67 @@
+package edu.unc.lib.boxc.operations.impl.machineGenerated;
+
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.machineGenerated.MachineGenRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.getDerivativePath;
+import static edu.unc.lib.boxc.operations.impl.utils.ExternalDerivativesUtil.writeToFile;
+
+/**
+ * Service for updating the machine generated datastreams
+ *
+ * @author snluong
+ */
+public class MachineGenUpdateService {
+    private static final Logger log = LoggerFactory.getLogger(MachineGenUpdateService.class);
+    private String type;
+    private RepositoryObjectLoader repositoryObjectLoader;
+    private String derivativeBasePath;
+
+    public Path updateMachineGenText(MachineGenRequest request) {
+        var pid = PIDs.get(request.getPidString());
+
+        var binaryId = pid.getId();
+
+        try {
+            // check that object is a file object
+            repositoryObjectLoader.getFileObject(pid);
+            var derivativePath = getMachineGenDerivativePath(binaryId);
+            writeToFile(derivativePath, request.getText());
+            return derivativePath;
+        } catch (ObjectTypeMismatchException e) {
+            log.debug("Object {} is not a file object", request.getPidString(), e);
+            throw new IllegalArgumentException("Object " + request.getPidString() + " is not a file object");
+        } catch (IOException e) {
+            throw new ServiceException("Unable to write to machine generated " + type +  " file for: " + binaryId, e);
+        }
+    }
+
+    /**
+     * Get path for machine gen desc derivative
+     * @param id binary ID
+     * @return path to derivative
+     */
+    public Path getMachineGenDerivativePath(String id) {
+        return getDerivativePath(derivativeBasePath, id);
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setDerivativeBasePath(String derivativeBasePath) {
+        this.derivativeBasePath = derivativeBasePath;
+    }
+}

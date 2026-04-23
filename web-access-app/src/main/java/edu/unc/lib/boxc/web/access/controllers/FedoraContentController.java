@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,8 +33,8 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -63,6 +64,7 @@ public class FedoraContentController {
     private AccessControlService accessControlService;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
+    @CrossOrigin(origins = "*")
     public void getDefaultDatastream(@PathVariable("pid") String pid,
                                      @RequestParam(value = "dl", defaultValue = "false") boolean download,
                                      HttpServletRequest request, HttpServletResponse response) {
@@ -108,6 +110,9 @@ public class FedoraContentController {
             recordDownloadEvent(pid, datastream, principals, request);
         } catch (IOException e) {
             handleIOException(pid, datastream, e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        } catch (IllegalArgumentException e) {
+            log.warn("Trying to stream external resource from fcrepo for {}.", pid.getId());
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }

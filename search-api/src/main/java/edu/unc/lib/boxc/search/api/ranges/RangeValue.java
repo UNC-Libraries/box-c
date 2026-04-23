@@ -9,7 +9,7 @@ public interface RangeValue {
     /**
      * @return the value of this range represented as a String parameter
      */
-    public String getParameterValue();
+    String getParameterValue();
 
-    public RangeValue clone();
+    RangeValue clone();
 }

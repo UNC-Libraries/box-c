@@ -17,7 +17,7 @@ public enum ServerManagedProperties {
 
     private Property property;
 
-    private ServerManagedProperties(Property property) {
+    ServerManagedProperties(Property property) {
         this.property = property;
     }
 

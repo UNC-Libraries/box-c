@@ -38,7 +38,7 @@ export default {
             default: false,
             type: Boolean
         },
-        childCount: {
+        workChildCount: {
             default: null,
             type: Number
         },
@@ -48,7 +48,7 @@ export default {
     computed: {
         hasTooManyChildren() {
             // Based off of the limit set in DownloadBulkService
-            return this.childCount > 100;
+            return this.workChildCount > 100;
         },
 
         hasDownloadableContent() {

@@ -25,9 +25,9 @@ public class Cdr {
     /** The namespace of the vocabulary as a resource */
     public static final Resource NAMESPACE = createResource( NS );
 
-    /** Name of the view to show by default on a collection record page. */
-    public static final Property collectionDefaultView = createProperty(
-            "http://cdr.unc.edu/definitions/model#collectionDefaultView" );
+    /** JSON representation of settings for default sort, default view and show works only when displaying collection. */
+    public static final Property collectionDefaultDisplaySettings = createProperty(
+            "http://cdr.unc.edu/definitions/model#collectionDefaultDisplaySettings" );
 
     /** Name of a view to show on this collections record page. Repeatable. */
     public static final Property collectionShowView = createProperty(
@@ -67,6 +67,10 @@ public class Cdr {
 
    /** Relationship indicating the binary containing the alt text for this object */
    public static final Property hasAltText = createProperty("http://cdr.unc.edu/definitions/model#hasAltText");
+
+    /** Relationship indicating the binary containing the full description for this object */
+    public static final Property hasFullDescription = createProperty(
+            "http://cdr.unc.edu/definitions/model#hasFullDescription");
 
    /** The size (e.g., in bytes) of this binary object */
    public static final Property hasSize = createProperty(

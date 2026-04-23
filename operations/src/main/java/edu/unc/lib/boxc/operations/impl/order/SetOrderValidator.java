@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.order;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatNotFoundMessage;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatErrorMessage;
@@ -40,33 +42,39 @@ public class SetOrderValidator implements OrderValidator {
 
     private boolean validate() {
         var parentId = request.getParentPid().getId();
-        var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
-        if (!supportsMemberOrdering(parentObj.getResourceType())) {
-            errors.add(formatUnsupportedMessage(request.getParentPid(), parentObj.getResourceType()));
+
+        try {
+            var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
+            if (!supportsMemberOrdering(parentObj.getResourceType())) {
+                errors.add(formatUnsupportedMessage(request.getParentPid(), parentObj.getResourceType()));
+                return false;
+            }
+
+            var requestPidSet = new HashSet<>(request.getOrderedChildren());
+            if (requestPidSet.size() < request.getOrderedChildren().size()) {
+                var duplicates = computeDuplicates(request.getOrderedChildren());
+                errors.add(formatErrorMessage(OrderOperationType.SET,
+                        parentId, "it contained duplicate member IDs", duplicates));
+            }
+
+            var members = membershipService.listMembers(request.getParentPid());
+            var membersNotInRequest = difference(members, requestPidSet);
+            if (!membersNotInRequest.isEmpty()) {
+                errors.add(formatErrorMessage(OrderOperationType.SET, parentId,
+                        "the following members were expected but not listed", membersNotInRequest));
+            }
+
+            var requestedNotInMembers = difference(requestPidSet, members);
+            if (!requestedNotInMembers.isEmpty()) {
+                errors.add(formatErrorMessage(OrderOperationType.SET,
+                        parentId, "the following IDs are not members", requestedNotInMembers));
+            }
+
+            return errors.isEmpty();
+        } catch (NotFoundException e) {
+            errors.add(formatNotFoundMessage(OrderOperationType.SET, parentId));
             return false;
         }
-
-        var requestPidSet = new HashSet<>(request.getOrderedChildren());
-        if (requestPidSet.size() < request.getOrderedChildren().size()) {
-            var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(OrderOperationType.SET,
-                    parentId, "it contained duplicate member IDs", duplicates));
-        }
-
-        var members = membershipService.listMembers(request.getParentPid());
-        var membersNotInRequest = difference(members, requestPidSet);
-        if (!membersNotInRequest.isEmpty()) {
-            errors.add(formatErrorMessage(OrderOperationType.SET, parentId,
-                    "the following members were expected but not listed", membersNotInRequest));
-        }
-
-        var requestedNotInMembers = difference(requestPidSet, members);
-        if (!requestedNotInMembers.isEmpty()) {
-            errors.add(formatErrorMessage(OrderOperationType.SET,
-                    parentId, "the following IDs are not members", requestedNotInMembers));
-        }
-
-        return errors.isEmpty();
     }
 
     /**

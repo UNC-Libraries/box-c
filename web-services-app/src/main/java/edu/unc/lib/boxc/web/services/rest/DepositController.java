@@ -3,21 +3,27 @@ package edu.unc.lib.boxc.web.services.rest;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositConstants;
+import edu.unc.lib.boxc.deposit.api.DepositOperation;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jdom2.Content;
 import org.jdom2.Document;
@@ -27,33 +33,27 @@ import org.jdom2.input.stax.DefaultStAXFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.DepositConstants;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
-import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Gregory Jansen
@@ -83,6 +83,9 @@ public class DepositController {
 
     @Autowired
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+
+    @Autowired
+    private DepositOperationMessageService depositOperationMessageService;
 
     @PostConstruct
     public void init() {
@@ -271,7 +274,7 @@ public class DepositController {
 
     @RequestMapping(value = { "{stateOrUUID}", "/{stateOrUUID}" }, method = RequestMethod.GET)
     public @ResponseBody
-    Map<String, Object> get(@PathVariable String stateOrUUID) {
+    Map<String, Object> get(@PathVariable("stateOrUUID") String stateOrUUID) {
         DepositState depositState = null;
         try {
             depositState = DepositState.valueOf(stateOrUUID);
@@ -293,7 +296,7 @@ public class DepositController {
      * @param uuid
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
-    public void destroy(@PathVariable String uuid) {
+    public void destroy(@PathVariable("uuid") String uuid) {
         // verify deposit is registered and not yet cleaned up
         // set deposit status to canceling
     }
@@ -310,13 +313,8 @@ public class DepositController {
      *           the action to take on the deposit (pause, resume, cancel, destroy)
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.POST)
-    public void update(@PathVariable String uuid, @RequestParam(required = true) String action,
-            HttpServletResponse response) {
-        DepositAction actionRequested = DepositAction.valueOf(action);
-        if (actionRequested == null) {
-            throw new IllegalArgumentException(
-                    "The deposit action is not recognized: " + action);
-        }
+    public ResponseEntity<Void> update(@PathVariable("uuid") String uuid, @RequestParam("action") String action) {
+        DepositOperation opRequested = DepositOperation.valueOf(action.toUpperCase());
         // permission check, admin group or depositor required
         String username = GroupsThreadStore.getUsername();
         Map<String, String> status = depositStatusFactory.get(uuid);
@@ -325,47 +323,46 @@ public class DepositController {
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
             if (username == null || (!username.equals(status.get(DepositField.depositorName.name())) &&
                     !globalPermissionEvaluator.hasGlobalPermission(principals, Permission.createAdminUnit))) {
-                response.setStatus(403);
-                return;
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
         String state = status.get(DepositField.state.name());
-        switch (actionRequested) {
-            case pause:
+        switch (opRequested) {
+            case PAUSE:
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else if (DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already failed");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.pause);
-                    response.setStatus(204);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.PAUSE, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
-            case resume:
+            case RESUME:
                 if (!DepositState.paused.name().equals(state) && !DepositState.failed.name().equals(state)) {
                     throw new IllegalArgumentException("The deposit must be paused or failed before you can resume");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.resume);
-                    response.setStatus(204);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.RESUME, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
-            case cancel:
+            case CANCEL:
                 if (DepositState.finished.name().equals(state)) {
                     throw new IllegalArgumentException("That deposit has already finished");
                 } else {
-                    depositStatusFactory.requestAction(uuid, DepositAction.cancel);
-                    response.setStatus(204);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.CANCEL, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
+                    return ResponseEntity.noContent().build();
                 }
-                break;
-            case destroy:
+            case DESTROY:
                 if (DepositState.cancelled.name().equals(state) || DepositState.finished.name().equals(state)) {
-                    depositStatusFactory.requestAction(uuid, DepositAction.destroy);
-                    response.setStatus(204);
+                    var depositMessage = new DepositOperationMessage(DepositOperation.DESTROY, uuid, username);
+                    depositOperationMessageService.sendDepositOperationMessage(depositMessage);
+                    return ResponseEntity.noContent().build();
                 } else {
                     throw new IllegalArgumentException(
                             "The deposit must be finished or cancelled before it is destroyed");
                 }
-                break;
             default:
                 throw new IllegalArgumentException("The requested deposit action is not implemented: " + action);
         }
@@ -373,7 +370,7 @@ public class DepositController {
 
     @RequestMapping(value = { "{uuid}/jobs", "/{uuid}/jobs" }, method = RequestMethod.GET)
     public @ResponseBody
-    Map<String, Map<String, String>> getJobs(@PathVariable String uuid) {
+    Map<String, Map<String, String>> getJobs(@PathVariable("uuid") String uuid) {
         LOG.debug("getJobs( {} )", uuid);
         try (Jedis jedis = getJedisPool().getResource()) {
             Map<String, Map<String, String>> jobs = new HashMap<>();
@@ -395,13 +392,13 @@ public class DepositController {
 
     @RequestMapping(value = { "{uuid}/events" }, method = RequestMethod.GET)
     public @ResponseBody
-    Document getEvents(@PathVariable String uuid) throws Exception {
+    Document getEvents(@PathVariable("uuid") String uuid) throws Exception {
         LOG.debug("getEvents( {} )", uuid);
         String bagDirectory;
         try (Jedis jedis = getJedisPool().getResource()) {
             bagDirectory = jedis.hget(
                     RedisWorkerConstants.DEPOSIT_STATUS_PREFIX + uuid,
-                    RedisWorkerConstants.DepositField.directory.name());
+                    DepositField.directory.name());
         }
         File bagFile = new File(bagDirectory);
         if (!bagFile.exists()) {

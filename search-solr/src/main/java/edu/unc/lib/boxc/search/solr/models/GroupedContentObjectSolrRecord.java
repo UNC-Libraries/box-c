@@ -39,8 +39,8 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
             }
         }
 
-        if (this.representative == null && items.size() > 0) {
-            this.representative = items.get(0);
+        if (this.representative == null && !items.isEmpty()) {
+            this.representative = items.getFirst();
         }
     }
 
@@ -283,6 +283,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getCollectionDisplaySettings() {
+        return this.representative.getCollectionDisplaySettings();
+    }
+
+    @Override
     public String getAspaceRefId() {
         return this.representative.getAspaceRefId();
     }
@@ -405,5 +410,55 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public void setAltText(String altText) {
         representative.setAltText(altText);
+    }
+
+    @Override
+    public String getFullDescription() {
+        return representative.getFullDescription();
+    }
+
+    @Override
+    public void setFullDescription(String fullDescription) {
+        representative.setFullDescription(fullDescription);
+    }
+
+    @Override
+    public List<String> getMgContentTags() {
+        return representative.getMgContentTags();
+    }
+
+    @Override
+    public void setMgContentTags(List<String> mgContentTags) {
+        representative.setMgContentTags(mgContentTags);
+    }
+
+    @Override
+    public String getMgDescription() {
+        return representative.getMgDescription();
+    }
+
+    @Override
+    public void setMgDescription(String mgDescription) {
+        representative.setMgDescription(mgDescription);
+    }
+
+    @Override
+    public Integer getMgRiskScore() {
+        return representative.getMgRiskScore();
+    }
+
+    @Override
+    public void setMgRiskScore(Integer mgRiskScore) {
+        representative.setMgRiskScore(mgRiskScore);
+    }
+
+    @Override
+    public String getTranscript() {
+        return representative.getTranscript();
+    }
+
+    @Override
+    public void setTranscript(String transcript) {
+        representative.setTranscript(transcript);
     }
 }

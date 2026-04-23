@@ -45,10 +45,10 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
     private static final String PRINCIPALS = "my:special:group;everyone;authenticated";
     private AutoCloseable closeable;
 
-    @BeanInject(value = "patronAccessAssignmentService")
+    @BeanInject("patronAccessAssignmentService")
     private PatronAccessAssignmentService patronAccessAssignmentService;
 
-    @BeanInject(value = "patronAccessOperationSender")
+    @BeanInject("patronAccessOperationSender")
     private PatronAccessOperationSender patronAccessOperationSender;
 
     @Captor

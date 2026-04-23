@@ -65,6 +65,10 @@ public class DatastreamPids {
         return constructPid(pid, DatastreamType.ALT_TEXT);
     }
 
+    public static PID getFullDescriptionPid(PID pid) {
+        return constructPid(pid, DatastreamType.FULL_DESCRIPTION);
+    }
+
     /**
      * Construct a PID for a deposit manifest datastream using the provided name.
      *

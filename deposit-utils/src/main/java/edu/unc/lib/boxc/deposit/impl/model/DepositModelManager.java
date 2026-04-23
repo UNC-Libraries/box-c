@@ -26,7 +26,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.transaction.TDBTransactionException;
+import org.apache.jena.tdb1.transaction.TDBTransactionException;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
@@ -108,7 +108,7 @@ public class DepositModelManager implements Closeable {
      * @return
      */
     public Model getWriteModel(PID depositPid) {
-        String depositUri = depositPid.getURI();
+        String depositUri = depositPid.getRepositoryPath();
 
         long start = System.currentTimeMillis();
         try {
@@ -136,12 +136,12 @@ public class DepositModelManager implements Closeable {
      */
     public Model getReadModel(PID depositPid) {
         long start = System.currentTimeMillis();
-        String depositUri = depositPid.getURI();
+        String depositUri = depositPid.getRepositoryPath();
 
         try {
             dataset.begin(ReadWrite.READ);
             Model model = dataset.getNamedModel(depositUri);
-            log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+            log.debug("Created read model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
             return model;
         } catch (TDBTransactionException e) {
             if (e.getCause() instanceof InterruptedException) {
@@ -157,7 +157,7 @@ public class DepositModelManager implements Closeable {
      * @param depositPid
      */
     public synchronized void removeModel(PID depositPid) {
-        String uri = depositPid.getURI();
+        String uri = depositPid.getRepositoryPath();
         // Start a write transaction if one isn't already active
         ReadWrite txType = dataset.transactionMode();
         if (!ReadWrite.WRITE.equals(txType)) {
@@ -264,7 +264,6 @@ public class DepositModelManager implements Closeable {
 
     /**
      * Perform the provided actions and commits the changes to the dataset
-     * @param dataset
      * @param actions Runnable which performs actions on the dataset to commit
      */
     public void commit(Runnable actions) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="
-    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+    http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"
     xmlns="http://www.springframework.org/schema/beans">
     <bean name="propertiesURI" class="java.lang.System"
         factory-method="getProperty">
@@ -113,7 +113,7 @@
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod"
-            value="edu.unc.lib.boxc.web.common.utils.DatastreamUtil.setDatastreamEndpoint" />
+            value="edu.unc.lib.boxc.search.solr.utils.DatastreamUtil.setDatastreamEndpoint" />
         <property name="arguments">
             <list>
                 <value>${services.api.url}</value>

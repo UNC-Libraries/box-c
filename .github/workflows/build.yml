@@ -26,16 +26,24 @@ jobs:
           - ${{ github.workspace }}/it_config:/config
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
-          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+          CATALINA_OPTS: "-XX:-UseContainerSupport -Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      activemq:
+        image: apache/activemq-artemis:latest-alpine
+        ports:
+          - 46161:61616
+          - 46888:8161
+        env:
+          ANONYMOUS_LOGIN: true
 
     steps:
     - name: Change permissions of /tmp/boxc_test_storage
       run: sudo chmod 2777 /tmp/boxc_test_storage
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: 'recursive'
+        fetch-depth: 0
 
     - name: Get Container ID of fedora service
       id: get_container_id
@@ -52,7 +60,7 @@ jobs:
     - name: Make directory for solr config
       run: mkdir -p /tmp/solr-config
 
-    # Need to copy the config is outside of the source path, otherwise it produces permission conflicts
+    # Need to copy the config outside the source path, otherwise it produces permission conflicts
     - name: Copy Solr Config into container
       run: sudo cp -r ${{ github.workspace }}/etc/solr-config/* /tmp/solr-config/
 
@@ -60,10 +68,10 @@ jobs:
       run: |
         docker run -v /tmp/solr-config:/solr_config -d --rm -p 48983:8983 solr:9 solr-precreate access /solr_config/access
 
-    - name: Set up JDK 11
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: 11
+        java-version: 21
         distribution: 'temurin'
 
     - name: Cache Maven packages
@@ -88,24 +96,189 @@ jobs:
     - run: npm --prefix static/js/vue-cdr-access install
     - run: npm --prefix static/js/admin/vue-cdr-admin install
 
-    - run: npm install -g jest-cli@29.0.3
     - run: npm --prefix static/js/vue-cdr-access run test
     - run: npm --prefix static/js/admin/vue-cdr-admin run test
 
-    - name: Report to CodeClimate
-      uses: paambaati/codeclimate-action@v3.0.0
-      env:
-        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
-      with:
-        coverageCommand: mvn -pl !clamav-java,!jp24u verify
-        coverageLocations: |
-          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
-          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
-          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
-          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info:lcov
+    - name: Generate coverage
+      run: mvn -pl !clamav-java,!jp24u,!mp44u,!pdf4u verify
 
+    - name: Debug lcov paths
+      run: head -20 ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
+    - name: Debug jacoco paths
+      run: grep "<sourcefile" ${{github.workspace}}/web-access-app/target/site/jacoco/jacoco.xml | head -5
+
+    - name: Qlty Code Coverage auth-api
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/auth-api/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/auth-api/target/site/jacoco-it/jacoco.xml
+        add-prefix: auth-api/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage auth-fcrepo
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/auth-fcrepo/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/auth-fcrepo/target/site/jacoco-it/jacoco.xml
+        add-prefix: auth-fcrepo/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage common-utils
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/common-utils/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/common-utils/target/site/jacoco-it/jacoco.xml
+        add-prefix: common-utils/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage deposit-app
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/deposit-app/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/deposit-app/target/site/jacoco-it/jacoco.xml
+        add-prefix: deposit-app/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage deposit-utils
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/deposit-utils/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/deposit-utils/target/site/jacoco-it/jacoco.xml
+        add-prefix: deposit-utils/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage fcrepo-utils
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/fcrepo-utils/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/fcrepo-utils/target/site/jacoco-it/jacoco.xml
+        add-prefix: fcrepo-utils/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage indexing-solr
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/indexing-solr/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/indexing-solr/target/site/jacoco-it/jacoco.xml
+        add-prefix: indexing-solr/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage model-api
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/model-api/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/model-api/target/site/jacoco-it/jacoco.xml
+        add-prefix: model-api/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage model-fcrepo
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/model-fcrepo/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/model-fcrepo/target/site/jacoco-it/jacoco.xml
+        add-prefix: model-fcrepo/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage operations
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/operations/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/operations/target/site/jacoco-it/jacoco.xml
+        add-prefix: operations/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage operations-jms
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/operations-jms/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/operations-jms/target/site/jacoco-it/jacoco.xml
+        add-prefix: operations-jms/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage persistence
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/persistence/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/persistence/target/site/jacoco-it/jacoco.xml
+        add-prefix: persistence/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage search-solr
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/search-solr/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/search-solr/target/site/jacoco-it/jacoco.xml
+        add-prefix: search-solr/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage services-camel-app
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/services-camel-app/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/services-camel-app/target/site/jacoco-it/jacoco.xml
+        add-prefix: services-camel-app/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage static
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info
+          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info
+        tag: total
+    - name: Qlty Code Coverage web-access-app
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/web-access-app/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/web-access-app/target/site/jacoco-it/jacoco.xml
+        add-prefix: web-access-app/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage web-admin-app
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/web-admin-app/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/web-admin-app/target/site/jacoco-it/jacoco.xml
+        add-prefix: web-admin-app/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage web-common
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/web-common/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/web-common/target/site/jacoco-it/jacoco.xml
+        add-prefix: web-common/src/main/java/
+        tag: total
+    - name: Qlty Code Coverage web-services-app
+      uses: qltysh/qlty-action/coverage@v1
+      with:
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: |
+          ${{github.workspace}}/web-services-app/target/site/jacoco/jacoco.xml
+          ${{github.workspace}}/web-services-app/target/site/jacoco-it/jacoco.xml
+        add-prefix: web-services-app/src/main/java/
+        tag: total
     - name: View fedora service logs
       if: always()
       run: |
         docker logs ${{ env.CONTAINER_ID }}
+

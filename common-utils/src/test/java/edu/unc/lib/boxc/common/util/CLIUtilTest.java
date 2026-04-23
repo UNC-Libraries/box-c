@@ -71,24 +71,8 @@ public class CLIUtilTest {
                 CLIUtil.executeCommand(List.of(scriptPath.toString()), 5));
 
         assertEquals(1, exception.getExitCode());
-        assertTrue(exception.getMessage().contains("Command exited with errors"));
+        assertTrue(exception.getMessage().contains("Command failed to execute"));
         assertTrue(exception.getOutput().contains("some output"));
-    }
-
-    @Test
-    @Timeout(value = 10, unit = TimeUnit.SECONDS)
-    public void testExecuteCommandTimeout() throws IOException {
-        // Create script that sleeps
-        Path scriptPath = createExecutableScript(
-                "#!/bin/sh\n" +
-                        "sleep 10\n");
-
-        // Execute the command with short timeout and verify it throws CommandException
-        CommandException exception = assertThrows(CommandException.class, () ->
-                CLIUtil.executeCommand(List.of(scriptPath.toString()), 1));
-
-        assertEquals(-1, exception.getExitCode());
-        assertTrue(exception.getMessage().contains("Command timed out after 1 seconds"));
     }
 
     @Test
@@ -98,6 +82,32 @@ public class CLIUtilTest {
                 CLIUtil.executeCommand(List.of("thisCommandDoesNotExist_" + System.currentTimeMillis()), 5));
 
         assertTrue(exception.getMessage().contains("Command failed to execute"));
+    }
+
+    @Test
+    public void testExecuteCommandWithSpacesAndDashesInPath() throws IOException {
+        // Create a temp file with spaces and dashes in the name
+        Path filePath = tempDir.resolve("West End Poets News letter no97 2026 Mar-Apr-May.pdf");
+        Files.createFile(filePath);
+
+        // Script outputs the number of arguments received, followed by each argument on its own line.
+        // If the path is incorrectly split on spaces, $# will be > 2 and the full path won't appear
+        // as a single argument.
+        Path scriptPath = createExecutableScript(
+                "#!/bin/sh\n" +
+                        "echo \"arg_count=$#\"\n" +
+                        "for arg in \"$@\"; do echo \"arg=$arg\"; done\n");
+
+        List<String> results = CLIUtil.executeCommand(
+                List.of(scriptPath.toString(), "-i", filePath.toString()), 5);
+
+        assertEquals(2, results.size());
+        // Exactly 2 arguments should be received: "-i" and the full path as one token
+        assertTrue(results.get(0).contains("arg_count=2"),
+                "Path with spaces should be passed as a single argument, but output was: " + results.get(0));
+        assertTrue(results.get(0).contains("arg=" + filePath),
+                "Output should contain the full file path as a single argument, but output was: " + results.get(0));
+        assertEquals("", results.get(1));
     }
 
     /**

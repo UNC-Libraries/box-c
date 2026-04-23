@@ -1,12 +1,12 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.util.Collections.singletonList;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -23,25 +23,24 @@ public class LongleafAggregationStrategy implements AggregationStrategy {
     @SuppressWarnings("unchecked")
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        String binaryUri = (String) newExchange.getIn().getHeader(FCREPO_URI);
-        List<String> incomingList ;
-        if (binaryUri == null) {
-            Object body = newExchange.getIn().getBody();
-            if (body instanceof String) {
-                incomingList = singletonList((String) body);
-            } else if (body instanceof List) {
-                incomingList = (List<String>) body;
-            } else {
-                log.error("Received unexpected message of type {}, ignoring", body.getClass().getName());
-                return oldExchange;
-            }
-        } else {
+        String binaryUri = MessageUtil.getFcrepoUri(newExchange.getIn());
+        Object body = newExchange.getIn().getBody();
+        List<String> incomingList;
+        if (body instanceof List) {
+            incomingList = (List<String>) body;
+        } else if (binaryUri != null) {
             incomingList = Collections.singletonList(binaryUri);
+        } else if (body instanceof String) {
+            incomingList = singletonList((String) body);
+        } else if (body == null) {
+            throw new IllegalArgumentException("Message body is null and no fcrepo URI header is present");
+        } else {
+            log.error("Received unexpected message of type {}, ignoring", body.getClass().getName());
+            return oldExchange;
         }
 
         if (oldExchange == null) {
-            List<String> list = new ArrayList<>();
-            list.addAll(incomingList);
+            List<String> list = new ArrayList<>(incomingList);
             newExchange.getIn().setBody(list);
             return newExchange;
         } else {

@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.services.camel.util;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
-import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
 import edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -14,7 +13,6 @@ import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.fcrepo.camel.FcrepoHeaders;
 import org.slf4j.Logger;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -42,12 +40,7 @@ public class CacheInvalidatingProcessor implements Processor {
             return;
         }
 
-        String fcrepoUri = (String) in.getHeader(FcrepoHeaders.FCREPO_URI);
-        if (fcrepoUri == null) {
-            String fcrepoId = (String) in.getHeader(FcrepoJmsConstants.IDENTIFIER);
-            String fcrepoBaseUrl = (String) in.getHeader(FcrepoJmsConstants.BASE_URL);
-            fcrepoUri = fcrepoBaseUrl + fcrepoId;
-        }
+        String fcrepoUri = MessageUtil.getFcrepoUri(in);
 
         PID pid;
         try {

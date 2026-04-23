@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
@@ -68,7 +67,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
         Resource mainResource = depositBag.iterator().next().asResource();
 
         assertEquals(mainResource.getProperty(CdrDeposit.label).getString(), name, "Label was not set");

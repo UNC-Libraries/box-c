@@ -9,6 +9,7 @@ require.config({
 		"cycle": "js/admin/lib/cycle",
 		"tpl" : "js/admin/lib/tpl",
 		"qtip" : "js/admin/lib/jquery.qtip.min",
+		"dompurify" : "js/admin/lib/dompurify.min",
 		"PID" : "assets/admin/cdr-admin",
 		"AjaxCallbackButton" : "assets/admin/cdr-admin",
 		"ResultObject" : "assets/admin/cdr-admin",
@@ -40,7 +41,7 @@ require.config({
 		"StructureView" : "assets/admin/cdr-admin",
 		"URLUtilities" : "assets/admin/cdr-admin",
 		"StringUtilities" : "assets/admin/cdr-admin",
-		
+
 		"editable" : "js/admin/lib/jqueryui-editable.min",
 		"moment" : "assets/admin/cdr-admin"
 	},

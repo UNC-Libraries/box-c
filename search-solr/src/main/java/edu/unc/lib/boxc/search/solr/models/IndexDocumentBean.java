@@ -6,6 +6,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_IDS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ASPACE_REF_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_DISPLAY_SETTINGS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
@@ -19,6 +20,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_UPDATED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.EXHIBIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE_TOTAL;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_DESCRIPTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_TEXT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.HOOK_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
@@ -28,6 +30,9 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_CONTENT_TAGS;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_DESCRIPTION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_RISK_SCORE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_SUBJECT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
@@ -47,6 +52,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.STREAMING_URL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TIMESTAMP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.TRANSCRIPT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.VERSION;
 
 
@@ -351,6 +357,15 @@ public class IndexDocumentBean {
         return (List<String>) fields.get(KEYWORD.getSolrField());
     }
 
+    public String getCollectionDisplaySettings() {
+        return (String) fields.get(COLLECTION_DISPLAY_SETTINGS.getSolrField());
+    }
+
+    @Field
+    public void setCollectionDisplaySettings(String collectionDisplaySettings) {
+        fields.put(COLLECTION_DISPLAY_SETTINGS.getSolrField(), collectionDisplaySettings);
+    }
+
     @Field
     public void setCollectionId(String collectionId) {
         fields.put(COLLECTION_ID.getSolrField(), collectionId);
@@ -542,6 +557,51 @@ public class IndexDocumentBean {
     @Field
     public void setFullText(String fullText) {
         fields.put(FULL_TEXT.getSolrField(), fullText);
+    }
+
+    public String getFullDescription() {
+        return (String) fields.get(FULL_DESCRIPTION.getSolrField());
+    }
+
+    @Field
+    public void setFullDescription(String fullDescription) {
+        fields.put(FULL_DESCRIPTION.getSolrField(), fullDescription);
+    }
+
+    public List<String> getMgContentTags() {
+        return (List<String>) fields.get(MG_CONTENT_TAGS.getSolrField());
+    }
+
+    @Field
+    public void setMgContentTags(List<String> mgContentTags) {
+        fields.put(MG_CONTENT_TAGS.getSolrField(), mgContentTags);
+    }
+
+    public String getMgDescription() {
+        return (String) fields.get(MG_DESCRIPTION.getSolrField());
+    }
+
+    @Field
+    public void setMgDescription(String mgDescription) {
+        fields.put(MG_DESCRIPTION.getSolrField(), mgDescription);
+    }
+
+    public Integer getMgRiskScore() {
+        return (Integer) fields.get(MG_RISK_SCORE.getSolrField());
+    }
+
+    @Field
+    public void setMgRiskScore(Integer mgRiskScore) {
+        fields.put(MG_RISK_SCORE.getSolrField(), mgRiskScore);
+    }
+
+    public String getTranscript() {
+        return (String) fields.get(TRANSCRIPT.getSolrField());
+    }
+
+    @Field
+    public void setTranscript(String transcript) {
+        fields.put(TRANSCRIPT.getSolrField(), transcript);
     }
 
     public Map<String, Object> getDynamicFields() {

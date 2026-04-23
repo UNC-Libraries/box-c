@@ -1,15 +1,17 @@
-![Build](https://github.com/UNC-Libraries/box-c/workflows/DcrBuild/badge.svg)
+[![Maintainability](https://qlty.sh/gh/UNC-Libraries/projects/box-c/maintainability.svg)](https://qlty.sh/gh/UNC-Libraries/projects/box-c)
+[![Code Coverage](https://qlty.sh/gh/UNC-Libraries/projects/box-c/coverage.svg)](https://qlty.sh/gh/UNC-Libraries/projects/box-c)
+[![Build](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml/badge.svg)](https://github.com/UNC-Libraries/box-c/actions/workflows/build.yml)
 
 Requirements
 ============
-Box-c requires Java 11 in order to build and test. On a Mac, this can be installed using brew as follows:
+Box-c requires Java 21 in order to build and test. On a Mac, this can be installed using brew as follows:
 ```
 brew tap adoptopenjdk/openjdk
-brew install --cask adoptopenjdk11
+brew install --cask adoptopenjdk21
 ```
 Then set `JAVA_HOME` to the installed version. This can be done by editing your .bash_profile or .bashrc file to add the following line:
 ```
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-21.jdk/Contents/Home/
 ```
 
 Maven 3.x is required in order to build the project, which can be installed with:
@@ -26,8 +28,6 @@ Building the project
 git clone https://github.com/UNC-Libraries/box-c
 # initialize submodules
 git submodule update --init --recursive
-# Install SASS parser to build CSS
-gem install sass
 # Install Homebrew, if not already installed
 See https://brew.sh/ for instructions.
 # Install Node.js to build JavaScript and run JavaScript tests

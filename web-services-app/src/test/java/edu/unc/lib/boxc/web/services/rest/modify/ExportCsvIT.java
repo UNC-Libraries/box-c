@@ -1,9 +1,21 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
+import static edu.unc.lib.boxc.web.services.processing.ExportCsvService.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.parseCsvResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
@@ -20,7 +32,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
@@ -32,12 +43,10 @@ import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,15 +56,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import javax.annotation.Resource;
-import java.io.File;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,21 +68,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
-import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
-import static edu.unc.lib.boxc.web.services.processing.ExportCsvService.CSV_HEADERS;
-import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.parseCsvResponse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -98,29 +88,17 @@ public class ExportCsvIT extends AbstractAPIIT {
     private static final Path MODS_PATH_2 = Paths.get("src/test/resources/mods/work-mods.xml");
 
     @Autowired
-    protected File solrDataDir;
-    @Autowired
-    protected EmbeddedSolrServer server;
+    protected SolrClient solrClient;
     @Autowired
     protected ChildrenCountService childrenCountService;
     @Autowired
-    protected SolrUpdateDriver driver;
-    @Autowired
     protected SolrSearchService solrSearchService;
-    @Resource(name = "accessGroups")
-    protected AccessGroupSet accessGroups;
-    @Autowired
-    protected Model queryModel;
     @Autowired
     protected RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     protected RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    protected DocumentIndexingPackageFactory dipFactory;
-    @Autowired
     protected PIDMinter pidMinter;
-    @Autowired
-    private RepositoryInitializer repoInitializer;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -147,13 +125,16 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() throws Exception {
+        solrClient.deleteByQuery("*:*");
+        solrClient.commit();
+
         setupContentRoot();
         generateBaseStructure();
         storageLocationTestHelper = new StorageLocationTestHelper();
         derivativeService.setDerivativeDir(tmpFolder.toString());
 
-        setField(solrSearchService, "solrClient", server);
-        setField(childrenCountService, "solrClient", server);
+        setField(solrSearchService, "solrClient", solrClient);
+        setField(childrenCountService, "solrClient", solrClient);
     }
 
     @Test
@@ -442,7 +423,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String id = collPid.getId();
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/?ids=" + id))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -823,7 +804,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             if (fileSize == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             } else {
-                assertEquals(fileSize, new Long(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
+                assertEquals(fileSize, Long.valueOf(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             }
             if (accessSurrogate == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER)));
@@ -833,7 +814,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             if (numChildren == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             } else {
-                assertEquals(numChildren, new Integer(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
+                assertEquals(numChildren, Integer.valueOf(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             }
 
             String expectedDescribed = described ? CONTENT_DESCRIBED : CONTENT_NOT_DESCRIBED;

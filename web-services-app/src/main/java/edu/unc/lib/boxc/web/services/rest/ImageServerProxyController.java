@@ -9,7 +9,6 @@ import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +56,11 @@ public class ImageServerProxyController {
                 pid, principals, Permission.viewAccessCopies);
 
         try {
+            // A valid value would be something like default.jpg
             String[] qualityFormatArray = qualityFormat.split("\\.");
+            if (qualityFormatArray.length != 2) {
+                throw new IllegalArgumentException("Invalid value specified for quality/format. Value given was: " + qualityFormat);
+            }
             String quality = qualityFormatArray[0];
             String format = qualityFormatArray[1];
             return imageServerProxyService.streamJP2(id, region, size, rotation, quality, format);

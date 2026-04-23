@@ -6,11 +6,11 @@
        xmlns:camel="http://camel.apache.org/schema/spring"
        xmlns:amq="http://activemq.apache.org/schema/core"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://activemq.apache.org/schema/core
         http://activemq.apache.org/schema/core/activemq-core.xsd
         http://camel.apache.org/schema/spring
@@ -38,6 +38,22 @@
 
     <bean id="imageDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor" />
+    </bean>
+
+    <bean id="mp44uAudioProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor" />
+    </bean>
+
+    <bean id="audioDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor" />
+    </bean>
+
+    <bean id="mp44uVideoProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor" />
+    </bean>
+
+    <bean id="videoDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor" />
     </bean>
 
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
@@ -69,12 +85,22 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
+    <bean id="addVideoAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
+    </bean>
+
+    <bean id="machineGenDescriptionProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor" />
+    </bean>
+
     <camel:camelContext id="cdrEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
 
 </beans>

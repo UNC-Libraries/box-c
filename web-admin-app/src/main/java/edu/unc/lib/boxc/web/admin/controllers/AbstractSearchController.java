@@ -24,7 +24,8 @@ public class AbstractSearchController extends AbstractSolrSearchController {
     protected ChildrenCountService childrenCountService;
 
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(),
-            SearchFieldKey.TITLE.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.CREATOR.name(),
+            SearchFieldKey.TITLE.name(), SearchFieldKey.COLLECTION_DISPLAY_SETTINGS.name(),
+            SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.CREATOR.name(),
             SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ASPACE_REF_ID.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.VERSION.name(),SearchFieldKey.ROLE_GROUP.name(),

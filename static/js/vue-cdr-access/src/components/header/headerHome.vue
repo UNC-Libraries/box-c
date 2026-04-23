@@ -3,8 +3,7 @@
         <div class="logo-row">
             <div class="logo logo-large container">
                 <router-link to="/">
-                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
-                    <h1>Digital Collections Repository</h1>
+                    <h1>University Library <span>Digital Collections Repository</span></h1>
                 </router-link>
             </div>
         </div>
@@ -42,7 +41,7 @@
 
         <div class="search-row search-row-large">
             <div class="columns container">
-                <form method="get" action="api/basicSearch" class="column">
+                <form method="get" action="/api/basicSearch" class="column">
                     <input name="queryType" type="hidden" value="anywhere">
                     <label for="hsearch_text" class="is-sr-only">Search the Digital Collections Repository</label>
                     <div class="field has-addons">

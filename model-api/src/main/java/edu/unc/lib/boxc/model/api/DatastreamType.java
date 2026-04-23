@@ -16,14 +16,19 @@ public enum DatastreamType {
     ALT_TEXT("alt_text", "text/plain", "txt", METADATA_CONTAINER, INTERNAL),
     ALT_TEXT_HISTORY("alt_text_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     AUDIO_ACCESS_COPY("audio", "audio/aac", "m4a", null, EXTERNAL),
+    FULL_DESCRIPTION("full_description", "text/plain", "txt", METADATA_CONTAINER, INTERNAL),
+    FULL_DESCRIPTION_HISTORY("full_description_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
+    GENERATED_ALT_TEXT("machine_gen_alt_text", "text/plain", "txt", null, EXTERNAL),
+    GENERATED_DESCRIPTION("machine_gen_description", "application/json", "json", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
     MD_DESCRIPTIVE("md_descriptive", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     MD_DESCRIPTIVE_HISTORY("md_descriptive_history", Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL),
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA("techmd_fits", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
-    TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL);
+    TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
+    VIDEO_ACCESS_COPY("video", "video/mp4", "mp4", null, EXTERNAL);
 
     private final String id;
     private final String mimetype;

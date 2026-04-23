@@ -3,9 +3,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd">
+        https://www.springframework.org/schema/util/spring-util.xsd">
         
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
@@ -22,15 +22,16 @@
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
-                <ref bean="setAltTextFilter" />
-                <ref bean="setContentStatusFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setCollectionDisplayPropertiesFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
                 <ref bean="setAspaceRefIdFilter" />
+                <ref bean="setContentStatusFilter" />
             </list>
         </property>
     </bean>
@@ -66,7 +67,7 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
-                <ref bean="setAltTextFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
@@ -164,6 +165,17 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setStreamingPropertiesFilter" />
+                <ref bean="setContentStatusFilter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="solrCollectionDisplayUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setCollectionDisplayPropertiesFilter" />
                 <ref bean="setContentStatusFilter" />
             </list>
         </property>
@@ -302,8 +314,13 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
-    <bean id="setAltTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAltTextFilter">
+    <bean id="mgContentService" class="edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService" />
+    </bean>
+
+    <bean id="setContentDescriptionMetadataFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentDescriptionMetadataFilter">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="mgContentService" ref="mgContentService" />
     </bean>
     
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">
@@ -330,6 +347,9 @@
     </bean>
 
     <bean id="setStreamingPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingPropertiesFilter">
+    </bean>
+
+    <bean id="setCollectionDisplayPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetCollectionDisplayPropertiesFilter">
     </bean>
 
     <bean id="setAspaceRefIdFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetAspaceRefIdFilter">
@@ -541,7 +561,13 @@
         <property name="addDocumentMode" value="false" />
     </bean>
 
-    <bean id="addAspaceRefIdAction"
+    <bean id="updateCollectionDisplayPropertiesType"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrCollectionDisplayUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateAspaceRefIdAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAspaceRefIdUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
@@ -553,7 +579,7 @@
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
         value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
-        <entry key="ADD_ASPACE_REF_ID" value-ref="addAspaceRefIdAction" />
+        <entry key="UPDATE_ASPACE_REF_ID" value-ref="updateAspaceRefIdAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
         <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />
@@ -581,6 +607,7 @@
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
         <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesUrl" />
         <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesType" />
+        <entry key="UPDATE_COLLECTION_DISPLAY_PROPERTIES" value-ref="updateCollectionDisplayPropertiesType" />
     </util:map>
     
     <bean id="dipDataLoader"

@@ -46,7 +46,7 @@ public class DatastreamImpl implements Datastream {
         this.extension = dsParts[3];
 
         try {
-            this.filesize = new Long(dsParts[4]);
+            this.filesize = Long.valueOf(dsParts[4]);
         } catch (NumberFormatException e) {
             this.filesize = null;
         }

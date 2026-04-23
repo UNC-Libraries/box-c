@@ -29,6 +29,13 @@ public class FilterableDisplayValueFacet extends GenericFacet {
     private FilterableDisplayValueFacet(String fieldName, long count, String facetString) {
         this.count = count;
         this.fieldName = fieldName;
+
+        if (facetString == null) {
+            this.value = null;
+            this.displayValue = null;
+            return;
+        }
+
         var parts = facetString.split("\\|", 2);
         // Only one value provided, so treat it as the search value
         if (parts.length == 1) {

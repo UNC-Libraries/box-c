@@ -96,11 +96,6 @@ public class FedoraPID implements PID, Serializable {
                 !repositoryPath.equals(pid.getRepositoryPath());
     }
 
-    @Override
-    public String getURI() {
-        return getRepositoryPath();
-    }
-
     /**
      * Get the repository uri for this object or component, which is the full URI of the object in Fedora
      *
@@ -114,21 +109,6 @@ public class FedoraPID implements PID, Serializable {
     @Override
     public String getRepositoryPath() {
         return repositoryPath;
-    }
-
-    /**
-     * Get the persistent identifier for this object
-     */
-    @Override
-    public String getPid() {
-        // Special case for content paths for legacy purposes
-        if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
-            if (componentPath == null) {
-                return "uuid:" + id;
-            }
-            return "uuid:" + id + "/" + componentPath;
-        }
-        return getQualifiedId();
     }
 
     @Override
@@ -154,10 +134,5 @@ public class FedoraPID implements PID, Serializable {
     @Override
     public int hashCode() {
         return repositoryPath.hashCode();
-    }
-
-    @Override
-    public String getPath() {
-        return null;
     }
 }

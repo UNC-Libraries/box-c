@@ -28,8 +28,9 @@ public class IIIFv3ViewableFilter implements QueryFilter {
     public String toFilterString() {
         var datastreamFilter = SearchFieldKey.DATASTREAM.getSolrField() + ":" + DatastreamType.JP2_ACCESS_COPY.getId() + "|*";
         var datastreamFilterAudio = SearchFieldKey.DATASTREAM.getSolrField() + ":" + DatastreamType.AUDIO_ACCESS_COPY.getId() + "|*";
+        var datastreamFilterVideo = SearchFieldKey.DATASTREAM.getSolrField() + ":" + DatastreamType.VIDEO_ACCESS_COPY.getId() + "|*";
         return "((" + FILE_TYPE_FILTER + ") OR (" + datastreamFilter + ") OR (" + datastreamFilterAudio
-                + ")) AND !" + FILE_TYPE_FIELD + ":\"application/pdf\"";
+                + ") OR (" + datastreamFilterVideo + ")) AND !" + FILE_TYPE_FIELD + ":\"application/pdf\"";
     }
 
     @Override

@@ -11,7 +11,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.ImageServerV2Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -73,7 +73,11 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object
         assertHasAccess(pid);
         try {
+            // A valid value would be something like default.jpg
             String[] qualityFormatArray = qualityFormat.split("\\.");
+            if (qualityFormatArray.length != 2) {
+                throw new IllegalArgumentException("Invalid value specified for quality/format. Value given was: " + qualityFormat);
+            }
             String quality = qualityFormatArray[0];
             String format = qualityFormatArray[1];
             imageServerV2Service.streamJP2(

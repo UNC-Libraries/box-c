@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.operations.test;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 import edu.unc.lib.boxc.operations.impl.order.OrderRequestFactory;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;

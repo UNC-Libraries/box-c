@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,7 +20,9 @@ import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.C
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.ORDER_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.PARENT_PID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.PID_HEADER;
+import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer.MEMBER_ORDER_INVALID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -86,20 +89,6 @@ public class MemberOrderCsvTransformerTest {
     }
 
     @Test
-    public void toSetRequestNoOrderIdTest() throws Exception {
-        var entries = new ArrayList<List<Object>>();
-        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
-                "file.txt", "text/plain", false, ""));
-        var csvPath = writeCsvFile(entries);
-        try {
-            transformer.toRequest(csvPath);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertErrorMessageContains(e, "does not specify a value for required field 'Member Order'");
-        }
-    }
-
-    @Test
     public void toSetRequestOrderIdNotANumberTest() throws Exception {
         var entries = new ArrayList<List<Object>>();
         entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
@@ -146,7 +135,7 @@ public class MemberOrderCsvTransformerTest {
         var parent1Children = parentToOrder.get(PARENT1_UUID);
         assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID, CHILD3_UUID), parent1Children);
         var parent2Children = parentToOrder.get(PARENT2_UUID);
-        assertEquals(Arrays.asList(CHILD4_UUID), parent2Children);
+        assertEquals(List.of(CHILD4_UUID), parent2Children);
     }
 
     @Test
@@ -161,6 +150,68 @@ public class MemberOrderCsvTransformerTest {
         var parentToOrder = request.getParentToOrdered();
         var parent1Children = parentToOrder.get(PARENT1_UUID);
         assertEquals(Arrays.asList(CHILD2_UUID, CHILD1_UUID), parent1Children);
+    }
+
+    @Test
+    public void toSetRequestInvalidNullOrderTest() {
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            var entries = new ArrayList<List<Object>>();
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
+                    "file1.txt", "text/plain", false, null));
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
+                    "file2.txt", "text/plain", false, 1));
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
+                    "file3.txt", "text/plain", true, 5));
+            entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
+                    "file4.txt", "text/plain", false, 0));
+            var csvPath = writeCsvFile(entries);
+
+            transformer.toRequest(csvPath);
+        });
+
+        assertErrorMessageContains(exception, MEMBER_ORDER_INVALID);
+    }
+
+    @Test
+    public void toDeleteRequestValidNullOrderTest() throws Exception {
+        var entries = new ArrayList<List<Object>>();
+        entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
+                "file1.txt", "text/plain", false, null));
+        entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
+                "file2.txt", "text/plain", false, null));
+        entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
+                "file3.txt", "text/plain", true, null));
+        entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
+                "file4.txt", "text/plain", false, 0));
+        var csvPath = writeCsvFile(entries);
+
+        var request = transformer.toRequest(csvPath);
+        assertEquals(OrderOperationType.SET, request.getOperation());
+        var parentToOrder = request.getParentToOrdered();
+        var parent1Children = parentToOrder.get(PARENT1_UUID);
+        assertNull(parent1Children);
+        var parent2Children = parentToOrder.get(PARENT2_UUID);
+        assertEquals(List.of(CHILD4_UUID), parent2Children);
+    }
+
+    @Test
+    public void toSetRequestInvalidBlankOrderTest() {
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            var entries = new ArrayList<List<Object>>();
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD1_UUID, "Title 1", ResourceType.File.name(),
+                    "file1.txt", "text/plain", false, 2));
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, "Title 2", ResourceType.File.name(),
+                    "file2.txt", "text/plain", false, 1));
+            entries.add(Arrays.asList(PARENT1_UUID, CHILD3_UUID, "Title 3", ResourceType.File.name(),
+                    "file3.txt", "text/plain", true, ""));
+            entries.add(Arrays.asList(PARENT2_UUID, CHILD4_UUID, "Title 4", ResourceType.File.name(),
+                    "file4.txt", "text/plain", false, 0));
+            var csvPath = writeCsvFile(entries);
+
+            var request = transformer.toRequest(csvPath);
+        });
+
+        assertErrorMessageContains(exception, MEMBER_ORDER_INVALID);
     }
 
     private void assertErrorMessageContains(Exception e, String expected) {

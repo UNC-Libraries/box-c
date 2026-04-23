@@ -27,16 +27,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SolrUpdateRouter extends RouteBuilder {
     private final static Logger log = getLogger(SolrUpdateRouter.class);
 
-    @BeanInject(value = "solrLargeUpdateProcessor")
+    @BeanInject("solrLargeUpdateProcessor")
     private SolrUpdateProcessor solrLargeUpdateProcessor;
 
-    @BeanInject(value = "solrSmallUpdateProcessor")
+    @BeanInject("solrSmallUpdateProcessor")
     private SolrUpdateProcessor solrSmallUpdateProcessor;
 
-    @BeanInject(value = "solrUpdatePreprocessor")
+    @BeanInject("solrUpdatePreprocessor")
     private SolrUpdatePreprocessor solrUpdatePreprocessor;
 
-    @BeanInject(value = "cacheInvalidatingProcessor")
+    @BeanInject("cacheInvalidatingProcessor")
     private CacheInvalidatingProcessor cacheInvalidatingProcessor;
 
     @BeanInject

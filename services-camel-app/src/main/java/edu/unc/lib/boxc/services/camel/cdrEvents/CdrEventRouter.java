@@ -32,10 +32,10 @@ import edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor;
 public class CdrEventRouter extends RouteBuilder {
     private static final Logger log = getLogger(CdrEventRouter.class);
 
-    @BeanInject(value = "cdrEventProcessor")
+    @BeanInject("cdrEventProcessor")
     private CdrEventProcessor cdrEventProcessor;
 
-    @BeanInject(value = "cdrEventToSolrUpdateProcessor")
+    @BeanInject("cdrEventToSolrUpdateProcessor")
     private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
     private long errorRetryDelay;
     private int errorMaxRedeliveries;

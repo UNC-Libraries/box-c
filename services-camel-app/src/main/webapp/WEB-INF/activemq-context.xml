@@ -5,11 +5,11 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:camel="http://camel.apache.org/schema/spring"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -40,6 +40,9 @@
         <property name="configuration" ref="jmsConfig" />
         <property name="transacted" value="true" />
         <property name="lazyCreateTransactionManager" value="false" />
+        <property name="headerFilterStrategy">
+            <bean class="org.apache.camel.component.jms.ClassicJmsHeaderFilterStrategy"/>
+        </property>
     </bean>
     
     <bean class="org.springframework.jms.core.JmsTemplate">

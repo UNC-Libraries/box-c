@@ -1,52 +1,44 @@
 package edu.unc.lib.boxc.indexing.solr.action;
 
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Properties;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.core.CoreContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import java.util.Properties;
 
 public class BaseEmbeddedSolrTest extends Assertions {
     private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
 
     protected SolrSettings solrSettings;
 
-    protected EmbeddedSolrServer server;
+    protected SearchSettings searchSettings;
 
-    protected CoreContainer container;
+    protected SolrClient server;
 
     protected SolrUpdateDriver driver;
 
-    private File dataDir;
-
     @BeforeEach
     public void setUp() throws Exception {
-        dataDir = new File("target/solr_data/");
-        dataDir.mkdir();
-
-        System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config").toAbsolutePath(),
-                Paths.get("../etc/solr-config/solr.xml").toAbsolutePath());
-
-        server = new EmbeddedSolrServer(container, "access");
-
         Properties solrProps = new Properties();
         solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
         solrSettings = new SolrSettings();
         solrSettings.setProperties(solrProps);
+
+        Properties searchProps = new Properties();
+        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
+        searchSettings = new SearchSettings();
+        searchSettings.setProperties(searchProps);
+
+        server = solrSettings.getSolrClient();
 
         driver = new SolrUpdateDriver();
         driver.setSolrClient(server);
@@ -68,9 +60,9 @@ public class BaseEmbeddedSolrTest extends Assertions {
 
     @AfterEach
     public void tearDown() throws Exception {
+        log.debug("Tearing down Solr server and cleaning up records");
+        server.deleteByQuery("*:*");
+        server.commit();
         server.close();
-        container.shutdown();
-        log.debug("Cleaning up data directory");
-        FileUtils.deleteDirectory(dataDir);
     }
 }

@@ -161,7 +161,7 @@ Pagination component for search results, listing pages, previous/next buttons, c
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .is-current {
         background-color: #1A698C;
         color: #FFFFFF;
@@ -169,6 +169,10 @@ Pagination component for search results, listing pages, previous/next buttons, c
 
     .is-current:hover, .is-disabled:hover {
         text-decoration: none;
+    }
+
+    .pagination {
+        margin-top: 15px;
     }
 
     .pagination-link.is-disabled, .pagination-next.is-disabled, .pagination-previous.is-disabled {

@@ -1,5 +1,22 @@
 package edu.unc.lib.boxc.services.camel.exportxml;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FilenameUtils.wildcardMatch;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
@@ -40,7 +57,7 @@ import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -73,23 +90,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FilenameUtils.wildcardMatch;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 /**
  * @author bbpennel
  */
@@ -114,7 +114,7 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
     protected RepositoryObjectLoader repositoryObjectLoader;
     protected RepositoryObjectFactory repositoryObjectFactory;
     protected PIDMinter pidMinter;
-    protected EmbeddedSolrServer server;
+    protected SolrClient server;
     private UpdateDescriptionService updateDescriptionService;
     private ExportXMLRequestService requestService;
     private EmailHandler emailHandler;
@@ -156,7 +156,7 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
         repositoryObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
         pidMinter = applicationContext.getBean(PIDMinter.class);
-        server = applicationContext.getBean(EmbeddedSolrServer.class);
+        server = applicationContext.getBean(SolrClient.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         requestService = applicationContext.getBean(ExportXMLRequestService.class);
         emailHandler = applicationContext.getBean(EmailHandler.class);
@@ -185,6 +185,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
     @AfterEach
     public void closeService() throws Exception {
+        server.deleteByQuery("*:*");
+        server.commit();
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
         storageLocationTestHelper.cleanupStorageLocations();

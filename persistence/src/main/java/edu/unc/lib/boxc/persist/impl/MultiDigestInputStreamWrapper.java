@@ -134,7 +134,7 @@ public class MultiDigestInputStreamWrapper {
         if (!streamRetrieved) {
             log.debug("Reading inputstream to compute digests");
             // Stream not previously consumed, consume it now in order to calculate digests
-            try (final InputStream is = getInputStream()) {
+            try (InputStream is = getInputStream()) {
                 log.debug("Inputstream open, beginning read");
                 byte[] buffer = new byte[4096];
                 while (is.read(buffer) > -1) {

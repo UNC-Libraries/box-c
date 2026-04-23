@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.slf4j.Logger;

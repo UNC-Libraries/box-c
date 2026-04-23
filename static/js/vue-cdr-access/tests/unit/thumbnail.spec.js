@@ -226,6 +226,16 @@ describe('thumbnail.vue', () => {
             .toEqual('thumbnail thumbnail-size-medium deleted has_tooltip')
     });
 
+    it('displays a trash icon if an item has a status of "Marked For Deletion', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.markedForDeletion = null;
+        updatedRecordData.briefObject.status = ['Marked For Deletion'];
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.fa-trash').exists()).toBe(true);
+        expect(wrapper.find('a').attributes('class'))
+            .toEqual('thumbnail thumbnail-size-medium deleted has_tooltip')
+    });
+
     it('displays no icon if an item is not restricted or marked for deletion', async () => {
         // No lock icon if record has public access status
         let updatedRecordData = cloneDeep(recordData);
@@ -237,19 +247,19 @@ describe('thumbnail.vue', () => {
 
     it('sets the src for the image', () => {
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small");');
     });
 
     it('sets the src to large for large thumbnail', async () => {
         await wrapper.setProps({ thumbnailData: recordData, size: 'large' });
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large");');
     });
 
     it('sets the src to small for small thumbnail', async () => {
         await wrapper.setProps({ thumbnailData: recordData, size: 'small' });
         expect(wrapper.find('.thumbnail-viewer').attributes('style'))
-            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small);');
+            .toEqual('background-image: url("https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/small");');
     });
 
     it('sets the url for the image', () => {

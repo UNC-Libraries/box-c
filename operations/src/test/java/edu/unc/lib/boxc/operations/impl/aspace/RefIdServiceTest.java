@@ -16,6 +16,8 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -36,10 +39,17 @@ public class RefIdServiceTest {
     private PID pid;
     private String pidString;
     private AutoCloseable closeable;
+    private String username = "number one user";
     @Mock
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet accessGroupSet;
+    @Mock
+    private Resource resource;
+    @Mock
+    private Statement statement;
+    @Mock
+    private WorkObject workObject;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -60,6 +70,10 @@ public class RefIdServiceTest {
         pid = TestHelper.makePid();
         pidString = pid.getId();
         when(agent.getPrincipals()).thenReturn(accessGroupSet);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
+        when(workObject.getResource()).thenReturn(resource);
+        when(resource.getProperty(any())).thenReturn(statement);
+        when(agent.getUsername()).thenReturn(username);
     }
 
     @AfterEach
@@ -69,7 +83,7 @@ public class RefIdServiceTest {
 
     @Test
     public void testNoPermission() {
-        var request = buildRequest();
+        var request = buildRequest(REF_ID);
         doThrow(new AccessRestrictionException("Access Denied")).when(aclService)
                 .assertHasAccess(any(), eq(pid), any(), eq(Permission.editAspaceProperties));
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
@@ -81,32 +95,81 @@ public class RefIdServiceTest {
     public void testNotAWork() {
         var fileObject = mock(FileObject.class);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
-        var request = buildRequest();
+        var request = buildRequest(REF_ID);
         Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
             service.updateRefId(request);
         });
     }
 
     @Test
-    public void testUpdateRefId() {
-        var workObject = mock(WorkObject.class);
-        var request = buildRequest();
+    public void testUpdateCurrentRefIdWithIdenticalRefId() {
+        var request = buildRequest(REF_ID);
+        when(statement.getString()).thenReturn(REF_ID);
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
+    @Test
+    public void testUpdateCurrentRefIdWithBlankRefId() {
+        var request = buildRequest("");
+        when(statement.getString()).thenReturn("REF ID HERE");
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
+
+    @Test
+    public void testUpdateEmptyStringRefIdWithBlankRefId() {
+        var request = buildRequest("");
+        when(statement.getString()).thenReturn("");
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrAspace.refId));
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(""));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
+    @Test
+    public void testUpdateNonExistentRefIdWithBlankRefId() {
+        var request = buildRequest("");
         var username = "number one user";
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(workObject);
-        when(agent.getUsername()).thenReturn(username);
+        when(resource.getProperty(any())).thenReturn(null);
+
+        service.updateRefId(request);
+        verify(repositoryObjectFactory, never()).createExclusiveRelationship(
+                eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
+        verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
+    }
+
+    @Test
+    public void testUpdateRefIdSuccess() {
+        var request = buildRequest(REF_ID);
+        when(resource.getProperty(any())).thenReturn(null);
 
         service.updateRefId(request);
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(workObject), eq(CdrAspace.refId), eq(REF_ID));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
-                eq(pid), eq(IndexingActionType.ADD_ASPACE_REF_ID));
+                eq(pid), eq(IndexingActionType.UPDATE_ASPACE_REF_ID));
     }
 
-    private RefIdRequest buildRequest() {
+    private RefIdRequest buildRequest(String refId) {
         var request = new RefIdRequest();
         request.setPidString(pidString);
         request.setAgent(agent);
-        request.setRefId(REF_ID);
+        request.setRefId(refId);
         return request;
     }
 }

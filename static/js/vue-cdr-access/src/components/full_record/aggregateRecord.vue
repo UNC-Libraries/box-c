@@ -62,7 +62,7 @@
                     <bulk-download :has-bulk-download-access="recordData.canBulkDownload"
                                    :total-download-size="recordData.totalDownloadSize"
                                    :work-id="recordData.briefObject.id"
-                                   :child-count="childCount">
+                                   :work-child-count="childCount">
                     </bulk-download>
                 </div>
                 <div class="container">

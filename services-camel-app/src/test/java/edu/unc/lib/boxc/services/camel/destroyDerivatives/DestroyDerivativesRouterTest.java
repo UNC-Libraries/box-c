@@ -48,17 +48,25 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @Mock
     private DestroyDerivativesProcessor destroyAudioProcessor;
 
+    @Mock
+    private DestroyDerivativesProcessor destroyVideoProcessor;
+
     @TempDir
     public Path tmpFolder;
+
+    private Path jp2BasePath;
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         destroyedMsgProcessor = new DestroyedMsgProcessor();
+        jp2BasePath = tmpFolder.resolve("jp2base");
+        destroyedMsgProcessor.setJp2BasePath(jp2BasePath.toString());
         var router = new DestroyDerivativesRouter();
         router.setDestroyedMsgProcessor(destroyedMsgProcessor);
         router.setDestroyAccessCopyProcessor(destroyAccessCopyProcessor);
         router.setDestroyFulltextProcessor(destroyFulltextProcessor);
         router.setDestroyAudioProcessor(destroyAudioProcessor);
+        router.setDestroyVideoProcessor(destroyVideoProcessor);
         router.setDestroyDerivativesStreamCamel("direct:destroy.derivatives.stream");
         return router;
     }
@@ -133,6 +141,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
+        verify(destroyVideoProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -146,6 +155,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
+        verify(destroyVideoProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -161,6 +171,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
+        verify(destroyVideoProcessor, never()).process(any(Exchange.class));
     }
 
     // See if any messages are routed for object with no mimetype

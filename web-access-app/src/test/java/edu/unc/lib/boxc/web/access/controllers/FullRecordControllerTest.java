@@ -18,7 +18,7 @@ import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
@@ -45,7 +45,7 @@ import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREA
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.STREAMING_URL;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_PID;
 import static edu.unc.lib.boxc.web.access.controllers.FullRecordController.VIEWER_TYPE;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.search.solr.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -107,6 +107,8 @@ public class FullRecordControllerTest {
 
     @Mock
     private ContentObjectRecord briefObject;
+    @Mock
+    private ContentObjectRecord exhibitObject;
     @Mock
     private ContentObjectRecord childBriefObject;
 
@@ -325,6 +327,21 @@ public class FullRecordControllerTest {
         assertEquals("clover", respMap.get(VIEWER_TYPE));
         assertNull(respMap.get(STREAMING_TYPE));
         assertNull(respMap.get(STREAMING_URL));
+        assertNotNull(respMap.get("briefObject"));
+    }
+
+    @Test
+    public void testHandleJsonRequestWorkWithNullExhibitObj() throws Exception {
+        when(briefObject.getId()).thenReturn(PID_1);
+        when(briefObject.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(queryLayer.getObjectById(any())).thenReturn(briefObject).thenReturn(null);
+
+        var result = mvc.perform(get("/api/record/" + PID_1 + "/json"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertNull(respMap.get("exhibits"));
         assertNotNull(respMap.get("briefObject"));
     }
 

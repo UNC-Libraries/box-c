@@ -14,7 +14,6 @@ import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
 import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 

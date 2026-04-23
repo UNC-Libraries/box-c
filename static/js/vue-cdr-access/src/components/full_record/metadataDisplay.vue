@@ -6,10 +6,12 @@
 </template>
 
 <script>
-import get from 'axios';
+import fetchUtils from '../../mixins/fetchUtils';
 
 export default {
     name: 'metadataDisplay',
+
+    mixins: [fetchUtils],
 
     watch: {
         uuid(d) {
@@ -35,15 +37,15 @@ export default {
     },
 
     methods: {
-        loadMetadata() {
-            get(`/api/record/${this.uuid}/metadataView`).then((response) => {
-                this.metadata = response.data;
+        async loadMetadata() {
+            try {
+                this.metadata = await this.fetchWrapper(`/api/record/${this.uuid}/metadataView`, false);
                 this.hasLoaded = true;
-            }).catch((error) => {
+            } catch (error) {
                 console.log(error);
                 this.metadata = '';
                 this.hasLoaded = true;
-            });
+            }
         }
     },
 
@@ -54,7 +56,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

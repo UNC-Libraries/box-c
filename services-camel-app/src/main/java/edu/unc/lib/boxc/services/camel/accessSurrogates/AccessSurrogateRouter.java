@@ -14,7 +14,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AccessSurrogateRouter extends RouteBuilder {
     private static final Logger log = getLogger(AccessSurrogateRouter.class);
 
-    @BeanInject(value = "accessSurrogateRequestProcessor")
+    @BeanInject("accessSurrogateRequestProcessor")
     private AccessSurrogateRequestProcessor processor;
 
     private String accessSurrogatesStreamCamel;

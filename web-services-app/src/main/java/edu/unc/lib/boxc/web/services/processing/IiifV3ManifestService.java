@@ -183,7 +183,7 @@ public class IiifV3ManifestService {
         var mimetype = getMimetype(contentObj);
         if (isAudio(mimetype, contentObj)) {
             setSoundContent(contentObj, paintingAnno, canvas);
-        } else if (isVideo(mimetype)) {
+        } else if (isVideo(mimetype, contentObj)) {
             setVideoContent(contentObj, paintingAnno, canvas);
         } else {
             setImageContent(contentObj, paintingAnno, canvas);
@@ -199,13 +199,13 @@ public class IiifV3ManifestService {
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         SoundContent soundContent;
         if (contentObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
-            soundContent = new SoundContent(getAccessPath(contentObj));
+            soundContent = new SoundContent(getAudioAccessPath(contentObj));
         } else {
             soundContent = new SoundContent(getDownloadPath(contentObj));
         }
         soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
-        if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
+        if (dimensions != null && dimensions.get(DURATION) >= 0) {
             var duration = dimensions.get(DURATION);
             soundContent.setDuration(duration);
             canvas.setDuration(duration);
@@ -217,7 +217,12 @@ public class IiifV3ManifestService {
     }
 
     private void setVideoContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
-        var videoContent = new VideoContent(getDownloadPath(contentObj));
+        VideoContent videoContent;
+        if (contentObj.getDatastreamObject(DatastreamType.VIDEO_ACCESS_COPY.getId()) != null) {
+            videoContent = new VideoContent(getVideoAccessPath(contentObj));
+        } else {
+            videoContent = new VideoContent(getDownloadPath(contentObj));
+        }
         videoContent.setFormat(VIDEO_MP4);
         assignVideoDimensions(contentObj, canvas, videoContent);
         paintingAnno.getBodies().add(videoContent);
@@ -228,10 +233,12 @@ public class IiifV3ManifestService {
         if (dimensions != null) {
             var width = dimensions.get(WIDTH);
             var height = dimensions.get(HEIGHT);
-            canvas.setWidthHeight(width, height); // Dimensions for the canvas
-            videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            if (width != null && height != null) {
+                canvas.setWidthHeight(width, height); // Dimensions for the canvas
+                videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            }
             var duration = dimensions.get(DURATION);
-            if (duration >= 0) {
+            if (duration != null && duration >= 0) {
                 videoContent.setDuration(duration);
                 canvas.setDuration(duration);
             }
@@ -299,7 +306,11 @@ public class IiifV3ManifestService {
         return getFileDatastream(contentObj).getMimetype();
     }
 
-    private boolean isVideo(String mimetype) {
+    private boolean isVideo(String mimetype, ContentObjectRecord contentObj) {
+        if (contentObj.getDatastreamObject(DatastreamType.VIDEO_ACCESS_COPY.getId()) != null) {
+            return true;
+        }
+
         return Objects.equals(mimetype, VIDEO_MP4.toString())  || Objects.equals(mimetype, VIDEO_MPEG.toString())
                 || Objects.equals(mimetype, VIDEO_QUICKTIME.toString());
     }
@@ -325,7 +336,7 @@ public class IiifV3ManifestService {
         // check if original datastream mimetype is audio or video
         if (!isValidDatastream && originalDatastream != null) {
             var mimetype = originalDatastream.getMimetype();
-            isValidDatastream = isAudio(mimetype, contentObj) || isVideo(mimetype);
+            isValidDatastream = isAudio(mimetype, contentObj) || isVideo(mimetype, contentObj);
         }
 
         return isValidDatastream;
@@ -418,9 +429,14 @@ public class IiifV3ManifestService {
         return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
     }
 
-    private String getAccessPath(ContentObjectRecord contentObj) {
+    private String getAudioAccessPath(ContentObjectRecord contentObj) {
         return URIUtil.join(baseServicesApiPath, "file", contentObj.getId(),
                 DatastreamType.AUDIO_ACCESS_COPY.getId());
+    }
+
+    private String getVideoAccessPath(ContentObjectRecord contentObj) {
+        return URIUtil.join(baseServicesApiPath, "file", contentObj.getId(),
+                DatastreamType.VIDEO_ACCESS_COPY.getId());
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {

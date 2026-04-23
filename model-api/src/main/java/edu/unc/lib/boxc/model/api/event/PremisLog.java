@@ -11,5 +11,5 @@ public interface PremisLog {
     /**
      * @return a model containing the events in this log.
      */
-    public Model getEventsModel();
+    Model getEventsModel();
 }

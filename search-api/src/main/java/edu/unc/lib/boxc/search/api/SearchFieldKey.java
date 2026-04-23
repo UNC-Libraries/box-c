@@ -19,6 +19,7 @@ public enum SearchFieldKey {
     ANCESTOR_PATH("ancestorPath", "path", "Folders"),
     ASPACE_REF_ID("aspaceRefId", "aspaceRefId", "ArchivesSpace Ref ID"),
     CITATION("citation", "citation", "Citation"),
+    COLLECTION_DISPLAY_SETTINGS("collectionDisplaySettings", "collectionDisplaySettings", "Collection Display Settings"),
     COLLECTION_ID("collectionId", "collectionId", "Archival Collection ID"),
     CONTENT_STATUS("contentStatus", "contentStatus", "Content Status"),
     CONTRIBUTOR("contributor", "contributor", "Contributor"),
@@ -36,6 +37,7 @@ public enum SearchFieldKey {
     FILE_FORMAT_DESCRIPTION("fileFormatDescription", "fileDesc", "File Type Description"),
     FILESIZE("filesizeSort", "filesize", "Filesize"),
     FILESIZE_TOTAL("filesizeTotal", "filesizeTotal", "Filesize Total"),
+    FULL_DESCRIPTION("fullDescription", "fullDescription", "Full Description"),
     FULL_TEXT("fullText", "fullText", "Full Text"),
     EXHIBIT("exhibit", "exhibit", "Exhibit"),
     GENRE("genre", "genre", "Genre"),
@@ -49,6 +51,9 @@ public enum SearchFieldKey {
     LAST_INDEXED("lastIndexed", "lastIndexed", "lastIndexed"),
     LOCATION("location", "location", "Location"),
     MEMBER_ORDER_ID("memberOrderId", "memberOrderId", "Member Order ID"),
+    MG_CONTENT_TAGS("mgContentTags", "mgContentTags", "Machine Generated Content Tags"),
+    MG_DESCRIPTION("mgDescription", "mgDescription", "Machine Generated Desc Output"),
+    MG_RISK_SCORE("mgRiskScore", "mgRiskScore", "Machine Generated Risk Score"),
     OTHER_SUBJECT("otherSubject", "otherSubject", "Other Subject"),
     OTHER_TITLE("otherTitle", "otherTitle", "otherTitle"),
     PARENT_COLLECTION("parentCollection", "collection", "Collection"),
@@ -74,6 +79,7 @@ public enum SearchFieldKey {
     TIMESTAMP("timestamp", "timestamp", "Timestamp"),
     TITLE("title", "title", "Title"),
     TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
+    TRANSCRIPT("transcript", "transcript", "Transcript"),
     VERSION("_version_", "version", "Version"),
     VIEW_BEHAVIOR("viewBehavior", "viewBehavior", "View Behavior");
 
@@ -87,7 +93,7 @@ public enum SearchFieldKey {
     private static Map<String, SearchFieldKey> urlParamToKey = Arrays.stream(SearchFieldKey.values())
             .collect(Collectors.toMap(SearchFieldKey::getUrlParam, Function.identity()));
 
-    private SearchFieldKey(String solrField, String urlParam, String displayLabel) {
+    SearchFieldKey(String solrField, String urlParam, String displayLabel) {
         this.solrField = solrField;
         this.urlParam = urlParam;
         this.displayLabel = displayLabel;

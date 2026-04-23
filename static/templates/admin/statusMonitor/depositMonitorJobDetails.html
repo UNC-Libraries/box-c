@@ -6,7 +6,7 @@
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>
 	
-	<% if (data.state == "running") { %>
+	<% if (data.state == "running" || data.state == "queued") { %>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=pause" class="monitor_action">Pause</a></p>
 	<% } %>
 	<% } %>

@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 public class ImportXMLRouter extends RouteBuilder {
     private static final Logger log = getLogger(ImportXMLRouter.class);
 
-    @BeanInject(value = "importXMLProcessor")
+    @BeanInject("importXMLProcessor")
     private ImportXMLProcessor importXmlProcessor;
 
     @Override

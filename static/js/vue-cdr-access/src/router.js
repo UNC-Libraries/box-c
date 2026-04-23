@@ -1,12 +1,11 @@
 import { createWebHistory, createRouter } from 'vue-router';
-import axios from 'axios';
+import aboutRepository from "@/components/aboutRepository.vue";
 import advancedSearch from "@/components/advancedSearch.vue";
 import displayWrapper from "@/components/displayWrapper.vue";
 import notFound from "@/components/error_pages/notFound.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
-import aboutRepository from "@/components/aboutRepository.vue";
 import cfTurnstile from "@/components/cfTurnstile.vue";
 import { useAccessStore } from './stores/access';
 
@@ -74,23 +73,24 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const store = useAccessStore();
 
-  try {
-    const response = await axios.head('/api/userInformation');
+  // Can't use the fetchWrapper mixin here, as the router is not a component and doesn't have access to mixins.
+  fetch('/api/userInformation', { method: 'HEAD' })
+      .then(response => {
+        store.setUsername(response.headers.get('username'));
+        store.setIsLoggedIn();
+        store.setViewAdmin(response.headers.get('can-view-admin'));
+        store.setUncIP(response.headers['unc-ip-address'] === 'true');
+        store.setValidToken(response.headers['valid-turnstile-token'] === 'true');
 
-    store.setUsername(response.headers['username']);
-    store.setIsLoggedIn();
-    store.setViewAdmin(response.headers['can-view-admin']);
-    store.setUncIP(response.headers['unc-ip-address'] === 'true');
-    store.setValidToken(response.headers['valid-turnstile-token'] === 'true');
-
-    // Issue a challenge if a user needs a challenge
-    if (window.turnstileEnabled && to.name === 'searchRecords' &&
-        !store.isLoggedIn && !store.uncIP && !store.validToken) {
-      return { path: '/turnstile', replace: true };
-    }
-  } catch (error) {
-    console.log(error);
-  }
+        // Issue a challenge if a user needs a challenge
+        if (window.turnstileEnabled && to.name === 'searchRecords' &&
+            !store.isLoggedIn && !store.uncIP && !store.validToken) {
+          return { path: '/turnstile', replace: true };
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
 });
 
 export default router

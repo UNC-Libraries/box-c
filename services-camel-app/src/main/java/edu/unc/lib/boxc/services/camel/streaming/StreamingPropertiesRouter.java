@@ -12,7 +12,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class StreamingPropertiesRouter  extends RouteBuilder {
     private static final Logger log = getLogger(StreamingPropertiesRouter.class);
-    @BeanInject(value = "streamingPropertiesRequestProcessor")
+    @BeanInject("streamingPropertiesRequestProcessor")
     private StreamingPropertiesRequestProcessor processor;
 
     @Override

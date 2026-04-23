@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -23,7 +24,6 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 /**
  * Adds a derivative file to an existing file object
@@ -51,7 +51,7 @@ public class AddDerivativeProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
 
-        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryUri = MessageUtil.getFcrepoUri(in);
         String binaryId = PIDs.get(binaryUri).getId();
         Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
 
@@ -121,7 +121,7 @@ public class AddDerivativeProcessor implements Processor {
     public boolean needsRun(Exchange exchange) {
         Message in = exchange.getIn();
 
-        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryUri = MessageUtil.getFcrepoUri(in);
         String binaryId = PIDs.get(binaryUri).getId();
         Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
         if (Files.notExists(derivativeFinalPath)) {

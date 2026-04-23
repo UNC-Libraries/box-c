@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
-    xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
     xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
-        http://www.springframework.org/schema/context 
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
-        http://www.springframework.org/schema/mvc
-        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:annotation-config />
 
@@ -35,7 +30,7 @@
 
     <!-- Utils -->
 
-    <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
+    <bean id="permsHelper" class="edu.unc.lib.boxc.search.solr.utils.PermissionsHelper">
         <property name="accessControlService" ref="aclService" />
     </bean>
 
@@ -48,7 +43,11 @@
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg value="${admin.base.url}" />
     </bean>
-    
+
+    <bean id="sitemapBasePath" class="java.lang.String">
+        <constructor-arg value="${sitemap.base.path}" />
+    </bean>
+
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
     </bean>

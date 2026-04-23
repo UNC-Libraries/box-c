@@ -1,18 +1,16 @@
 package edu.unc.lib.boxc.indexing.solr.test;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
-import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
@@ -50,6 +48,19 @@ public class MockRepositoryObjectHelpers {
         when(fileObj.getResource()).thenReturn(resc);
 
         return fileObj;
+    }
+
+    public static CollectionObject makeCollectionObject(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
+        CollectionObject collectionObj = mock(CollectionObject.class);
+        when(collectionObj.getPid()).thenReturn(pid);
+        if (repositoryObjectLoader != null) {
+            when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(collectionObj);
+        }
+
+        var resc = makeResource(pid, Cdr.Collection);
+        when(collectionObj.getResource()).thenReturn(resc);
+
+        return collectionObj;
     }
 
     public static ContentContainerObject makeContainer(RepositoryObjectLoader repositoryObjectLoader) {

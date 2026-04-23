@@ -38,8 +38,6 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
     @Mock
     private AccessRestrictionUtil restrictionUtil;
 
-    private SearchSettings searchSettings;
-    private SolrSettings solrSettings;
     private SolrSearchService solrSearchService;
 
     private DeleteSolrTreeAction action;
@@ -52,16 +50,6 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         closeable = openMocks(this);
 
         corpus = new TestCorpus();
-
-        Properties solrProps = new Properties();
-        solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
-        solrSettings = new SolrSettings();
-        solrSettings.setProperties(solrProps);
-
-        Properties searchProps = new Properties();
-        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
-        searchSettings = new SearchSettings();
-        searchSettings.setProperties(searchProps);
 
         solrSearchService = new SolrSearchService();
         solrSearchService.setSolrSettings(solrSettings);

@@ -30,7 +30,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SolrRouterTest extends CamelSpringTestSupport {
     @PropertyInject(value = "fcrepo.baseUri")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     private MockEndpoint resultEndpoint;
@@ -38,7 +38,7 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     @Produce("direct:start")
     private ProducerTemplate template;
 
-    @BeanInject(value = "solrIngestProcessor")
+    @BeanInject("solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
     @Override
@@ -63,7 +63,7 @@ public class SolrRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent() {
+    private Map<String, Object> createEvent() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, "original_file");

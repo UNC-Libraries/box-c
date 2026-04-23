@@ -48,38 +48,60 @@ describe('worksOnly.vue', () => {
     });
 
     it("updates route to only show works if button is checked for a gallery view",  async () => {
-        await router.push('/record/1234/?browse_type=gallery-display');
+        await router.push('/record/1234?browse_type=gallery-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
+
         await wrapper.setData({ works_only: false });
         await record_input.trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
     it("updates route to only show works and folders if button is unchecked for a gallery view", async  () => {
-        await router.push('/record/1234/?browse_type=gallery-display');
+        await router.push('/record/1234?browse_type=gallery-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
+
         await wrapper.setData({ works_only: true });
         await record_input.trigger('click');
         await flushPromises();
 
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
     it("updates route to only show works if button is checked for a list view", async() => {
-        await router.push('/record/1234/?browse_type=list-display');
+        await router.push('/record/1234?browse_type=list-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
+
         await wrapper.setData({ works_only: false });
         await record_input.trigger('click');
         await flushPromises();
 
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
     });
 
     it("updates route to show works and folders if button is unchecked for a list view", async () => {
-        await router.push('/record/1234/?browse_type=list-display');
+        await router.push('/record/1234?browse_type=list-display');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).not.toBeDefined();
+
         await wrapper.setData({ works_only: true });
         await record_input.trigger('click');
         await flushPromises();
 
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
+        expect(wrapper.vm.$router.currentRoute.value.query.user_set_params).toEqual('true');
+    });
+
+    it("computes button classes based on works_only state", async () => {
+        await wrapper.setData({ works_only: false });
+        expect(wrapper.vm.onButtonClasses).toContain('has-text-grey');
+        expect(wrapper.vm.offButtonClasses).toContain('is-selected');
+
+        await wrapper.setData({ works_only: true });
+        expect(wrapper.vm.onButtonClasses).toContain('is-selected');
+        expect(wrapper.vm.offButtonClasses).toContain('has-text-grey');
     });
 
     afterEach(() => {

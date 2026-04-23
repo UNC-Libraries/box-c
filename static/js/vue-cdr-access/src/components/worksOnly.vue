@@ -56,12 +56,12 @@ and including all types with hierarchy retained.
             offButtonClasses() {
                 return !this.works_only
                     ? "is-selected has-text-white has-background-primary"
-                    : "has-text-grey-lighter";
+                    : "has-text-grey";
             },
             onButtonClasses() {
                 return this.works_only
                     ? "is-selected has-text-white has-background-primary"
-                    : "has-text-grey-lighter";
+                    : "has-text-grey";
             }
         },
 
@@ -69,7 +69,7 @@ and including all types with hierarchy retained.
             showWorks() {
                 this.works_only = !this.works_only;
 
-                let params = this.urlParams();
+                let params = this.urlParams({ user_set_params: true });
                 params.types = this.updateWorkType(this.works_only).types;
                 params.works_only = this.works_only;
 
@@ -87,7 +87,7 @@ and including all types with hierarchy retained.
     }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     label.button {
         border: none;
         box-shadow: none;

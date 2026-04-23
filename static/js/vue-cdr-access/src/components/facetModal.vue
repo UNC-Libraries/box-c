@@ -74,11 +74,13 @@ Modal facet component, used to display all the values of a particular facet in a
 </template>
 
 <script>
-import axios from 'axios';
 import cloneDeep from "lodash.clonedeep";
+import fetchUtils from "../mixins/fetchUtils";
 
 export default {
     name: "facetModal",
+
+    mixins: [fetchUtils],
 
     props: {
         facetId: String,
@@ -139,13 +141,13 @@ export default {
     },
 
     methods: {
-        retrieveResults() {
-            axios.get(this.facetUrl).then((response) => {
-                this.facet_data = response.data;
+        async retrieveResults() {
+            try {
+                this.facet_data = await this.fetchWrapper(this.facetUrl);
                 this.show_modal = true;
-            }).catch(function (error) {
+            } catch (error) {
                 console.log(error);
-            });
+            }
         },
 
         selectedFacet(facetValue) {
@@ -195,128 +197,129 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
-    $grey-border: 1px solid lightgray;
+<style scoped>
+:root {
+    --facet-modal-gray-border: 1px solid lightgray;
+}
 
-    .more.button.is-focused,
-    .more.button:focus {
-        color: black;
+.more.button.is-focused,
+.more.button:focus {
+    color: black;
+}
+
+.column {
+    padding: .25rem .75rem;
+}
+
+.modal-container {
+    height: initial;
+    padding: 15px 0;
+}
+
+.modal-header {
+    border-bottom: var(--facet-modal-gray-border);
+    padding: 0 15px;
+    margin: 0;
+
+    button {
+        font-size: 24px;
+        font-weight: bold;
+        height: 32px;
+        padding: 0 4px 4px;
+        width: 32px;
     }
 
-    .column {
-        padding: .25rem .75rem;
+    h3 {
+        text-align: left;
     }
 
-    .modal-container {
-        height: initial;
-        padding: 15px 0;
+    div {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+.modal-body,
+.modal-footer {
+    padding: 0 15px;
+}
+
+.meta-modal button[disabled]:hover {
+    opacity: .6;
+}
+
+#response-text {
+    height: 45vh;
+    overflow-y: auto;
+
+    ul {
+        column-count: 2;
+        text-align: left;
     }
 
-    .modal-header {
-        border-bottom: $grey-border;
-        padding: 0 15px;
-        margin: 0;
-
-        button {
-            font-size: 24px;
-            font-weight: bold;
-            height: 32px;
-            padding: 0 4px 4px;
-            width: 32px;
-        }
-
-        h3 {
-            text-align: left;
-        }
-
-        div {
-            padding-left: 0;
-            padding-right: 0;
-        }
+    li {
+        break-inside: avoid;
+        margin-bottom: 8px;
     }
+}
 
-    .modal-body,
-    .modal-footer {
-        padding: 0 15px;
-    }
+.modal-footer {
+    border-top: var(--facet-modal-gray-border);
+    margin-top: 5px;
 
-    .meta-modal button[disabled]:hover {
-        opacity: .6;
-    }
-
-    #response-text {
-        height: 45vh;
-        overflow-y: auto;
-
-        ul {
-            column-count: 2;
-            text-align: left;
-        }
-
-        li {
-            break-inside: avoid;
-            margin-bottom: 8px;
+    .columns {
+        margin-top: 10px;
+        a:first-child {
+            margin-right: 8px;
         }
     }
 
-    .modal-footer {
-        border-top: $grey-border;
-        margin-top: 5px;
+    .current-page {
+        font-size: 1rem;
+        font-weight: bold;
+        margin: auto;
+        padding-left: 5px;
+    }
 
-        .columns {
-            margin-top: 10px;
-            a:first-child {
-                margin-right: 8px;
-            }
-        }
-
-        .current-page {
-            font-size: 1rem;
-            font-weight: bold;
-            margin: auto;
-            padding-left: 5px;
-        }
-
-        .button[disabled] {
-            background-color: #007FAE
-        }
-
-        .sorting {
-            margin-bottom: 12px;
-            padding-bottom: 0;
-            padding-top: 4px;
-
-            .button {
-                background-color: white;
-                color: black;
-            }
-
-            .active {
-                box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
-                color: #333;
-                background-color: #e6e6e6 !important;
-                border-color: #adadad;
-                pointer-events: none;
-                cursor: pointer;
-            }
-        }
+    .button[disabled] {
+        background-color: #007FAE;
     }
 
     .sorting {
-        justify-content: flex-end;
-        margin-right: -25px;
-    }
+        margin-bottom: 12px;
+        padding-bottom: 0;
+        padding-top: 4px;
 
-    @media screen and (max-width: 768px) {
-        .sorting {
-            justify-content: flex-start;
-            margin-right: 0;
+        .button {
+            background-color: white;
+            color: black;
+        }
+
+        .active {
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
+            color: #333;
+            background-color: #e6e6e6 !important;
+            border-color: #adadad;
+            pointer-events: none;
+            cursor: pointer;
         }
     }
+}
 
-    @media screen and (max-width: 600px) {
-        a.button {
-            width: initial;
-        }
+.sorting {
+    justify-content: flex-end;
+}
+
+@media screen and (max-width: 768px) {
+    .sorting {
+        justify-content: flex-start;
+        margin-right: 0;
     }
+}
+
+@media screen and (max-width: 600px) {
+    a.button {
+        width: initial;
+    }
+}
 </style>

@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletResponse;
-
 import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
@@ -39,6 +37,8 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Streams binary content from repository objects.
@@ -72,7 +72,7 @@ public class FedoraContentService {
      * @throws IOException if unable to stream content to the response.
      */
     public void streamData(PID pid, String dsName, boolean asAttachment,
-            HttpServletResponse response, String range) throws IOException {
+                           HttpServletResponse response, String range) throws IOException {
         // Default datastream is DATA_FILE
         String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
 

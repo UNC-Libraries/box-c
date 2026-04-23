@@ -5,11 +5,11 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:camel="http://camel.apache.org/schema/spring"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
+        https://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -29,7 +29,7 @@
         <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
-                <value>5.0</value>
+                <value>6.0</value>
             </list>
         </property>
     </bean>
@@ -234,12 +234,51 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
+    <bean id="machineGenDescriptionUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
+        <property name="type" value="description" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeBasePath" value="${cdr.enhancement.path.genDescription}" />
+    </bean>
+
+    <bean id="machineGenAltTextUpdateService" class="edu.unc.lib.boxc.operations.impl.machineGenerated.MachineGenUpdateService">
+        <property name="type" value="altText" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
+    </bean>
+
+    <bean id="machineGenDescriptionProcessor" class="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="connectionManager" ref="httpClientConnectionManager" />
+        <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
+        <property name="boxctronDescribesBasePath" value="${boxctron.describes.base.path}" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="apiKey" value="${boxctron.describes.api.key}" />
+    </bean>
+
+    <bean id="mp44uAudioProcessor" class="edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor">
+        <constructor-arg value="${mp44u.threads}" />
+        <constructor-arg value="${mp44u.timeout}" />
+    </bean>
+
     <bean id="addAudioAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).AUDIO_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.audio}" />
     </bean>
 
     <bean id="audioAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor">
+    </bean>
+
+    <bean id="mp44uVideoProcessor" class="edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor">
+        <constructor-arg value="${mp44u.threads}" />
+        <constructor-arg value="${mp44u.timeout}" />
+    </bean>
+
+    <bean id="addVideoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).VIDEO_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.video}" />
+    </bean>
+
+    <bean id="videoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor">
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
@@ -264,6 +303,11 @@
     <bean id="destroyAudioProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).AUDIO_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.audio}" />
+    </bean>
+
+    <bean id="destroyVideoProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).VIDEO_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.video}" />
     </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
@@ -433,10 +477,13 @@
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
-    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor">
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor"
+            destroy-method="destroy">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="registrationSuccessfulEndpoint" value="${cdr.registration.successful.dest}" />
     </bean>
     
@@ -450,19 +497,27 @@
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
     
-    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor">
-        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor"
+            destroy-method="destroy">
+        <property name="longleafBaseUri" value="${longleaf.baseUri}" />
+        <property name="longleafApiKey" value="${longleaf.apiKey}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
 
     <!-- Service operates via spring scheduling -->
     <bean id="expireEmbargoService" class="edu.unc.lib.boxc.operations.impl.acl.ExpireEmbargoService">
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="searchService" ref="queryLayer" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="accessGroups" ref="accessGroups" />
     </bean>
+
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
+        <value>${access.group.admin}</value>
+    </util:set>
     
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.boxc.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />
@@ -562,6 +617,13 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
 
+    <bean id="collectionDisplayPropertiesRequestProcessor" class="edu.unc.lib.boxc.services.camel.collectionDisplay.CollectionDisplayPropertiesRequestProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
     <bean id="bulkRefIdRequestProcessor" class="edu.unc.lib.boxc.services.camel.aspace.BulkRefIdRequestProcessor">
         <property name="bulkRefIdNotificationService" ref="bulkRefIdNotificationService" />
         <property name="refIdService" ref="refIdService" />
@@ -593,6 +655,7 @@
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>
         <!-- Initialize metaServicesRouter after the routes it depends on -->
@@ -608,6 +671,8 @@
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.collectionDisplay</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.aspace</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
     </camel:camelContext>
 </beans>

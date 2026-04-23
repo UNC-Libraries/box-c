@@ -132,8 +132,7 @@ public class SearchSettings extends AbstractSettings {
     // Indicates whether to limit search results to only those with administrative viewing privileges
     public Boolean allowPatronAccess;
     // Search manipulation related actions, remove on
-    public final Map<String, String> actions = Map.of("SET_FACET_LIMIT", "setFacetLimit",
-            "REMOVE_FACET_LIMIT", "removeFacetLimit",
+    public final Map<String, String> actions = Map.of("SET_FACET_LIMIT", "facetLimits",
             "NEXT_PAGE", "nextPage",
             "PREVIOUS_PAGE", "previousPage",
             "SET_START_ROW", "setStartRow");
@@ -199,7 +198,7 @@ public class SearchSettings extends AbstractSettings {
                 .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getDisplayLabel));
 
         // Access field names
-        this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "false")));
+        this.setAllowPatronAccess(Boolean.valueOf(properties.getProperty("search.access.allowPatrons", "false")));
 
         // Resource Types, stored here temporarily for usage in jsp
         resourceTypeFile = ResourceType.File.name();

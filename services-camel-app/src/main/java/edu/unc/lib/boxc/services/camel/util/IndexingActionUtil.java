@@ -41,6 +41,7 @@ public class IndexingActionUtil {
             EnumSet.of(IndexingActionType.ADD,
                     IndexingActionType.UPDATE_DESCRIPTION,
                     IndexingActionType.UPDATE_ACCESS,
+                    IndexingActionType.UPDATE_COLLECTION_DISPLAY_PROPERTIES,
                     IndexingActionType.UPDATE_PATH,
                     IndexingActionType.UPDATE_DATASTREAMS,
                     IndexingActionType.UPDATE_WORK_FILES,
@@ -50,7 +51,7 @@ public class IndexingActionUtil {
                     IndexingActionType.UPDATE_MEMBER_ORDER_PARENT,
                     IndexingActionType.UPDATE_VIEW_BEHAVIOR,
                     IndexingActionType.UPDATE_STREAMING_PROPERTIES,
-                    IndexingActionType.ADD_ASPACE_REF_ID,
+                    IndexingActionType.UPDATE_ASPACE_REF_ID,
                     IndexingActionType.COMMIT,
                     IndexingActionType.DELETE);
 }

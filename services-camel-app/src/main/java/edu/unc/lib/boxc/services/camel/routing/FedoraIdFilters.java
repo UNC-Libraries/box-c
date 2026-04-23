@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.services.camel.routing;
 
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.regex.Pattern;
 
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class FedoraIdFilters {
     public static boolean allowedForLongleaf(Exchange exchange) {
         Message in = exchange.getIn();
         String resourceType = (String) in.getHeader(FcrepoJmsConstants.RESOURCE_TYPE);
-        String fcrepoUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+        String fcrepoUri = MessageUtil.getFcrepoUri(in);
         if (!resourceType.contains(Binary.getURI()) || fcrepoUri.endsWith(RepositoryPathConstants.FCR_METADATA)) {
             return false;
         }
@@ -78,17 +78,16 @@ public class FedoraIdFilters {
             return false;
         }
 
-        String fcrepoId = (String) in.getHeader(FcrepoJmsConstants.IDENTIFIER);
-        String fcrepoBaseUrl = (String) in.getHeader(FcrepoJmsConstants.BASE_URL);
+        String fcrepoUri = MessageUtil.getFcrepoUri(in);
         PID pid;
         try {
-            pid = PIDs.get(fcrepoBaseUrl + fcrepoId);
+            pid = PIDs.get(fcrepoUri);
         } catch (Exception e) {
-            log.debug("Failed to parse fcrepo id {} as PID while filtering: {}", fcrepoId, e.getMessage());
+            log.debug("Failed to parse fcrepo id {} as PID while filtering: {}", fcrepoUri, e.getMessage());
             return false;
         }
         if (pid == null) {
-            log.error("Received null PID for object with fcrepo URI {}", fcrepoBaseUrl + fcrepoId);
+            log.error("Received null PID for object with fcrepo URI {}", fcrepoUri);
             return false;
         }
         // Filter out non-content objects

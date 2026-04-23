@@ -193,4 +193,17 @@ describe('fullrecordUtils', () => {
     it('formats timestamps to dates', () => {
         expect(wrapper.vm.formatDate(recordData.briefObject.created)).toEqual('1999-01-22');
     });
+
+    it('returns the checksum as undefined', () => {
+        expect(wrapper.vm.getChecksum(recordData.briefObject.datastream)).toEqual(undefined);
+    });
+
+    it('returns the checksum', async () => {
+        let updated_record = cloneDeep(recordData);
+        updated_record.briefObject.datastream = [
+            "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536"
+        ];
+        expect(wrapper.vm.getChecksum(updated_record.briefObject.datastream))
+            .toEqual('urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a');
+    });
 });

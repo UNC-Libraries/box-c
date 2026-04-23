@@ -147,7 +147,7 @@ public class CDRMETSGraphExtractor {
                 && "bag".equalsIgnoreCase(firstdiv.getAttributeValue("TYPE"))) {
             topContainer = firstdiv;
         }
-        Bag top = m.createBag(depositId.getURI());
+        Bag top = m.createBag(depositId.getRepositoryPath());
         List<Element> topchildren = topContainer.getChildren(
                 "div", METS_NS);
         for (Element childEl : topchildren) {

@@ -105,7 +105,7 @@ describe('filterTags.vue', () => {
             }]
         });
         await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e||' +
-        '88386d31-6931-467d-add5-1d109f335302&format=image||text');
+            '88386d31-6931-467d-add5-1d109f335302&format=image||text');
         const selected_tags = wrapper.findAll('.search-text');
         expect(selected_tags[0].text()).toMatch(/Collection.*?testCollection/s);
         expect(selected_tags[1].text()).toMatch(/Collection.*?test2Collection/s);

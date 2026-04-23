@@ -61,7 +61,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String derivTmpPath = "tmp/" + fileName;
 
     @PropertyInject(value = "fcrepo.baseUrl")
-    private static String baseUri;
+    private String baseUri;
 
     @EndpointInject("mock:fcrepo")
     protected MockEndpoint resultEndpoint;
@@ -69,19 +69,19 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "jp2Processor")
+    @BeanInject("jp2Processor")
     private Jp2Processor jp2Processor;
 
-    @BeanInject(value = "addAccessCopyProcessor")
+    @BeanInject("addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    @BeanInject(value = "imageCacheInvalidationProcessor")
+    @BeanInject("imageCacheInvalidationProcessor")
     private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
-    @BeanInject(value = "imageDerivativeProcessor")
+    @BeanInject("imageDerivativeProcessor")
     private ImageDerivativeProcessor imageDerivativeProcessor;
 
-    @BeanInject(value = "pdfImageProcessor")
+    @BeanInject("pdfImageProcessor")
     private PdfImageProcessor pdfImageProcessor;
 
     @TempDir
@@ -262,7 +262,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String eventTypes,
+    private Map<String, Object> createEvent(final String identifier, final String eventTypes,
                                                    final String force) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, identifier);

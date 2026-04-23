@@ -13,15 +13,15 @@ public interface OrderRequest {
     /**
      * @return the operation type for this request
      */
-    public OrderOperationType getOperation();
+    OrderOperationType getOperation();
 
     /**
      * @return parent of the objects being ordered
      */
-    public PID getParentPid();
+    PID getParentPid();
 
     /**
      * @return list of ordered children
      */
-    public List<PID> getOrderedChildren();
+    List<PID> getOrderedChildren();
 }

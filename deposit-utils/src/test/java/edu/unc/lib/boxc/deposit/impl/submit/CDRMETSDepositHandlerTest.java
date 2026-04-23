@@ -4,20 +4,24 @@ import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.UUID;
-
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
+import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
+import edu.unc.lib.boxc.deposit.api.submit.DepositData;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessage;
+import edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,20 +31,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
-import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
-import edu.unc.lib.boxc.deposit.api.submit.DepositData;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -61,10 +59,10 @@ public class CDRMETSDepositHandlerTest {
 
     @Mock
     private PIDMinter pidMinter;
-    @Mock
-    private DepositStatusFactory depositStatusFactory;
     @Captor
-    private ArgumentCaptor<Map<String, String>> statusCaptor;
+    private ArgumentCaptor<DepositOperationMessage> operationCaptor;
+    @Mock
+    private DepositOperationMessageService operationMessageService;
 
     private File depositsDir;
 
@@ -93,7 +91,7 @@ public class CDRMETSDepositHandlerTest {
         depositHandler = new CDRMETSDepositHandler();
         depositHandler.setDepositsDirectory(depositsDir);
         depositHandler.setPidMinter(pidMinter);
-        depositHandler.setDepositStatusFactory(depositStatusFactory);
+        depositHandler.setDepositOperationMessageService(operationMessageService);
     }
 
     @AfterEach
@@ -119,9 +117,8 @@ public class CDRMETSDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
     }
 
@@ -134,9 +131,8 @@ public class CDRMETSDepositHandlerTest {
 
         PID depositPid = depositHandler.doDeposit(destPid, deposit);
 
-        verify(depositStatusFactory).save(eq(depositPid.getId()), statusCaptor.capture());
-        Map<String, String> status = statusCaptor.getValue();
-
+        verify(operationMessageService).sendDepositOperationMessage(operationCaptor.capture());
+        var status = operationCaptor.getValue().getAdditionalInfo();
         verifyDepositFields(depositPid, status);
     }
 
@@ -183,7 +179,6 @@ public class CDRMETSDepositHandlerTest {
         assertEquals("CDR Test", status.get(DepositField.intSenderDescription.name()));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
-        assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
         assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");
