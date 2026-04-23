@@ -1,7 +1,7 @@
 <template>
     <div class="is-relative">
         <div id="machine-alt-text" class="notification is-light" :class="messageClasses">
-            <button @click="hideMessage()" class="delete"></button>
+            <button @click="hideMessage()" class="delete"><span class="is-sr-only">Close</span></button>
             <p>{{ alertMessage }}</p>
         </div>
     </div>

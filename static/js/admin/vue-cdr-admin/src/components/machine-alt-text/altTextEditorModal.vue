@@ -4,7 +4,7 @@
         <div class="modal-card">
             <header class="modal-card-head modal-head">
                 <p class="modal-card-title is-capitalized">{{ modalHeader }}</p>
-                <button class="delete" aria-label="close" @click="closeModal()"></button>
+                <button class="delete" aria-label="close" @click="closeModal()"><span class="is-sr-only">Close</span></button>
             </header>
             <section class="modal-card-body">
                 <textarea v-if="viewType ==='edit'" v-model="updated_text" class="modal-edit textarea" rows="20" aria-label="Edit"></textarea>
@@ -90,7 +90,7 @@ export default {
             this.setAlertMessage('Value updated successfully updated');
             this.setAlertMessageType('success');
             this.saving_data = false;
-            this.closeModal();
+            //this.closeModal();
         },
 
         closeModal() {
