@@ -28,6 +28,8 @@ public enum DatastreamType {
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA("techmd_fits", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA_HISTORY("techmd_fits_history", Constants.TEXT_XML, "xml", DATA_FILE_FILESET, INTERNAL),
+    TRANSCRIPT("transcript", "text/plain", "txt", METADATA_CONTAINER, INTERNAL),
+    TRANSCRIPT_HISTORY("transcript_history",Constants.TEXT_XML, "xml", METADATA_CONTAINER, INTERNAL),
     VIDEO_ACCESS_COPY("video", "video/mp4", "mp4", null, EXTERNAL);
 
     private final String id;
