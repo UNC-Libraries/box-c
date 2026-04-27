@@ -1,22 +1,24 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
+import io.dropwizard.metrics5.Histogram;
+import io.dropwizard.metrics5.Timer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import edu.unc.lib.boxc.common.metrics.HistogramFactory;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
-import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
-import io.dropwizard.metrics5.Histogram;
-import io.dropwizard.metrics5.Timer;
 
 /**
  * Processor which deregisters binaries in longleaf
@@ -63,33 +65,45 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
             return FileSystemTransferHelpers.getBaseBinaryPath(filePath.normalize());
         }).filter(m -> m != null).collect(Collectors.joining("\n"));
         // No valid content URIs to deregister
-        if (deregList.length() == 0) {
+        if (deregList.isEmpty()) {
             return;
         }
 
         try (Timer.Context context = timer.time()) {
-            ExecuteResult result = executeCommand("deregister -l @-", deregList);
-
-            if (result.exitVal == 0) {
-                log.info("Successfully deregistered {} entries in longleaf", entryCount);
-            } else {
-                // Trim successfully deregistered files from the message before throwing exception
-                if (!result.completed.isEmpty()) {
-                    result.completed.stream()
-                        .map(c -> Paths.get(c).toUri().toString())
-                        .forEach(messages::remove);
-                }
-                if (messages.isEmpty()) {
-                    log.error("Result from longleaf indicates deregistration failed, but there are "
-                            + "no failed URIs remaining. See longleaf logs for details.");
-                    return;
-                }
-                throw new ServiceException("Failed to deregister " + entryCount + " entries in Longleaf.  "
-                        + "Check longleaf logs, command returned: " + result.exitVal);
-            }
-
-            batchSizeHistogram.update(entryCount);
+            deregisterFiles(messages, deregList, entryCount);
         }
     }
 
+    /**
+     * Executes longleaf deregister via HTTP API for a batch of file paths
+     *
+     * @param messages list of original content URIs from the exchange
+     * @param deregList newline-separated list of base file paths to deregister
+     * @param entryCount number of entries being deregistered
+     */
+    private void deregisterFiles(List<String> messages, String deregList, int entryCount) {
+        batchSizeHistogram.update(entryCount);
+
+        String requestUrl = URIUtil.join(longleafBaseUri, "api/deregister");
+        Map<String, Object> bodyMap = Map.of(
+                "from_list", "@-",
+                "body", deregList);
+        LongleafApiResult result = executeHttpPost(requestUrl, bodyMap);
+
+        if (!result.hasFailures()) {
+            log.info("Successfully deregistered {} entries in longleaf", entryCount);
+        } else {
+            // Trim successfully deregistered files from the message before throwing exception
+            for (String successPath : result.successes) {
+                messages.remove(Paths.get(successPath).toUri().toString());
+            }
+            if (messages.isEmpty()) {
+                log.error("Result from longleaf indicates deregistration failed, but there are "
+                        + "no failed URIs remaining. See longleaf logs for details.");
+                return;
+            }
+            throw new ServiceException("Failed to deregister " + entryCount + " entries in Longleaf. "
+                    + result.failures.size() + " failures reported.");
+        }
+    }
 }
