@@ -25,6 +25,10 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
+/**
+ * Controller which takes a parent ID and returns alt text, full description, machine generated description,
+ * transcript, review assessment, and safety assessment info for child file objects
+ */
 @Controller
 public class MachineGeneratedSearchController extends AbstractSolrSearchController {
     public static final List<String> MG_RESULT_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
