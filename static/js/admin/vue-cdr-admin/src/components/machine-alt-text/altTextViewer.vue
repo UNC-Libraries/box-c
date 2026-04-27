@@ -1,25 +1,29 @@
 <template>
     <teleport to="#alt-text-admin">
         <div id="alt-text-viewer">
-            <h1 style="margin-top: 15px" class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ uuid }}</h1>
-            <data-table class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
+            <h1 class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ currentUuid }}</h1>
+            <data-table v-if="hasItems" :key="`alt-text-table-${itemsVersion}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
                         :columns="columns"
                         :options="tableOptions"
                         :data="items">
                 <thead>
                 <tr>
                     <th><span class="is-sr-only">Thumbnail</span></th>
+                    <th>Title</th>
                     <th>Filename</th>
                     <th>Full Description (AI)</th>
                     <th>Alt Text (AI)</th>
                     <th>Transcript (AI)</th>
+                    <th>Risk Score</th>
                     <th>Safety Assessment (AI)</th>
                     <th>Output Assessment (AI)</th>
+                    <th><span class="is-sr-only">Search Tags</span></th>
                     <th><span class="is-sr-only">Rerun Alt Text Generation</span></th>
                 </tr>
                 </thead>
                 <tbody></tbody>
             </data-table>
+            <p v-else class="has-text-centered mt-4">Loading table data...</p>
             <alt-text-messages></alt-text-messages>
             <alt-text-editor-modal></alt-text-editor-modal>
         </div>
@@ -32,7 +36,7 @@ import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
-//import SearchPanes from 'datatables.net-searchpanes-bm';
+import SearchPanes from 'datatables.net-searchpanes-bm';
 import 'datatables.mark.js';
 import 'datatables.net-select-bm';//
 import {mapActions, mapState} from 'pinia';
@@ -40,9 +44,7 @@ import {useAltTextStore} from '@/stores/alt-text';
 
 DataTable.use(DataTablesLib);
 DataTable.use(FixedHeader);
-//DataTable.use(SearchPanes);
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+DataTable.use(SearchPanes);
 
 export default {
     name: 'modalAltText',
@@ -53,13 +55,37 @@ export default {
         return {
             altTextTableClickHandler: null,
             selected_field: '',
-            uuid: '',
             itemsVersion: 0
         }
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['items', 'alertMessage']),
+        ...mapState(useAltTextStore, ['items', 'currentUuid', 'alertMessage']),
+
+        tagPaneOptions() {
+            const counts = new Map();
+            (Array.isArray(this.items) ? this.items : []).forEach((item) => {
+                const rowTags = this.getTags(item);
+                rowTags.forEach((tag) => {
+                    counts.set(tag, (counts.get(tag) || 0) + 1);
+                });
+            });
+
+            return Array.from(counts.entries())
+                .sort((a, b) => b[1] - a[1])
+                .map(([tag]) => ({
+                    label: `${tag}`,
+                    value: (rowData) => this.getTags(rowData).includes(tag)
+                }));
+        },
+
+        hasSearchPaneOptions() {
+            return this.tagPaneOptions.length > 0;
+        },
+
+        hasItems() {
+            return Array.isArray(this.items) && this.items.length > 0;
+        },
 
         tableOptions() {
             return {
@@ -68,8 +94,21 @@ export default {
                 searching: true,
                 order: [[1, 'asc']],
                 fixedHeader: true,
+                searchPanes: {
+                    columns: [],
+                    panes: [
+                        {
+                            header: 'Search Tags',
+                            orderable: false,
+                            options: this.tagPaneOptions
+                        }
+                    ],
+                    threshold: 1,
+                    initCollapsed: true,
+                    orderable: false
+                },
                 layout: {
-                    topStart: 'info',
+                    topStart: this.hasSearchPaneOptions ? 'searchPanes' : null,
                     topEnd: {
                         search: {
                             placeholder: 'Search'
@@ -84,33 +123,48 @@ export default {
         columns() {
             return [
                 {
-                    data: 'filename',
-                    render: (data) => `<figure class="thumbnail"><a href="${data}" target="_blank"><img alt="''" src="${data}"></a></figure>`
+                    data: 'mgDescription.filename',
+                    render: (data) => `<figure class="thumbnail"><a href="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}" target="_blank"><img alt="''" src="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}"></a></figure>`
                 },
                 {
-                    data: 'filename',
+                    data: 'title',
+                    render: (data) => data
+                },
+                {
+                    data: 'mgDescription.filename',
                     className: 'filename',
-                    render: (data) => `<a href="${data}" target="_blank">${this.imageName(data)}</a>`
+                    render: (data) => `<a href="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}" target="_blank">${data}</a>`
                 },
                 {
-                    data: 'full_desc',
-                    render: (data) => this.longText(data, 'full_desc')
+                    data: 'mgFullDescription',
+                    render: (data) => this.longText(data, 'mgFullDescription')
                 },
                 {
-                    data: 'alt_text',
-                    render: (data) => this.longText(data, 'alt_text')
+                    data: 'altText',
+                    render: (data) => this.longText(data, 'altText')
                 },
                 {
-                    data: 'transcript',
-                    render: (data) => this.longText(data, 'transcript')
+                    data: 'mgTranscript',
+                    render: (data) => this.longText(data, 'mgTranscript')
                 },
                 {
-                    data: 'safety_review',
+                    data: 'mgRiskScore',
+                    render: (data) => data
+                },
+                {
+                    data: 'mgReviewAssessment',
                     render: (data) => this.renderSafetyData(data)
                 },
                 {
-                    data: 'safety_form',
+                    data: 'mgSafetyAssessment',
                     render: (data) => this.renderSafetyData(data)
+                },
+                {
+                    data: 'mgContentTags',
+                    render: (data) => {
+                        const tags = Array.isArray(data) ? data : [];
+                        return tags.join(', ');
+                    }
                 },
                 {
                     data: null,
@@ -123,25 +177,23 @@ export default {
         columnDefs() {
             return [
                 { width: '15%', targets: [0] },
-                { width: '5%', targets: [1] },
-                { width: '17%', targets: [2, 3, 4, 5, 6] },
-                { orderable: false, targets: [0, 5, 6, 7] },
-                { searchable: false, targets: [0, 7] }
+                { width: '5%', targets: [1, 6, 9] },
+                { orderable: false, targets: [0, 7, 8, 9, 10] },
+                { searchable: false, targets: [0, 10] },
+                { visible: false, targets: [9] },
+                // Ensure no non-custom pane is generated from any column.
+                { searchPanes: { show: false }, targets: '_all' }
             ]
         }
     },
 
     methods: {
-        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setAlertMessage', 'setCurrentRow', 'setShowAltTextModal', 'setViewType']),
+        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setAlertMessage',
+            'setCurrentRow', 'setCurrentUuid', 'setShowAltTextModal', 'setViewType']),
 
         fieldName(field) {
             const parts = field.split('_')
             return parts.join(' ');
-        },
-
-        imageName(data) {
-            const text = data.split('/');
-            return text[text.length - 1];
         },
 
         longText(data, field_name) {
@@ -201,13 +253,17 @@ export default {
 
         rerunAltTextGeneration() {},
 
+        getTags(rowData) {
+            return Array.isArray(rowData?.mgContentTags) ? rowData.mgContentTags : [];
+        },
+
         bindTableEvents() {
             const dtApi = this.$refs.alt_text_table?.dt;
             if (!dtApi || this.altTextTableClickHandler) {
                 return;
             }
             this.altTextTableClickHandler = (e) => {
-                const action_fields = ['full_desc', 'alt_text', 'transcript'];
+                const action_fields = ['mgFullDescription', 'altText', 'mgTranscript'];
                 if (action_fields.includes(e.target.dataset.actionField)) {
                     e.preventDefault();
                     this.setCurrentRow(dtApi.row(e.currentTarget).data());
@@ -250,7 +306,8 @@ export default {
     },
 
     beforeMount() {
-        this.uuid = location.pathname.split('/')[3];
+        const uuid = this.$route.params.uuid ?? null;
+        this.setCurrentUuid(uuid);
     },
 
     mounted() {
@@ -273,6 +330,10 @@ export default {
 @import 'datatables.net-select-bm';
 
 #alt-text-viewer {
+    h1 {
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
     div.datatable {
         width: 98%;
         margin: auto;
@@ -283,6 +344,9 @@ export default {
     }
     div.dt-container div.dt-length select {
         min-width: 70px;
+    }
+    div.dtsp-panesContainer div.dtsp-title {
+        padding-right: 5px;
     }
 }
 </style>
