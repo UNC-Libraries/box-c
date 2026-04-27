@@ -29,7 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.NO_RESULTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,6 +95,20 @@ public class MachineGeneratedControllerTest {
         mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
                 .andExpect(status().isForbidden())
                 .andReturn();
+    }
+
+    @Test
+    public void testNoSearchResultsErrorResponse() throws Exception {
+        when(queryLayer.performSearch(any())).thenReturn(null);
+
+        MvcResult result = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var apiResponseString = result.getResponse().getContentAsString();
+        var apiResponseJson = deserializeApiResponse(apiResponseString);
+        assertEquals(NO_RESULTS, apiResponseJson.get("errorMessage").textValue());
+        assertTrue(apiResponseJson.get("results").isEmpty());
     }
 
     @Test
