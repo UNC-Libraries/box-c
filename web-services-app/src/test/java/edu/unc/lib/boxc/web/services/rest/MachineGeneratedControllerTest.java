@@ -1,10 +1,11 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,9 +43,6 @@ public class MachineGeneratedControllerTest {
     private static final String PARENT1_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String FILE1_ID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String FILE2_ID = "b150dca9-c4cf-4651-aeef-3ce9e279178f";
-    private static final PID PARENT1_PID = PIDs.get(PARENT1_ID);
-    private static final PID FILE1_PID = PIDs.get(FILE1_ID);
-    private static final PID FILE2_PID = PIDs.get(FILE2_ID);
     @Mock
     private AccessControlService accessControlService;
     @Mock
@@ -60,6 +59,7 @@ public class MachineGeneratedControllerTest {
     private MachineGeneratedSearchController controller;
     private MockMvc mvc;
     private AutoCloseable closeable;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @BeforeEach
     public void init() {
@@ -101,9 +101,19 @@ public class MachineGeneratedControllerTest {
         var fileRec2 = createContentObjectRecord(FILE2_ID,"2");
         when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(fileRec1, fileRec2));
 
-        MvcResult result1 = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
+        MvcResult result = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        var apiResponseString = result.getResponse().getContentAsString();
+        var apiResponseJson = deserializeApiResponse(apiResponseString).get("results");
+        var firstResult = apiResponseJson.get(0);
+        var secondResult = apiResponseJson.get(1);
+        assertEquals("Mountain landscape with snow-covered peaks", firstResult.get("mgAltText").textValue());
+        assertEquals("alt text 1", firstResult.get("altText").textValue());
+        assertEquals("alt text 2", secondResult.get("altText").textValue());
+        assertEquals("A scenic mountain landscape with snow-capped peaks rising above a forested valley",
+                secondResult.get("mgFullDescription").textValue());
     }
 
     private ContentObjectSolrRecord createContentObjectRecord(String id, String suffix) throws Exception {
@@ -120,5 +130,9 @@ public class MachineGeneratedControllerTest {
     private String loadDefaultJson() throws Exception {
         return Files.readString(
                 Path.of("src/test/resources/datastream/machineGeneratedDescriptionDefaults.json"));
+    }
+
+    private JsonNode deserializeApiResponse(String apiResponse) throws JsonProcessingException {
+        return MAPPER.readTree(apiResponse);
     }
 }
