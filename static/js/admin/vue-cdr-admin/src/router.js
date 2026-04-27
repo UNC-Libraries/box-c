@@ -7,16 +7,16 @@ import velocicroptorReport from "@/components/chompb/velocicroptorReport.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-     {
-       path: '/admin/list/:uuid?',
-       name: 'modalEditor',
-       component:  modal
-     },
-     {
-       path: '/admin/search/:uuid?',
-       name: 'modalEditorSearch',
-       component:  modal
-     },
+    {
+      path: '/admin/list/:uuid?',
+      name: 'modalEditor',
+      component:  modal
+    },
+    {
+      path: '/admin/search/:uuid?',
+      name: 'modalEditorSearch',
+      component:  modal
+    },
     {
       path: '/admin/altTextEditor/:uuid?',
       name: 'modalEditorAltText',

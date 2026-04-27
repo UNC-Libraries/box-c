@@ -6,6 +6,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
         alertMessage: '',
         alertMessageType: '', // valid options success, error
         currentRow: null,
+        currentUuid: null,
         error: null,
         items: [],
         showAltTextModal: false,
@@ -24,6 +25,9 @@ export const useAltTextStore = defineStore( 'alt-text',{
         setCurrentRow(row) {
             this.currentRow = row;
         },
+        setCurrentUuid(uuid) {
+            this.currentUuid = uuid;
+        },
         setCurrentRowFieldValue(field, value) {
             this.currentRow[field] = value;
         },
@@ -39,15 +43,16 @@ export const useAltTextStore = defineStore( 'alt-text',{
          * @returns {Promise<void>}
          */
         async fetchTableItems() {
-            // const response = await fetch(`/api/record/${this.uuid}/metadataView`);
-            const response = await fetch('/static/alt-text.json');
+            // const response = await fetch(`/api//machineGeneratedSearch/${this.currentUuid}`);
+            const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
                 const error = new Error('Network response was not ok');
                 error.response = response;
                 throw error;
             }
 
-            this.items = await response.json();
+            const rows = await response.json();
+            this.items = rows.results;
         }
     }
 });
