@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -39,53 +39,75 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
         HttpSession session = request.getSession(true);
         String ipAddress = request.getRemoteAddr();
 
+        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)){
+            return SerializationUtil.objectToJSON(Map.of("success", true));
+        }
+
         return turnstileVerification(ipAddress, token, session);
     }
 
     private String turnstileVerification(String ipAddress, CfTurnstileToken token, HttpSession session) {
-        var turnstileRequstInfo = new HashMap<String, String>();
-        turnstileRequstInfo.put("remoteip", ipAddress);
-        turnstileRequstInfo.put("secret", "1x0000000000000000000000000000000AA");
-        turnstileRequstInfo.put("response", token.getCfTurnstileToken());
-        String turnstileData = SerializationUtil.objectToJSON(turnstileRequstInfo);
+        String turnstileData = setTurnstileRequestInfo(ipAddress, token);
+        HttpRequest turnstileRequest = buildTurnstileRequest(turnstileData);
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest turnstileRequest = HttpRequest.newBuilder()
-                .uri(URI.create("https://challenges.cloudflare.com/turnstile/v0/siteverify"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(turnstileData))
-                .build();
         try {
-            HttpResponse<String> turnstileResponse = client.send(turnstileRequest, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode turnstileJson = mapper.readTree(turnstileResponse.body());
             var validationSucceeded = turnstileJson.get("success").asBoolean();
-            if (validationSucceeded) {
-                session.setAttribute("turnstileTokenExpiresIn", expiresIn());
-            }
-
-            session.setAttribute("validCfTurnstileToken", validationSucceeded);
-            session.setAttribute("userIPAddress", ipAddress);
-
+            setSuccessSessionState(session, ipAddress, validationSucceeded);
             return turnstileResponse.body();
         } catch (IOException | InterruptedException e) {
             log.warn("Unable to validate Turnstile token {}", e.getMessage());
-            Map<String, Object> error_response = new HashMap<>();
-            error_response.put("success", false);
-            error_response.put("http_exception", e.getMessage());
-
-            return SerializationUtil.objectToJSON(error_response);
+            setErrorSessionState(session, ipAddress);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return SerializationUtil.objectToJSON(errorResponse);
         }
     }
 
-    private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (ipAddress.equals("127.0.0.1")) {
-            return true;
-        }
+    private String setTurnstileRequestInfo(String ipAddress, CfTurnstileToken token) {
+        var turnstileRequestInfo = new HashMap<String, String>();
+        turnstileRequestInfo.put("remoteip", ipAddress);
+        turnstileRequestInfo.put("secret", "1x0000000000000000000000000000000AA");
+        turnstileRequestInfo.put("response", token.getCfTurnstileToken());
+        return SerializationUtil.objectToJSON(turnstileRequestInfo);
+    }
 
-        if (ipAddress.equals("0:0:0:0:0:0:0:1")) {
-            return false;
+    protected HttpResponse<String> sendTurnstileRequest(HttpRequest turnstileRequest) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        return client.send(turnstileRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpRequest buildTurnstileRequest(String turnstileData) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create("https://challenges.cloudflare.com/turnstile/v0/siteverify"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(turnstileData))
+                .build();
+    }
+
+    private void setSuccessSessionState(HttpSession session, String ipAddress, boolean validationSucceeded) {
+        if (validationSucceeded) {
+            session.setAttribute("turnstileTokenExpiresIn", expiresIn());
+        }
+        session.setAttribute("validCfTurnstileToken", validationSucceeded);
+        session.setAttribute("userIPAddress", ipAddress);
+        session.setAttribute("uncIPAddress", false);
+    }
+
+    private void setErrorSessionState(HttpSession session, String ipAddress) {
+        session.setAttribute("turnstileTokenExpiresIn", null);
+        session.setAttribute("validCfTurnstileToken", false);
+        session.setAttribute("userIPAddress", ipAddress);
+        session.setAttribute("uncIPAddress", false);
+    }
+
+    private Boolean hasUncAddress(String ipAddress, HttpSession session) {
+        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress")) || ipAddress.equals("127.0.0.1")) {
+            session.setAttribute("uncIPAddress", true);
+            return true;
         }
 
         var uncAddresses = List.of(
