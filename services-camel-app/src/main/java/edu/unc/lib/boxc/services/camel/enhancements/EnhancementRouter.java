@@ -38,7 +38,7 @@ public class EnhancementRouter extends RouteBuilder {
     private Integer enhancementThreads;
 
     private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
-            "videoAccessCopy,machineGenDescription";
+            "videoAccessCopy,machineGenDescription,pdfAccessCopy";
     @Override
     public void configure() throws Exception {
 
@@ -113,5 +113,7 @@ public class EnhancementRouter extends RouteBuilder {
         from("direct:process.enhancement.machineGenDescription")
                 .to("{{cdr.machine.gen.description.stream.camel}}");
 
+        from("direct:process.enhancement.pdfAccessCopy")
+                .to("{{cdr.enhancement.pdf.stream.camel}}");
     }
 }

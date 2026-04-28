@@ -118,6 +118,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private MachineGenDescriptionProcessor machineGenDescriptionProcessor;
 
+    private AddDerivativeProcessor addPdfAccessCopyProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -148,6 +150,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 AddDerivativeProcessor.class);
         addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
                 AddDerivativeProcessor.class);
+        addPdfAccessCopyProcessor = applicationContext.getBean("addPdfAccessCopuPrcoessor",
+                AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
@@ -157,6 +161,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addVideoAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(machineGenDescriptionProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addPdfAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
@@ -203,6 +208,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -215,6 +221,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -260,6 +267,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -286,6 +294,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -335,6 +344,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -424,7 +434,13 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testOcrPdfFile() throws Exception {
+
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {
