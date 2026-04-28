@@ -2,7 +2,7 @@
     <div class="cf-turnstile mx-auto my-6">
         <div>
             <h1 class="mb-4">Traffic control and bot detection...</h1>
-            <vue-turnstile :site-key="siteKey" v-model="token" @error="error" v-if="turnstileCallBack()"></vue-turnstile>
+            <vue-turnstile :site-key="siteKey" v-model="token" @error="onTurnstileError" v-if="!error"></vue-turnstile>
             <p>We strive to make our content freely available. If this check is preventing you from making use of our resources,
                 make sure you have cookies enabled. If you still have trouble, please
                 <a href=" https://library.unc.edu/report-blocked-catalog-access/?supportID=cloudflare_turnstile_dcr">get in touch</a>.</p>
@@ -16,20 +16,30 @@
 </template>
 
 <script>
-import axios from "axios";
+import fetchUtils from '@/mixins/fetchUtils';
 import VueTurnstile from 'vue-turnstile';
 
 export default {
-    name: "cfTurnstile",
+    name: 'cfTurnstile',
 
     data() {
         return {
             error: false,
-            token: null
+            token: ''
         };
     },
 
     components: {VueTurnstile},
+
+    mixins: [fetchUtils],
+
+    watch: {
+        token(token) {
+            if (token !== '') {
+                this.turnstileCallBack();
+            }
+        }
+    },
 
     computed: {
         siteKey() {
@@ -39,12 +49,12 @@ export default {
 
     methods: {
         async turnstileCallBack() {
-            if (this.token !== null) {
+            if (this.token !== '') {
                 try {
-                    const response = await axios.post('/api/challenge', JSON.stringify({ cfTurnstileToken: this.token }),{
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
+                    const response = await this.fetchWrapper('/api/challenge', true, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cfTurnstileToken: this.token })
                     });
 
                     if (response.data['success']) {
@@ -56,17 +66,21 @@ export default {
                     console.error('Error:', error);
                 }
             }
+        },
+
+        onTurnstileError() {
+            this.error = true;
         }
     },
 
     beforeUnmount() {
         this.error = false;
-        this.token = null;
+        this.token = '';
     }
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .cf-turnstile {
         width: 90%;
 
