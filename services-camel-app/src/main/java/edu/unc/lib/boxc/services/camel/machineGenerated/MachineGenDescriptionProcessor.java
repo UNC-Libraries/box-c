@@ -47,6 +47,7 @@ public class MachineGenDescriptionProcessor implements Processor {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private HttpClientConnectionManager connectionManager;
     private MachineGenUpdateService machineGenDescriptionUpdateService;
+    private MachineGenDescriptionContextHelper contextHelper;
     private String boxctronDescribesBasePath;
     private String apiKey;
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -113,8 +114,9 @@ public class MachineGenDescriptionProcessor implements Processor {
     }
 
     private HttpEntity getRequestJsonEntity(BinaryObject originalFile) throws JsonProcessingException {
+        String contextPrompt = contextHelper.generateContext(originalFile.getParentPid());
         var bodyMap = Map.of(
-                CONTEXT, "",
+                CONTEXT, contextPrompt,
                 FILENAME, originalFile.getFilename(),
                 MIMETYPE, originalFile.getMimetype(),
                 URI, originalFile.getContentUri());
@@ -144,6 +146,10 @@ public class MachineGenDescriptionProcessor implements Processor {
 
     public void setMachineGenDescriptionUpdateService(MachineGenUpdateService machineGenDescriptionUpdateService) {
         this.machineGenDescriptionUpdateService = machineGenDescriptionUpdateService;
+    }
+
+    public void setContextHelper(MachineGenDescriptionContextHelper contextHelper) {
+        this.contextHelper = contextHelper;
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {

@@ -63,6 +63,8 @@ public class MachineGenDescriptionProcessorTest {
     @Mock
     private MachineGenUpdateService machineGenUpdateService;
     @Mock
+    private MachineGenDescriptionContextHelper contextHelper;
+    @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private IndexingMessageSender indexingMessageSender;
@@ -92,7 +94,10 @@ public class MachineGenDescriptionProcessorTest {
         processor.setIndexingMessageSender(indexingMessageSender);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setMachineGenDescriptionUpdateService(machineGenUpdateService);
+        processor.setContextHelper(contextHelper);
         processor.setApiKey(API_KEY);
+
+        when(contextHelper.generateContext(any())).thenReturn("context");
     }
 
     @AfterEach
@@ -111,6 +116,7 @@ public class MachineGenDescriptionProcessorTest {
 
         processor.process(mockMachineGenExchange(false));
         verify(machineGenUpdateService).updateMachineGenText(any());
+        verify(contextHelper).generateContext(any());
         TestHelper.assertIndexingMessageSent(pid, indexingMessageSender, "automated");
     }
 
