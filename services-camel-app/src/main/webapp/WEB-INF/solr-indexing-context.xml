@@ -80,6 +80,7 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setDatastreamFilter" />
+                <ref bean="setContentDescriptionMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
             </list>
         </property>
