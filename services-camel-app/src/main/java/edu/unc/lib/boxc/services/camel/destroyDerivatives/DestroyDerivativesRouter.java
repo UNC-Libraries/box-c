@@ -98,7 +98,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("direct:pdf.derivatives.destroy")
                 .routeId("CdrDestroyPdf")
-                .startupOrder(198)
+                .startupOrder(197)
                 .log(LoggingLevel.DEBUG, log, "Destroying derivative pdf files")
                 .bean(destroyPdfProcessor);
     }

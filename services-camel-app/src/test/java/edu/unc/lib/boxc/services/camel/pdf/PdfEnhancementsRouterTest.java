@@ -38,7 +38,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String userAgent = "curl/7.37.1";
     private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
     private final String eventTypes = FcrepoJmsConstants.EVENT_NS + "ResourceCreation";
-    private final String pdfAccessCopy = "{dfAccessCopy";
+    private final String pdfAccessCopy = "pdfAccessCopy";
 
     @PropertyInject(value = "fcrepo.baseUrl")
     private String baseUri;

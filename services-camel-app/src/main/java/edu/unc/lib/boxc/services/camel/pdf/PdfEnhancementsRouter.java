@@ -47,9 +47,9 @@ public class PdfEnhancementsRouter extends RouteBuilder {
                 .backOffMultiplier("{{error.backOffMultiplier}}")
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.enhancement.video.stream.camel}}")
+        from("{{cdr.enhancement.pdf.stream.camel}}")
                 .routeId("PdfAccessCopy")
-                .startupOrder(21)
+                .startupOrder(23)
                 .log(LoggingLevel.DEBUG, log, "Access copy triggered")
                 .filter().method(addDerivativeProcessor, "needsRun")
                 .filter().method(pdfDerivativeProcessor, "allowedPdfType")
