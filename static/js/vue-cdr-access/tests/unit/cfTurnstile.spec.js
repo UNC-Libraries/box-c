@@ -48,9 +48,8 @@ describe('cfTurnstile.vue', () => {
     });
 
     it('calls challenge endpoint and redirects after successful validation', async () => {
-        fetchMock.mockResponse(JSON.stringify({ data: { success: true } }));
-        const wrapper = mountTurnstile();
-        wrapper.vm.token = 'token-abc';
+        fetchMock.mockResponse(JSON.stringify({ success: true }));
+        const wrapper = mountTurnstile({ token: 'token-abc' });
 
         await wrapper.vm.turnstileCallBack();
 
@@ -66,9 +65,8 @@ describe('cfTurnstile.vue', () => {
     });
 
     it('does not redirect when challenge response is not successful', async () => {
-        fetchMock.mockResponse(JSON.stringify({ data: { success: false } }));
-        const wrapper = mountTurnstile();
-        wrapper.vm.token = 'token-abc';
+        fetchMock.mockResponse(JSON.stringify({ success: false }));
+        const wrapper = mountTurnstile({ token: 'token-abc' });
 
         await wrapper.vm.turnstileCallBack();
 
@@ -77,9 +75,8 @@ describe('cfTurnstile.vue', () => {
     });
 
     it('sets error state when challenge request fails', async () => {
-        fetchMock.mockRejectOnce(new Error('network failed'));
-        const wrapper = mountTurnstile();
-        wrapper.vm.token = 'token-abc';
+         fetchMock.mockRejectOnce(new Error('network failed'));
+        const wrapper = mountTurnstile({ token: 'token-abc' });
 
         await wrapper.vm.turnstileCallBack();
 
