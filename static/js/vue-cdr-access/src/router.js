@@ -70,27 +70,29 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to) => {
   const store = useAccessStore();
 
   // Can't use the fetchWrapper mixin here, as the router is not a component and doesn't have access to mixins.
-  fetch('/api/userInformation', { method: 'HEAD' })
-      .then(response => {
-        store.setUsername(response.headers.get('username'));
-        store.setIsLoggedIn();
-        store.setViewAdmin(response.headers.get('can-view-admin'));
-        store.setUncIP(response.headers['unc-ip-address'] === 'true');
-        store.setValidToken(response.headers['valid-turnstile-token'] === 'true');
+  try {
+    const response = await fetch('/api/userInformation', { method: 'HEAD' });
 
-        // Issue a challenge if a user needs a challenge
-        if (window.turnstileEnabled && to.name === 'searchRecords' &&
-            !store.isLoggedIn && !store.uncIP && !store.validToken) {
-          return { path: '/turnstile', replace: true };
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    store.setUsername(response.headers.get('username'));
+    store.setIsLoggedIn();
+    store.setViewAdmin(response.headers.get('can-view-admin'));
+    store.setUncIP(response.headers.get('unc-ip-address') === 'true');
+    store.setValidToken(response.headers.get('valid-turnstile-token') === 'true');
+
+    // Issue a challenge if a user needs a challenge.
+    if (window.turnstileEnabled === 'True' && to.name === 'searchRecords' &&
+      !store.isLoggedIn && !store.uncIP && !store.validToken) {
+      return { path: '/turnstile', replace: true };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return true;
 });
 
 export default router

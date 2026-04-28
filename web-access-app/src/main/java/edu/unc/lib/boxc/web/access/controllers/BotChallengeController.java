@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.web.access.processing.CfTurnstileToken;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
+import org.apache.commons.net.util.SubnetUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -27,11 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.net.util.SubnetUtils;
-
 @Controller
 public class BotChallengeController extends AbstractErrorHandlingSearchController {
     private static final Logger log = LoggerFactory.getLogger(BotChallengeController.class);
+    private String turnstileSecret;
+
+
 
     @RequestMapping(value = "/api/challenge", method = RequestMethod.POST, produces = "application/json")
     public @ResponseBody
@@ -52,7 +56,6 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
 
         try {
             HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
-
             ObjectMapper mapper = new ObjectMapper();
             JsonNode turnstileJson = mapper.readTree(turnstileResponse.body());
             var validationSucceeded = turnstileJson.get("success").asBoolean();
@@ -70,7 +73,7 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     private String setTurnstileRequestInfo(String ipAddress, CfTurnstileToken token) {
         var turnstileRequestInfo = new HashMap<String, String>();
         turnstileRequestInfo.put("remoteip", ipAddress);
-        turnstileRequestInfo.put("secret", "1x0000000000000000000000000000000AA");
+        turnstileRequestInfo.put("secret", turnstileSecret);
         turnstileRequestInfo.put("response", token.getCfTurnstileToken());
         return SerializationUtil.objectToJSON(turnstileRequestInfo);
     }
@@ -105,9 +108,18 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     }
 
     private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress")) || ipAddress.equals("127.0.0.1")) {
+        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress"))
+                || ipAddress.equals("127.0.0.1")
+                || ipAddress.equals("0:0:0:0:0:0:0:1")
+                || ipAddress.equals("::1")) {
             session.setAttribute("uncIPAddress", true);
             return true;
+        }
+
+        // SubnetUtils only supports IPv4 CIDR checks.
+        if (ipAddress.contains(":")) {
+            session.setAttribute("uncIPAddress", false);
+            return false;
         }
 
         var uncAddresses = List.of(
@@ -164,5 +176,13 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
 
     private boolean timeCheck(ZonedDateTime sessionTime) {
         return getCurrentTime().isBefore(sessionTime);
+    }
+
+    @Autowired
+    public void setTurnstileSecret(@Qualifier("turnstileSecret") String turnstileSecret) {
+        if (turnstileSecret == null || turnstileSecret.isBlank()) {
+            throw new IllegalArgumentException("turnstileSecret must be configured");
+        }
+        this.turnstileSecret = turnstileSecret;
     }
 }

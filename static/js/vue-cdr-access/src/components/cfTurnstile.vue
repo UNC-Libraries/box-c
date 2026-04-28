@@ -57,7 +57,7 @@ export default {
                         body: JSON.stringify({ cfTurnstileToken: this.token })
                     });
 
-                    if (response.data['success']) {
+                    if (response['success']) {
                         // replace the challenge page in history
                         this.$router.replace({ path: this.$route.redirectedFrom.path, query: this.$route.redirectedFrom.query });
                     }

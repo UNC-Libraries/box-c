@@ -31,7 +31,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonSkipsVerificationForUncAddress() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(UNC_IP_ADDRESS);
 
         String result = controller.turnstileJson(token(), request, new MockHttpServletResponse());
@@ -42,7 +42,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonSkipsVerificationForIpv4LoopbackAddress() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp("127.0.0.1");
 
         String result = controller.turnstileJson(token(), request, new MockHttpServletResponse());
@@ -53,7 +53,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonSkipsVerificationWhenSessionHasUncIpFlag() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
         Objects.requireNonNull(request.getSession(true)).setAttribute("uncIPAddress", true);
 
@@ -65,7 +65,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonSkipsVerificationForValidSessionToken() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
         Objects.requireNonNull(request.getSession(true)).setAttribute("turnstileTokenExpiresIn",
                 ZonedDateTime.now(ZoneId.of("America/New_York")).plusMinutes(30));
@@ -79,7 +79,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonExpiredSessionTokenFallsBackToVerification() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
         Objects.requireNonNull(request.getSession(true)).setAttribute("turnstileTokenExpiresIn",
                 ZonedDateTime.now(ZoneId.of("America/New_York")).minusMinutes(1));
@@ -95,7 +95,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonVerificationSuccessSetsExpiryAndTokenFlag() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
         doReturn(turnstileResponse("{\"success\":true}")).when(controller).sendTurnstileRequest(any(HttpRequest.class));
 
@@ -110,7 +110,7 @@ public class BotChallengeControllerTest {
 
     @Test
     public void turnstileJsonVerificationFailureSetsErrorState() throws Exception {
-        BotChallengeController controller = spy(new BotChallengeController());
+        BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
         doThrow(new IOException("bad token")).when(controller).sendTurnstileRequest(any(HttpRequest.class));
 
@@ -121,6 +121,12 @@ public class BotChallengeControllerTest {
         assertEquals(Boolean.FALSE, Objects.requireNonNull(request.getSession()).getAttribute("validCfTurnstileToken"));
         assertEquals(NON_UNC_IP_ADDRESS, request.getSession().getAttribute("userIPAddress"));
         assertNotEquals(Boolean.TRUE, request.getSession().getAttribute("uncIPAddress"));
+    }
+
+    private BotChallengeController controllerSpy() {
+        BotChallengeController controller = spy(new BotChallengeController());
+        controller.setTurnstileSecret("test-secret");
+        return controller;
     }
 
     private CfTurnstileToken token() {
