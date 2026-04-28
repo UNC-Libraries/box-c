@@ -2,11 +2,15 @@ package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
@@ -52,6 +56,11 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         SearchRequest searchRequest = generateSearchRequest(request);
         SearchState searchState = searchRequest.getSearchState();
         searchState.setResultFields(MG_RESULT_FIELDS);
+        // filter to FileObjects
+        searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
+        // filter to children of parent ID
+        CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1," + pid.getUUID());
+        searchState.setFacet(cutoff);
         Map<String, Object> response = new HashMap<>();
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
@@ -65,14 +74,14 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         for (ContentObjectRecord metadata : resultResponse.getResultList()) {
 
             Map<String, Object> data = new HashMap<>();
-            data.put("id", metadata.getId());
-            data.put("title", metadata.getTitle());
-            data.put("altText", metadata.getAltText());
-            data.put("mgContentTags", metadata.getMgContentTags());
+            data.put(SearchFieldKey.ID.getUrlParam(), metadata.getId());
+            data.put(SearchFieldKey.TITLE.getUrlParam() , metadata.getTitle());
+            data.put(SearchFieldKey.ALT_TEXT.getUrlParam() , metadata.getAltText());
+            data.put(SearchFieldKey.MG_CONTENT_TAGS.getUrlParam() , metadata.getMgContentTags());
 
             var mgDescJson = machineGeneratedContentService.deserializeMachineGeneratedDescription(
                     metadata.getMgDescription());
-            data.put("mgDescription", mgDescJson);
+            data.put(SearchFieldKey.MG_DESCRIPTION.getUrlParam() , mgDescJson);
             data.put("mgAltText", machineGeneratedContentService.extractAltText(mgDescJson));
             data.put("mgTranscript", machineGeneratedContentService.extractTranscript(mgDescJson));
             data.put("mgFullDescription", machineGeneratedContentService.extractFullDescription(mgDescJson));

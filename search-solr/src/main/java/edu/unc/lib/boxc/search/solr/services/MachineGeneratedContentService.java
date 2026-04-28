@@ -146,8 +146,8 @@ public class MachineGeneratedContentService {
         if (mgdNode == null) {
             return null;
         }
-        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
-        return scoreNode.isMissingNode() ? null : scoreNode;
+        JsonNode assessmentNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
+        return assessmentNode.isMissingNode() ? null : assessmentNode;
     }
 
     /**
@@ -159,8 +159,8 @@ public class MachineGeneratedContentService {
         if (mgdNode == null) {
             return null;
         }
-        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD);
-        return scoreNode.isMissingNode() ? null : scoreNode;
+        JsonNode assessmentNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD);
+        return assessmentNode.isMissingNode() ? null : assessmentNode;
     }
 
     /**
