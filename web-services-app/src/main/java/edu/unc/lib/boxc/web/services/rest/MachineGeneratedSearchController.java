@@ -54,13 +54,11 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
                 pid, getAgentPrincipals().getPrincipals(), Permission.viewHidden);
 
         SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid); // Only children of this object will be returned
+        searchRequest.setApplyCutoffs(false); // Filters to all children, not just immediate
+
         SearchState searchState = searchRequest.getSearchState();
         searchState.setResultFields(MG_RESULT_FIELDS);
-        // filter to FileObjects
-        searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
-        // filter to children of parent ID
-        CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1," + pid.getUUID());
-        searchState.setFacet(cutoff);
         Map<String, Object> response = new HashMap<>();
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
