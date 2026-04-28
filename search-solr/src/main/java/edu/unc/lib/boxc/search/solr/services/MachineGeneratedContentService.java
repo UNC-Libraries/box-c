@@ -82,6 +82,9 @@ public class MachineGeneratedContentService {
      * @return
      */
     public JsonNode deserializeMachineGeneratedDescription(String mgdJson) {
+        if (mgdJson == null) {
+            return null;
+        }
         try {
             return MAPPER.readTree(mgdJson);
         } catch (JsonProcessingException e) {

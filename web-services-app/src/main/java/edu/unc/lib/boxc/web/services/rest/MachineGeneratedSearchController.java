@@ -15,6 +15,8 @@ import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
  */
 @Controller
 public class MachineGeneratedSearchController extends AbstractSolrSearchController {
+    private static final Logger log = LoggerFactory.getLogger(MachineGeneratedSearchController.class);
     public static final List<String> MG_RESULT_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(), SearchFieldKey.ALT_TEXT.name(), SearchFieldKey.MG_CONTENT_TAGS.name(),
             SearchFieldKey.MG_DESCRIPTION.name(), SearchFieldKey.FULL_DESCRIPTION.name(),
@@ -70,7 +73,6 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
 
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
         for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-
             Map<String, Object> data = new HashMap<>();
             data.put(SearchFieldKey.ID.getUrlParam(), metadata.getId());
             data.put(SearchFieldKey.TITLE.getUrlParam() , metadata.getTitle());
@@ -92,7 +94,6 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         response.put("results", results);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
 
     public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
         this.machineGeneratedContentService = machineGeneratedContentService;

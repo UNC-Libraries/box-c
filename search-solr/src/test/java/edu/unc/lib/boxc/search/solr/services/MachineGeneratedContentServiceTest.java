@@ -101,6 +101,12 @@ public class MachineGeneratedContentServiceTest {
     // ─── deserializeMachineGeneratedDescription ──────────────────────────────
 
     @Test
+    public void deserializeMachineGeneratedDescription_null_returnsNull() {
+        JsonNode node = service.deserializeMachineGeneratedDescription(null);
+        assertNull(node);
+    }
+
+    @Test
     public void deserializeMachineGeneratedDescription_validJson_returnsNode() throws Exception {
         String json = loadDefaultJson();
         JsonNode node = service.deserializeMachineGeneratedDescription(json);
