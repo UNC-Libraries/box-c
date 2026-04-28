@@ -533,6 +533,10 @@
         <property name="accessCopiesService" ref="accessCopiesService" />
     </bean>
 
+    <bean id="machineGeneratedContentService" class="edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService"/>
+    </bean>
+
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
     </util:set>
