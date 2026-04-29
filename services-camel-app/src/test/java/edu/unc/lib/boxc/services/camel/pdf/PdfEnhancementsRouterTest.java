@@ -38,7 +38,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String userAgent = "curl/7.37.1";
     private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
     private final String eventTypes = FcrepoJmsConstants.EVENT_NS + "ResourceCreation";
-    private final String pdfAccessCopy = "pdfAccessCopy";
+    private final String pdfAccessCopy = "PdfAccessCopy";
 
     @PropertyInject(value = "fcrepo.baseUrl")
     private String baseUri;
@@ -147,20 +147,20 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
         createContext(pdfAccessCopy);
 
         when(addPdfAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        var videoEndpoint = getMockEndpoint("mock:process.enhancement.videoAccessCopy");
-        videoEndpoint.expectedMessageCount(0);
+        var pdfEndpoint = getMockEndpoint("mock:process.enhancement.pdfAccessCopy");
+        pdfEndpoint.expectedMessageCount(0);
 
         var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
         solrIndexingEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        headers.put(CdrBinaryMimeType, "application/pdf");
+        headers.put(CdrBinaryMimeType, "audio/3gpp");
 
         template.sendBodyAndHeaders("", headers);
 
         verify(pdf4uProcessor, never()).process(any(Exchange.class));
         verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
-        videoEndpoint.assertIsSatisfied();
+        pdfEndpoint.assertIsSatisfied();
         solrIndexingEndpoint.assertIsSatisfied();
     }
 
