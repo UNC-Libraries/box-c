@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
-import edu.unc.lib.boxc.web.access.processing.CfTurnstileToken;
+import edu.unc.lib.boxc.web.access.controllers.BotChallengeController.CfTurnstileToken;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;

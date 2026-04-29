@@ -2,8 +2,6 @@ package edu.unc.lib.boxc.web.access.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.unc.lib.boxc.web.access.processing.CfTurnstileToken;
-import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import org.apache.commons.net.util.SubnetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +28,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles Cloudflare Turnstile challenge verification and UNC network bypass rules
+ * for access requests.
+ * @author lfarrell
+ */
 @Controller
-public class BotChallengeController extends AbstractErrorHandlingSearchController {
+public class BotChallengeController {
     private static final Logger log = LoggerFactory.getLogger(BotChallengeController.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Long TOKEN_TTL_HOURS = 24L;
     private String turnstileSecret;
 
 
@@ -56,8 +61,7 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
 
         try {
             HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode turnstileJson = mapper.readTree(turnstileResponse.body());
+            JsonNode turnstileJson = OBJECT_MAPPER.readTree(turnstileResponse.body());
             var validationSucceeded = turnstileJson.get("success").asBoolean();
             setSuccessSessionState(session, ipAddress, validationSucceeded);
             return turnstileResponse.body();
@@ -171,7 +175,7 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
     }
 
     private ZonedDateTime expiresIn() {
-        return getCurrentTime().plusHours(24L);
+        return getCurrentTime().plusHours(TOKEN_TTL_HOURS);
     }
 
     private boolean timeCheck(ZonedDateTime sessionTime) {
@@ -184,5 +188,17 @@ public class BotChallengeController extends AbstractErrorHandlingSearchControlle
             throw new IllegalArgumentException("turnstileSecret must be configured");
         }
         this.turnstileSecret = turnstileSecret;
+    }
+
+    public static class CfTurnstileToken {
+        private String cfTurnstileToken;
+
+        public String getCfTurnstileToken() {
+            return cfTurnstileToken;
+        }
+
+        public void setCfTurnstileToken(String token) {
+            this.cfTurnstileToken = token;
+        }
     }
 }
