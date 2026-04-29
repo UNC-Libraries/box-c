@@ -4,25 +4,42 @@ import altTextViewer from '@/components/machine-alt-text/altTextViewer.vue';
 
 const uuid = '67ff0cb6-c360-439a-a194-b271cd4177e4';
 const createSampleReviewAssessment = (overrides = {}) => ({
-    concerns_for_review: [],
+    concerns_for_review: [
+        'Unsupported inferential claim from external metadata'
+    ],
+    biased_language: 'NO',
     people_first_language: 'N/A',
+    unsupported_inferential_claims: 'YES',
     risk_score: 0,
     stereotyping: 'NO',
     ...overrides
 });
 const createSampleSafetyAssessment = (overrides = {}) => ({
     people_visible: 'NO',
+    demographics_described: 'NO',
+    misidentification_risk_people: 'LOW',
+    minors_present: 'NO',
+    named_individuals_claimed: 'NO',
+    violent_content: 'NONE',
+    racial_violence_oppression: 'NONE',
+    nudity: 'NONE',
     sexual_content: 'NONE',
+    stereotyping_present: 'NO',
+    atrocities_depicted: 'NO',
     symbols_present: {
         misidentification_risk: 'LOW',
         names: [],
         types: ['NONE']
     },
     text_characteristics: {
-        legibility: 'N/A',
-        text_present: 'NO',
-        text_type: 'N/A'
+        legibility: 'ILLEGIBLE',
+        text_present: 'INCIDENTAL',
+        text_type: 'PRINTED',
+        sensitivity: 'NONE'
     },
+    reasoning: 'Text present but not fully legible',
+    risk_score: 53,
+    inconsistency_count: 0,
     ...overrides
 });
 const sampleReviewAssessment = createSampleReviewAssessment();
@@ -98,12 +115,17 @@ describe('altTextViewer.vue', () => {
     describe('tagPaneOptions', () => {
         it('counts each tag once per row and sorts by descending count', () => {
             const wrapper = mountViewer([
-                { mgContentTags: ['test', 'boxy', 'apples'] },
-                { mgContentTags: ['test', 'boxy', 'cars'] },
-                { mgContentTags: ['test'] }
+                { mgContentTags: ['people_visible', 'demographics', 'named_individuals'] },
+                { mgContentTags: ['people_visible', 'unsupported_claims'] },
+                { mgContentTags: ['people_visible', 'named_individuals'] }
             ]);
 
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['test', 'boxy', 'apples', 'cars']);
+            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual([
+                'people visible',
+                'named individuals',
+                'demographics',
+                'unsupported claims'
+            ]);
         });
 
         it('keeps insertion order for tags with equal counts', () => {
@@ -144,7 +166,11 @@ describe('altTextViewer.vue', () => {
         it('formats safety values for arrays, objects, and empty values', () => {
             const wrapper = mountViewer();
 
-            expect(wrapper.vm.formatSafetyValue(sampleReviewAssessment.concerns_for_review)).toBe('none');
+            const listText = wrapper.vm.formatSafetyValue(sampleReviewAssessment.concerns_for_review);
+            expect(listText).toContain('<ul>');
+            expect(listText).toContain('unsupported inferential claim');
+
+            expect(wrapper.vm.formatSafetyValue([])).toBe('none');
             expect(wrapper.vm.formatSafetyValue(null)).toBe('None');
             expect(wrapper.vm.formatSafetyValue(sampleReviewAssessment.stereotyping)).toBe('no');
 
