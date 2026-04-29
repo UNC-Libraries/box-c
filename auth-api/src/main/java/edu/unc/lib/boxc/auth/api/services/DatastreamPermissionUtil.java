@@ -37,6 +37,8 @@ public class DatastreamPermissionUtil {
         DS_PERMISSION_MAP.put(DatastreamType.ORIGINAL_FILE, Permission.viewOriginal);
         DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA_HISTORY, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.TRANSCRIPT, Permission.viewMetadata);
+        DS_PERMISSION_MAP.put(DatastreamType.TRANSCRIPT_HISTORY, Permission.viewHidden);
         DS_PERMISSION_MAP.put(DatastreamType.VIDEO_ACCESS_COPY, Permission.viewAccessCopies);
     }
 
