@@ -61,6 +61,8 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         searchRequest.setApplyCutoffs(false); // Filters to all children, not just immediate
 
         SearchState searchState = searchRequest.getSearchState();
+        // filter to FileObjects
+        searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
         searchState.setResultFields(MG_RESULT_FIELDS);
         Map<String, Object> response = new HashMap<>();
 
