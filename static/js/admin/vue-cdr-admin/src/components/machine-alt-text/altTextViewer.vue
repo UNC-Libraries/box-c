@@ -9,7 +9,6 @@
                 <thead>
                 <tr>
                     <th><span class="is-sr-only">Thumbnail</span></th>
-                    <th>Title</th>
                     <th>Filename</th>
                     <th>Full Description (AI)</th>
                     <th>Alt Text (AI)</th>
@@ -74,7 +73,7 @@ export default {
             return Array.from(counts.entries())
                 .sort((a, b) => b[1] - a[1])
                 .map(([tag]) => ({
-                    label: `${tag.split('_').join(' ')}`,
+                    label: `${this.fieldName(tag)}`,
                     value: (rowData) => this.getTags(rowData).includes(tag)
                 }));
         },
@@ -123,17 +122,12 @@ export default {
         columns() {
             return [
                 {
-                    data: 'mgDescription.filename',
-                    render: (data) => `<figure class="thumbnail"><a href="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}" target="_blank"><img alt="''" src="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}"></a></figure>`
+                    data: null,
+                    render: (data, type, row) => `<figure class="thumbnail"><a href="/record/${row.id}" target="_blank"><img alt="''" loading="lazy" src="/services/api/thumb/${row.id}/small"></a></figure>`
                 },
                 {
-                    data: 'title',
-                    render: (data) => data
-                },
-                {
-                    data: 'mgDescription.filename',
-                    className: 'filename',
-                    render: (data) => `<a href="https://dcr-qa.lib.unc.edu/static/reports/alt-text/images/${data}" target="_blank">${data}</a>`
+                    data: null,
+                    render: (data, type, row) => `<a href="/record/${row.id}" target="_blank">${row.title}</a>`
                 },
                 {
                     data: 'mgFullDescription',
@@ -177,10 +171,10 @@ export default {
         columnDefs() {
             return [
                 { width: '15%', targets: [0] },
-                { width: '5%', targets: [1, 6, 9] },
-                { orderable: false, targets: [0, 7, 8, 9, 10] },
-                { searchable: false, targets: [0, 10] },
-                { visible: false, targets: [9] },
+                { width: '5%', targets: [1, 5, 8] },
+                { orderable: false, targets: [0, 6, 7, 8, 9] },
+                { searchable: false, targets: [0, 9] },
+                { visible: false, targets: [8] },
                 // Ensure no non-custom pane is generated from any column.
                 { searchPanes: { show: false }, targets: '_all' }
             ]
@@ -319,7 +313,6 @@ export default {
 
     beforeUnmount() {
         this.unbindTableEvents();
-       // localStorage.removeItem(this.uuid);
     }
 }
 </script>
