@@ -64,7 +64,7 @@ public class Pdf4uProcessorTest {
 
     @Test
     public void testPdf4uProcessor() throws Exception {
-        when(message.getHeader(CdrFcrepoHeaders.CdrAudioPath)).thenReturn(fileName);
+        when(message.getHeader(CdrFcrepoHeaders.CdrPdfPath)).thenReturn(fileName);
         try (MockedStatic<CLIMain> mockedStatic = mockStatic(CLIMain.class)) {
             mockedStatic.when(() -> CLIMain.runCommand(new String[]{anyString()}))
                     .thenAnswer((Answer<Void>) invocation -> null);
@@ -87,7 +87,7 @@ public class Pdf4uProcessorTest {
             mockedStatic.verify(() -> CLIMain.runCommand(new String[]{"pdf4u", "add_ocr",
                     "-i", null,
                     "-o", derivTmpPath,
-                    "-tt", null}));
+                    "-tt", "HANDWRITTEN-PRINT"}));
         }
     }
 }
