@@ -43,8 +43,9 @@ export const useAltTextStore = defineStore( 'alt-text',{
          * @returns {Promise<void>}
          */
         async fetchTableItems() {
-            // const response = await fetch(`/api//machineGeneratedSearch/${this.currentUuid}`);
-            const response = await fetch('/static/real-alt-text.json');
+            console.log(this.currentUuid);
+            const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}`);
+           // const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
                 const error = new Error('Network response was not ok');
                 error.response = response;
