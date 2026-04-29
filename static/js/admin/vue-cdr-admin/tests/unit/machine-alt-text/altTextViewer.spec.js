@@ -92,6 +92,61 @@ describe('altTextViewer.vue', () => {
             expect(options.searchPanes.panes[0].header).toBe('Search Tags');
             expect(options.layout.topStart).toBe('searchPanes');
         });
+
+        it('uses default table options for ordering, fixed header, select, and pagination', () => {
+            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
+            const options = wrapper.vm.tableOptions;
+
+            expect(options.order).toEqual([[1, 'asc']]);
+            expect(options.fixedHeader).toBe(true);
+            expect(options.select).toBe(true);
+            expect(options.pageLength).toBe(25);
+            expect(options.layout.topEnd.search.placeholder).toBe('Search');
+        });
+
+        it('hides search pane layout when there are no pane options', () => {
+            const wrapper = mountViewer([]);
+            expect(wrapper.vm.tableOptions.layout.topStart).toBeNull();
+        });
+    });
+
+    describe('columns and helpers', () => {
+        it('defines expected column keys in order', () => {
+            const wrapper = mountViewer();
+            const columns = wrapper.vm.columns;
+
+            expect(columns).toHaveLength(10);
+            expect(columns.map((column) => column.data)).toEqual([
+                null,
+                null,
+                'mgFullDescription',
+                'altText',
+                'mgTranscript',
+                'mgRiskScore',
+                'mgReviewAssessment',
+                'mgSafetyAssessment',
+                'mgContentTags',
+                null
+            ]);
+        });
+
+        it('renders thumbnail and title columns from record id and title', () => {
+            const wrapper = mountViewer();
+            const row = { id: 'abc-123', title: 'Sample title' };
+
+            const thumbnailCell = wrapper.vm.columns[0].render(null, 'display', row);
+            const titleCell = wrapper.vm.columns[1].render(null, 'display', row);
+
+            expect(thumbnailCell).toContain('/record/abc-123');
+            expect(thumbnailCell).toContain('/services/api/thumb/abc-123/small');
+            expect(titleCell).toContain('Sample title');
+            expect(titleCell).toContain('/record/abc-123');
+        });
+
+        it('formats snake_case names into spaced labels', () => {
+            const wrapper = mountViewer();
+            expect(wrapper.vm.fieldName('misidentification_risk_people')).toBe('misidentification risk people');
+        });
     });
 
     describe('getTags', () => {
