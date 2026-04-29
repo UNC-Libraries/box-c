@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class PdfEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(PdfEnhancementsRouter.class);
 
-    @BeanInject(value = "addVideoAccessCopyProcessor")
+    @BeanInject(value = "addPdfAccessCopyProcessor")
     private AddDerivativeProcessor addDerivativeProcessor;
 
     @BeanInject("pdf4uProcessor")
@@ -28,7 +28,7 @@ public class PdfEnhancementsRouter extends RouteBuilder {
     private UuidGenerator uuidGenerator;
 
     /**
-     * Configure the video enhancement route workflow.
+     * Configure the pdf enhancement route workflow.
      */
     @Override
     public void configure() throws Exception {

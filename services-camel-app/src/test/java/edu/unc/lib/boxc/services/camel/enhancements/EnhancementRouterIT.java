@@ -9,19 +9,16 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrAudioPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrVideoPath;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -41,17 +38,12 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
-import edu.unc.lib.boxc.services.camel.audio.Mp44uAudioProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.images.PdfImageProcessor;
 import edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
-import edu.unc.lib.boxc.services.camel.video.Mp44uVideoProcessor;
-import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
-import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -118,8 +110,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private MachineGenDescriptionProcessor machineGenDescriptionProcessor;
 
-    private AddDerivativeProcessor addPdfAccessCopyProcessor;
-
     @TempDir
     public Path tmpFolder;
 
@@ -150,8 +140,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 AddDerivativeProcessor.class);
         addVideoAccessCopyProcessor = applicationContext.getBean("addVideoAccessCopyProcessor",
                 AddDerivativeProcessor.class);
-        addPdfAccessCopyProcessor = applicationContext.getBean("addPdfAccessCopuPrcoessor",
-                AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         imageDerivativeProcessor = applicationContext.getBean(ImageDerivativeProcessor.class);
         pdfImageProcessor = applicationContext.getBean(PdfImageProcessor.class);
@@ -161,7 +149,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addVideoAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(machineGenDescriptionProcessor.needsRun(any(Exchange.class))).thenReturn(true);
-        when(addPdfAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
@@ -208,7 +195,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -221,7 +207,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -267,7 +252,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -294,7 +278,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -344,7 +327,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -434,13 +416,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-    }
-
-    @Test
-    public void testOcrPdfFile() throws Exception {
-
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {

@@ -56,14 +56,6 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor" />
     </bean>
 
-    <bean id="pdf4uProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.pdf.Pdf4uProcessor" />
-    </bean>
-
-    <bean id="pdfDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor" />
-    </bean>
-
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
@@ -97,10 +89,6 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
-    <bean id="addPdfAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
-    </bean>
-
     <bean id="machineGenDescriptionProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor" />
     </bean>
@@ -113,7 +101,6 @@
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.machineGenerated</camel:package>
-        <camel:package>edu.unc.lib.boxc.services.camel.pdf</camel:package>
     </camel:camelContext>
 
 </beans>

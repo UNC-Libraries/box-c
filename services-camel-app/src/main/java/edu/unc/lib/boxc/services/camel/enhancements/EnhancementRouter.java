@@ -38,7 +38,7 @@ public class EnhancementRouter extends RouteBuilder {
     private Integer enhancementThreads;
 
     private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
-            "videoAccessCopy,machineGenDescription,pdfAccessCopy";
+            "videoAccessCopy,machineGenDescription";
     @Override
     public void configure() throws Exception {
 
