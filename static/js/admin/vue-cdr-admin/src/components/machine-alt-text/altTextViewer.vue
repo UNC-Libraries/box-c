@@ -38,7 +38,7 @@ import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
 import SearchPanes from 'datatables.net-searchpanes-bm';
 import 'datatables.mark.js';
-import 'datatables.net-select-bm';//
+import 'datatables.net-select-bm';
 import {mapActions, mapState} from 'pinia';
 import {useAltTextStore} from '@/stores/alt-text';
 
@@ -74,7 +74,7 @@ export default {
             return Array.from(counts.entries())
                 .sort((a, b) => b[1] - a[1])
                 .map(([tag]) => ({
-                    label: `${tag}`,
+                    label: `${tag.split('_').join(' ')}`,
                     value: (rowData) => this.getTags(rowData).includes(tag)
                 }));
         },
