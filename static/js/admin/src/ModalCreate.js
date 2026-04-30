@@ -12,7 +12,10 @@ define('ModalCreate', [ 'jquery', 'jquery-ui', 'underscore', 'dompurify', 'Resul
 			if (resultObject instanceof ResultObject) {
 				pid = resultObject.metadata.id;
 				metadata = _.mapObject(resultObject.metadata, function (value, key) {
-					return DOMPurify.sanitize(value, { ALLOWED_TAGS: ['#text'] });
+					if (typeof value === 'string' || value instanceof String) {
+						return DOMPurify.sanitize(value, { ALLOWED_TAGS: ['#text'] });
+					}
+					return value;
 				});
 				this.resultObject = resultObject;
 			} else {
