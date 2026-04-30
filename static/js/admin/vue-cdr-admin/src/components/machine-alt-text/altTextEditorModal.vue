@@ -64,19 +64,9 @@ export default {
             return this.viewType === 'edit' ? 'Cancel' : 'Close';
         },
 
-        /**
-         * Extracts the image name from the filename path in the current row.
-         * It can initially be undefined, so always check that it's been set
-         * @returns {*|string}
-         */
-        imageName() {
-            const img_path = this.currentRow?.filename?.split('/');
-            return img_path !== undefined ? img_path[img_path.length - 1] : '';
-        },
-
         modalHeader() {
             let header_text = (this.viewType === 'edit') ? 'Editing' : 'Viewing';
-            return `${header_text} ${this.fieldTitle} for ${this.imageName}`;
+            return `${header_text} ${this.fieldTitle} for ${this.currentRow?.title}`;
         }
     },
 
@@ -87,7 +77,7 @@ export default {
         updateValue() {
             this.saving_data = true;
             this.setCurrentRowFieldValue(this.activeField, this.updated_text);
-            this.setAlertMessage('Value updated successfully updated');
+            this.setAlertMessage(`Value updated successfully updated for ${this.currentRow?.title}`);
             this.setAlertMessageType('success');
             this.saving_data = false;
             //this.closeModal();
