@@ -43,7 +43,6 @@ export const useAltTextStore = defineStore( 'alt-text',{
          * @returns {Promise<void>}
          */
         async fetchTableItems() {
-            console.log(this.currentUuid);
             const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}`);
            // const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
@@ -53,7 +52,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
             }
 
             const rows = await response.json();
-            this.items = rows.results;
+            this.items = Array.isArray(rows.metadata) ? rows.metadata : [];
         }
     }
 });

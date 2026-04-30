@@ -122,12 +122,12 @@ export default {
         columns() {
             return [
                 {
-                    data: null,
-                    render: (data, type, row) => `<figure class="thumbnail"><a href="/record/${row.id}" target="_blank"><img alt="''" loading="lazy" src="/services/api/thumb/${row.id}/small"></a></figure>`
+                    data: 'id',
+                    render: (data) => `<figure class="thumbnail"><a href="/content/${data}?dl=false" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
                 },
                 {
-                    data: null,
-                    render: (data, type, row) => `<a href="/record/${row.id}" target="_blank">${row.title}</a>`
+                    data: 'title',
+                    render: (data, type, row) => `<a href="/content/${row.id}?dl=false" target="_blank">${data}</a>`
                 },
                 {
                     data: 'mgFullDescription',
@@ -142,15 +142,18 @@ export default {
                     render: (data) => this.longText(data, 'mgTranscript')
                 },
                 {
-                    data: 'mgRiskScore',
-                    render: (data) => data
-                },
-                {
-                    data: 'mgReviewAssessment',
-                    render: (data) => this.renderSafetyData(data)
+                    data: 'mgDescription',
+                    render: (data) => {
+                        const description = JSON.parse(data);
+                        return description.result.overall_risk_score;
+                    }
                 },
                 {
                     data: 'mgSafetyAssessment',
+                    render: (data) => this.renderSafetyData(data)
+                },
+                {
+                    data: 'mgReviewAssessment',
                     render: (data) => this.renderSafetyData(data)
                 },
                 {

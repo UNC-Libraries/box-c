@@ -117,14 +117,14 @@ describe('altTextViewer.vue', () => {
 
             expect(columns).toHaveLength(10);
             expect(columns.map((column) => column.data)).toEqual([
-                null,
-                null,
+                'id',
+                'title',
                 'mgFullDescription',
                 'altText',
                 'mgTranscript',
                 'mgRiskScore',
-                'mgReviewAssessment',
                 'mgSafetyAssessment',
+                'mgReviewAssessment',
                 'mgContentTags',
                 null
             ]);
@@ -134,8 +134,8 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const row = { id: 'abc-123', title: 'Sample title' };
 
-            const thumbnailCell = wrapper.vm.columns[0].render(null, 'display', row);
-            const titleCell = wrapper.vm.columns[1].render(null, 'display', row);
+            const thumbnailCell = wrapper.vm.columns[0].render(row.id, 'display', row);
+            const titleCell = wrapper.vm.columns[1].render(row.title, 'display', row);
 
             expect(thumbnailCell).toContain('/record/abc-123');
             expect(thumbnailCell).toContain('/services/api/thumb/abc-123/small');
