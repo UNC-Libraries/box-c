@@ -123,7 +123,7 @@ export default {
             return [
                 {
                     data: 'id',
-                    render: (data) => `<figure class="thumbnail"><a href="/recprd/${data}" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
+                    render: (data) => `<figure class="thumbnail"><a href="/record/${data}" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
                 },
                 {
                     data: 'title',
@@ -142,15 +142,8 @@ export default {
                     render: (data) => this.longText(data, 'mgTranscript')
                 },
                 {
-                    data: 'mgDescription',
-                    render: (data) => {
-                        try {
-                            const description = JSON.parse(data);
-                            return description.result.overall_risk_score;
-                        } catch (e) {
-                            return '';
-                        }
-                    }
+                    data: 'mgRiskScore',
+                    render: (data) => data
                 },
                 {
                     data: 'mgSafetyAssessment',
