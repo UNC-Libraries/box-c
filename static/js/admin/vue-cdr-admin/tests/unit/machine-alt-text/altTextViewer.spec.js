@@ -44,13 +44,14 @@ const createSampleSafetyAssessment = (overrides = {}) => ({
 });
 const sampleReviewAssessment = createSampleReviewAssessment();
 const sampleSafetyAssessment = createSampleSafetyAssessment();
-const mountViewer = (items = []) => {
+const mountViewer = ({ items = [], globalTagCounts = {} } = {}) => {
     return shallowMount(altTextViewer, {
         global: {
             plugins: [createTestingPinia({
                 initialState: {
                     'alt-text': {
                         items,
+                        globalTagCounts,
                         currentUuid: uuid,
                         alertMessage: ''
                     }
@@ -73,18 +74,16 @@ const mountViewer = (items = []) => {
 
 describe('altTextViewer.vue', () => {
     describe('computed flags/options', () => {
-        it('reports hasItems and hasSearchPaneOptions based on items data', () => {
-            const emptyWrapper = mountViewer([]);
-            expect(emptyWrapper.vm.hasItems).toBe(false);
-            expect(emptyWrapper.vm.hasSearchPaneOptions).toBe(false);
+        it('builds search pane options based on items data', () => {
+            const emptyWrapper = mountViewer();
+            expect(emptyWrapper.vm.tagPaneOptions).toEqual([]);
 
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
-            expect(wrapper.vm.hasItems).toBe(true);
-            expect(wrapper.vm.hasSearchPaneOptions).toBe(true);
+            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
+            expect(wrapper.vm.tagPaneOptions).toHaveLength(1);
         });
 
         it('includes custom SearchPanes config in tableOptions', () => {
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
+            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
             const options = wrapper.vm.tableOptions;
 
             expect(options.searchPanes.columns).toEqual([]);
@@ -94,19 +93,22 @@ describe('altTextViewer.vue', () => {
         });
 
         it('uses default table options for ordering, fixed header, select, and pagination', () => {
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
+            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
             const options = wrapper.vm.tableOptions;
 
             expect(options.order).toEqual([[1, 'asc']]);
+            expect(options.serverSide).toBe(true);
+            expect(options.processing).toBe(true);
+            expect(typeof options.ajax).toBe('function');
             expect(options.fixedHeader).toBe(true);
             expect(options.select).toBe(true);
             expect(options.pageLength).toBe(25);
             expect(options.layout.topEnd.search.placeholder).toBe('Search');
         });
 
-        it('hides search pane layout when there are no pane options', () => {
-            const wrapper = mountViewer([]);
-            expect(wrapper.vm.tableOptions.layout.topStart).toBeNull();
+        it('keeps search panes visible in layout in server-side mode', () => {
+            const wrapper = mountViewer();
+            expect(wrapper.vm.tableOptions.layout.topStart).toBe('searchPanes');
         });
     });
 
@@ -122,7 +124,7 @@ describe('altTextViewer.vue', () => {
                 'mgFullDescription',
                 'altText',
                 'mgTranscript',
-                'mgRiskScore',
+                null,
                 'mgSafetyAssessment',
                 'mgReviewAssessment',
                 'mgContentTags',
@@ -169,34 +171,33 @@ describe('altTextViewer.vue', () => {
 
     describe('tagPaneOptions', () => {
         it('counts each tag once per row and sorts by descending count', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['people_visible', 'demographics', 'named_individuals'] },
-                { mgContentTags: ['people_visible', 'unsupported_claims'] },
-                { mgContentTags: ['people_visible', 'named_individuals'] }
-            ]);
 
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual([
-                'people visible',
-                'named individuals',
-                'demographics',
-                'unsupported claims'
+            const wrapperWithCounts = mountViewer({
+                globalTagCounts: {
+                    people_visible: 3,
+                    named_individuals: 2,
+                    demographics: 1,
+                    unsupported_claims: 1
+                }
+            });
+
+            expect(wrapperWithCounts.vm.tagPaneOptions.map((option) => option.label)).toEqual([
+                'people visible (3)',
+                'named individuals (2)',
+                'demographics (1)',
+                'unsupported claims (1)'
             ]);
         });
 
         it('keeps insertion order for tags with equal counts', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['beta', 'alpha'] },
-                { mgContentTags: ['alpha', 'beta'] }
-            ]);
+            const wrapper = mountViewer({ globalTagCounts: { beta: 2, alpha: 2 } });
 
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['beta', 'alpha']);
+            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['beta (2)', 'alpha (2)']);
         });
 
         it('builds option matchers that use tag values from the row', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['tag-a'] }
-            ]);
-            const tagA = wrapper.vm.tagPaneOptions.find((option) => option.label === 'tag-a');
+            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 5 } });
+            const tagA = wrapper.vm.tagPaneOptions.find((option) => option.label === 'tag-a (5)');
 
             expect(tagA.value({ mgContentTags: ['tag-a'] })).toBe(true);
             expect(tagA.value({ mgContentTags: ['other'] })).toBe(false);

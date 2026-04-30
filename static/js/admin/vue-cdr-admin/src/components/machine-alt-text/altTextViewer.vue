@@ -2,10 +2,9 @@
     <teleport to="#alt-text-admin">
         <div id="alt-text-viewer">
             <h1 class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ currentUuid }}</h1>
-            <data-table v-if="hasItems" :key="`alt-text-table-${itemsVersion}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
+            <data-table v-if="currentUuid" :key="`alt-text-table-${currentUuid}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
                         :columns="columns"
-                        :options="tableOptions"
-                        :data="items">
+                        :options="tableOptions">
                 <thead>
                 <tr>
                     <th><span class="is-sr-only">Thumbnail</span></th>
@@ -53,37 +52,20 @@ export default {
     data() {
         return {
             altTextTableClickHandler: null,
-            selected_field: '',
-            itemsVersion: 0
+            selected_field: ''
         }
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['items', 'currentUuid', 'alertMessage']),
+        ...mapState(useAltTextStore, ['currentUuid', 'alertMessage', 'globalTagCounts']),
 
         tagPaneOptions() {
-            const counts = new Map();
-            (Array.isArray(this.items) ? this.items : []).forEach((item) => {
-                const rowTags = this.getTags(item);
-                rowTags.forEach((tag) => {
-                    counts.set(tag, (counts.get(tag) || 0) + 1);
-                });
-            });
-
-            return Array.from(counts.entries())
+            return Object.entries(this.globalTagCounts || {})
                 .sort((a, b) => b[1] - a[1])
-                .map(([tag]) => ({
-                    label: `${this.fieldName(tag)}`,
+                .map(([tag, count]) => ({
+                    label: `${this.fieldName(tag)} (${count})`,
                     value: (rowData) => this.getTags(rowData).includes(tag)
                 }));
-        },
-
-        hasSearchPaneOptions() {
-            return this.tagPaneOptions.length > 0;
-        },
-
-        hasItems() {
-            return Array.isArray(this.items) && this.items.length > 0;
         },
 
         tableOptions() {
@@ -91,6 +73,9 @@ export default {
                 columnDefs: this.columnDefs,
                 mark: true, // Enables the mark.js integration for search highlighting
                 searching: true,
+                serverSide: true,
+                processing: true,
+                ajax: this.tableAjax,
                 order: [[1, 'asc']],
                 fixedHeader: true,
                 searchPanes: {
@@ -107,7 +92,7 @@ export default {
                     orderable: false
                 },
                 layout: {
-                    topStart: this.hasSearchPaneOptions ? 'searchPanes' : null,
+                    topStart: 'searchPanes',
                     topEnd: {
                         search: {
                             placeholder: 'Search'
@@ -183,8 +168,44 @@ export default {
     },
 
     methods: {
-        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setAlertMessage',
+        ...mapActions(useAltTextStore, ['fetchTableItemsPage', 'setActiveField', 'setAlertMessage',
             'setCurrentRow', 'setCurrentUuid', 'setShowAltTextModal', 'setViewType']),
+
+        async tableAjax(data, callback) {
+            try {
+                const result = await this.fetchTableItemsPage({
+                    start: data.start,
+                    length: data.length,
+                    search: data.search?.value || ''
+                });
+
+                callback({
+                    data: result.data,
+                    recordsTotal: result.recordsTotal,
+                    recordsFiltered: result.recordsFiltered
+                });
+
+                this.$nextTick(() => {
+                    this.unbindTableEvents();
+                    this.bindTableEvents();
+                    const dtApi = this.$refs.alt_text_table?.dt;
+                    const pane = dtApi?.settings?.()?.[0]?.oInit?.searchPanes?.panes?.[0];
+                    if (pane) {
+                        pane.options = this.tagPaneOptions;
+                    }
+                    if (dtApi?.searchPanes?.rebuildPane) {
+                        dtApi.searchPanes.rebuildPane();
+                    }
+                });
+            } catch (error) {
+                this.setAlertMessage('Unable to load alt text rows.');
+                callback({
+                    data: [],
+                    recordsTotal: 0,
+                    recordsFiltered: 0
+                });
+            }
+        },
 
         fieldName(field) {
             const parts = field.split('_')
@@ -286,27 +307,12 @@ export default {
         }
     },
 
-    watch: {
-        items: {
-            deep: true,
-            immediate: true,
-            handler() {
-                this.itemsVersion += 1;
-                this.$nextTick(() => {
-                    this.unbindTableEvents();
-                    this.bindTableEvents();
-                });
-            }
-        }
-    },
-
     beforeMount() {
         const uuid = this.$route.params.uuid ?? null;
         this.setCurrentUuid(uuid);
     },
 
     mounted() {
-        this.fetchTableItems();
         this.$nextTick(() => {
             this.editCell();
         });
