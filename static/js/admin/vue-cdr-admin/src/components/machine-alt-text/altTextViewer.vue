@@ -144,8 +144,12 @@ export default {
                 {
                     data: 'mgDescription',
                     render: (data) => {
-                        const description = JSON.parse(data);
-                        return description.result.overall_risk_score;
+                        try {
+                            const description = JSON.parse(data);
+                            return description.result.overall_risk_score;
+                        } catch (e) {
+                            return '';
+                        }
                     }
                 },
                 {
