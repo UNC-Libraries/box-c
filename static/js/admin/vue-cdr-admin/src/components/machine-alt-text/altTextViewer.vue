@@ -143,6 +143,7 @@ export default {
                 },
                 {
                     data: null,
+                    defaultContent: '',
                     render: (data, type, row) => row?.mgRiskScore
                 },
                 {
