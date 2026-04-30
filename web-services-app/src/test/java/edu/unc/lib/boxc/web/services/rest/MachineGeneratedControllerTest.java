@@ -6,19 +6,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
+import edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.stubbing.Answer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,6 +40,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
@@ -36,7 +51,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,12 +71,19 @@ public class MachineGeneratedControllerTest {
     private SolrQueryLayerService queryLayer;
     @Mock
     private SearchStateFactory searchStateFactory;
-    @Mock
     private SearchState searchState;
     @Mock
     private MachineGeneratedContentService machineGeneratedContentService;
     @Mock
     private SearchResultResponse searchResultResponse;
+    @Mock
+    private ChildrenCountService childrenCountService;
+    @Mock
+    private SetFacetTitleByIdService setFacetTitleByIdService;
+    @Mock
+    private SearchSettings searchSettings;
+    @Mock
+    private SearchResultResponseDecoratorService searchResultResponseDecorator;
     @InjectMocks
     private MachineGeneratedSearchController controller;
     private MockMvc mvc;
@@ -70,16 +96,27 @@ public class MachineGeneratedControllerTest {
         machineGeneratedContentService = new MachineGeneratedContentService();
         controller = new MachineGeneratedSearchController();
         controller.setAccessControlService(accessControlService);
+        controller.setSearchResultResponseDecoratorService(searchResultResponseDecorator);
         controller.setMachineGeneratedContentService(machineGeneratedContentService);
         controller.setQueryLayer(queryLayer);
         controller.setSearchStateFactory(searchStateFactory);
+        controller.setChildrenCountService(childrenCountService);
+        controller.setSetFacetTitleByIdService(setFacetTitleByIdService);
+        var searchStateUtil = new SearchStateUtil();
+        searchStateUtil.setSearchSettings(searchSettings);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
+        searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Collections.emptyList());
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         when(searchStateFactory.createSearchState(any())).thenReturn(searchState);
+        doAnswer((Answer<Void>) invocation -> null)
+                .when(searchResultResponseDecorator).populateThumbnailUrls(any(), any());
+        doAnswer((Answer<Void>) invocation -> null)
+                .when(searchResultResponseDecorator).retrieveFacets(any(), any());
     }
 
     @AfterEach
@@ -107,23 +144,23 @@ public class MachineGeneratedControllerTest {
 
         var apiResponseString = result.getResponse().getContentAsString();
         var apiResponseJson = deserializeApiResponse(apiResponseString);
-        assertEquals(NO_RESULTS, apiResponseJson.get("errorMessage").textValue());
-        assertTrue(apiResponseJson.get("results").isEmpty());
+        assertTrue(apiResponseJson.isEmpty());
     }
 
     @Test
     public void testSuccessResponse() throws Exception {
-        when(queryLayer.performSearch(any())).thenReturn(searchResultResponse);
         var fileRec1 = createContentObjectRecord(FILE1_ID, "1");
         var fileRec2 = createContentObjectRecord(FILE2_ID,"2");
+        when(queryLayer.performSearch(any())).thenReturn(searchResultResponse);
         when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(fileRec1, fileRec2));
+        when(searchResultResponse.getSearchState()).thenReturn(searchState);
 
         MvcResult result = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         var apiResponseString = result.getResponse().getContentAsString();
-        var apiResponseJson = deserializeApiResponse(apiResponseString).get("results");
+        var apiResponseJson = deserializeApiResponse(apiResponseString).get("metadata");
         var firstResult = apiResponseJson.get(0);
         var secondResult = apiResponseJson.get(1);
         assertEquals("Mountain landscape with snow-covered peaks", firstResult.get("mgAltText").textValue());

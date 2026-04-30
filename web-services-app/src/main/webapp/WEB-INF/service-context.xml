@@ -537,6 +537,15 @@
         <property name="derivativeService" ref="derivativeService"/>
     </bean>
 
+    <bean id="searchResultResponseDecoratorService" class="edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService">
+        <property name="accessCopiesService" ref="accessCopiesService"/>
+        <property name="multiSelectFacetListService" ref="multiSelectFacetListService"/>
+    </bean>
+
+    <bean id="multiSelectFacetListService" class="edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService">
+        <property name="searchService" ref="queryLayer"/>
+    </bean>
+
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
     </util:set>

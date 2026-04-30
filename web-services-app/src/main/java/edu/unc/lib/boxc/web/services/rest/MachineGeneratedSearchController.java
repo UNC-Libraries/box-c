@@ -5,14 +5,12 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
+import edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -25,9 +23,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +46,10 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
     private AccessControlService accessControlService;
     @Autowired
     private MachineGeneratedContentService machineGeneratedContentService;
+    @Autowired
+    private SearchResultResponseDecoratorService searchResultResponseDecoratorService;
 
+    @SuppressWarnings("unchecked")
     @RequestMapping(value = "/machineGeneratedSearch/{parentId}")
     public @ResponseBody ResponseEntity<Object> search(@PathVariable("parentId") String pidString, HttpServletRequest request) {
         var pid = PIDs.get(pidString);
@@ -64,37 +64,29 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         // filter to FileObjects
         searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
         searchState.setResultFields(MG_RESULT_FIELDS);
-        Map<String, Object> response = new HashMap<>();
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         if (resultResponse == null) {
-            response.put("results", List.of());
-            response.put("errorMessage", NO_RESULTS);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(Collections.emptyMap(), HttpStatus.OK);
         }
 
-        List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
-        for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(SearchFieldKey.ID.getUrlParam(), metadata.getId());
-            data.put(SearchFieldKey.TITLE.getUrlParam() , metadata.getTitle());
-            data.put(SearchFieldKey.ALT_TEXT.getUrlParam() , metadata.getAltText());
-            data.put(SearchFieldKey.MG_CONTENT_TAGS.getUrlParam() , metadata.getMgContentTags());
+        searchResultResponseDecoratorService.populateThumbnailUrls(searchRequest.getAccessGroups(), resultResponse);
+        searchResultResponseDecoratorService.retrieveFacets(searchRequest, resultResponse);
+        var searchResults = getResults(resultResponse, "search", request);
+        var resultList = (List<Map<String, Object>>) searchResults.get("metadata");
 
+        // add extracted machine generated fields to the search results
+        for (var result : resultList) {
             var mgDescJson = machineGeneratedContentService.deserializeMachineGeneratedDescription(
-                    metadata.getMgDescription());
-            data.put(SearchFieldKey.MG_DESCRIPTION.getUrlParam() , mgDescJson);
-            data.put("mgAltText", machineGeneratedContentService.extractAltText(mgDescJson));
-            data.put("mgTranscript", machineGeneratedContentService.extractTranscript(mgDescJson));
-            data.put("mgFullDescription", machineGeneratedContentService.extractFullDescription(mgDescJson));
-            data.put("mgReviewAssessment", machineGeneratedContentService.extractReviewAssessment(mgDescJson));
-            data.put("mgSafetyAssessment", machineGeneratedContentService.extractSafetyAssessment(mgDescJson));
-            data.put("mgRiskScore", machineGeneratedContentService.extractRiskScore(mgDescJson));
-
-            results.add(data);
+                    (String) result.get(SearchFieldKey.MG_DESCRIPTION.getUrlParam()));
+            result.put("mgAltText", machineGeneratedContentService.extractAltText(mgDescJson));
+            result.put("mgTranscript", machineGeneratedContentService.extractTranscript(mgDescJson));
+            result.put("mgFullDescription", machineGeneratedContentService.extractFullDescription(mgDescJson));
+            result.put("mgReviewAssessment", machineGeneratedContentService.extractReviewAssessment(mgDescJson));
+            result.put("mgSafetyAssessment", machineGeneratedContentService.extractSafetyAssessment(mgDescJson));
         }
-        response.put("results", results);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(searchResults, HttpStatus.OK);
     }
 
     public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
@@ -103,5 +95,9 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
 
     public void setAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
+    }
+
+    public void setSearchResultResponseDecoratorService(SearchResultResponseDecoratorService searchResultResponseDecoratorService) {
+        this.searchResultResponseDecoratorService = searchResultResponseDecoratorService;
     }
 }
