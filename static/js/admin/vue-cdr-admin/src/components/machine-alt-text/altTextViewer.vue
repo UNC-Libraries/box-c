@@ -142,8 +142,8 @@ export default {
                     render: (data) => this.longText(data, 'mgTranscript')
                 },
                 {
-                    data: 'mgRiskScore',
-                    render: (data) => data
+                    data: null,
+                    render: (data, type, row) => row?.mgRiskScore
                 },
                 {
                     data: 'mgSafetyAssessment',
