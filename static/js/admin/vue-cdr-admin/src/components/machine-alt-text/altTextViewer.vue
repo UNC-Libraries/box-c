@@ -123,11 +123,11 @@ export default {
             return [
                 {
                     data: 'id',
-                    render: (data) => `<figure class="thumbnail"><a href="/content/${data}?dl=false" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
+                    render: (data) => `<figure class="thumbnail"><a href="/recprd/${data}" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
                 },
                 {
                     data: 'title',
-                    render: (data, type, row) => `<a href="/content/${row.id}?dl=false" target="_blank">${data}</a>`
+                    render: (data, type, row) => `<a href="/record/${row.id}" target="_blank">${data}</a>`
                 },
                 {
                     data: 'mgFullDescription',
