@@ -77,7 +77,8 @@ export default {
                 mark: true, // Enables the mark.js integration for search highlighting
                 searching: true,
                 serverSide: true,
-                processing: false,
+                processing: true,
+                stateSave: false,
                 ajax: this.tableAjax,
                 order: [[1, 'asc']],
                 fixedHeader: true,
