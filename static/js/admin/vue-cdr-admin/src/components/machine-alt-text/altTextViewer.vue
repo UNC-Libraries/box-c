@@ -95,6 +95,9 @@ export default {
                 fixedHeader: true,
                 searchPanes: {
                     columns: [],
+                    dtOpts: {
+                        order: [[1, 'desc'], [0, 'asc']]
+                    },
                     panes: [
                         {
                             header: 'Search Tags',
@@ -341,6 +344,9 @@ export default {
     }
     div.dtsp-panesContainer div.dtsp-title {
         padding-right: 5px;
+    }
+    div.dtsp-searchPane div.dt-container div.dt-scroll-body div.dtsp-nameCont span.dtsp-name {
+        text-transform: capitalize;
     }
 }
 </style>
