@@ -184,7 +184,7 @@ export default {
                 this.$nextTick(() => {
                     this.unbindTableEvents();
                     this.bindTableEvents();
-                    this.rebuildTagPaneSafely();
+                 //   this.rebuildTagPaneSafely();
                 });
             } catch (error) {
                 this.setAlertMessage('Unable to load alt text rows.');

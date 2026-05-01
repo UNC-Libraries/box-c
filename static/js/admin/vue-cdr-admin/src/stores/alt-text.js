@@ -74,10 +74,10 @@ export const useAltTextStore = defineStore( 'alt-text',{
             const rows = await response.json();
             const data = Array.isArray(rows.metadata) ? rows.metadata : [];
             const totalFallback = Array.isArray(rows.metadata) ? rows.metadata.length : 0;
-            const facetTagValues = this.extractTagPaneValues(rows.facetFields);
+          //  const facetTagValues = this.extractTagPaneValues(rows.facetFields);
 
             this.items = data;
-            this.tagPaneValues = facetTagValues;
+         //   this.tagPaneValues = facetTagValues;
 
             return {
                 data,
