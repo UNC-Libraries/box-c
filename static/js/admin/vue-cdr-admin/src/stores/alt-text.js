@@ -8,8 +8,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
         currentRow: null,
         currentUuid: null,
         error: null,
-        globalTagCounts: {},
-        globalTagCountsLoadedForUuid: null,
+        tagPaneValues: [],
         items: [],
         showAltTextModal: false,
         viewType: 'view' // view or edit
@@ -29,8 +28,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
         },
         setCurrentUuid(uuid) {
             if (this.currentUuid !== uuid) {
-                this.globalTagCounts = {};
-                this.globalTagCountsLoadedForUuid = null;
+                this.tagPaneValues = [];
             }
             this.currentUuid = uuid;
         },
@@ -43,61 +41,19 @@ export const useAltTextStore = defineStore( 'alt-text',{
         setViewType(viewType) {
             this.viewType = viewType;
         },
-        buildTagCounts(items = []) {
-            const counts = {};
-            (Array.isArray(items) ? items : []).forEach((item) => {
-                const tags = Array.isArray(item?.mgContentTags) ? item.mgContentTags : [];
-                tags.forEach((tag) => {
-                    counts[tag] = (counts[tag] || 0) + 1;
-                });
-            });
-            return counts;
-        },
-        parseTagCounts(rawCounts) {
-            if (!rawCounts || typeof rawCounts !== 'object') {
-                return null;
-            }
+        extractTagPaneValues(facetFields) {
+            const facets = Array.isArray(facetFields) ? facetFields : [];
+            const tagFacet = facets.find((facet) => facet?.name === 'MG_CONTENT_TAGS');
+            const values = Array.isArray(tagFacet?.values) ? tagFacet.values : [];
 
-            if (Array.isArray(rawCounts)) {
-                return rawCounts.reduce((acc, entry) => {
-                    if (entry?.tag != null && Number.isFinite(entry?.count)) {
-                        acc[String(entry.tag)] = entry.count;
-                    }
-                    return acc;
-                }, {});
-            }
-
-            return Object.entries(rawCounts).reduce((acc, [tag, count]) => {
-                const parsed = Number(count);
-                if (Number.isFinite(parsed)) {
-                    acc[tag] = parsed;
-                }
-                return acc;
-            }, {});
-        },
-        async fetchGlobalTagCounts() {
-            if (!this.currentUuid) {
-                return {};
-            }
-            if (this.globalTagCountsLoadedForUuid === this.currentUuid) {
-                return this.globalTagCounts;
-            }
-
-            const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}`);
-            if (!response.ok) {
-                const error = new Error('Network response was not ok');
-                error.response = response;
-                throw error;
-            }
-
-            const rows = await response.json();
-            const metadata = Array.isArray(rows.metadata) ? rows.metadata : [];
-            this.globalTagCounts = this.buildTagCounts(metadata);
-            this.globalTagCountsLoadedForUuid = this.currentUuid;
-            return this.globalTagCounts;
+            return values.map((entry) => ({
+                label: entry.displayValue,
+                searchValue: entry.searchValue,
+                count: entry.count
+            }));
         },
         /**
-         * Fetches a server-side page for DataTables and updates the store item cache.
+         * Retrieves server-side page for DataTables and updates the store item cache.
          * We can't use the fetchWrapper here.
          * @returns {Promise<{data: Array, recordsTotal: number, recordsFiltered: number}>}
          */
@@ -108,6 +64,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
                 q: search
             });
             const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}?${params.toString()}`);
+           // const response = await fetch(`/static/real-alt-text.json?${params.toString()}`);
             if (!response.ok) {
                 const error = new Error('Network response was not ok');
                 error.response = response;
@@ -117,22 +74,10 @@ export const useAltTextStore = defineStore( 'alt-text',{
             const rows = await response.json();
             const data = Array.isArray(rows.metadata) ? rows.metadata : [];
             const totalFallback = Array.isArray(rows.metadata) ? rows.metadata.length : 0;
-            const parsedTagCounts = this.parseTagCounts(
-                rows.globalTagCounts || rows.tagCounts || rows.facets?.mgContentTags
-            );
+            const facetTagValues = this.extractTagPaneValues(rows.facetFields);
 
             this.items = data;
-            if (parsedTagCounts) {
-                this.globalTagCounts = parsedTagCounts;
-                this.globalTagCountsLoadedForUuid = this.currentUuid;
-            } else {
-                try {
-                    await this.fetchGlobalTagCounts();
-                } catch (error) {
-                    // Fallback for APIs without global facets; keep pane data usable.
-                    this.globalTagCounts = this.buildTagCounts(data);
-                }
-            }
+            this.tagPaneValues = facetTagValues;
 
             return {
                 data,

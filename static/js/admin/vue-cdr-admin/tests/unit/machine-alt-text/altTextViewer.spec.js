@@ -44,14 +44,14 @@ const createSampleSafetyAssessment = (overrides = {}) => ({
 });
 const sampleReviewAssessment = createSampleReviewAssessment();
 const sampleSafetyAssessment = createSampleSafetyAssessment();
-const mountViewer = ({ items = [], globalTagCounts = {} } = {}) => {
+const mountViewer = ({ items = [], tagPaneValues = [] } = {}) => {
     return shallowMount(altTextViewer, {
         global: {
             plugins: [createTestingPinia({
                 initialState: {
                     'alt-text': {
                         items,
-                        globalTagCounts,
+                        tagPaneValues,
                         currentUuid: uuid,
                         alertMessage: ''
                     }
@@ -74,16 +74,16 @@ const mountViewer = ({ items = [], globalTagCounts = {} } = {}) => {
 
 describe('altTextViewer.vue', () => {
     describe('computed flags/options', () => {
-        it('builds search pane options based on items data', () => {
+        it('builds search pane options from store facet tag values', () => {
             const emptyWrapper = mountViewer();
             expect(emptyWrapper.vm.tagPaneOptions).toEqual([]);
 
-            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
+            const wrapper = mountViewer({ tagPaneValues: [{ label: 'Tag A', searchValue: 'tag-a', count: 2 }] });
             expect(wrapper.vm.tagPaneOptions).toHaveLength(1);
         });
 
         it('includes custom SearchPanes config in tableOptions', () => {
-            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
+            const wrapper = mountViewer({ tagPaneValues: [{ label: 'Tag A', searchValue: 'tag-a', count: 2 }] });
             const options = wrapper.vm.tableOptions;
 
             expect(options.searchPanes.columns).toEqual([]);
@@ -93,12 +93,12 @@ describe('altTextViewer.vue', () => {
         });
 
         it('uses default table options for ordering, fixed header, select, and pagination', () => {
-            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 3 } });
+            const wrapper = mountViewer({ tagPaneValues: [{ label: 'Tag A', searchValue: 'tag-a', count: 2 }] });
             const options = wrapper.vm.tableOptions;
 
             expect(options.order).toEqual([[1, 'asc']]);
             expect(options.serverSide).toBe(true);
-            expect(options.processing).toBe(true);
+            expect(options.processing).toBe(false);
             expect(typeof options.ajax).toBe('function');
             expect(options.fixedHeader).toBe(true);
             expect(options.select).toBe(true);
@@ -117,7 +117,7 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const columns = wrapper.vm.columns;
 
-            expect(columns).toHaveLength(10);
+            expect(columns).toHaveLength(9);
             expect(columns.map((column) => column.data)).toEqual([
                 'id',
                 'title',
@@ -126,8 +126,7 @@ describe('altTextViewer.vue', () => {
                 'mgTranscript',
                 null,
                 'mgSafetyAssessment',
-                'mgReviewAssessment',
-                'mgContentTags',
+                null,
                 null
             ]);
         });
@@ -151,56 +150,41 @@ describe('altTextViewer.vue', () => {
         });
     });
 
-    describe('getTags', () => {
-        it('returns tag values as-is when array exists', () => {
-            const wrapper = mountViewer();
-            const row = {
-                mgContentTags: ['People', 'tag-a']
-            };
-
-            const result = wrapper.vm.getTags(row);
-            expect(result).toEqual(['People', 'tag-a']);
-        });
-
-        it('returns an empty array when tags are missing', () => {
-            const wrapper = mountViewer();
-            expect(wrapper.vm.getTags({})).toEqual([]);
-            expect(wrapper.vm.getTags(null)).toEqual([]);
-        });
-    });
-
     describe('tagPaneOptions', () => {
-        it('counts each tag once per row and sorts by descending count', () => {
+        it('uses facet displayValue labels in order', () => {
 
             const wrapperWithCounts = mountViewer({
-                globalTagCounts: {
-                    people_visible: 3,
-                    named_individuals: 2,
-                    demographics: 1,
-                    unsupported_claims: 1
-                }
+                tagPaneValues: [
+                    { label: 'People Visible', searchValue: 'people_visible', count: 3 },
+                    { label: 'Text Present', searchValue: 'text_present', count: 1 }
+                ]
             });
 
             expect(wrapperWithCounts.vm.tagPaneOptions.map((option) => option.label)).toEqual([
-                'people visible (3)',
-                'named individuals (2)',
-                'demographics (1)',
-                'unsupported claims (1)'
+                'People Visible (3)',
+                'Text Present (1)'
             ]);
         });
 
-        it('keeps insertion order for tags with equal counts', () => {
-            const wrapper = mountViewer({ globalTagCounts: { beta: 2, alpha: 2 } });
+        it('keeps insertion order from facet values', () => {
+            const wrapper = mountViewer({
+                tagPaneValues: [
+                    { label: 'Beta', searchValue: 'beta', count: 2 },
+                    { label: 'Alpha', searchValue: 'alpha', count: 2 }
+                ]
+            });
 
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['beta (2)', 'alpha (2)']);
+            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['Beta (2)', 'Alpha (2)']);
         });
 
-        it('builds option matchers that use tag values from the row', () => {
-            const wrapper = mountViewer({ globalTagCounts: { 'tag-a': 5 } });
-            const tagA = wrapper.vm.tagPaneOptions.find((option) => option.label === 'tag-a (5)');
+        it('builds option matchers that use facet searchValue against row tags', () => {
+            const wrapper = mountViewer({ tagPaneValues: [{ label: 'Tag A', searchValue: 'tag-a', count: 4 }] });
+            const tagA = wrapper.vm.tagPaneOptions.find((option) => option.label === 'Tag A (4)');
 
             expect(tagA.value({ mgContentTags: ['tag-a'] })).toBe(true);
             expect(tagA.value({ mgContentTags: ['other'] })).toBe(false);
+            expect(tagA.value({})).toBe(false);
+            expect(tagA.value(null)).toBe(false);
         });
     });
 

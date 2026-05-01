@@ -2,7 +2,7 @@
     <teleport to="#alt-text-admin">
         <div id="alt-text-viewer">
             <h1 class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ currentUuid }}</h1>
-            <data-table v-if="currentUuid" :key="`alt-text-table-${currentUuid}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
+            <data-table v-if="currentUuid" :key="`alt-text-table-${currentUuid}-${columns.length}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
                         :columns="columns"
                         :options="tableOptions">
                 <thead>
@@ -15,7 +15,6 @@
                     <th>Risk Score</th>
                     <th>Safety Assessment (AI)</th>
                     <th>Output Assessment (AI)</th>
-                    <th><span class="is-sr-only">Search Tags</span></th>
                     <th><span class="is-sr-only">Rerun Alt Text Generation</span></th>
                 </tr>
                 </thead>
@@ -57,14 +56,18 @@ export default {
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['currentUuid', 'alertMessage', 'globalTagCounts']),
+        ...mapState(useAltTextStore, ['currentUuid', 'alertMessage', 'tagPaneValues']),
 
         tagPaneOptions() {
-            return Object.entries(this.globalTagCounts || {})
-                .sort((a, b) => b[1] - a[1])
-                .map(([tag, count]) => ({
-                    label: `${this.fieldName(tag)} (${count})`,
-                    value: (rowData) => this.getTags(rowData).includes(tag)
+            return (Array.isArray(this.tagPaneValues) ? this.tagPaneValues : [])
+                .map(({ label, searchValue, count }) => ({
+                    label: `${label} (${count})`,
+                    total: count,
+                    count,
+                    value: (rowData) => {
+                        const tags = Array.isArray(rowData?.mgContentTags) ? rowData.mgContentTags : [];
+                        return tags.includes(searchValue);
+                    }
                 }));
         },
 
@@ -74,7 +77,7 @@ export default {
                 mark: true, // Enables the mark.js integration for search highlighting
                 searching: true,
                 serverSide: true,
-                processing: true,
+                processing: false,
                 ajax: this.tableAjax,
                 order: [[1, 'asc']],
                 fixedHeader: true,
@@ -136,15 +139,9 @@ export default {
                     render: (data) => this.renderSafetyData(data)
                 },
                 {
-                    data: 'mgReviewAssessment',
-                    render: (data) => this.renderSafetyData(data)
-                },
-                {
-                    data: 'mgContentTags',
-                    render: (data) => {
-                        const tags = Array.isArray(data) ? data : [];
-                        return tags.join(', ');
-                    }
+                    data: null,
+                    defaultContent: '',
+                    render: (data, type, row) => this.renderSafetyData(row?.mgReviewAssessment)
                 },
                 {
                     data: null,
@@ -158,9 +155,8 @@ export default {
             return [
                 { width: '15%', targets: [0] },
                 { width: '5%', targets: [1, 5, 8] },
-                { orderable: false, targets: [0, 6, 7, 8, 9] },
-                { searchable: false, targets: [0, 9] },
-                { visible: false, targets: [8] },
+                { orderable: false, targets: [0, 6, 7, 8] },
+                { searchable: false, targets: [0, 8] },
                 // Ensure no non-custom pane is generated from any column.
                 { searchPanes: { show: false }, targets: '_all' }
             ]
@@ -188,14 +184,7 @@ export default {
                 this.$nextTick(() => {
                     this.unbindTableEvents();
                     this.bindTableEvents();
-                    const dtApi = this.$refs.alt_text_table?.dt;
-                    const pane = dtApi?.settings?.()?.[0]?.oInit?.searchPanes?.panes?.[0];
-                    if (pane) {
-                        pane.options = this.tagPaneOptions;
-                    }
-                    if (dtApi?.searchPanes?.rebuildPane) {
-                        dtApi.searchPanes.rebuildPane();
-                    }
+                    this.rebuildTagPaneSafely();
                 });
             } catch (error) {
                 this.setAlertMessage('Unable to load alt text rows.');
@@ -204,6 +193,33 @@ export default {
                     recordsTotal: 0,
                     recordsFiltered: 0
                 });
+            }
+        },
+
+        rebuildTagPaneSafely() {
+            const dtApi = this.$refs.alt_text_table?.dt;
+            const settings = dtApi?.settings?.()?.[0];
+            if (!dtApi || !settings || !Array.isArray(settings.aoColumns)) {
+                return;
+            }
+
+            // SearchPanes can throw during redraw if the table columns are not fully initialized yet.
+            if (settings.aoColumns.length !== this.columns.length) {
+                return;
+            }
+
+            const pane = settings.oInit?.searchPanes?.panes?.[0];
+            if (pane) {
+                pane.options = this.tagPaneOptions;
+            }
+
+            try {
+                if (dtApi.searchPanes?.rebuildPane) {
+                    // Rebuild only the custom pane to avoid column-index rebuilds on removed columns.
+                    dtApi.searchPanes.rebuildPane(0, true);
+                }
+            } catch (error) {
+                // Ignore transient rebuild timing errors; panes will rebuild on the next draw.
             }
         },
 
@@ -269,9 +285,6 @@ export default {
 
         rerunAltTextGeneration() {},
 
-        getTags(rowData) {
-            return Array.isArray(rowData?.mgContentTags) ? rowData.mgContentTags : [];
-        },
 
         bindTableEvents() {
             const dtApi = this.$refs.alt_text_table?.dt;
