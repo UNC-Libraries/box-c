@@ -86,7 +86,6 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer({ tagPaneValues: [{ label: 'Tag A', searchValue: 'tag-a', count: 2 }] });
             const options = wrapper.vm.tableOptions;
 
-            expect(options.searchPanes.columns).toEqual([]);
             expect(options.searchPanes.initCollapsed).toBe(true);
             expect(options.searchPanes.panes[0].header).toBe('Search Tags');
             expect(options.layout.topStart).toBe('searchPanes');

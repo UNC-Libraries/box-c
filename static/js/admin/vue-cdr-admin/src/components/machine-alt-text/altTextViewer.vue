@@ -83,7 +83,6 @@ export default {
                 order: [[1, 'asc']],
                 fixedHeader: true,
                 searchPanes: {
-                    columns: [],
                     panes: [
                         {
                             header: 'Search Tags',
@@ -200,7 +199,6 @@ export default {
         rebuildTagPaneSafely() {
             const dtApi = this.$refs.alt_text_table?.dt;
             const settings = dtApi?.settings?.()?.[0];
-            console.log(settings.aoColumns.length, this.columns.length, settings.aaSorting)
             if (!dtApi || !settings || !Array.isArray(settings.aoColumns)) {
                 return;
             }
