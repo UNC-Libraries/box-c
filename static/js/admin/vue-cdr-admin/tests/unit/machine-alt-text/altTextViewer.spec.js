@@ -98,7 +98,7 @@ describe('altTextViewer.vue', () => {
 
             expect(options.order).toEqual([[1, 'asc']]);
             expect(options.serverSide).toBe(true);
-            expect(options.processing).toBe(true);
+            expect(options.processing).toBe(false);
             expect(typeof options.ajax).toBe('function');
             expect(options.fixedHeader).toBe(true);
             expect(options.select).toBe(true);

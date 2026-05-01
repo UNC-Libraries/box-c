@@ -77,7 +77,7 @@ export default {
                 mark: true, // Enables the mark.js integration for search highlighting
                 searching: true,
                 serverSide: true,
-                processing: true,
+                processing: false,
                 stateSave: false,
                 ajax: this.tableAjax,
                 order: [[1, 'asc']],
@@ -198,6 +198,7 @@ export default {
         },
 
         rebuildTagPaneSafely() {
+            console.log(settings.aoColumns.length, this.columns.length, settings.aaSorting)
             const dtApi = this.$refs.alt_text_table?.dt;
             const settings = dtApi?.settings?.()?.[0];
             if (!dtApi || !settings || !Array.isArray(settings.aoColumns)) {
