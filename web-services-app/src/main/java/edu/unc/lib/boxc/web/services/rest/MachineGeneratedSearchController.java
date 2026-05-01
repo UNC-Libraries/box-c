@@ -41,7 +41,12 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
             SearchFieldKey.TITLE.name(), SearchFieldKey.ALT_TEXT.name(), SearchFieldKey.MG_CONTENT_TAGS.name(),
             SearchFieldKey.MG_DESCRIPTION.name(), SearchFieldKey.FULL_DESCRIPTION.name(),
             SearchFieldKey.TRANSCRIPT.name(), SearchFieldKey.MG_RISK_SCORE.name());
-    public static final String NO_RESULTS = "No search results returned";
+    public static final String MG_ALT_TEXT_KEY = "mgAltText";
+    public static final String MG_TRANSCRIPT_KEY = "mgTranscript";
+    public static final String MG_FULL_DESCRIPTION_KEY = "mgFullDescription";
+    public static final String MG_REVIEW_ASSESSMENT_KEY = "mgReviewAssessment";
+    public static final String MG_SAFETY_ASSESSMENT_KEY = "mgSafetyAssessment";
+
     @Autowired
     private AccessControlService accessControlService;
     @Autowired
@@ -79,11 +84,11 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         for (var result : resultList) {
             var mgDescJson = machineGeneratedContentService.deserializeMachineGeneratedDescription(
                     (String) result.get(SearchFieldKey.MG_DESCRIPTION.getUrlParam()));
-            result.put("mgAltText", machineGeneratedContentService.extractAltText(mgDescJson));
-            result.put("mgTranscript", machineGeneratedContentService.extractTranscript(mgDescJson));
-            result.put("mgFullDescription", machineGeneratedContentService.extractFullDescription(mgDescJson));
-            result.put("mgReviewAssessment", machineGeneratedContentService.extractReviewAssessment(mgDescJson));
-            result.put("mgSafetyAssessment", machineGeneratedContentService.extractSafetyAssessment(mgDescJson));
+            result.put(MG_ALT_TEXT_KEY, machineGeneratedContentService.extractAltText(mgDescJson));
+            result.put(MG_TRANSCRIPT_KEY, machineGeneratedContentService.extractTranscript(mgDescJson));
+            result.put(MG_FULL_DESCRIPTION_KEY, machineGeneratedContentService.extractFullDescription(mgDescJson));
+            result.put(MG_REVIEW_ASSESSMENT_KEY, machineGeneratedContentService.extractReviewAssessment(mgDescJson));
+            result.put(MG_SAFETY_ASSESSMENT_KEY, machineGeneratedContentService.extractSafetyAssessment(mgDescJson));
         }
 
         return new ResponseEntity<>(searchResults, HttpStatus.OK);
@@ -91,13 +96,5 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
 
     public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
         this.machineGeneratedContentService = machineGeneratedContentService;
-    }
-
-    public void setAccessControlService(AccessControlService accessControlService) {
-        this.accessControlService = accessControlService;
-    }
-
-    public void setSearchResultResponseDecoratorService(SearchResultResponseDecoratorService searchResultResponseDecoratorService) {
-        this.searchResultResponseDecoratorService = searchResultResponseDecoratorService;
     }
 }

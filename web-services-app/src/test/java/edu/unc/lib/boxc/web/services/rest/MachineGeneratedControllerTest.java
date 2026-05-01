@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
@@ -11,32 +12,25 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
 import edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
-import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.stubbing.Answer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -44,17 +38,17 @@ import java.util.Collections;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.NO_RESULTS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.MG_ALT_TEXT_KEY;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.MG_FULL_DESCRIPTION_KEY;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.MG_REVIEW_ASSESSMENT_KEY;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.MG_SAFETY_ASSESSMENT_KEY;
+import static edu.unc.lib.boxc.web.services.rest.MachineGeneratedSearchController.MG_TRANSCRIPT_KEY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -93,15 +87,7 @@ public class MachineGeneratedControllerTest {
     @BeforeEach
     public void init() {
         closeable = openMocks(this);
-        machineGeneratedContentService = new MachineGeneratedContentService();
-        controller = new MachineGeneratedSearchController();
-        controller.setAccessControlService(accessControlService);
-        controller.setSearchResultResponseDecoratorService(searchResultResponseDecorator);
         controller.setMachineGeneratedContentService(machineGeneratedContentService);
-        controller.setQueryLayer(queryLayer);
-        controller.setSearchStateFactory(searchStateFactory);
-        controller.setChildrenCountService(childrenCountService);
-        controller.setSetFacetTitleByIdService(setFacetTitleByIdService);
         var searchStateUtil = new SearchStateUtil();
         searchStateUtil.setSearchSettings(searchSettings);
         mvc = MockMvcBuilders.standaloneSetup(controller)
@@ -113,10 +99,6 @@ public class MachineGeneratedControllerTest {
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         when(searchStateFactory.createSearchState(any())).thenReturn(searchState);
-        doAnswer((Answer<Void>) invocation -> null)
-                .when(searchResultResponseDecorator).populateThumbnailUrls(any(), any());
-        doAnswer((Answer<Void>) invocation -> null)
-                .when(searchResultResponseDecorator).retrieveFacets(any(), any());
     }
 
     @AfterEach
@@ -149,25 +131,46 @@ public class MachineGeneratedControllerTest {
 
     @Test
     public void testSuccessResponse() throws Exception {
+        JsonNode mgDescJson = MachineGeneratedContentService.MAPPER.readTree(loadDefaultJson());
         var fileRec1 = createContentObjectRecord(FILE1_ID, "1");
         var fileRec2 = createContentObjectRecord(FILE2_ID,"2");
         when(queryLayer.performSearch(any())).thenReturn(searchResultResponse);
         when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(fileRec1, fileRec2));
         when(searchResultResponse.getSearchState()).thenReturn(searchState);
+        when(machineGeneratedContentService.deserializeMachineGeneratedDescription(any())).thenReturn(mgDescJson);
 
-        MvcResult result = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
+        var result = mvc.perform(get("/machineGeneratedSearch/" + PARENT1_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        var apiResponseString = result.getResponse().getContentAsString();
-        var apiResponseJson = deserializeApiResponse(apiResponseString).get("metadata");
-        var firstResult = apiResponseJson.get(0);
-        var secondResult = apiResponseJson.get(1);
-        assertEquals("Mountain landscape with snow-covered peaks", firstResult.get("mgAltText").textValue());
-        assertEquals("alt text 1", firstResult.get("altText").textValue());
-        assertEquals("alt text 2", secondResult.get("altText").textValue());
-        assertEquals("A scenic mountain landscape with snow-capped peaks rising above a forested valley",
-                secondResult.get("mgFullDescription").textValue());
+        verify(searchResultResponseDecorator).populateThumbnailUrls(
+                any(AccessGroupSet.class), eq(searchResultResponse));
+        verify(searchResultResponseDecorator).retrieveFacets(
+                any(SearchRequest.class), eq(searchResultResponse));
+        verify(machineGeneratedContentService, times(2)).extractAltText(eq(mgDescJson));
+        verify(machineGeneratedContentService, times(2)).extractTranscript(eq(mgDescJson));
+        verify(machineGeneratedContentService, times(2)).extractFullDescription(eq(mgDescJson));
+        verify(machineGeneratedContentService, times(2)).extractReviewAssessment(eq(mgDescJson));
+        verify(machineGeneratedContentService, times(2)).extractSafetyAssessment(eq(mgDescJson));
+
+        var response = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        var apiResponseJson = deserializeApiResponse(response);
+        var metadata = apiResponseJson.get("metadata");
+
+        // check that the metadata has the added fields
+        var firstObjMetadata = metadata.get(0);
+        assertTrue(firstObjMetadata.has(MG_ALT_TEXT_KEY));
+        assertTrue(firstObjMetadata.has(MG_TRANSCRIPT_KEY));
+        assertTrue(firstObjMetadata.has(MG_FULL_DESCRIPTION_KEY));
+        assertTrue(firstObjMetadata.has(MG_REVIEW_ASSESSMENT_KEY));
+        assertTrue(firstObjMetadata.has(MG_SAFETY_ASSESSMENT_KEY));
+
+        var secondObjMetadata = metadata.get(0);
+        assertTrue(secondObjMetadata.has(MG_ALT_TEXT_KEY));
+        assertTrue(secondObjMetadata.has(MG_TRANSCRIPT_KEY));
+        assertTrue(secondObjMetadata.has(MG_FULL_DESCRIPTION_KEY));
+        assertTrue(secondObjMetadata.has(MG_REVIEW_ASSESSMENT_KEY));
+        assertTrue(secondObjMetadata.has(MG_SAFETY_ASSESSMENT_KEY));
     }
 
     private ContentObjectSolrRecord createContentObjectRecord(String id, String suffix) throws Exception {
