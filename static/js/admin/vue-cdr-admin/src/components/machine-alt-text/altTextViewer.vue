@@ -82,7 +82,7 @@ export default {
                 ajax: this.tableAjax,
                 order: [[1, 'asc']],
                 fixedHeader: true,
-                searchPanes: {
+               /* searchPanes: {
                     panes: [
                         {
                             header: 'Search Tags',
@@ -93,9 +93,9 @@ export default {
                     threshold: 1,
                     initCollapsed: true,
                     orderable: false
-                },
+                },*/
                 layout: {
-                    topStart: 'searchPanes',
+                   // topStart: 'searchPanes',
                     topEnd: {
                         search: {
                             placeholder: 'Search'
@@ -158,7 +158,7 @@ export default {
                 { orderable: false, targets: [0, 6, 7, 8] },
                 { searchable: false, targets: [0, 8] },
                 // Ensure no non-custom pane is generated from any column.
-                { searchPanes: { show: false }, targets: '_all' }
+               // { searchPanes: { show: false }, targets: '_all' }
             ]
         }
     },
@@ -196,7 +196,7 @@ export default {
             }
         },
 
-        rebuildTagPaneSafely() {
+   /*     rebuildTagPaneSafely() {
             const dtApi = this.$refs.alt_text_table?.dt;
             const settings = dtApi?.settings?.()?.[0];
             if (!dtApi || !settings || !Array.isArray(settings.aoColumns)) {
@@ -221,7 +221,7 @@ export default {
             } catch (error) {
                 // Ignore transient rebuild timing errors; panes will rebuild on the next draw.
             }
-        },
+        },*/
 
         fieldName(field) {
             const parts = field.split('_')
