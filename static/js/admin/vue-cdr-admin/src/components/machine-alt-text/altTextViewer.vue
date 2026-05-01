@@ -198,9 +198,9 @@ export default {
         },
 
         rebuildTagPaneSafely() {
-            console.log(settings.aoColumns.length, this.columns.length, settings.aaSorting)
             const dtApi = this.$refs.alt_text_table?.dt;
             const settings = dtApi?.settings?.()?.[0];
+            console.log(settings.aoColumns.length, this.columns.length, settings.aaSorting)
             if (!dtApi || !settings || !Array.isArray(settings.aoColumns)) {
                 return;
             }
