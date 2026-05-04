@@ -1,0 +1,204 @@
+package edu.unc.lib.boxc.web.access.controllers;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
+import org.apache.commons.net.util.SubnetUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Handles Cloudflare Turnstile challenge verification and UNC network bypass rules
+ * for access requests.
+ * @author lfarrell
+ */
+@Controller
+public class BotChallengeController {
+    private static final Logger log = LoggerFactory.getLogger(BotChallengeController.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Long TOKEN_TTL_HOURS = 24L;
+    private String turnstileSecret;
+
+
+
+    @RequestMapping(value = "/api/challenge", method = RequestMethod.POST, produces = "application/json")
+    public @ResponseBody
+    String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(true);
+        String ipAddress = request.getRemoteAddr();
+
+        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)){
+            return SerializationUtil.objectToJSON(Map.of("success", true));
+        }
+
+        return turnstileVerification(ipAddress, token, session);
+    }
+
+    private String turnstileVerification(String ipAddress, CfTurnstileToken token, HttpSession session) {
+        String turnstileData = setTurnstileRequestInfo(ipAddress, token);
+        HttpRequest turnstileRequest = buildTurnstileRequest(turnstileData);
+
+        try {
+            HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
+            JsonNode turnstileJson = OBJECT_MAPPER.readTree(turnstileResponse.body());
+            var validationSucceeded = turnstileJson.get("success").asBoolean();
+            setSuccessSessionState(session, ipAddress, validationSucceeded);
+            return turnstileResponse.body();
+        } catch (IOException | InterruptedException e) {
+            log.warn("Unable to validate Turnstile token {}", e.getMessage());
+            setErrorSessionState(session, ipAddress);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return SerializationUtil.objectToJSON(errorResponse);
+        }
+    }
+
+    private String setTurnstileRequestInfo(String ipAddress, CfTurnstileToken token) {
+        var turnstileRequestInfo = new HashMap<String, String>();
+        turnstileRequestInfo.put("remoteip", ipAddress);
+        turnstileRequestInfo.put("secret", turnstileSecret);
+        turnstileRequestInfo.put("response", token.getCfTurnstileToken());
+        return SerializationUtil.objectToJSON(turnstileRequestInfo);
+    }
+
+    protected HttpResponse<String> sendTurnstileRequest(HttpRequest turnstileRequest) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        return client.send(turnstileRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpRequest buildTurnstileRequest(String turnstileData) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create("https://challenges.cloudflare.com/turnstile/v0/siteverify"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(turnstileData))
+                .build();
+    }
+
+    private void setSuccessSessionState(HttpSession session, String ipAddress, boolean validationSucceeded) {
+        if (validationSucceeded) {
+            session.setAttribute("turnstileTokenExpiresIn", expiresIn());
+        }
+        session.setAttribute("validCfTurnstileToken", validationSucceeded);
+        session.setAttribute("userIPAddress", ipAddress);
+        session.setAttribute("uncIPAddress", false);
+    }
+
+    private void setErrorSessionState(HttpSession session, String ipAddress) {
+        session.setAttribute("turnstileTokenExpiresIn", null);
+        session.setAttribute("validCfTurnstileToken", false);
+        session.setAttribute("userIPAddress", ipAddress);
+        session.setAttribute("uncIPAddress", false);
+    }
+
+    private Boolean hasUncAddress(String ipAddress, HttpSession session) {
+        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress"))
+                || ipAddress.equals("127.0.0.1")
+                || ipAddress.equals("0:0:0:0:0:0:0:1")
+                || ipAddress.equals("::1")) {
+            session.setAttribute("uncIPAddress", true);
+            return true;
+        }
+
+        // SubnetUtils only supports IPv4 CIDR checks.
+        if (ipAddress.contains(":")) {
+            session.setAttribute("uncIPAddress", false);
+            return false;
+        }
+
+        var uncAddresses = List.of(
+                "152.2.0.0/16", // Campus
+                "152.19.0.0/16", // Campus
+                "152.23.0.0/16", // Campus
+                "152.54.0.0/20", // RENCI
+                "172.17.0.0/18", // VPN
+                "172.17.57.0/28", // Library-IT VPN group
+                "198.85.230.0/23", // Off campus location
+                "204.84.8.0/22", // Off campus location
+                "204.84.252.0/22", // Off campus location
+                "204.85.176.0/20", // Off campus location
+                "204.85.192.0/18" // UNC Hospitals
+        );
+
+        var validUncAddress = false;
+
+        for (var uncAddress : uncAddresses) {
+            SubnetUtils utils = new SubnetUtils(uncAddress);
+            if (utils.getInfo().isInRange(ipAddress)) {
+                validUncAddress = true;
+                break;
+            };
+        }
+
+        var uncAddressSession = session.getAttribute("uncIPAddress");
+        if (uncAddressSession == null) {
+            session.setAttribute("uncIPAddress", validUncAddress);
+        }
+
+        return validUncAddress;
+    }
+
+    private Boolean hasValidTurnstileToken(HttpSession session) {
+        var tokenExpiration = session.getAttribute("turnstileTokenExpiresIn");
+        var userIPAddress = session.getAttribute("userIPAddress");
+
+        if (tokenExpiration != null && userIPAddress != null) {
+            return timeCheck((ZonedDateTime) tokenExpiration);
+        }
+
+        return false;
+    }
+
+    private ZonedDateTime getCurrentTime() {
+        ZoneId timeZone = ZoneId.of("America/New_York");
+        return ZonedDateTime.now(timeZone);
+    }
+
+    private ZonedDateTime expiresIn() {
+        return getCurrentTime().plusHours(TOKEN_TTL_HOURS);
+    }
+
+    private boolean timeCheck(ZonedDateTime sessionTime) {
+        return getCurrentTime().isBefore(sessionTime);
+    }
+
+    @Autowired
+    public void setTurnstileSecret(@Qualifier("turnstileSecret") String turnstileSecret) {
+        if (turnstileSecret == null || turnstileSecret.isBlank()) {
+            throw new IllegalArgumentException("turnstileSecret must be configured");
+        }
+        this.turnstileSecret = turnstileSecret;
+    }
+
+    public static class CfTurnstileToken {
+        private String cfTurnstileToken;
+
+        public String getCfTurnstileToken() {
+            return cfTurnstileToken;
+        }
+
+        public void setCfTurnstileToken(String token) {
+            this.cfTurnstileToken = token;
+        }
+    }
+}
