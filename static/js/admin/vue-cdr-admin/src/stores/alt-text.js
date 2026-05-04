@@ -79,6 +79,8 @@ export const useAltTextStore = defineStore( 'alt-text',{
 
             if (this.currentPage < this.totalPages) {
                 this.currentPage += 1;
+                // Add slight delay so the API does not get pounded between page requests.
+                await new Promise((resolve) => setTimeout(resolve, 500));
                 await this.fetchTableItemsPages();
             }
         }
