@@ -176,7 +176,7 @@ export default {
             return [
                 { width: '15%', targets: [0] },
                 { width: '5%', targets: [1, 5, 8] },
-                { orderable: false, targets: [0, 6, 7, 8, 9] },
+                { orderable: false, targets: [0, 2, 3, 4, 6, 7, 8, 9] },
                 { searchable: false, targets: [0, 9] },
                 { visible: false, targets: [8] },
                 // Ensure no non-custom pane is generated from any column.
