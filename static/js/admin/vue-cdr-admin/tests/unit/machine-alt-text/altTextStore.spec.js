@@ -15,15 +15,15 @@ describe('alt-text store', () => {
 
             fetchMock
                 .mockResponseOnce(JSON.stringify({
-                    resultCount: 45,
+                    resultCount: 250,
                     metadata: [{ id: 'id-1' }, { id: 'id-2' }]
                 }))
                 .mockResponseOnce(JSON.stringify({
-                    resultCount: 45,
+                    resultCount: 250,
                     metadata: [{ id: 'id-3' }]
                 }))
                 .mockResponseOnce(JSON.stringify({
-                    resultCount: 45,
+                    resultCount: 250,
                     metadata: [{ id: 'id-4' }]
                 }));
 

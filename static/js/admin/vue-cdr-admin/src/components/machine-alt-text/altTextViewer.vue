@@ -2,7 +2,7 @@
     <teleport to="#alt-text-admin">
         <div id="alt-text-viewer">
             <h1 class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ currentUuid }}</h1>
-            <data-table v-if="hasItems" :key="`alt-text-table-${itemsVersion}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
+            <data-table v-if="showTable" :key="`alt-text-table-${itemsVersion}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
                         :columns="columns"
                         :options="tableOptions"
                         :data="items">
@@ -94,6 +94,10 @@ export default {
 
         hasItems() {
             return Array.isArray(this.items) && this.items.length > 0;
+        },
+
+        showTable() {
+            return !this.isLoading && this.hasItems;
         },
 
         tableOptions() {

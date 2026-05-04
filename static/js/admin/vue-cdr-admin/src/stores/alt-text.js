@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 
-const PER_PAGE = 20;
+const PER_PAGE = 100;
+const PAGE_FETCH_DELAY = 250;
 export const useAltTextStore = defineStore( 'alt-text',{
     state: () => ({
         activeField: '',
@@ -50,16 +51,18 @@ export const useAltTextStore = defineStore( 'alt-text',{
             this.isLoading = true;
             this.items = [];
             this.currentPage = 1;
+            const loadedItems = [];
 
             try {
-                await this.fetchTableItemsPages();
+                await this.fetchTableItemsPages(loadedItems);
+                this.items = loadedItems;
             } finally {
                 this.isLoading = false;
                 this.currentPage = 1;
             }
         },
 
-        async fetchTableItemsPages() {
+        async fetchTableItemsPages(loadedItems) {
             const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}?format=Image&page=${this.currentPage}`);
             // const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
@@ -75,13 +78,13 @@ export const useAltTextStore = defineStore( 'alt-text',{
             }
 
             const pageItems = Array.isArray(rows.metadata) ? rows.metadata : [];
-            this.items.push(...pageItems);
+            loadedItems.push(...pageItems);
 
             if (this.currentPage < this.totalPages) {
                 this.currentPage += 1;
                 // Add slight delay so the API does not get pounded between page requests.
-                await new Promise((resolve) => setTimeout(resolve, 500));
-                await this.fetchTableItemsPages();
+                await new Promise((resolve) => setTimeout(resolve, PAGE_FETCH_DELAY));
+                await this.fetchTableItemsPages(loadedItems);
             }
         }
     }
