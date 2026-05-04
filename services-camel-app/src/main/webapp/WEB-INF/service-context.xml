@@ -281,6 +281,17 @@
     <bean id="videoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor">
     </bean>
 
+    <bean id="pdf4uProcessor" class="edu.unc.lib.boxc.services.camel.pdf.Pdf4uProcessor">
+    </bean>
+
+    <bean id="addPdfAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).PDF_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.pdf}" />
+    </bean>
+
+    <bean id="pdfAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor">
+    </bean>
+
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
         <property name="jp2BasePath" value="${cdr.enhancement.path.jp2}" />
     </bean>
@@ -308,6 +319,11 @@
     <bean id="destroyVideoProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).VIDEO_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.video}" />
+    </bean>
+
+    <bean id="destroyPdfProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).PDF_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.pdf}" />
     </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
@@ -655,6 +671,7 @@
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.pdf</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.video</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>

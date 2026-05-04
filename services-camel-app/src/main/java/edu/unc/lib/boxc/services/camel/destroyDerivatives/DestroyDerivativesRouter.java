@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor;
 
 import org.apache.camel.BeanInject;
@@ -37,6 +38,9 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject("destroyVideoProcessor")
     private DestroyDerivativesProcessor destroyVideoProcessor;
 
+    @BeanInject("destroyPdfProcessor")
+    private DestroyDerivativesProcessor destroyPdfProcessor;
+
     private String destroyDerivativesStreamCamel;
     private long errorRetryDelay;
     private int errorMaxRedeliveries;
@@ -64,6 +68,8 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                         .to("direct:audio.derivatives.destroy")
                     .when(method(VideoDerivativeProcessor.class, "allowedVideoType"))
                         .to("direct:video.derivatives.destroy")
+                    .when(method(PdfDerivativeProcessor.class, "allowedPdfType"))
+                        .to("direct:pdf.derivatives.destroy")
                 .end();
 
         from("direct:fulltext.derivatives.destroy")
@@ -89,6 +95,12 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .startupOrder(198)
                 .log(LoggingLevel.DEBUG, log, "Destroying derivative video files")
                 .bean(destroyVideoProcessor);
+
+        from("direct:pdf.derivatives.destroy")
+                .routeId("CdrDestroyPdf")
+                .startupOrder(197)
+                .log(LoggingLevel.DEBUG, log, "Destroying derivative pdf files")
+                .bean(destroyPdfProcessor);
     }
 
     public void setDestroyedMsgProcessor(DestroyedMsgProcessor destroyedMsgProcessor) {
@@ -109,6 +121,10 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
     public void setDestroyVideoProcessor(DestroyDerivativesProcessor destroyVideoProcessor) {
         this.destroyVideoProcessor = destroyVideoProcessor;
+    }
+
+    public void setDestroyPdfProcessor(DestroyDerivativesProcessor destroyPdfProcessor) {
+        this.destroyPdfProcessor = destroyPdfProcessor;
     }
 
     @PropertyInject("cdr.destroy.derivatives.stream.camel")

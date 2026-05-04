@@ -8,6 +8,7 @@
   </appender>
   <logger name="JP2ImageConverter.services.KakaduService" level="OFF"/>
   <logger name="mp44u" level="OFF"/>
+  <logger name="pdf4u" level="OFF"/>
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>
   </root>

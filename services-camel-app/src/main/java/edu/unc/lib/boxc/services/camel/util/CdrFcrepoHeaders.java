@@ -25,6 +25,9 @@ public abstract class CdrFcrepoHeaders {
     // URI identifying the location for an audio file
     public static final String CdrAudioPath = "CdrAudioPath";
 
+    // URI identifying the location for a PDF file
+    public static final String CdrPdfPath = "CdrPdfPath";
+
     // URI identifying the location for a video file
     public static final String CdrVideoPath = "CdrVideoPath";
 
