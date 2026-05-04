@@ -137,6 +137,11 @@
         <property name="facetFieldUtil" ref="facetFieldUtil" />
         <property name="accessRestrictionUtil" ref="unrestrictedSolrAccessRestrictionUtil" />
     </bean>
+
+    <bean id="searchResultResponseDecoratorService" class="edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService">
+        <property name="accessCopiesService" ref="accessCopiesService"/>
+        <property name="multiSelectFacetListService" ref="multiSelectFacetListService"/>
+    </bean>
     
      <bean id="pathFactory" class="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory">
         <property name="search" ref="queryLayer" />

@@ -67,9 +67,6 @@ public class FullRecordControllerTest {
     private static final String PID_PARENT_COLL = "44f1a025-0edb-44ba-8d21-a5728d6d937c";
     protected MockMvc mvc;
     private AutoCloseable closeable;
-    @InjectMocks
-    private FullRecordController controller;
-
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -111,6 +108,8 @@ public class FullRecordControllerTest {
     private ContentObjectRecord exhibitObject;
     @Mock
     private ContentObjectRecord childBriefObject;
+    @InjectMocks
+    private FullRecordController controller;
 
     @BeforeEach
     public void setup() throws Exception {

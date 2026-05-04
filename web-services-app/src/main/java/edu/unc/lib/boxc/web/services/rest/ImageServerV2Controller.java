@@ -184,8 +184,4 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
     public void setAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
     }
-
-    public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
-        this.accessCopiesService = accessCopiesService;
-    }
 }

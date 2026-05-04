@@ -136,4 +136,12 @@ public abstract class AbstractSolrSearchController {
 
         return results;
     }
+
+//    public void setChildrenCountService(ChildrenCountService childrenCountService) {
+//        this.childrenCountService = childrenCountService;
+//    }
+//
+//    public void setSetFacetTitleByIdService(SetFacetTitleByIdService setFacetTitleByIdService) {
+//        this.setFacetTitleByIdService = setFacetTitleByIdService;
+//    }
 }

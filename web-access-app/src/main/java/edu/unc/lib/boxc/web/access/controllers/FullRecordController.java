@@ -401,4 +401,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         return null;
     }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setCollectionIdService(GetCollectionIdService collectionIdService) {
+        this.collectionIdService = collectionIdService;
+    }
 }
