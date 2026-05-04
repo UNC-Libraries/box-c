@@ -12,7 +12,7 @@
         "postinstall": "patch-package"
     },
     "dependencies": {
-        "@samvera/clover-iiif": "~3.3.8",
+        "@samvera/clover-iiif": "~3.7.1",
         "@unhead/vue": "^2.1.13",
         "@vue-pdf-viewer/viewer": "^2.3.0",
         "canvas": "^3.2.1",
@@ -33,7 +33,7 @@
         "nouislider": "^15.8.1",
         "pinia": "^2.2.4",
         "veaury": "^2.6.3",
-        "vue": "^3.5.25",
+        "vue": "^3.5.33",
         "vue-i18n": "^10.0.8",
         "vue-router": "^4.6.3",
         "vue-turnstile": "^1.0.11"
@@ -45,7 +45,7 @@
         "@pinia/testing": "0.1.6",
         "@vitejs/plugin-vue": "^5.2.3",
         "@vitest/coverage-v8": "^4.0.18",
-        "@vue/compiler-sfc": "^3.5.25",
+        "@vue/compiler-sfc": "^3.5.33",
         "@vue/test-utils": "2.4.6",
         "babel-plugin-transform-import-meta": "^2.3.2",
         "babel-plugin-transform-vite-meta-env": "^1.0.3",
