@@ -72,6 +72,10 @@ public class Cdr {
     public static final Property hasFullDescription = createProperty(
             "http://cdr.unc.edu/definitions/model#hasFullDescription");
 
+    /** Relationship indicating the binary containing the transcript for this object */
+    public static final Property hasTranscript = createProperty(
+            "http://cdr.unc.edu/definitions/model#hasTranscript");
+
    /** The size (e.g., in bytes) of this binary object */
    public static final Property hasSize = createProperty(
            "http://cdr.unc.edu/definitions/model#hasSize" );

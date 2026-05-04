@@ -44,6 +44,10 @@
         <constructor-arg value="${admin.base.url}" />
     </bean>
 
+    <bean id="turnstileSecret" class="java.lang.String">
+        <constructor-arg value="${turnstile.site_secret}" />
+    </bean>
+
     <bean id="sitemapBasePath" class="java.lang.String">
         <constructor-arg value="${sitemap.base.path}" />
     </bean>

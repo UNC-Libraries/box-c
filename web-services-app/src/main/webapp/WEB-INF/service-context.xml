@@ -223,6 +223,15 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
         <property name="sendsMessages" value="true" />
     </bean>
+
+    <bean id="editTranscriptService" class="edu.unc.lib.boxc.operations.impl.transcript.TranscriptUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="sendsMessages" value="true" />
+    </bean>
     
     <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
         <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>

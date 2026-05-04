@@ -1,0 +1,30 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:titleInfo>
+        <mods:title>Pocket watch of playwright Paul Green</mods:title>
+    </mods:titleInfo>
+    <mods:identifier displayLabel="CONTENTdm number" type="local">521</mods:identifier>
+    <mods:note displayLabel="Description">Pocket watch; 14-carat yellow gold Gruen with Wadsworth case and Gruen Movement.  Watch is in working order; 17-jewel movement with white dial; 4.4cm in diameter, case bow 1cm wide x 1.7cm long at extreme.  Part of an assortment of artifacts relating to North Carolina author Paul Eliot Green (17 March 1894 - 4 May 1981).</mods:note>
+    <mods:relatedItem displayLabel="Digital Collection" type="host">
+        <mods:titleInfo>
+            <mods:title>Carolina Keepsakes</mods:title>
+        </mods:titleInfo>
+    </mods:relatedItem>
+    <mods:language>
+        <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+    </mods:language>
+    <mods:note>Paul Green (1894-1981) was a successful playwright, author, teacher and human rights advocate. After graduating from UNC in 1921, Green went on to teach in the philosophy department until 1939, when he became a professor of dramatic art. In 1927, Green received the Pulitzer Prize for his dramatic work In Abraham’s Bosom.  Green also wrote movie scripts for several companies in Hollywood, including Warner Brothers and Metro-Goldwyn-Mayer, and is credited as the father of outdoor symphonic drama.</mods:note>
+    <mods:typeOfResource>still image</mods:typeOfResource>
+    <mods:accessCondition displayLabel="Rights" type="use and reproduction">This item is presented courtesy of the North Carolina Collection at the University of North Carolina at Chapel Hill for research and educational purposes. Prior permission from the North Carolina Collection is required for any commercial use.</mods:accessCondition>
+    <mods:genre authority="gmgpc">Clocks &amp; watches</mods:genre>
+    <mods:subject authority="local" displayLabel="Relevance">
+        <mods:topic>Paul Green</mods:topic>
+    </mods:subject>
+    <mods:subject authority="lcsh">
+        <mods:name>
+            <mods:namePart>Green, Paul, 1894-1981</mods:namePart>
+        </mods:name>
+    </mods:subject>
+    <mods:subject authority="lctgm">
+        <mods:topic>Clocks &amp; watches</mods:topic>
+    </mods:subject>
+</mods:mods>
