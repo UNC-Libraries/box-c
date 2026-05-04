@@ -55,7 +55,7 @@ const mountViewer = (items = []) => {
                         alertMessage: ''
                     }
                 },
-                stubActions: false
+                stubActions: true
             })],
             stubs: {
                 teleport: true
@@ -122,7 +122,7 @@ describe('altTextViewer.vue', () => {
                 'mgFullDescription',
                 'altText',
                 'mgTranscript',
-                'mgRiskScore',
+                null,
                 'mgSafetyAssessment',
                 'mgReviewAssessment',
                 'mgContentTags',

@@ -1,16 +1,19 @@
 import { defineStore } from 'pinia'
 
+const PER_PAGE = 20;
 export const useAltTextStore = defineStore( 'alt-text',{
     state: () => ({
         activeField: '',
         alertMessage: '',
         alertMessageType: '', // valid options success, error
+        currentPage: 1,
         currentRow: null,
         currentUuid: null,
         error: null,
         isLoading: false,
         items: [],
         showAltTextModal: false,
+        totalPages: 1,
         viewType: 'view' // view or edit
     }),
     actions: {
@@ -45,18 +48,39 @@ export const useAltTextStore = defineStore( 'alt-text',{
          */
         async fetchTableItems() {
             this.isLoading = true;
-            const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}?format=Image`);
-           // const response = await fetch('/static/real-alt-text.json');
+            this.items = [];
+            this.currentPage = 1;
+
+            try {
+                await this.fetchTableItemsPages();
+            } finally {
+                this.isLoading = false;
+                this.currentPage = 1;
+            }
+        },
+
+        async fetchTableItemsPages() {
+            const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}?format=Image&page=${this.currentPage}`);
+            // const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
                 const error = new Error('Network response was not ok');
                 error.response = response;
-                this.isLoading = false;
                 throw error;
             }
 
             const rows = await response.json();
-            this.items = Array.isArray(rows.metadata) ? rows.metadata : [];
-            this.isLoading = false;
+            if (this.currentPage === 1) {
+                const resultCount = Number(rows.resultCount);
+                this.totalPages = Number.isFinite(resultCount) ? Math.max(1, Math.ceil(resultCount / PER_PAGE)) : 1;
+            }
+
+            const pageItems = Array.isArray(rows.metadata) ? rows.metadata : [];
+            this.items.push(...pageItems);
+
+            if (this.currentPage < this.totalPages) {
+                this.currentPage += 1;
+                await this.fetchTableItemsPages();
+            }
         }
     }
 });
