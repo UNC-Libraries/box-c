@@ -3,10 +3,13 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
+import edu.unc.lib.boxc.operations.impl.fullDescription.FullDescriptionUpdateService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.utils.MachineUpdateServiceTestHelper;
@@ -24,43 +27,45 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * @author bbpennel
- */
-public class AltTextControllerTest {
-
+public class FullDescriptionControllerTest {
     private MockMvc mockMvc;
-
     @Mock
-    private AltTextUpdateService altTextUpdateService;
-
+    private FullDescriptionUpdateService service;
     @Mock
     private BinaryObject binaryObject;
+    @Mock
+    private BinaryTransferSession transferSession;
+    @Mock
+    private BinaryTransferService transferService;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
+    private RepositoryObject repositoryObject;
     private PID pid;
-    private PID altTextPid;
-
+    private PID fulldescPid;
     private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        pid = TestHelper.makePid();
+        fulldescPid = DatastreamPids.getFullDescriptionPid(pid);
 
-        AltTextController controller = new AltTextController();
-        controller.setAltTextUpdateService(altTextUpdateService);
+        var controller = new FullDescriptionController();
+        controller.setFullDescriptionUpdateService(service);
+        controller.setRepositoryObjectLoader(repositoryObjectLoader);
+        controller.setTransferService(transferService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
-
-        pid = TestHelper.makePid();
-        altTextPid = DatastreamPids.getAltTextPid(pid);
     }
 
     @AfterEach
@@ -69,39 +74,39 @@ public class AltTextControllerTest {
     }
 
     @Test
-    void testUpdateAltText() throws Exception {
-        var altText = "Sample Alt Text";
+    public void updateFullDescTest() throws Exception {
+        var description = "The best full description ever";
+        when(binaryObject.getPid()).thenReturn(fulldescPid);
+        when(service.updateFullDescription(any())).thenReturn(binaryObject);
+        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(repositoryObject);
+        when(transferService.getSession(eq(repositoryObject))).thenReturn(transferSession);
 
-        // Mock BinaryObject to return a PID
-        when(binaryObject.getPid()).thenReturn(altTextPid);
-        when(altTextUpdateService.updateAltText(any())).thenReturn(binaryObject);
-
-        var result = mockMvc.perform(post("/edit/altText/{id}", pid.getId())
+        var result = mockMvc.perform(post("/edit/fullDescription/{id}", pid.getId())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("altText", altText))
+                        .param("fullDescription", description))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
-        MachineUpdateServiceTestHelper.assertResponse(result, "updateAltText", altTextPid);
+        MachineUpdateServiceTestHelper.assertResponse(result, "updateFullDescription", fulldescPid);
 
-        // Verify that the service was called with the correct AltTextUpdateRequest
-        verify(altTextUpdateService).updateAltText(argThat(request ->
+        // Verify that the service was called with the correct request
+        verify(service).updateFullDescription(argThat(request ->
                 request.getPidString().equals(pid.getId()) &&
-                        request.getAltText().equals(altText)
+                        request.getFullDescriptionText().equals(description)
         ));
     }
 
     @Test
-    void testUpdateAltTextFails() throws Exception {
-        var altText = "Sample Alt Text";
+    public void updateFullDescNoPermissionTest() throws Exception {
+        var description = "The best full description ever";
 
         doThrow(new AccessRestrictionException("Access Denied"))
-                .when(altTextUpdateService).updateAltText(any());
+                .when(service).updateFullDescription(any());
 
-        mockMvc.perform(post("/edit/altText/{id}", pid.getId())
+        mockMvc.perform(post("/edit/fullDescription/{id}", pid.getId())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("altText", altText))
+                        .param("fullDescription", description))
                 .andExpect(status().isForbidden());
     }
 }
