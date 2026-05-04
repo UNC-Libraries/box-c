@@ -8,6 +8,7 @@ export const useAltTextStore = defineStore( 'alt-text',{
         currentRow: null,
         currentUuid: null,
         error: null,
+        isLoading: false,
         items: [],
         showAltTextModal: false,
         viewType: 'view' // view or edit
@@ -43,16 +44,19 @@ export const useAltTextStore = defineStore( 'alt-text',{
          * @returns {Promise<void>}
          */
         async fetchTableItems() {
+            this.isLoading = true;
             const response = await fetch(`/services/api/machineGeneratedSearch/${this.currentUuid}?format=Image`);
            // const response = await fetch('/static/real-alt-text.json');
             if (!response.ok) {
                 const error = new Error('Network response was not ok');
                 error.response = response;
+                this.isLoading = false;
                 throw error;
             }
 
             const rows = await response.json();
             this.items = Array.isArray(rows.metadata) ? rows.metadata : [];
+            this.isLoading = false;
         }
     }
 });

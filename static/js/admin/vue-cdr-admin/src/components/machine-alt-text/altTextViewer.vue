@@ -22,7 +22,7 @@
                 </thead>
                 <tbody></tbody>
             </data-table>
-            <p v-else class="has-text-centered mt-4">Loading table data...</p>
+            <p v-else class="has-text-centered mt-4">{{ loadingMessage }}</p>
             <alt-text-messages></alt-text-messages>
             <alt-text-editor-modal></alt-text-editor-modal>
         </div>
@@ -59,7 +59,17 @@ export default {
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['items', 'currentUuid', 'alertMessage']),
+        ...mapState(useAltTextStore, ['alertMessage' , 'currentUuid', 'isLoading', 'items']),
+
+        loadingMessage() {
+            let message = '';
+            if (this.isLoading) {
+                message = `Loading...`;
+            } else if (!this.isLoading && this.items.length === 0) {
+                message = `No images found for ${this.currentUuid}.`
+            }
+            return message;
+        },
 
         tagPaneOptions() {
             const counts = new Map();
