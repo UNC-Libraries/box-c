@@ -46,9 +46,10 @@ public class BotChallengeController {
     public @ResponseBody
     String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
-        String ipAddress = request.getRemoteAddr();
-
-        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)){
+        String ipAddress = getClientIpAddress( request);
+        Boolean uncAddress = hasUncAddress(ipAddress, session);
+        if (uncAddress || hasValidTurnstileToken(session)) {
+            setSuccessSessionState(session, uncAddress);
             return SerializationUtil.objectToJSON(Map.of("success", true));
         }
 
@@ -63,11 +64,11 @@ public class BotChallengeController {
             HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
             JsonNode turnstileJson = OBJECT_MAPPER.readTree(turnstileResponse.body());
             var validationSucceeded = turnstileJson.get("success").asBoolean();
-            setSuccessSessionState(session, ipAddress, validationSucceeded);
+            setSuccessSessionState(session, validationSucceeded);
             return turnstileResponse.body();
         } catch (IOException | InterruptedException e) {
             log.warn("Unable to validate Turnstile token {}", e.getMessage());
-            setErrorSessionState(session, ipAddress);
+            setErrorSessionState(session);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", e.getMessage());
             return SerializationUtil.objectToJSON(errorResponse);
@@ -95,20 +96,16 @@ public class BotChallengeController {
                 .build();
     }
 
-    private void setSuccessSessionState(HttpSession session, String ipAddress, boolean validationSucceeded) {
+    private void setSuccessSessionState(HttpSession session, boolean validationSucceeded) {
         if (validationSucceeded) {
             session.setAttribute("turnstileTokenExpiresIn", expiresIn());
         }
         session.setAttribute("validCfTurnstileToken", validationSucceeded);
-        session.setAttribute("userIPAddress", ipAddress);
-        session.setAttribute("uncIPAddress", false);
     }
 
-    private void setErrorSessionState(HttpSession session, String ipAddress) {
+    private void setErrorSessionState(HttpSession session) {
         session.setAttribute("turnstileTokenExpiresIn", null);
         session.setAttribute("validCfTurnstileToken", false);
-        session.setAttribute("userIPAddress", ipAddress);
-        session.setAttribute("uncIPAddress", false);
     }
 
     private Boolean hasUncAddress(String ipAddress, HttpSession session) {
@@ -116,13 +113,11 @@ public class BotChallengeController {
                 || ipAddress.equals("127.0.0.1")
                 || ipAddress.equals("0:0:0:0:0:0:0:1")
                 || ipAddress.equals("::1")) {
-            session.setAttribute("uncIPAddress", true);
             return true;
         }
 
         // SubnetUtils only supports IPv4 CIDR checks.
         if (ipAddress.contains(":")) {
-            session.setAttribute("uncIPAddress", false);
             return false;
         }
 
@@ -150,10 +145,6 @@ public class BotChallengeController {
             };
         }
 
-        var uncAddressSession = session.getAttribute("uncIPAddress");
-        if (uncAddressSession == null) {
-            session.setAttribute("uncIPAddress", validUncAddress);
-        }
 
         return validUncAddress;
     }
@@ -167,6 +158,22 @@ public class BotChallengeController {
         }
 
         return false;
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            // X-Forwarded-For can be a comma-separated list: client, proxy1, proxy2
+            // The leftmost value is the original client IP
+            return xForwardedFor.split(",")[0].trim();
+        }
+        // Fallback to X-Real-IP if set by Apache
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp.trim();
+        }
+
+        return request.getRemoteAddr();
     }
 
     private ZonedDateTime getCurrentTime() {

@@ -84,6 +84,8 @@ router.beforeEach(async (to) => {
     store.setValidToken(response.headers.get('valid-turnstile-token') === 'true');
 
     // Issue a challenge if a user needs a challenge.
+    console.log(store.uncIP)
+    console.log(store.isLoggedIn)
     if (window.turnstileEnabled === 'True' && to.name === 'searchRecords' &&
       !store.isLoggedIn && !store.uncIP && !store.validToken) {
       return { path: '/turnstile', replace: true };

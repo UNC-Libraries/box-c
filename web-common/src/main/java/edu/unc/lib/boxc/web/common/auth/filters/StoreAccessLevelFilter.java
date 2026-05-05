@@ -84,6 +84,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
         var uncIPAddress = session.getAttribute("uncIPAddress");
         var hasUncIpAddress = (uncIPAddress != null) ? String.valueOf(uncIPAddress) : "false";
         response.setHeader("unc-ip-address", hasUncIpAddress);
+        response.setHeader("ip-address", String.valueOf(session.getAttribute("userIPAddress")));
 
         var validCfTurnstileToken = session.getAttribute("validCfTurnstileToken");
         var hasValidToken = (validCfTurnstileToken != null) ? String.valueOf(validCfTurnstileToken) : "false";

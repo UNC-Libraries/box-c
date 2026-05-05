@@ -15,6 +15,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -105,7 +106,7 @@ public class BotChallengeControllerTest {
         assertTrue(result.contains("\"success\":true"));
         assertEquals(Boolean.TRUE, Objects.requireNonNull(request.getSession()).getAttribute("validCfTurnstileToken"));
         assertNotNull(request.getSession().getAttribute("turnstileTokenExpiresIn"));
-        assertEquals(NON_UNC_IP_ADDRESS, request.getSession().getAttribute("userIPAddress"));
+        assertNull(request.getSession().getAttribute("userIPAddress"));
     }
 
     @Test
@@ -119,7 +120,7 @@ public class BotChallengeControllerTest {
         verify(controller).sendTurnstileRequest(any(HttpRequest.class));
         assertTrue(result.contains("bad token"));
         assertEquals(Boolean.FALSE, Objects.requireNonNull(request.getSession()).getAttribute("validCfTurnstileToken"));
-        assertEquals(NON_UNC_IP_ADDRESS, request.getSession().getAttribute("userIPAddress"));
+        assertNull(request.getSession().getAttribute("userIPAddress"));
         assertNotEquals(Boolean.TRUE, request.getSession().getAttribute("uncIPAddress"));
     }
 
