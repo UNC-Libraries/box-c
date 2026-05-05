@@ -86,7 +86,17 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
     }
 
     private String getFullDescription(PID filePid, JsonNode mgdNode) {
-        // TODO implement retrieval from fedora when that functionality is in place
+        // Preferentially use the full description stored in fedora if it exists
+        try {
+            var fullDescPid = DatastreamPids.getFullDescriptionPid(filePid);
+            var fullDescBinary = repositoryObjectLoader.getBinaryObject(fullDescPid);
+            return IOUtils.toString(fullDescBinary.getBinaryStream(), UTF_8);
+        } catch (NotFoundException e) {
+            log.debug("No alt text datastream found for {}", filePid);
+        } catch (IOException e) {
+            throw new IndexingException("Failed to retrieve alt text datastream for {}" + filePid, e);
+        }
+        // Fall back to using the machine generated full description if it exists
         return mgContentService.extractFullDescription(mgdNode);
     }
 
