@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.web.access.controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
-import org.apache.commons.net.util.SubnetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.slf4j.Logger;
@@ -25,7 +24,6 @@ import java.net.http.HttpResponse;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +45,7 @@ public class BotChallengeController {
     String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
         String ipAddress = getClientIpAddress( request);
-        Boolean uncAddress = hasUncAddress(ipAddress, session);
+        boolean uncAddress = Boolean.TRUE.equals(session.getAttribute("uncIPAddress"));
         if (uncAddress || hasValidTurnstileToken(session)) {
             setSuccessSessionState(session, uncAddress);
             return SerializationUtil.objectToJSON(Map.of("success", true));
@@ -108,46 +106,6 @@ public class BotChallengeController {
         session.setAttribute("validCfTurnstileToken", false);
     }
 
-    private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress"))
-                || ipAddress.equals("127.0.0.1")
-                || ipAddress.equals("0:0:0:0:0:0:0:1")
-                || ipAddress.equals("::1")) {
-            return true;
-        }
-
-        // SubnetUtils only supports IPv4 CIDR checks.
-        if (ipAddress.contains(":")) {
-            return false;
-        }
-
-        var uncAddresses = List.of(
-                "152.2.0.0/16", // Campus
-                "152.19.0.0/16", // Campus
-                "152.23.0.0/16", // Campus
-                "152.54.0.0/20", // RENCI
-                "172.17.0.0/18", // VPN
-                "172.17.57.0/28", // Library-IT VPN group
-                "198.85.230.0/23", // Off campus location
-                "204.84.8.0/22", // Off campus location
-                "204.84.252.0/22", // Off campus location
-                "204.85.176.0/20", // Off campus location
-                "204.85.192.0/18" // UNC Hospitals
-        );
-
-        var validUncAddress = false;
-
-        for (var uncAddress : uncAddresses) {
-            SubnetUtils utils = new SubnetUtils(uncAddress);
-            if (utils.getInfo().isInRange(ipAddress)) {
-                validUncAddress = true;
-                break;
-            };
-        }
-
-
-        return validUncAddress;
-    }
 
     private Boolean hasValidTurnstileToken(HttpSession session) {
         var tokenExpiration = session.getAttribute("turnstileTokenExpiresIn");
