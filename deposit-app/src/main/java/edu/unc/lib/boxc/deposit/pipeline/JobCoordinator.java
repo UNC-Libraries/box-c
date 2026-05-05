@@ -37,22 +37,23 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
     private ApplicationContext applicationContext;
     private ActiveDepositsService activeDeposits;
     private JobStatusFactory jobStatusFactory;
-    private AtomicInteger activeJobCount = new AtomicInteger(0);
+    private final AtomicInteger activeJobCount = new AtomicInteger(0);
 
     @Override
     public void onMessage(Message message) {
-        // Check if queues are active, if not then do not acknowledge the message and stop processing
         if (!isAcceptingMessages()) {
             LOG.warn("Ignoring message due to pipeline state");
             return;
         }
 
         var jobMessage = loadJobMessage(message);
+        if (jobMessage == null) {
+            return;
+        }
         String depositId = jobMessage.getDepositId();
         String jobId = jobMessage.getJobId();
         if (!activeDeposits.isDepositActive(depositId) && !runnableWhenInactive(jobMessage)) {
             LOG.warn("Skipping job message {} for deposit {} because the deposit is not active", jobId, depositId);
-            acknowledgeMessage(message);
             return;
         }
 
@@ -78,7 +79,6 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
             jobStatusFactory.failed(jobId);
             sendDepositOperationMessage(buildFailureMessage(jobMessage, e));
         } finally {
-            acknowledgeMessage(message);
             activeJobCount.decrementAndGet();
         }
     }
@@ -94,15 +94,6 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
 
     private boolean runnableWhenInactive(DepositJobMessage jobMessage) {
         return CleanupDepositJob.class.getName().equals(jobMessage.getJobClassName());
-    }
-
-    private void acknowledgeMessage(Message message) {
-        try {
-            message.acknowledge();
-            LOG.debug("Acknowledged message {}", message.getJMSMessageID());
-        } catch (JMSException e) {
-            LOG.error("Error acknowledging message", e);
-        }
     }
 
     private DepositOperationMessage buildSuccessMessage(DepositJobMessage jobMessage) {
@@ -146,8 +137,8 @@ public class JobCoordinator implements MessageListener, ApplicationContextAware 
         try {
             return depositJobMessageService.fromJson(message);
         } catch (IOException | JMSException e) {
-            acknowledgeMessage(message);
-            throw new RuntimeException("Unable to load deposit job message", e);
+            LOG.error("Unable to read deposit job message from JMS", e);
+            return null;
         }
     }
 
