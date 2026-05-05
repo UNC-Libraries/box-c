@@ -78,20 +78,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
             }
         }
 
-        var tokenExpiration = session.getAttribute("turnstileTokenExpiresIn");
-        response.setHeader("token-expiration", String.valueOf(tokenExpiration));
-
-        var uncIPAddress = session.getAttribute("uncIPAddress");
-        var hasUncIpAddress = (uncIPAddress != null) ? String.valueOf(uncIPAddress) : "false";
-        response.setHeader("unc-ip-address", hasUncIpAddress);
-        response.setHeader("ip-address", String.valueOf(session.getAttribute("userIPAddress")));
-
-        var validCfTurnstileToken = session.getAttribute("validCfTurnstileToken");
-        var hasValidToken = (validCfTurnstileToken != null) ? String.valueOf(validCfTurnstileToken) : "false";
-        response.setHeader("valid-turnstile-token", hasValidToken);
-
         boolean canViewAdmin = accessLevel != null && accessLevel.isViewAdmin();
-        response.setHeader("can-view-admin", String.valueOf(canViewAdmin));
         // Add the admin_access group for the current user
         if (canViewAdmin) {
             AccessGroupSet groups = GroupsThreadStore.getGroups();
@@ -110,6 +97,20 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
         }
 
         chain.doFilter(request, response);
+
+        // Set headers after request processing so session-backed values are current.
+        var tokenExpiration = session.getAttribute("turnstileTokenExpiresIn");
+        response.setHeader("token-expiration", String.valueOf(tokenExpiration));
+
+        var uncIPAddress = session.getAttribute("uncIPAddress");
+        var hasUncIpAddress = (uncIPAddress != null) ? String.valueOf(uncIPAddress) : "false";
+        response.setHeader("unc-ip-address", hasUncIpAddress);
+        response.setHeader("ip-address", String.valueOf(session.getAttribute("userIPAddress")));
+
+        var validCfTurnstileToken = session.getAttribute("validCfTurnstileToken");
+        var hasValidToken = (validCfTurnstileToken != null) ? String.valueOf(validCfTurnstileToken) : "false";
+        response.setHeader("valid-turnstile-token", hasValidToken);
+        response.setHeader("can-view-admin", String.valueOf(canViewAdmin));
     }
 
     public void setQueryLayer(SolrQueryLayerService queryLayer) {
