@@ -92,9 +92,9 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
             var fullDescBinary = repositoryObjectLoader.getBinaryObject(fullDescPid);
             return IOUtils.toString(fullDescBinary.getBinaryStream(), UTF_8);
         } catch (NotFoundException e) {
-            log.debug("No alt text datastream found for {}", filePid);
+            log.debug("No full description datastream found for {}", filePid);
         } catch (IOException e) {
-            throw new IndexingException("Failed to retrieve alt text datastream for {}" + filePid, e);
+            throw new IndexingException("Failed to retrieve full description datastream for {}" + filePid, e);
         }
         // Fall back to using the machine generated full description if it exists
         return mgContentService.extractFullDescription(mgdNode);
