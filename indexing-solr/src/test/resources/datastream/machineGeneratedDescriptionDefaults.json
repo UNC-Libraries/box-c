@@ -42,10 +42,12 @@
         ]
       },
       "text_characteristics": {
+        "language": "N/A",
         "legibility": "N/A",
         "text_present": "NO",
         "text_type": "N/A"
       },
+      "image_quality": "UNIMPAIRED",
       "violent_content": "NONE"
     },
     "transcript": "",
