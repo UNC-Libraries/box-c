@@ -30,7 +30,8 @@ describe('router turnstile guard', () => {
 
         fetchMock.resetMocks();
 
-        window.turnstileEnabled = 'True';
+        window.turnstileEnabled = 'true';
+        window.challengefullRecord = 'false';
     });
 
     it.each([
@@ -47,7 +48,7 @@ describe('router turnstile guard', () => {
             }
         });
 
-        const result = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
+        const result = await shouldRedirectToTurnstile({ name: 'searchPages' }, accessStore);
 
         expect(result).toBe(false);
     });
@@ -62,7 +63,7 @@ describe('router turnstile guard', () => {
             }
         });
 
-        const result = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
+        const result = await shouldRedirectToTurnstile({ name: 'searchPages' }, accessStore);
 
         expect(result).toBe(true);
         expect(fetchMock).toHaveBeenCalledWith('/api/userInformation', {
@@ -70,5 +71,36 @@ describe('router turnstile guard', () => {
             cache: 'no-store'
         });
     });
-});
 
+    it('redirects anonymous users for displayRecords when challengefullRecord is true', async () => {
+        window.challengefullRecord = 'true';
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': 'false'
+            }
+        });
+
+        const result = await shouldRedirectToTurnstile({ name: 'displayRecords' }, accessStore);
+
+        expect(result).toBe(true);
+    });
+
+    it('does not redirect anonymous users for displayRecords when challengefullRecord is false', async () => {
+        window.challengefullRecord = 'false';
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': 'false'
+            }
+        });
+
+        const result = await shouldRedirectToTurnstile({ name: 'displayRecords' }, accessStore);
+
+        expect(result).toBe(false);
+    });
+});

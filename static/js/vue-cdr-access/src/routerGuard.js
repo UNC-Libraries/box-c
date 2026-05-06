@@ -14,10 +14,16 @@ export async function shouldRedirectToTurnstile(to, store) {
 
         // Issue a challenge only for anonymous non-UNC users without a valid token.
         const shouldSkipChallenge = store.isLoggedIn || store.uncIP || store.validToken;
-        return window.turnstileEnabled === 'True' && to.name === 'searchRecords' && !shouldSkipChallenge;
+        const turnstileEnabled = window.turnstileEnabled === 'true';
+
+        let challengedPages = ['searchPages'];
+        if (turnstileEnabled && window.challengefullRecord === 'true') {
+            challengedPages.push('displayRecords')
+        }
+
+        return turnstileEnabled && challengedPages.includes(to.name) && !shouldSkipChallenge;
     } catch (error) {
         console.log(error);
         return false;
     }
 }
-
