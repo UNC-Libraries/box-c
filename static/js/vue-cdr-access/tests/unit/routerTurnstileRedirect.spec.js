@@ -30,8 +30,8 @@ describe('router turnstile guard', () => {
 
         fetchMock.resetMocks();
 
-        window.turnstileEnabled = 'true';
-        window.challengefullRecord = 'false';
+        window.turnstileEnabled = true;
+        window.challengeFullRecord = false;
     });
 
     it.each([
@@ -48,7 +48,7 @@ describe('router turnstile guard', () => {
             }
         });
 
-        const result = await shouldRedirectToTurnstile({ name: 'searchPages' }, accessStore);
+        const result = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
 
         expect(result).toBe(false);
     });
@@ -63,7 +63,7 @@ describe('router turnstile guard', () => {
             }
         });
 
-        const result = await shouldRedirectToTurnstile({ name: 'searchPages' }, accessStore);
+        const result = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
 
         expect(result).toBe(true);
         expect(fetchMock).toHaveBeenCalledWith('/api/userInformation', {
@@ -72,8 +72,51 @@ describe('router turnstile guard', () => {
         });
     });
 
-    it('redirects anonymous users for displayRecords when challengefullRecord is true', async () => {
-        window.challengefullRecord = 'true';
+    it('redirects anonymous users for searchRecords when token header is empty', async () => {
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': ''
+            }
+        });
+
+        const result = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
+
+        expect(result).toBe(true);
+    });
+
+    it('does not redirect when turnstile is disabled', async () => {
+        window.turnstileEnabled = false;
+        window.challengeFullRecord = true;
+
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': 'false'
+            }
+        });
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': 'false'
+            }
+        });
+
+        const searchResult = await shouldRedirectToTurnstile({ name: 'searchRecords' }, accessStore);
+        const displayResult = await shouldRedirectToTurnstile({ name: 'displayRecords' }, accessStore);
+
+        expect(searchResult).toBe(false);
+        expect(displayResult).toBe(false);
+    });
+
+    it('redirects anonymous users for displayRecords when challengeFullRecord is true', async () => {
+        window.challengeFullRecord = true;
         fetchMock.mockResponseOnce('', {
             headers: {
                 username: '',
@@ -88,8 +131,8 @@ describe('router turnstile guard', () => {
         expect(result).toBe(true);
     });
 
-    it('does not redirect anonymous users for displayRecords when challengefullRecord is false', async () => {
-        window.challengefullRecord = 'false';
+    it('does not redirect anonymous users for displayRecords when challengeFullRecord is false', async () => {
+        window.challengeFullRecord = false;
         fetchMock.mockResponseOnce('', {
             headers: {
                 username: '',
@@ -100,6 +143,23 @@ describe('router turnstile guard', () => {
         });
 
         const result = await shouldRedirectToTurnstile({ name: 'displayRecords' }, accessStore);
+
+        expect(result).toBe(false);
+    });
+
+    it.each(['frontPage', 'aboutRepository', 'turnstile', 'collectionBrowse', 'advancedSearch', 'notFound'])
+    ('does not redirect for non-challenge route %s', async (routeName) => {
+        window.challengeFullRecord = true;
+        fetchMock.mockResponseOnce('', {
+            headers: {
+                username: '',
+                'can-view-admin': 'false',
+                'unc-ip-address': 'false',
+                'valid-turnstile-token': 'false'
+            }
+        });
+
+        const result = await shouldRedirectToTurnstile({ name: routeName }, accessStore);
 
         expect(result).toBe(false);
     });
