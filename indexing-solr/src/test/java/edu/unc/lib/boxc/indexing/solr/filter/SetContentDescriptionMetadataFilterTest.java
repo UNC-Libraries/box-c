@@ -49,6 +49,8 @@ public class SetContentDescriptionMetadataFilterTest {
     private static final String ALT_TEXT_FROM_REPO = "Repo-stored alt text";
     private static final String FULL_DESC_FROM_MG = "A whole host of mountains in Asia";
     private static final String FULL_DESC_FROM_REPO = "Repo-stored full description";
+    private static final String TRANSCRIPT_FROM_MG = "A beautiful mountain range";
+    private static final String TRANSCRIPT_FROM_REPO = "Repo-stored transcript";
 
     private AutoCloseable closeable;
 
@@ -68,7 +70,7 @@ public class SetContentDescriptionMetadataFilterTest {
     @Mock
     private MachineGeneratedContentService mgContentService;
     @Mock
-    private BinaryObject altTextBinary, fullDescBinary;
+    private BinaryObject altTextBinary, fullDescBinary, transcriptBinary;
 
     private PID filePid;
     private DerivativeService derivativeService;
@@ -122,7 +124,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
-        when(mgContentService.extractTranscript(defaultNode)).thenReturn("text");
+        when(mgContentService.extractTranscript(defaultNode)).thenReturn(TRANSCRIPT_FROM_MG);
         when(mgContentService.extractRiskScore(defaultNode)).thenReturn(10);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(List.of("tag1", "tag2"));
         // No alt text in fedora — fall back to machine generated
@@ -131,13 +133,16 @@ public class SetContentDescriptionMetadataFilterTest {
         // No full description in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
                 .thenThrow(new NotFoundException("No full description"));
+        // No transcript in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getTranscriptPid(filePid)))
+                .thenThrow(new NotFoundException("No transcript"));
 
         filter.filter(dip);
 
         verify(idb).setMgDescription(defaultJson);
         verify(idb).setAltText(ALT_TEXT_FROM_MG);
         verify(idb).setFullDescription(FULL_DESC_FROM_MG);
-        verify(idb).setTranscript("text");
+        verify(idb).setTranscript(TRANSCRIPT_FROM_MG);
         verify(idb).setMgRiskScore(10);
         verify(idb).setMgContentTags(List.of("tag1", "tag2"));
     }
@@ -164,6 +169,9 @@ public class SetContentDescriptionMetadataFilterTest {
         // No full description in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
                 .thenThrow(new NotFoundException("No full description"));
+        // No transcript in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getTranscriptPid(filePid)))
+                .thenThrow(new NotFoundException("No transcript"));
 
         filter.filter(dip);
 
@@ -195,6 +203,9 @@ public class SetContentDescriptionMetadataFilterTest {
         // No full description in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
                 .thenThrow(new NotFoundException("No full description"));
+        // No transcript in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getTranscriptPid(filePid)))
+                .thenThrow(new NotFoundException("No transcript"));
 
         assertThrows(IndexingException.class, () -> filter.filter(dip));
     }
@@ -226,14 +237,21 @@ public class SetContentDescriptionMetadataFilterTest {
         when(fullDescBinary.getBinaryStream())
                 .thenReturn(new ByteArrayInputStream(FULL_DESC_FROM_REPO.getBytes(StandardCharsets.UTF_8)));
 
+        // Fedora has transcript stored — it should win
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getTranscriptPid(filePid)))
+                .thenReturn(transcriptBinary);
+        when(transcriptBinary.getBinaryStream())
+                .thenReturn(new ByteArrayInputStream(TRANSCRIPT_FROM_REPO.getBytes(StandardCharsets.UTF_8)));
+
         filter.filter(dip);
 
         verify(idb).setAltText(ALT_TEXT_FROM_REPO);
         verify(idb).setFullDescription(FULL_DESC_FROM_REPO);
+        verify(idb).setTranscript(TRANSCRIPT_FROM_REPO);
     }
 
     @Test
-    public void filter_mgAltTextUsedWhenNoRepoAltText() throws Exception {
+    public void filter_mgTextUsedWhenNoRepoText() throws Exception {
         when(dip.getContentObject()).thenReturn(fileObj);
 
         String defaultJson = Files.readString(Path.of(DEFAULT_JSON_PATH));
@@ -243,7 +261,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
-        when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
+        when(mgContentService.extractTranscript(defaultNode)).thenReturn(TRANSCRIPT_FROM_MG);
         when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
         // No alt text in fedora
@@ -252,10 +270,14 @@ public class SetContentDescriptionMetadataFilterTest {
         // No full description in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
                 .thenThrow(new NotFoundException("No full description"));
+        // No transcript in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getTranscriptPid(filePid)))
+                .thenThrow(new NotFoundException("No transcript"));
 
         filter.filter(dip);
 
         verify(idb).setAltText(ALT_TEXT_FROM_MG);
         verify(idb).setFullDescription(FULL_DESC_FROM_MG);
+        verify(idb).setTranscript(TRANSCRIPT_FROM_MG);
     }
 }
