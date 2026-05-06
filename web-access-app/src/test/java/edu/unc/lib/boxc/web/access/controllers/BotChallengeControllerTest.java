@@ -15,6 +15,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -30,37 +31,27 @@ public class BotChallengeControllerTest {
     private static final String UNC_IP_ADDRESS = "152.2.5.10";
 
     @Test
-    public void turnstileJsonSkipsVerificationForUncAddress() throws Exception {
+    public void turnstileJsonDoesNotSkipVerificationForUncAddressWithoutSessionFlag() throws Exception {
         BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp(UNC_IP_ADDRESS);
+        doReturn(turnstileResponse("{\"success\":false}")).when(controller).sendTurnstileRequest(any(HttpRequest.class));
 
         String result = controller.turnstileJson(token(), request, new MockHttpServletResponse());
 
-        assertTrue(result.contains("\"success\":true"));
-        verify(controller, never()).sendTurnstileRequest(any(HttpRequest.class));
+        assertTrue(result.contains("\"success\":false"));
+        verify(controller).sendTurnstileRequest(any(HttpRequest.class));
     }
 
     @Test
-    public void turnstileJsonSkipsVerificationForIpv4LoopbackAddress() throws Exception {
+    public void turnstileJsonDoesNotSkipVerificationForIpv4LoopbackWithoutSessionFlag() throws Exception {
         BotChallengeController controller = controllerSpy();
         MockHttpServletRequest request = requestWithIp("127.0.0.1");
+        doReturn(turnstileResponse("{\"success\":false}")).when(controller).sendTurnstileRequest(any(HttpRequest.class));
 
         String result = controller.turnstileJson(token(), request, new MockHttpServletResponse());
 
-        assertTrue(result.contains("\"success\":true"));
-        verify(controller, never()).sendTurnstileRequest(any(HttpRequest.class));
-    }
-
-    @Test
-    public void turnstileJsonSkipsVerificationWhenSessionHasUncIpFlag() throws Exception {
-        BotChallengeController controller = controllerSpy();
-        MockHttpServletRequest request = requestWithIp(NON_UNC_IP_ADDRESS);
-        Objects.requireNonNull(request.getSession(true)).setAttribute("uncIPAddress", true);
-
-        String result = controller.turnstileJson(token(), request, new MockHttpServletResponse());
-
-        assertTrue(result.contains("\"success\":true"));
-        verify(controller, never()).sendTurnstileRequest(any(HttpRequest.class));
+        assertTrue(result.contains("\"success\":false"));
+        verify(controller).sendTurnstileRequest(any(HttpRequest.class));
     }
 
     @Test
@@ -105,7 +96,6 @@ public class BotChallengeControllerTest {
         assertTrue(result.contains("\"success\":true"));
         assertEquals(Boolean.TRUE, Objects.requireNonNull(request.getSession()).getAttribute("validCfTurnstileToken"));
         assertNotNull(request.getSession().getAttribute("turnstileTokenExpiresIn"));
-        assertEquals(NON_UNC_IP_ADDRESS, request.getSession().getAttribute("userIPAddress"));
     }
 
     @Test
@@ -119,8 +109,6 @@ public class BotChallengeControllerTest {
         verify(controller).sendTurnstileRequest(any(HttpRequest.class));
         assertTrue(result.contains("bad token"));
         assertEquals(Boolean.FALSE, Objects.requireNonNull(request.getSession()).getAttribute("validCfTurnstileToken"));
-        assertEquals(NON_UNC_IP_ADDRESS, request.getSession().getAttribute("userIPAddress"));
-        assertNotEquals(Boolean.TRUE, request.getSession().getAttribute("uncIPAddress"));
     }
 
     private BotChallengeController controllerSpy() {

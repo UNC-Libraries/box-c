@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
@@ -153,6 +156,25 @@ public class StoreAccessLevelFilterTest {
         verify(filterChain).doFilter(request, response);
 
         assertHasAdminAccessPrincipal();
+    }
+
+    @Test
+    public void writesHeadersUsingSessionStateAfterChain() throws Exception {
+        doAnswer(invocation -> {
+            when(session.getAttribute("turnstileTokenExpiresIn")).thenReturn("456");
+            when(session.getAttribute("uncIPAddress")).thenReturn(true);
+            when(session.getAttribute("userIPAddress")).thenReturn("152.19.0.1");
+            when(session.getAttribute("validCfTurnstileToken")).thenReturn(true);
+            return null;
+        }).when(filterChain).doFilter(request, response);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        InOrder inOrder = inOrder(filterChain, response);
+        inOrder.verify(filterChain).doFilter(request, response);
+        inOrder.verify(response).setHeader("unc-ip-address", "true");
+        inOrder.verify(response).setHeader("valid-turnstile-token", "true");
+        inOrder.verify(response).setHeader("can-view-admin", "false");
     }
 
     private void assertHasAdminAccessPrincipal() {
