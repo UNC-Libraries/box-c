@@ -47,6 +47,8 @@ public class SetContentDescriptionMetadataFilterTest {
             "src/test/resources/datastream/machineGeneratedDescriptionDefaults.json";
     private static final String ALT_TEXT_FROM_MG = "Mountain landscape with snow-covered peaks";
     private static final String ALT_TEXT_FROM_REPO = "Repo-stored alt text";
+    private static final String FULL_DESC_FROM_MG = "A whole host of mountains in Asia";
+    private static final String FULL_DESC_FROM_REPO = "Repo-stored full description";
 
     private AutoCloseable closeable;
 
@@ -66,7 +68,7 @@ public class SetContentDescriptionMetadataFilterTest {
     @Mock
     private MachineGeneratedContentService mgContentService;
     @Mock
-    private BinaryObject altTextBinary;
+    private BinaryObject altTextBinary, fullDescBinary;
 
     private PID filePid;
     private DerivativeService derivativeService;
@@ -119,19 +121,22 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.loadMachineGeneratedDescription(filePid)).thenReturn(defaultJson);
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
-        when(mgContentService.extractFullDescription(defaultNode)).thenReturn("A scenic mountain landscape");
+        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn("text");
         when(mgContentService.extractRiskScore(defaultNode)).thenReturn(10);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(List.of("tag1", "tag2"));
         // No alt text in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
+        // No full description in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
+                .thenThrow(new NotFoundException("No full description"));
 
         filter.filter(dip);
 
         verify(idb).setMgDescription(defaultJson);
         verify(idb).setAltText(ALT_TEXT_FROM_MG);
-        verify(idb).setFullDescription("A scenic mountain landscape");
+        verify(idb).setFullDescription(FULL_DESC_FROM_MG);
         verify(idb).setTranscript("text");
         verify(idb).setMgRiskScore(10);
         verify(idb).setMgContentTags(List.of("tag1", "tag2"));
@@ -156,6 +161,9 @@ public class SetContentDescriptionMetadataFilterTest {
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
+        // No full description in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
+                .thenThrow(new NotFoundException("No full description"));
 
         filter.filter(dip);
 
@@ -184,12 +192,15 @@ public class SetContentDescriptionMetadataFilterTest {
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
+        // No full description in fedora — fall back to machine generated
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
+                .thenThrow(new NotFoundException("No full description"));
 
         assertThrows(IndexingException.class, () -> filter.filter(dip));
     }
 
     @Test
-    public void filter_repoAltTextTakesPrecedenceOverMgAltText() throws Exception {
+    public void filter_repoAltTextFullDescTakesPrecedenceOverMgAltText() throws Exception {
         when(dip.getContentObject()).thenReturn(fileObj);
 
         String defaultJson = Files.readString(Path.of(DEFAULT_JSON_PATH));
@@ -198,7 +209,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.loadMachineGeneratedDescription(filePid)).thenReturn(defaultJson);
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
-        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
+        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
         when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
@@ -209,9 +220,16 @@ public class SetContentDescriptionMetadataFilterTest {
         when(altTextBinary.getBinaryStream())
                 .thenReturn(new ByteArrayInputStream(ALT_TEXT_FROM_REPO.getBytes(StandardCharsets.UTF_8)));
 
+        // Fedora has full description stored — it should win
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
+                .thenReturn(fullDescBinary);
+        when(fullDescBinary.getBinaryStream())
+                .thenReturn(new ByteArrayInputStream(FULL_DESC_FROM_REPO.getBytes(StandardCharsets.UTF_8)));
+
         filter.filter(dip);
 
         verify(idb).setAltText(ALT_TEXT_FROM_REPO);
+        verify(idb).setFullDescription(FULL_DESC_FROM_REPO);
     }
 
     @Test
@@ -224,16 +242,20 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.loadMachineGeneratedDescription(filePid)).thenReturn(defaultJson);
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
-        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
+        when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
         when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
                 .thenThrow(new NotFoundException("No alt text"));
+        // No full description in fedora
+        when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getFullDescriptionPid(filePid)))
+                .thenThrow(new NotFoundException("No full description"));
 
         filter.filter(dip);
 
         verify(idb).setAltText(ALT_TEXT_FROM_MG);
+        verify(idb).setFullDescription(FULL_DESC_FROM_MG);
     }
 }
