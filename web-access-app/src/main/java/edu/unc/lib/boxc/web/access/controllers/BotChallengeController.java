@@ -44,14 +44,12 @@ public class BotChallengeController {
     public @ResponseBody
     String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
-        String ipAddress = getClientIpAddress( request);
-        boolean uncAddress = Boolean.TRUE.equals(session.getAttribute("uncIPAddress"));
-        if (uncAddress || hasValidTurnstileToken(session)) {
-            setSuccessSessionState(session, uncAddress);
+        if (hasValidTurnstileToken(session)) {
+            setSuccessSessionState(session, true);
             return SerializationUtil.objectToJSON(Map.of("success", true));
         }
 
-        return turnstileVerification(ipAddress, token, session);
+        return turnstileVerification(getClientIpAddress(request), token, session);
     }
 
     private String turnstileVerification(String ipAddress, CfTurnstileToken token, HttpSession session) {

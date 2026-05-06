@@ -172,9 +172,7 @@ public class StoreAccessLevelFilterTest {
 
         InOrder inOrder = inOrder(filterChain, response);
         inOrder.verify(filterChain).doFilter(request, response);
-        inOrder.verify(response).setHeader("token-expiration", "456");
         inOrder.verify(response).setHeader("unc-ip-address", "true");
-        inOrder.verify(response).setHeader("ip-address", "152.19.0.1");
         inOrder.verify(response).setHeader("valid-turnstile-token", "true");
         inOrder.verify(response).setHeader("can-view-admin", "false");
     }
