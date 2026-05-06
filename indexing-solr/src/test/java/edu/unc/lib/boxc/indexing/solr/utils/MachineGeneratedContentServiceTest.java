@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.indexing.solr.utils;
 
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_IMAGE_QUALITY;
+import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_LANGUAGE;
 import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_ATROCITIES;
 import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_DEMOGRAPHICS;
 import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_MINORS_PRESENT;
@@ -231,6 +233,8 @@ public class MachineGeneratedContentServiceTest {
         assertContainsTag(tags, MG_TEXT_PRESENT);
         assertContainsTag(tags, MG_TEXT_HANDWRITTEN);
         assertContainsTag(tags, MG_TEXT_SENSITIVE);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_spanish");
+        assertContainsTag(tags, MG_IMAGE_QUALITY + "_degraded");
 
         // Review tags
         assertContainsTag(tags, MG_REVIEW_BIASED);
@@ -340,6 +344,58 @@ public class MachineGeneratedContentServiceTest {
         assertFalse(tags.contains(MG_REVIEW_SAFETY_ASSESS_INCON));
     }
 
+    @Test
+    public void extractContentTags_languageNotNA_addsLanguageTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
+                .path("text_characteristics"))
+                .put("language", "English");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_english");
+    }
+
+    @Test
+    public void extractContentTags_languageNA_noLanguageTag() throws Exception {
+        JsonNode node = parseDefaultJson(); // defaults have language: "N/A"
+        List<String> tags = service.extractContentTags(node);
+        assertFalse(tags.stream().anyMatch(t -> t.startsWith(MG_TEXT_LANGUAGE + "_")));
+    }
+
+    @Test
+    public void extractContentTags_languageUnknown_addsLowercaseTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
+                .path("text_characteristics"))
+                .put("language", "UNKNOWN");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_unknown");
+    }
+
+    @Test
+    public void extractContentTags_imageQualityNotUnimpaired_addsImageQualityTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD))
+                .put("image_quality", "IMPAIRED");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_IMAGE_QUALITY + "_impaired");
+    }
+
+    @Test
+    public void extractContentTags_imageQualityUnimpaired_noImageQualityTag() throws Exception {
+        JsonNode node = parseDefaultJson(); // defaults have image_quality: "UNIMPAIRED"
+        List<String> tags = service.extractContentTags(node);
+        assertFalse(tags.stream().anyMatch(t -> t.startsWith(MG_IMAGE_QUALITY + "_")));
+    }
+
+    @Test
+    public void extractContentTags_allTagsAreLowercase() throws Exception {
+        JsonNode node = buildAllTagsJson();
+        List<String> tags = service.extractContentTags(node);
+        for (String tag : tags) {
+            assertEquals(tag.toLowerCase(), tag, "Tag should be lowercase: " + tag);
+        }
+    }
+
     // ─── helpers ─────────────────────────────────────────────────────────────
 
     private void assertContainsTag(List<String> tags, String tag) {
@@ -400,6 +456,10 @@ public class MachineGeneratedContentServiceTest {
         textChars.put("text_present", "YES");
         textChars.put("text_type", "HANDWRITTEN_PRINT");
         textChars.put("text_sensitive", "SENSITIVE");
+        textChars.put("language", "Spanish");
+
+        // image_quality: non-UNIMPAIRED value
+        safety.put("image_quality", "DEGRADED");
 
         // Review assessment – all flags set to YES / INCONSISTENT
         ObjectNode review = (ObjectNode) result.path(MG_REVIEW_ASSESS_FIELD);
