@@ -91,7 +91,17 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
     }
 
     private String getTranscript(PID filePid, JsonNode mgdNode) {
-        // TODO implement retrieval from fedora when that functionality is in place
+        //Preferentially use the transcript stored in fedora if it exists
+        try {
+            var transcriptPid = DatastreamPids.getTranscriptPid(filePid);
+            var transcriptBinary = repositoryObjectLoader.getBinaryObject(transcriptPid);
+            return IOUtils.toString(transcriptBinary.getBinaryStream(), UTF_8);
+        } catch (NotFoundException e) {
+            log.debug("No transcript datastream found for {}", filePid);
+        } catch (IOException e) {
+            throw new IndexingException("Failed to retrieve transcript datastream for {}" + filePid, e);
+        }
+        // Fall back to using the machine generated transcript if it exists
         return mgContentService.extractTranscript(mgdNode);
     }
 
