@@ -173,13 +173,11 @@ public class IiifV3ManifestService {
      */
     public boolean hasManifestAccess(PID pid, AgentPrincipals agent) {
         try {
-            log.warn("Object {} made it", pid);
-            assertHasAccess(pid, agent);
-            log.warn("Object {} still here", pid);
-            return true;
-           // ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
-           // log.warn("Object {} was found for manifest access check", hasViewableContent(obj));
-           // return obj != null && hasViewableContent(obj);
+            log.warn("Object {} made it", pid);            assertHasAccess(pid, agent);
+            ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+            log.warn("Object {} was found for manifest access check", obj.getId());
+            log.warn("Object {} can be viweed", hasViewableContent(obj));
+            return obj != null && hasViewableContent(obj);
         } catch (AccessRestrictionException e) {
             log.warn("No manifest access for {}", pid, e);
             return false;
