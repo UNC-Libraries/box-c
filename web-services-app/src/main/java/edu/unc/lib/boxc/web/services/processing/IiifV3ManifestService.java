@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
@@ -173,13 +174,10 @@ public class IiifV3ManifestService {
      */
     public boolean hasManifestAccess(PID pid, AgentPrincipals agent) {
         try {
-            log.warn("Object {} made it", pid);            assertHasAccess(pid, agent);
+            assertHasAccess(pid, agent);
             ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
-            log.warn("Object {} was found for manifest access check", obj.getId());
-            log.warn("Object {} can be viweed", hasViewableContent(obj));
-            return obj != null && hasViewableContent(obj);
+            return obj != null;
         } catch (AccessRestrictionException e) {
-            log.warn("No manifest access for {}", pid, e);
             return false;
         } catch (Exception e) {
             log.warn("Unable to determine manifest access for {}", pid, e);
