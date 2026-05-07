@@ -55,7 +55,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class MachineGeneratedControllerTest {
+public class MachineGeneratedSearchControllerTest {
     private static final String PARENT1_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String FILE1_ID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String FILE2_ID = "b150dca9-c4cf-4651-aeef-3ce9e279178f";

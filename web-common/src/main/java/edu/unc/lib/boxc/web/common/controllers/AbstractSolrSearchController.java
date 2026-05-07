@@ -98,6 +98,10 @@ public abstract class AbstractSolrSearchController {
         this.searchStateFactory = searchStateFactory;
     }
 
+    public void setChildrenCountService(ChildrenCountService childrenCountService) {
+        this.childrenCountService = childrenCountService;
+    }
+
     protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
                                              HttpServletRequest request) {
         AccessGroupSet principals = GroupsThreadStore.getPrincipals();
@@ -136,12 +140,4 @@ public abstract class AbstractSolrSearchController {
 
         return results;
     }
-
-//    public void setChildrenCountService(ChildrenCountService childrenCountService) {
-//        this.childrenCountService = childrenCountService;
-//    }
-//
-//    public void setSetFacetTitleByIdService(SetFacetTitleByIdService setFacetTitleByIdService) {
-//        this.setFacetTitleByIdService = setFacetTitleByIdService;
-//    }
 }
