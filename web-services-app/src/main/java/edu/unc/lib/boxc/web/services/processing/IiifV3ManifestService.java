@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -159,6 +160,28 @@ public class IiifV3ManifestService {
         }
 
         return constructCanvasSection(obj);
+    }
+
+    /**
+     * Determines if a manifest exists and the user can access it
+     * This is primarily used by the finding aids app, https://finding-aids.lib.unc.edu, to determine
+     * whether a canvas should be retrieved. So, we want to return false on all exceptions,
+     * and let the receiving application determine what to do from there.
+     * @param pid
+     * @param agent
+     * @return boolean
+     */
+    public boolean hasManifestAccess(PID pid, AgentPrincipals agent) {
+        try {
+            assertHasAccess(pid, agent);
+            ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+            return obj != null && hasViewableContent(obj);
+        } catch (AccessRestrictionException e) {
+            return false;
+        } catch (Exception e) {
+            log.warn("Unable to determine manifest access for {}", pid, e);
+            return false;
+        }
     }
 
     /**

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -373,6 +374,29 @@ public class IiifV3ManifestServiceTest {
         assertEquals("", recordLinkMd.getLabel().getString());
         assertEquals("<a href=\"http://example.com/record/5d72b84a-983c-4a45-8caa-dc9857987da2\">View full record</a>",
                 recordLinkMd.getValue().getString());
+    }
+
+    @Test
+    public void userHasManifestAccess() {
+        var fileObj = createFileRecord(FILE1_ID, IMAGE, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+
+        assertTrue(manifestService.hasManifestAccess(PIDs.get(FILE1_ID), agent));
+    }
+
+    @Test
+    public void userDoesNotHaveManifestAccessIfTheyDoNotHaveValidPermissions() {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(eq(WORK_PID), any(), eq(Permission.viewAccessCopies));
+
+        assertFalse(manifestService.hasManifestAccess(WORK_PID, agent));
+    }
+
+    @Test
+    public void userDoesNotHaveAccessIfAnExceptionIsThrown() {
+        when(solrSearchService.getObjectById(any())).thenThrow(new RuntimeException("solr failure"));
+
+        assertFalse(manifestService.hasManifestAccess(WORK_PID, agent));
     }
 
     private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId, String type) {

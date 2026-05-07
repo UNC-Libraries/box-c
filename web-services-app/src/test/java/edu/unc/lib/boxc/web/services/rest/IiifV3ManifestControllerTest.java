@@ -34,13 +34,14 @@ import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.WID
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -376,5 +377,43 @@ public class IiifV3ManifestControllerTest {
         assertEquals(750, body.get(WIDTH).intValue());
         assertEquals(240, body.get(HEIGHT).intValue());
         assertNull(body.get(DURATION));
+    }
+
+    @Test
+    public void testHasManifestAccessForViewableFile() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|5|||240x750");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|5|||");
+        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Can-Access-Manifest", "true"));
+    }
+
+    @Test
+    public void testHasManifestAccessWhenAccessDenied() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(eq(OBJECT_PID), any(), eq(Permission.viewAccessCopies));
+
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Can-Access-Manifest", "false"));
+    }
+
+    @Test
+    public void testHasManifestAccessWhenObjectNotFound() throws Exception {
+        when(solrSearchService.getObjectById(any())).thenReturn(null);
+
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Can-Access-Manifest", "false"));
     }
 }

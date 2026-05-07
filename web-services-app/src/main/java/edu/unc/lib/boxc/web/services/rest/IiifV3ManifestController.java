@@ -13,6 +13,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -57,6 +59,22 @@ public class IiifV3ManifestController {
         log.debug("Getting canvas for {}", pid.getId());
         var manifest = manifestService.buildCanvas(pid, AgentPrincipalsImpl.createFromThread());
         return new ResponseEntity<>(manifest, HttpStatus.OK);
+    }
+
+    /**
+     * Determines if a manifest exists and the user has access
+     * @param id
+     * @return Response containing custom header about the manifest's existence and whether the user can access it.
+     */
+    @CrossOrigin
+    @GetMapping(value = "/iiif/v3/{id}/access", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> hasManifestAccess(@PathVariable("id") String id) {
+        PID pid = PIDs.get(id);
+        var hasManifestAccess = manifestService.hasManifestAccess(pid, AgentPrincipalsImpl.createFromThread());
+        return ResponseEntity.ok()
+                .header("Can-Access-Manifest", String.valueOf(hasManifestAccess))
+                .build();
     }
 
     public void setManifestService(IiifV3ManifestService manifestService) {
