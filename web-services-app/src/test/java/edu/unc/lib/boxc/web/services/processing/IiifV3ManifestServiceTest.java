@@ -393,6 +393,13 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
+    public void userDoesNotHaveAccessIfTheObjectIsNull() {
+        when(solrSearchService.getObjectById(any())).thenReturn(null);
+
+        assertFalse(manifestService.hasManifestAccess(WORK_PID, agent));
+    }
+
+    @Test
     public void userDoesNotHaveAccessIfAnExceptionIsThrown() {
         when(solrSearchService.getObjectById(any())).thenThrow(new RuntimeException("solr failure"));
 
