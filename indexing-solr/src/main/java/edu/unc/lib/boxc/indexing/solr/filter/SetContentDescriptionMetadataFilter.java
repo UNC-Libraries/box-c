@@ -79,7 +79,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         } catch (NotFoundException e) {
             log.debug("No alt text datastream found for {}", filePid);
         } catch (IOException e) {
-            throw new IndexingException("Failed to retrieve alt text datastream for {}" + filePid, e);
+            throw new IndexingException("Failed to retrieve alt text datastream for " + filePid, e);
         }
         // Fall back to using the machine generated alt text if it exists
         return mgContentService.extractAltText(mgdNode);
@@ -94,7 +94,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         } catch (NotFoundException e) {
             log.debug("No full description datastream found for {}", filePid);
         } catch (IOException e) {
-            throw new IndexingException("Failed to retrieve full description datastream for {}" + filePid, e);
+            throw new IndexingException("Failed to retrieve full description datastream for " + filePid, e);
         }
         // Fall back to using the machine generated full description if it exists
         return mgContentService.extractFullDescription(mgdNode);
@@ -109,7 +109,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         } catch (NotFoundException e) {
             log.debug("No transcript datastream found for {}", filePid);
         } catch (IOException e) {
-            throw new IndexingException("Failed to retrieve transcript datastream for {}" + filePid, e);
+            throw new IndexingException("Failed to retrieve transcript datastream for " + filePid, e);
         }
         // Fall back to using the machine generated transcript if it exists
         return mgContentService.extractTranscript(mgdNode);
