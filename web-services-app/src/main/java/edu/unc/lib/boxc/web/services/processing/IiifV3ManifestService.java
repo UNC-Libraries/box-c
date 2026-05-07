@@ -175,7 +175,7 @@ public class IiifV3ManifestService {
         try {
             assertHasAccess(pid, agent);
             ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
-            return obj != null && hasViewableContent(obj);
+            return obj != null;
         } catch (AccessRestrictionException e) {
             return false;
         } catch (Exception e) {

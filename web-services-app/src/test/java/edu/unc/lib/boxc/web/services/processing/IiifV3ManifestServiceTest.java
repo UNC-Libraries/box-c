@@ -399,6 +399,13 @@ public class IiifV3ManifestServiceTest {
         assertFalse(manifestService.hasManifestAccess(WORK_PID, agent));
     }
 
+    @Test
+    public void userDoesNotHaveAccessIfTheObjectIsNull() {
+        when(solrSearchService.getObjectById(any())).thenReturn(null);
+
+        assertFalse(manifestService.hasManifestAccess(WORK_PID, agent));
+    }
+
     private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId, String type) {
         assertEquals("http://example.com/iiif/v3/" + expectedId + "/canvas",
                 fileCanvas.getID().toString());
