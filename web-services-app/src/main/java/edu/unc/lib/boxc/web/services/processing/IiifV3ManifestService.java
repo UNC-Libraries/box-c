@@ -177,6 +177,7 @@ public class IiifV3ManifestService {
             ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
             return obj != null && hasViewableContent(obj);
         } catch (AccessRestrictionException e) {
+            log.warn("No manifest access for {}", pid, e);
             return false;
         } catch (Exception e) {
             log.warn("Unable to determine manifest access for {}", pid, e);
