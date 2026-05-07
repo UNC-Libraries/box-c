@@ -41,9 +41,11 @@ public class MachineGeneratedContentService {
     public static final String MG_SYMBOLS = "symbols_present";
     public static final String MG_STEREOTYPING = "stereotyping";
     public static final String MG_ATROCITIES = "atrocities";
+    public static final String MG_IMAGE_QUALITY = "image_quality";
     public static final String MG_TEXT_PRESENT = "text_present";
     public static final String MG_TEXT_HANDWRITTEN = "text_handwritten";
     public static final String MG_TEXT_SENSITIVE = "text_sensitive";
+    public static final String MG_TEXT_LANGUAGE = "text_language";
 
     public static final String MG_REVIEW_BIASED = "model_biased_language";
     public static final String MG_REVIEW_STEREOTYPING = "model_stereotyping";
@@ -242,6 +244,24 @@ public class MachineGeneratedContentService {
                         tags.add(MG_TEXT_HANDWRITTEN);
                     }
                 }
+
+                // language: add tag as long as value is not "N/A"
+                JsonNode languageNode = textCharsNode.path("language");
+                if (!languageNode.isMissingNode()) {
+                    String langVal = languageNode.asText();
+                    if (!"N/A".equalsIgnoreCase(langVal)) {
+                        tags.add(MG_TEXT_LANGUAGE + "_" + langVal);
+                    }
+                }
+            }
+
+            // image_quality: add tag if value is not "UNIMPAIRED"
+            JsonNode imageQualityNode = safetyNode.path("image_quality");
+            if (!imageQualityNode.isMissingNode()) {
+                String qualityVal = imageQualityNode.asText();
+                if (!"UNIMPAIRED".equalsIgnoreCase(qualityVal)) {
+                    tags.add(MG_IMAGE_QUALITY + "_" + qualityVal);
+                }
             }
         }
         JsonNode reviewNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
@@ -262,6 +282,7 @@ public class MachineGeneratedContentService {
                 tags.add(MG_REVIEW_SAFETY_ASSESS_INCON);
             }
         }
+        tags.replaceAll(String::toLowerCase);
         log.debug("Generated content tags: {}", tags);
         return tags;
     }

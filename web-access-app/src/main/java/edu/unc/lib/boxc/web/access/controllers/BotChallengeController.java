@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.web.access.controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
-import org.apache.commons.net.util.SubnetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.slf4j.Logger;
@@ -25,7 +24,6 @@ import java.net.http.HttpResponse;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,13 +44,12 @@ public class BotChallengeController {
     public @ResponseBody
     String  turnstileJson(@RequestBody CfTurnstileToken token, HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
-        String ipAddress = request.getRemoteAddr();
-
-        if (hasUncAddress(ipAddress, session) || hasValidTurnstileToken(session)){
+        if (hasValidTurnstileToken(session)) {
+            setSuccessSessionState(session, true);
             return SerializationUtil.objectToJSON(Map.of("success", true));
         }
 
-        return turnstileVerification(ipAddress, token, session);
+        return turnstileVerification(getClientIpAddress(request), token, session);
     }
 
     private String turnstileVerification(String ipAddress, CfTurnstileToken token, HttpSession session) {
@@ -63,11 +60,11 @@ public class BotChallengeController {
             HttpResponse<String> turnstileResponse = sendTurnstileRequest(turnstileRequest);
             JsonNode turnstileJson = OBJECT_MAPPER.readTree(turnstileResponse.body());
             var validationSucceeded = turnstileJson.get("success").asBoolean();
-            setSuccessSessionState(session, ipAddress, validationSucceeded);
+            setSuccessSessionState(session, validationSucceeded);
             return turnstileResponse.body();
         } catch (IOException | InterruptedException e) {
             log.warn("Unable to validate Turnstile token {}", e.getMessage());
-            setErrorSessionState(session, ipAddress);
+            setErrorSessionState(session);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", e.getMessage());
             return SerializationUtil.objectToJSON(errorResponse);
@@ -95,68 +92,18 @@ public class BotChallengeController {
                 .build();
     }
 
-    private void setSuccessSessionState(HttpSession session, String ipAddress, boolean validationSucceeded) {
+    private void setSuccessSessionState(HttpSession session, boolean validationSucceeded) {
         if (validationSucceeded) {
             session.setAttribute("turnstileTokenExpiresIn", expiresIn());
         }
         session.setAttribute("validCfTurnstileToken", validationSucceeded);
-        session.setAttribute("userIPAddress", ipAddress);
-        session.setAttribute("uncIPAddress", false);
     }
 
-    private void setErrorSessionState(HttpSession session, String ipAddress) {
+    private void setErrorSessionState(HttpSession session) {
         session.setAttribute("turnstileTokenExpiresIn", null);
         session.setAttribute("validCfTurnstileToken", false);
-        session.setAttribute("userIPAddress", ipAddress);
-        session.setAttribute("uncIPAddress", false);
     }
 
-    private Boolean hasUncAddress(String ipAddress, HttpSession session) {
-        if (Boolean.TRUE.equals(session.getAttribute("uncIPAddress"))
-                || ipAddress.equals("127.0.0.1")
-                || ipAddress.equals("0:0:0:0:0:0:0:1")
-                || ipAddress.equals("::1")) {
-            session.setAttribute("uncIPAddress", true);
-            return true;
-        }
-
-        // SubnetUtils only supports IPv4 CIDR checks.
-        if (ipAddress.contains(":")) {
-            session.setAttribute("uncIPAddress", false);
-            return false;
-        }
-
-        var uncAddresses = List.of(
-                "152.2.0.0/16", // Campus
-                "152.19.0.0/16", // Campus
-                "152.23.0.0/16", // Campus
-                "152.54.0.0/20", // RENCI
-                "172.17.0.0/18", // VPN
-                "172.17.57.0/28", // Library-IT VPN group
-                "198.85.230.0/23", // Off campus location
-                "204.84.8.0/22", // Off campus location
-                "204.84.252.0/22", // Off campus location
-                "204.85.176.0/20", // Off campus location
-                "204.85.192.0/18" // UNC Hospitals
-        );
-
-        var validUncAddress = false;
-
-        for (var uncAddress : uncAddresses) {
-            SubnetUtils utils = new SubnetUtils(uncAddress);
-            if (utils.getInfo().isInRange(ipAddress)) {
-                validUncAddress = true;
-                break;
-            };
-        }
-
-        var uncAddressSession = session.getAttribute("uncIPAddress");
-        if (uncAddressSession == null) {
-            session.setAttribute("uncIPAddress", validUncAddress);
-        }
-
-        return validUncAddress;
-    }
 
     private Boolean hasValidTurnstileToken(HttpSession session) {
         var tokenExpiration = session.getAttribute("turnstileTokenExpiresIn");
@@ -167,6 +114,22 @@ public class BotChallengeController {
         }
 
         return false;
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            // X-Forwarded-For can be a comma-separated list: client, proxy1, proxy2
+            // The leftmost value is the original client IP
+            return xForwardedFor.split(",")[0].trim();
+        }
+        // Fallback to X-Real-IP if set by Apache
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp.trim();
+        }
+
+        return request.getRemoteAddr();
     }
 
     private ZonedDateTime getCurrentTime() {

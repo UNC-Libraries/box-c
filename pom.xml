@@ -65,6 +65,7 @@
         <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
         <spring.version>6.2.17</spring.version>
+        <spring.security.web.version>6.5.10</spring.security.web.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
@@ -682,6 +683,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-aop</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.web.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.ws</groupId>

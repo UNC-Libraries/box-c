@@ -5,7 +5,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
+import edu.unc.lib.boxc.operations.impl.fullDescription.FullDescriptionUpdateService;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -29,35 +29,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * @author bbpennel
- */
-public class AltTextControllerTest {
-
+public class FullDescriptionControllerTest {
     private MockMvc mockMvc;
-
     @Mock
-    private AltTextUpdateService altTextUpdateService;
-
+    private FullDescriptionUpdateService service;
     @Mock
     private BinaryObject binaryObject;
     private PID pid;
-    private PID altTextPid;
-
+    private PID fulldescPid;
     private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        pid = TestHelper.makePid();
+        fulldescPid = DatastreamPids.getFullDescriptionPid(pid);
 
-        AltTextController controller = new AltTextController();
-        controller.setAltTextUpdateService(altTextUpdateService);
+        var controller = new FullDescriptionController();
+        controller.setFullDescriptionUpdateService(service);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
-
-        pid = TestHelper.makePid();
-        altTextPid = DatastreamPids.getAltTextPid(pid);
     }
 
     @AfterEach
@@ -66,41 +58,39 @@ public class AltTextControllerTest {
     }
 
     @Test
-    void testUpdateAltText() throws Exception {
-        var altText = "Sample Alt Text";
+    public void updateFullDescTest() throws Exception {
+        var description = "The best full description ever";
+        when(binaryObject.getPid()).thenReturn(fulldescPid);
+        when(service.updateFullDescription(any())).thenReturn(binaryObject);
 
-        // Mock BinaryObject to return a PID
-        when(binaryObject.getPid()).thenReturn(altTextPid);
-        when(altTextUpdateService.updateAltText(any())).thenReturn(binaryObject);
-
-        var result = mockMvc.perform(post("/edit/altText/{id}", pid.getId())
+        var result = mockMvc.perform(post("/edit/fullDescription/{id}", pid.getId())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("altText", altText))
+                        .param("fullDescription", description))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals("updateAltText", respMap.get("action"));
-        assertEquals(altTextPid.getComponentId(), respMap.get("pid"));
+        assertEquals("updateFullDescription", respMap.get("action"));
+        assertEquals(fulldescPid.getComponentId(), respMap.get("pid"));
 
-        // Verify that the service was called with the correct AltTextUpdateRequest
-        verify(altTextUpdateService).updateAltText(argThat(request ->
+        // Verify that the service was called with the correct request
+        verify(service).updateFullDescription(argThat(request ->
                 request.getPidString().equals(pid.getId()) &&
-                        request.getAltText().equals(altText)
+                        request.getFullDescriptionText().equals(description)
         ));
     }
 
     @Test
-    void testUpdateAltTextFails() throws Exception {
-        var altText = "Sample Alt Text";
+    public void updateFullDescNoPermissionTest() throws Exception {
+        var description = "The best full description ever";
 
         doThrow(new AccessRestrictionException("Access Denied"))
-                .when(altTextUpdateService).updateAltText(any());
+                .when(service).updateFullDescription(any());
 
-        mockMvc.perform(post("/edit/altText/{id}", pid.getId())
+        mockMvc.perform(post("/edit/fullDescription/{id}", pid.getId())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("altText", altText))
+                        .param("fullDescription", description))
                 .andExpect(status().isForbidden());
     }
 }

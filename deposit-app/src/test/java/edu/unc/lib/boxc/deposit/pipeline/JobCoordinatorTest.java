@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.deposit.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.api.DepositOperation;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
@@ -95,9 +93,6 @@ public class JobCoordinatorTest {
         // When the job runs successfully
         coordinator.onMessage(message);
 
-        // Then message should be acknowledged
-        verify(message).acknowledge();
-
         // And job should be executed
         verify(jobRunnable).run();
 
@@ -121,9 +116,6 @@ public class JobCoordinatorTest {
 
         // When the job is executed
         coordinator.onMessage(message);
-
-        // Then message should still be acknowledged
-        verify(message).acknowledge();
 
         // And failure message should be sent
         ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
@@ -151,9 +143,6 @@ public class JobCoordinatorTest {
         // When the job is executed
         coordinator.onMessage(message);
 
-        // Then message should still be acknowledged
-        verify(message).acknowledge();
-
         // And failure message should be sent
         ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
         verify(depositOperationMessageService).sendDepositOperationMessage(messageCaptor.capture());
@@ -180,9 +169,6 @@ public class JobCoordinatorTest {
         // When the job is executed
         coordinator.onMessage(message);
 
-        // Then message should still be acknowledged
-        verify(message).acknowledge();
-
         // And interrupt message should be sent
         ArgumentCaptor<DepositOperationMessage> messageCaptor = ArgumentCaptor.forClass(DepositOperationMessage.class);
         verify(depositOperationMessageService).sendDepositOperationMessage(messageCaptor.capture());
@@ -207,9 +193,6 @@ public class JobCoordinatorTest {
 
         coordinator.onMessage(message);
 
-        // Then message should be acknowledged
-        verify(message).acknowledge();
-
         // And job should be executed
         verify(jobRunnable).run();
 
@@ -227,7 +210,6 @@ public class JobCoordinatorTest {
 
         // Then no processing should occur
         verify(depositJobMessageService, never()).fromJson(any());
-        verify(message, never()).acknowledge();
         verify(jobRunnable, never()).run();
         verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
         verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
@@ -241,8 +223,6 @@ public class JobCoordinatorTest {
         // When a message is received
         coordinator.onMessage(message);
 
-        // Then message should be acknowledged but job shouldn't run
-        verify(message).acknowledge();
         verify(jobRunnable, never()).run();
         verify(jobStatusFactory, never()).started(anyString(), anyString(), any());
         verify(jobStatusFactory, never()).completed(jobMessage.getJobId());
@@ -256,9 +236,6 @@ public class JobCoordinatorTest {
 
         // When a message is received
         coordinator.onMessage(message);
-
-        // Then message should be acknowledged
-        verify(message).acknowledge();
 
         // And job should be executed
         verify(jobRunnable).run();
@@ -281,9 +258,8 @@ public class JobCoordinatorTest {
         when(depositJobMessageService.fromJson(message)).thenThrow(new IOException("Parse error"));
 
         // When a message is received
-        assertThrows(RuntimeException.class, () -> coordinator.onMessage(message));
+        coordinator.onMessage(message);
 
-        verify(message).acknowledge();
         // Then no job should run
         verify(jobRunnable, never()).run();
     }

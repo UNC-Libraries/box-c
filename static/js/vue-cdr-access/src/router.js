@@ -8,6 +8,7 @@ import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import cfTurnstile from "@/components/cfTurnstile.vue";
 import { useAccessStore } from './stores/access';
+import { shouldRedirectToTurnstile } from './routerGuard';
 
 const UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
@@ -73,23 +74,8 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const store = useAccessStore();
 
-  // Can't use the fetchWrapper mixin here, as the router is not a component and doesn't have access to mixins.
-  try {
-    const response = await fetch('/api/userInformation', { method: 'HEAD' });
-
-    store.setUsername(response.headers.get('username'));
-    store.setIsLoggedIn();
-    store.setViewAdmin(response.headers.get('can-view-admin'));
-    store.setUncIP(response.headers.get('unc-ip-address') === 'true');
-    store.setValidToken(response.headers.get('valid-turnstile-token') === 'true');
-
-    // Issue a challenge if a user needs a challenge.
-    if (window.turnstileEnabled === 'True' && to.name === 'searchRecords' &&
-      !store.isLoggedIn && !store.uncIP && !store.validToken) {
-      return { path: '/turnstile', replace: true };
-    }
-  } catch (error) {
-    console.log(error);
+  if (await shouldRedirectToTurnstile(to, store)) {
+    return { path: '/turnstile', replace: true };
   }
 
   return true;
