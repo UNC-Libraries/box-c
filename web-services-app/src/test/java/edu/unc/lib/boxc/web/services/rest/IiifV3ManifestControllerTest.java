@@ -390,9 +390,8 @@ public class IiifV3ManifestControllerTest {
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
         when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
 
-        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access"))
+                .andExpect(status().isNoContent())
                 .andExpect(header().string("Can-Access-Manifest", "true"));
     }
 
@@ -401,9 +400,8 @@ public class IiifV3ManifestControllerTest {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(eq(OBJECT_PID), any(), eq(Permission.viewAccessCopies));
 
-        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access"))
+                .andExpect(status().isNoContent())
                 .andExpect(header().string("Can-Access-Manifest", "false"));
     }
 
@@ -411,9 +409,8 @@ public class IiifV3ManifestControllerTest {
     public void testHasManifestAccessWhenObjectNotFound() throws Exception {
         when(solrSearchService.getObjectById(any())).thenReturn(null);
 
-        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(head("/iiif/v3/" + OBJECT_ID + "/access"))
+                .andExpect(status().isNoContent())
                 .andExpect(header().string("Can-Access-Manifest", "false"));
     }
 }

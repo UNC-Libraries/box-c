@@ -66,13 +66,11 @@ public class IiifV3ManifestController {
      * @param id
      * @return Response containing custom header about the manifest's existence and whether the user can access it.
      */
-    @CrossOrigin
-    @GetMapping(value = "/iiif/v3/{id}/access", produces = APPLICATION_JSON_VALUE)
-    @ResponseBody
+    @RequestMapping(method = RequestMethod.HEAD, value = "/iiif/v3/{id}/access")
     public ResponseEntity<Object> hasManifestAccess(@PathVariable("id") String id) {
         PID pid = PIDs.get(id);
         var hasManifestAccess = manifestService.hasManifestAccess(pid, AgentPrincipalsImpl.createFromThread());
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
                 .header("Can-Access-Manifest", String.valueOf(hasManifestAccess))
                 .build();
     }
