@@ -19,10 +19,6 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
  *
  */
 public class AbstractSearchController extends AbstractSolrSearchController {
-
-    @Autowired
-    protected ChildrenCountService childrenCountService;
-
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(), SearchFieldKey.COLLECTION_DISPLAY_SETTINGS.name(),
             SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.CREATOR.name(),

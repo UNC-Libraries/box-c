@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
@@ -10,9 +9,8 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
+import edu.unc.lib.boxc.search.solr.services.SearchResultResponseDecoratorService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
-import edu.unc.lib.boxc.search.solr.services.AccessCopiesService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +37,8 @@ import java.util.Optional;
 public class SearchActionController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
     private static final int DEFAULT_COLLECTIONS_PER_PAGE = 500;
-
     @Autowired
-    private MultiSelectFacetListService multiSelectFacetListService;
-    @Autowired
-    private AccessCopiesService accessCopiesService;
+    private SearchResultResponseDecoratorService searchResultResponseDecorator;
 
     /**
      * Endpoint which returns search results, ignoring hierarchy, with any supplied filters limiting the results.
@@ -100,10 +95,10 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         searchRequest.setApplyCutoffs(true);
         setDefaultRollup(searchRequest, true);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        populateThumbnailUrls(searchRequest, resultResponse);
+        searchResultResponseDecorator.populateThumbnailUrls(searchRequest.getAccessGroups(), resultResponse);
 
         if (getFacets.orElse(false)) {
-            retrieveFacets(searchRequest, resultResponse);
+            searchResultResponseDecorator.retrieveFacets(searchRequest, resultResponse);
         }
         return getResults(resultResponse, "list", request);
     }
@@ -127,7 +122,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         SearchState searchState = searchRequest.getSearchState();
         searchState.setRowsPerPage(DEFAULT_COLLECTIONS_PER_PAGE);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        populateThumbnailUrls(searchRequest, resultResponse);
+        searchResultResponseDecorator.populateThumbnailUrls(searchRequest.getAccessGroups(), resultResponse);
 
         return getResults(resultResponse, "search", request);
     }
@@ -141,33 +136,15 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         setDefaultRollup(searchRequest, false);
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        populateThumbnailUrls(searchRequest, resultResponse);
+        searchResultResponseDecorator.populateThumbnailUrls(searchRequest.getAccessGroups(), resultResponse);
 
         if (getFacets) {
-            retrieveFacets(searchRequest, resultResponse);
+            searchResultResponseDecorator.retrieveFacets(searchRequest, resultResponse);
         }
         return getResults(resultResponse, "search", request);
     }
 
-    private void retrieveFacets(SearchRequest searchRequest, SearchResultResponse resultResponse) {
-        SearchState searchState = searchRequest.getSearchState();
-        AccessGroupSet principals = searchRequest.getAccessGroups();
-        SearchState facetState = (SearchState) searchState.clone();
-        SearchRequest facetRequest = new SearchRequest(facetState, principals, true);
-        facetRequest.setApplyCutoffs(false);
-        if (resultResponse.getSelectedContainer() != null) {
-            facetState.addFacet(resultResponse.getSelectedContainer().getPath());
-        }
 
-        SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
-        resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-
-        // Get minimum year for date created "facet" search
-        if (facetState.getFacetsToRetrieve().contains(SearchFieldKey.DATE_CREATED_YEAR.name())) {
-            String minSearchYear = multiSelectFacetListService.getMinimumDateCreatedYear(facetState, searchRequest);
-            resultResponse.setMinimumDateCreatedYear(minSearchYear);
-        }
-    }
 
     private void setDefaultRollup(SearchRequest searchRequest, boolean isListing) {
         if (searchRequest.getSearchState().getRollup() == null) {
@@ -194,12 +171,5 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             }
         }
         return false;
-    }
-
-    private void populateThumbnailUrls(SearchRequest searchRequest, SearchResultResponse result) {
-        accessCopiesService.populateThumbnailInfoForList(result.getResultList(),
-                searchRequest.getAccessGroups(), true);
-        accessCopiesService.populateThumbnailInfo(result.getSelectedContainer(),
-                searchRequest.getAccessGroups(), true);
     }
 }

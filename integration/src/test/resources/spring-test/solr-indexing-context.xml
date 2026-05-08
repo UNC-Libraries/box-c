@@ -192,7 +192,7 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
-    <bean id="mgContentService" class="edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService">
+    <bean id="mgContentService" class="edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService">
         <property name="derivativeService" ref="derivativeService" />
     </bean>
 

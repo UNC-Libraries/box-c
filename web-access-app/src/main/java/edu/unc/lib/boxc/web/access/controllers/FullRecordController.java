@@ -83,8 +83,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     @Autowired
     private AccessControlService aclService;
     @Autowired
-    private ChildrenCountService childrenCountService;
-    @Autowired
     private NeighborQueryService neighborService;
     @Autowired
     private GetCollectionIdService collectionIdService;
@@ -98,7 +96,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private XmlDocumentFilteringService xmlDocumentFilteringService;
     @Autowired
     private ObjectAclFactory objectAclFactory;
-
     @Autowired
     private XSLViewResolver xslViewResolver;
     @Autowired
@@ -400,5 +397,13 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         return null;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setCollectionIdService(GetCollectionIdService collectionIdService) {
+        this.collectionIdService = collectionIdService;
     }
 }
