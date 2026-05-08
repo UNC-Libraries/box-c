@@ -46,7 +46,6 @@ public class PdfDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        Message in = exchange.getIn();
         var request = deserializeRequest(exchange);
         var agent = request.getAgent();
         var pid = request.getWorkPid();
