@@ -281,15 +281,14 @@
     <bean id="videoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor">
     </bean>
 
-    <bean id="pdf4uProcessor" class="edu.unc.lib.boxc.services.camel.pdf.Pdf4uProcessor">
+    <bean id="pdfDerivativeService" class="edu.unc.lib.boxc.operations.impl.pdf.PdfDerivativeService">
+        <property name="aclService" ref="aclService" />
     </bean>
 
-    <bean id="addPdfAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).PDF_ACCESS_COPY.getExtension()}" />
+    <bean id="pdfDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor">
         <constructor-arg value="${cdr.enhancement.path.pdf}" />
-    </bean>
-
-    <bean id="pdfAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="PdfDerivativeService" ref="pdfDerivativeService" />
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">

@@ -21,11 +21,11 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class Pdf4uProcessorTest {
+public class PdfDerivativeProcessorTest {
     private final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private String derivTmpPath;
 
-    private Pdf4uProcessor processor;
+    private PdfDerivativeProcessor processor;
 
     private AutoCloseable closeable;
 
@@ -42,7 +42,7 @@ public class Pdf4uProcessorTest {
     public void init() {
         closeable = openMocks(this);
 
-        processor = new Pdf4uProcessor();
+        processor = new PdfDerivativeProcessor(derivTmpPath);
 
         // Path to file from exec result not expected to have extension
         derivTmpPath = tmpFolder.resolve(fileName).toString();

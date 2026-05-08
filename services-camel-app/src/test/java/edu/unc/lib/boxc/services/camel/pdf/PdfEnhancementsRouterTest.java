@@ -1,191 +1,73 @@
 package edu.unc.lib.boxc.services.camel.pdf;
 
-import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
-import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
-import org.apache.camel.BeanInject;
-import org.apache.camel.EndpointInject;
-import org.apache.camel.Exchange;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
+import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSerializationHelper;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static org.fcrepo.camel.FcrepoHeaders.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
-    private static final long timestamp = 1428360320168L;
-    private static final String userID = "bypassAdmin";
-    private static final String userAgent = "curl/7.37.1";
-    private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
-    private final String eventTypes = FcrepoJmsConstants.EVENT_NS + "ResourceCreation";
-    private final String pdfAccessCopy = "PdfAccessCopy";
+    private final PID workPid = PIDs.get(UUID.randomUUID().toString());
+    private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
-    @PropertyInject(value = "fcrepo.baseUrl")
-    private String baseUri;
-
-    @EndpointInject("mock:fcrepo")
-    protected MockEndpoint resultEndpoint;
-
-    @Produce("direct:process.binary.original")
+    @Produce("direct:start")
     protected ProducerTemplate template;
+    private String endpointUri = "direct:pdfderivative";
 
-    @BeanInject("addPdfAccessCopyProcessor")
-    private AddDerivativeProcessor addPdfAccessCopyProcessor;
+    @Mock
+    private PdfDerivativeProcessor pdfDerivativeProcessor;
 
-    @BeanInject("pdf4uProcessor")
-    private Pdf4uProcessor pdf4uProcessor;
+    @Override
+    protected RouteBuilder createRouteBuilder() {
+        var router = new PdfEnhancementsRouter();
+        router.setPdfDerivativeProcessor(pdfDerivativeProcessor);
+        router.setPdfDerivativesStreamCamel(endpointUri);
+        return router;
+    }
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/pdf-context.xml");
     }
 
-    @AfterEach
-    public void cleanup() throws IOException {
-        FileUtils.deleteDirectory(new File("target/34"));
-    }
-
     @Test
-    public void testPdfAccessCopyRouteNoForceNoFileExists() throws Exception {
-        when(addPdfAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(pdfAccessCopy);
+    public void requestSentTest() throws Exception {
+        createContext("pdfDerivatives");
 
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(1);
+        var request = new PdfRequest();
+        request.setAgent(agent);
+        request.setMimetype("image/tiff");
+        request.setWorkPid(workPid);
+        var body = PdfRequestSerializationHelper.toJson(request);
+        template.sendBody(body);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-
-        template.sendBodyAndHeaders("", headers);
-
-        verify(pdf4uProcessor).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        solrIndexingEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testPdfAccessCopyRouteForceNoFileExists() throws Exception {
-        when(addPdfAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(pdfAccessCopy);
-
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(1);
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
-
-        template.sendBodyAndHeaders("", headers);
-
-        verify(pdf4uProcessor).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor).process(any(Exchange.class));
-        solrIndexingEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testPdfAccessCopyRouteNoForceFileExists() throws Exception {
-        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".pdf");
-        FileUtils.writeStringToFile(existingFile, "pdf body", "utf-8");
-
-        createContext(pdfAccessCopy);
-
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(0);
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-
-        template.sendBodyAndHeaders("", headers);
-
-        verify(pdf4uProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
-        solrIndexingEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testPdfAccessCopyRouteForceFileExists() throws Exception {
-        when(addPdfAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".pdf");
-        FileUtils.writeStringToFile(existingFile, "pdf body", "utf-8");
-
-        createContext(pdfAccessCopy);
-
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(1);
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
-
-        template.sendBodyAndHeaders("", headers);
-
-        verify(pdf4uProcessor).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor).process(any(Exchange.class));
-        solrIndexingEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testPdfAccessCopyRejection() throws Exception {
-        createContext(pdfAccessCopy);
-
-        when(addPdfAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        var pdfEndpoint = getMockEndpoint("mock:process.enhancement.pdfAccessCopy");
-        pdfEndpoint.expectedMessageCount(0);
-
-        var solrIndexingEndpoint = getMockEndpoint("mock:direct:solrIndexing");
-        solrIndexingEndpoint.expectedMessageCount(0);
-
-        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        headers.put(CdrBinaryMimeType, "audio/3gpp");
-
-        template.sendBodyAndHeaders("", headers);
-
-        verify(pdf4uProcessor, never()).process(any(Exchange.class));
-        verify(addPdfAccessCopyProcessor, never()).process(any(Exchange.class));
-        pdfEndpoint.assertIsSatisfied();
-        solrIndexingEndpoint.assertIsSatisfied();
+        verify(pdfDerivativeProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {
         AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:process.binary.original");
+            a.replaceFromWith("direct:start");
             a.mockEndpointsAndSkip("*");
         });
         context.start();
-    }
-
-    private Map<String, Object> createEvent(final String identifier, final String eventTypes,
-                                            final String force) {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put(FCREPO_URI, identifier);
-        headers.put(FCREPO_DATE_TIME, timestamp);
-        headers.put(FCREPO_AGENT, Arrays.asList(userID, userAgent));
-        headers.put(FCREPO_EVENT_TYPE, eventTypes);
-        headers.put(FCREPO_BASE_URL, baseUri);
-        headers.put(FcrepoJmsConstants.EVENT_TYPE, "ResourceCreation");
-        headers.put(FcrepoJmsConstants.IDENTIFIER, "original_file");
-        headers.put(FcrepoJmsConstants.RESOURCE_TYPE, Binary.getURI());
-        headers.put(CdrBinaryMimeType, "application/pdf");
-        headers.put("force", force);
-
-        return headers;
     }
 }
