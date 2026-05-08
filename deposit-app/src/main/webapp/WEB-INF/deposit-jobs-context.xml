@@ -36,6 +36,11 @@
                 <property name="closeTimeout" value="15000" />
                 <property name="sendTimeout" value="10000" />
                 <property name="useAsyncSend" value="true" />
+                <property name="prefetchPolicy">
+                    <bean class="org.apache.activemq.ActiveMQPrefetchPolicy">
+                        <property name="queuePrefetch" value="0" />
+                    </bean>
+                </property>
             </bean>
         </property>
         <property name="maxConnections" value="10" />

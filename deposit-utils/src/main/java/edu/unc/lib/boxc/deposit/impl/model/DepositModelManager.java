@@ -2,39 +2,21 @@ package edu.unc.lib.boxc.deposit.impl.model;
 
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Objects;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ReadWrite;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb1.transaction.TDBTransactionException;
 import org.apache.jena.tdb2.TDB2Factory;
-import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.deposit.api.exceptions.InterruptedRuntimeException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.model.api.ids.PID;
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Manager which provides access to a common deposit dataset used for
@@ -111,21 +93,13 @@ public class DepositModelManager implements Closeable {
         String depositUri = depositPid.getRepositoryPath();
 
         long start = System.currentTimeMillis();
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            if (!dataset.containsNamedModel(depositUri)) {
-                dataset.addNamedModel(depositUri, createDefaultModel());
-            }
-            Model model = dataset.getNamedModel(depositUri);
-            log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
-            return model;
-        } catch (TDBTransactionException e) {
-            if (e.getCause() instanceof InterruptedException) {
-                throw new InterruptedRuntimeException("Interrupted while waiting for TDB write lock for deposit "
-                        + depositUri, e);
-            }
-            throw e;
+        dataset.begin(ReadWrite.WRITE);
+        if (!dataset.containsNamedModel(depositUri)) {
+            dataset.addNamedModel(depositUri, createDefaultModel());
         }
+        Model model = dataset.getNamedModel(depositUri);
+        log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+        return model;
     }
 
     /**
@@ -138,18 +112,10 @@ public class DepositModelManager implements Closeable {
         long start = System.currentTimeMillis();
         String depositUri = depositPid.getRepositoryPath();
 
-        try {
-            dataset.begin(ReadWrite.READ);
-            Model model = dataset.getNamedModel(depositUri);
-            log.debug("Created read model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
-            return model;
-        } catch (TDBTransactionException e) {
-            if (e.getCause() instanceof InterruptedException) {
-                throw new InterruptedRuntimeException("Interrupted while waiting for TDB read lock for deposit "
-                        + depositUri, e);
-            }
-            throw e;
-        }
+        dataset.begin(ReadWrite.READ);
+        Model model = dataset.getNamedModel(depositUri);
+        log.debug("Created read model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+        return model;
     }
 
     /**
@@ -170,96 +136,7 @@ public class DepositModelManager implements Closeable {
         log.info("Removing deposit model for {}", uri);
         dataset.removeNamedModel(uri);
         dataset.commit();
-    }
-
-    /**
-     * Add triples from the provided model to the deposit model
-     *
-     * @param depositPid pid of the deposit
-     * @param model
-     */
-    public synchronized void addTriples(PID depositPid, Model model) {
-        addTriples(depositPid, model, null, null);
-    }
-
-    /**
-     * Add triples from the provided model to the deposit model, inserting the
-     * new resource as the child of the provided parent
-     *
-     * @param depositPid pid of the deposit
-     * @param model
-     * @param newPid
-     * @param parentPid
-     */
-    public synchronized void addTriples(PID depositPid, Model model, PID newPid, PID parentPid) {
-        Model depositModel = getWriteModel(depositPid);
-        try {
-            // Insert reference from parent to new resource
-            if (newPid != null && parentPid != null) {
-                Resource newResc = model.getResource(newPid.getRepositoryPath());
-                Bag parentBag = depositModel.getBag(parentPid.getRepositoryPath());
-
-                parentBag.add(newResc);
-            }
-
-            log.debug("Adding triples to deposit model: {}", model);
-            depositModel.add(model);
-            dataset.commit();
-        } finally {
-            dataset.end();
-        }
-    }
-
-    /**
-     * Perform a sparql update against the deposit model
-     *
-     * @param depositPid pid of the deposit
-     * @param query sparql update query
-     */
-    public synchronized void performUpdate(PID depositPid, String query) {
-        Model depositModel = getWriteModel(depositPid);
-        try {
-            UpdateAction.parseExecute(query, depositModel);
-            dataset.commit();
-        } finally {
-            dataset.end();
-        }
-    }
-
-    /**
-     * Perform a sparql query against the deposit model
-     *
-     * @param depositPid pid of the deposit
-     * @param queryString sparql query
-     * @return results of the query, serialized as csv in an output stream
-     * @throws IOException
-     */
-    public synchronized String performQuery(PID depositPid, String queryString) throws IOException {
-        Model depositModel = getReadModel(depositPid);
-
-        Query query = QueryFactory.create(queryString);
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
-        try (
-                QueryExecution qexec = QueryExecutionFactory.create(query, depositModel);
-                Writer writer = new PrintWriter(outStream);
-                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
-                ) {
-            ResultSet results = qexec.execSelect();
-            List<String> varNames = results.getResultVars();
-
-            while (results.hasNext()) {
-                QuerySolution soln = results.nextSolution();
-
-                for (String varName : varNames) {
-                    printer.print(soln.get(varName));
-                }
-                printer.println();
-            }
-        }
-
-        return outStream.toString("UTF-8");
+        dataset.end();
     }
 
     /**
@@ -323,9 +200,5 @@ public class DepositModelManager implements Closeable {
         if (dataset.isInTransaction()) {
             dataset.end();
         }
-    }
-
-    public void setDepositsPath(Path depositsPath) {
-        this.tdbBasePath = depositsPath;
     }
 }

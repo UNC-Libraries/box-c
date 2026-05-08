@@ -65,6 +65,7 @@
         <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
         <spring.version>6.2.17</spring.version>
+        <spring.security.web.version>6.5.10</spring.security.web.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
@@ -684,6 +685,11 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.web.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.ws</groupId>
                 <artifactId>spring-ws-core</artifactId>
                 <version>${spring.ws.version}</version>
@@ -709,7 +715,12 @@
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
-            
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom2</artifactId>

@@ -1,10 +1,10 @@
-package edu.unc.lib.boxc.indexing.solr.utils;
+package edu.unc.lib.boxc.search.solr.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import org.slf4j.Logger;
@@ -41,9 +41,11 @@ public class MachineGeneratedContentService {
     public static final String MG_SYMBOLS = "symbols_present";
     public static final String MG_STEREOTYPING = "stereotyping";
     public static final String MG_ATROCITIES = "atrocities";
+    public static final String MG_IMAGE_QUALITY = "image_quality";
     public static final String MG_TEXT_PRESENT = "text_present";
     public static final String MG_TEXT_HANDWRITTEN = "text_handwritten";
     public static final String MG_TEXT_SENSITIVE = "text_sensitive";
+    public static final String MG_TEXT_LANGUAGE = "text_language";
 
     public static final String MG_REVIEW_BIASED = "model_biased_language";
     public static final String MG_REVIEW_STEREOTYPING = "model_stereotyping";
@@ -82,10 +84,13 @@ public class MachineGeneratedContentService {
      * @return
      */
     public JsonNode deserializeMachineGeneratedDescription(String mgdJson) {
+        if (mgdJson == null) {
+            return null;
+        }
         try {
             return MAPPER.readTree(mgdJson);
         } catch (JsonProcessingException e) {
-            throw new IndexingException("Unable to deserialize machine generated JSON", e);
+            throw new RepositoryException("Unable to deserialize machine generated JSON", e);
         }
     }
 
@@ -135,6 +140,32 @@ public class MachineGeneratedContentService {
         }
         JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_RISK_SCORE_FIELD);
         return scoreNode.isMissingNode() ? null : scoreNode.asInt();
+    }
+
+    /**
+     * Extracts the review assessment from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return review assessment if it exists, otherwise null
+     */
+    public JsonNode extractReviewAssessment(JsonNode mgdNode) {
+        if (mgdNode == null) {
+            return null;
+        }
+        JsonNode assessmentNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
+        return assessmentNode.isMissingNode() ? null : assessmentNode;
+    }
+
+    /**
+     * Extracts the safety assessment from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return safety assessment if it exists, otherwise null
+     */
+    public JsonNode extractSafetyAssessment(JsonNode mgdNode) {
+        if (mgdNode == null) {
+            return null;
+        }
+        JsonNode assessmentNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD);
+        return assessmentNode.isMissingNode() ? null : assessmentNode;
     }
 
     /**
@@ -213,6 +244,24 @@ public class MachineGeneratedContentService {
                         tags.add(MG_TEXT_HANDWRITTEN);
                     }
                 }
+
+                // language: add tag as long as value is not "N/A"
+                JsonNode languageNode = textCharsNode.path("language");
+                if (!languageNode.isMissingNode()) {
+                    String langVal = languageNode.asText();
+                    if (!"N/A".equalsIgnoreCase(langVal)) {
+                        tags.add(MG_TEXT_LANGUAGE + "_" + langVal);
+                    }
+                }
+            }
+
+            // image_quality: add tag if value is not "UNIMPAIRED"
+            JsonNode imageQualityNode = safetyNode.path("image_quality");
+            if (!imageQualityNode.isMissingNode()) {
+                String qualityVal = imageQualityNode.asText();
+                if (!"UNIMPAIRED".equalsIgnoreCase(qualityVal)) {
+                    tags.add(MG_IMAGE_QUALITY + "_" + qualityVal);
+                }
             }
         }
         JsonNode reviewNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
@@ -233,6 +282,7 @@ public class MachineGeneratedContentService {
                 tags.add(MG_REVIEW_SAFETY_ASSESS_INCON);
             }
         }
+        tags.replaceAll(String::toLowerCase);
         log.debug("Generated content tags: {}", tags);
         return tags;
     }

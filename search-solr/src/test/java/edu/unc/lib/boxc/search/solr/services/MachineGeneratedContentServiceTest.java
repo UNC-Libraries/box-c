@@ -1,36 +1,39 @@
-package edu.unc.lib.boxc.indexing.solr.utils;
+package edu.unc.lib.boxc.search.solr.services;
 
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_ATROCITIES;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_DEMOGRAPHICS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_MINORS_PRESENT;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_MISID_RISK;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_NAMED_INDIVS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_NUDITY;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_PEOPLE_VISIBLE;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_RACIAL_OPPRESSION;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_ASSESS_FIELD;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_BIASED;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_DESC_CONTRADICTIONS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_EUPH_LANG;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_INCON_DEMOS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_JUDGMENTS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_PEOPLE_FIRST;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_SAFETY_ASSESS_INCON;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_STEREOTYPING;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_SUPPORTED_CLAIMS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_REVIEW_TEXT_CONTRADICTIONS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SAFETY_ASSESS_FIELD;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SEXUAL;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_STEREOTYPING;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_SYMBOLS;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_HANDWRITTEN;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_PRESENT;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_TEXT_SENSITIVE;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.MG_VIOLENT;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_FIELD;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
-import static edu.unc.lib.boxc.indexing.solr.utils.MachineGeneratedContentService.RESULT_TEXT_MIXED;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_ATROCITIES;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_DEMOGRAPHICS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_IMAGE_QUALITY;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_MINORS_PRESENT;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_MISID_RISK;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_NAMED_INDIVS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_NUDITY;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_PEOPLE_VISIBLE;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_RACIAL_OPPRESSION;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_ASSESS_FIELD;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_BIASED;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_DESC_CONTRADICTIONS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_EUPH_LANG;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_INCON_DEMOS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_JUDGMENTS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_PEOPLE_FIRST;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_SAFETY_ASSESS_INCON;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_STEREOTYPING;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_SUPPORTED_CLAIMS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_REVIEW_TEXT_CONTRADICTIONS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_SAFETY_ASSESS_FIELD;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_SEXUAL;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_STEREOTYPING;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_SYMBOLS;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_TEXT_HANDWRITTEN;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_TEXT_LANGUAGE;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_TEXT_PRESENT;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_TEXT_SENSITIVE;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.MG_VIOLENT;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_FIELD;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_TEXT_MIXED;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,8 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
@@ -101,6 +104,12 @@ public class MachineGeneratedContentServiceTest {
     // ─── deserializeMachineGeneratedDescription ──────────────────────────────
 
     @Test
+    public void deserializeMachineGeneratedDescription_null_returnsNull() {
+        JsonNode node = service.deserializeMachineGeneratedDescription(null);
+        assertNull(node);
+    }
+
+    @Test
     public void deserializeMachineGeneratedDescription_validJson_returnsNode() throws Exception {
         String json = loadDefaultJson();
         JsonNode node = service.deserializeMachineGeneratedDescription(json);
@@ -109,8 +118,8 @@ public class MachineGeneratedContentServiceTest {
     }
 
     @Test
-    public void deserializeMachineGeneratedDescription_invalidJson_throwsIndexingException() {
-        assertThrows(IndexingException.class,
+    public void deserializeMachineGeneratedDescription_invalidJson_throwsRepositoryException() {
+        assertThrows(RepositoryException.class,
                 () -> service.deserializeMachineGeneratedDescription("not valid json {{{"));
     }
 
@@ -231,6 +240,8 @@ public class MachineGeneratedContentServiceTest {
         assertContainsTag(tags, MG_TEXT_PRESENT);
         assertContainsTag(tags, MG_TEXT_HANDWRITTEN);
         assertContainsTag(tags, MG_TEXT_SENSITIVE);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_spanish");
+        assertContainsTag(tags, MG_IMAGE_QUALITY + "_degraded");
 
         // Review tags
         assertContainsTag(tags, MG_REVIEW_BIASED);
@@ -340,6 +351,58 @@ public class MachineGeneratedContentServiceTest {
         assertFalse(tags.contains(MG_REVIEW_SAFETY_ASSESS_INCON));
     }
 
+    @Test
+    public void extractContentTags_languageNotNA_addsLanguageTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
+                .path("text_characteristics"))
+                .put("language", "English");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_english");
+    }
+
+    @Test
+    public void extractContentTags_languageNA_noLanguageTag() throws Exception {
+        JsonNode node = parseDefaultJson(); // defaults have language: "N/A"
+        List<String> tags = service.extractContentTags(node);
+        assertFalse(tags.stream().anyMatch(t -> t.startsWith(MG_TEXT_LANGUAGE + "_")));
+    }
+
+    @Test
+    public void extractContentTags_languageUnknown_addsLowercaseTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD)
+                .path("text_characteristics"))
+                .put("language", "UNKNOWN");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_TEXT_LANGUAGE + "_unknown");
+    }
+
+    @Test
+    public void extractContentTags_imageQualityNotUnimpaired_addsImageQualityTag() throws Exception {
+        JsonNode node = parseDefaultJson();
+        ((ObjectNode) node.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD))
+                .put("image_quality", "IMPAIRED");
+        List<String> tags = service.extractContentTags(node);
+        assertContainsTag(tags, MG_IMAGE_QUALITY + "_impaired");
+    }
+
+    @Test
+    public void extractContentTags_imageQualityUnimpaired_noImageQualityTag() throws Exception {
+        JsonNode node = parseDefaultJson(); // defaults have image_quality: "UNIMPAIRED"
+        List<String> tags = service.extractContentTags(node);
+        assertFalse(tags.stream().anyMatch(t -> t.startsWith(MG_IMAGE_QUALITY + "_")));
+    }
+
+    @Test
+    public void extractContentTags_allTagsAreLowercase() throws Exception {
+        JsonNode node = buildAllTagsJson();
+        List<String> tags = service.extractContentTags(node);
+        for (String tag : tags) {
+            assertEquals(tag.toLowerCase(), tag, "Tag should be lowercase: " + tag);
+        }
+    }
+
     // ─── helpers ─────────────────────────────────────────────────────────────
 
     private void assertContainsTag(List<String> tags, String tag) {
@@ -400,6 +463,10 @@ public class MachineGeneratedContentServiceTest {
         textChars.put("text_present", "YES");
         textChars.put("text_type", "HANDWRITTEN_PRINT");
         textChars.put("text_sensitive", "SENSITIVE");
+        textChars.put("language", "Spanish");
+
+        // image_quality: non-UNIMPAIRED value
+        safety.put("image_quality", "DEGRADED");
 
         // Review assessment – all flags set to YES / INCONSISTENT
         ObjectNode review = (ObjectNode) result.path(MG_REVIEW_ASSESS_FIELD);

@@ -246,10 +246,17 @@
         <property name="derivativeBasePath" value="${cdr.enhancement.path.genAltText}" />
     </bean>
 
+    <bean id="machineGenDescriptionContextHelper" class="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionContextHelper">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="solrSearchService" ref="queryLayer" />
+        <property name="accessGroups" ref="accessGroups" />
+    </bean>
+
     <bean id="machineGenDescriptionProcessor" class="edu.unc.lib.boxc.services.camel.machineGenerated.MachineGenDescriptionProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="connectionManager" ref="httpClientConnectionManager" />
         <property name="machineGenDescriptionUpdateService" ref="machineGenDescriptionUpdateService" />
+        <property name="contextHelper" ref="machineGenDescriptionContextHelper" />
         <property name="boxctronDescribesBasePath" value="${boxctron.describes.base.path}" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="apiKey" value="${boxctron.describes.api.key}" />

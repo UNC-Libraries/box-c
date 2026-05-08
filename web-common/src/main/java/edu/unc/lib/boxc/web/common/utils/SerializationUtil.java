@@ -218,6 +218,26 @@ public class SerializationUtil {
             result.put(SearchFieldKey.ALT_TEXT.getUrlParam(), metadata.getAltText());
         }
 
+        if (metadata.getMgContentTags() != null) {
+            result.put(SearchFieldKey.MG_CONTENT_TAGS.getUrlParam(), metadata.getMgContentTags());
+        }
+
+        if (metadata.getMgDescription() != null) {
+            result.put(SearchFieldKey.MG_DESCRIPTION.getUrlParam(), metadata.getMgDescription());
+        }
+
+        if (metadata.getMgRiskScore() != null) {
+            result.put(SearchFieldKey.MG_RISK_SCORE.getUrlParam(), metadata.getMgRiskScore());
+        }
+
+        if (metadata.getFullDescription() != null) {
+            result.put(SearchFieldKey.FULL_DESCRIPTION.getUrlParam(), metadata.getFullDescription());
+        }
+
+        if (metadata.getTranscript() != null) {
+            result.put(SearchFieldKey.TRANSCRIPT.getUrlParam(), metadata.getTranscript());
+        }
+
         if (metadata.getDateAdded() != null) {
             String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
             result.put("added", dateAdded);

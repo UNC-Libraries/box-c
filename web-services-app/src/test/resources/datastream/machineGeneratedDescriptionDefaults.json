@@ -1,0 +1,61 @@
+{
+  "filename": "photo.jpg",
+  "processing_time_ms": 1250.5,
+  "result": {
+    "alt_text": "Mountain landscape with snow-covered peaks",
+    "full_description": "A scenic mountain landscape with snow-capped peaks rising above a forested valley",
+    "overall_risk_Score": 0,
+    "review_assessment": {
+      "biased_language": "NO",
+      "concerns_for_review": [],
+      "contradictions_between_texts": "NO",
+      "contradictions_within_description": "NO",
+      "euphemistic_language": "NO",
+      "inconsistent_demographics": "NO",
+      "offensive_language": "NO",
+      "people_first_language": "N/A",
+      "risk_score": 0,
+      "safety_assessment_consistency": "CONSISTENT",
+      "stereotyping": "NO",
+      "unsupported_inferential_claims": "NO",
+      "value_judgments": "NO"
+    },
+    "safety_assessment": {
+      "atrocities_depicted": "NO",
+      "demographics_described": "NO",
+      "inconsistency_count": 0,
+      "minors_present": "NO",
+      "misidentification_risk_people": "LOW",
+      "named_individuals_claimed": "NO",
+      "nudity": "NONE",
+      "people_visible": "NO",
+      "racial_violence_oppression": "NONE",
+      "reasoning": "Clear natural landscape with no sensitive content",
+      "risk_score": 0,
+      "sexual_content": "NONE",
+      "stereotyping_present": "NO",
+      "symbols_present": {
+        "misidentification_risk": "LOW",
+        "names": [],
+        "types": [
+          "NONE"
+        ]
+      },
+      "text_characteristics": {
+        "legibility": "N/A",
+        "text_present": "NO",
+        "text_type": "N/A"
+      },
+      "violent_content": "NONE"
+    },
+    "transcript": "",
+    "version": {
+      "models": {
+        "full_desc": "gpt-4o-2024-08-06"
+      },
+      "timestamp": "2024-08-15T10:30:00Z",
+      "version": "0.1.0"
+    }
+  },
+  "success": true
+}
