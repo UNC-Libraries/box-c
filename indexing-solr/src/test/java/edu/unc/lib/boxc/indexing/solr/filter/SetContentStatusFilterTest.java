@@ -371,4 +371,54 @@ public class SetContentStatusFilterTest {
         verify(idb).setContentStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.MANAGED_ASPACE_WORK));
     }
+
+    @Test
+    public void testFileObjectHasFullDescription() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        when(fileResc.hasProperty(Cdr.hasFullDescription)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_FULL_DESCRIPTION));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_FULL_DESCRIPTION));
+    }
+
+    @Test
+    public void testFileObjectNoFullDescription() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_FULL_DESCRIPTION));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_FULL_DESCRIPTION));
+    }
+
+    @Test
+    public void testFileObjectHasTranscript() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        when(fileResc.hasProperty(Cdr.hasTranscript)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_TRANSCRIPT));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_TRANSCRIPT));
+    }
+
+    @Test
+    public void testFileObjectNoTranscript() {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_TRANSCRIPT));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_TRANSCRIPT));
+    }
 }
