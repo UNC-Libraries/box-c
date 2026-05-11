@@ -11,12 +11,12 @@ import java.io.IOException;
  * @author krwong
  */
 public class PdfRequestSerializationHelper {
-    private static final ObjectWriter MULTI_WRITER;
-    private static final ObjectReader MULTI_READER;
+    private static final ObjectWriter REQUEST_WRITER;
+    private static final ObjectReader REQUEST_READER;
     static {
         ObjectMapper mapper = new ObjectMapper();
-        MULTI_WRITER = mapper.writerFor(PdfRequest.class);
-        MULTI_READER = mapper.readerFor(PdfRequest.class);
+        REQUEST_WRITER = mapper.writerFor(PdfRequest.class);
+        REQUEST_READER = mapper.readerFor(PdfRequest.class);
     }
 
     private PdfRequestSerializationHelper() {
@@ -29,7 +29,7 @@ public class PdfRequestSerializationHelper {
      * @throws IOException
      */
     public static String toJson(PdfRequest request) throws IOException {
-        return MULTI_WRITER.writeValueAsString(request);
+        return REQUEST_WRITER.writeValueAsString(request);
     }
 
     /**
@@ -39,6 +39,6 @@ public class PdfRequestSerializationHelper {
      * @throws IOException
      */
     public static PdfRequest toRequest(String json) throws IOException {
-        return MULTI_READER.readValue(json);
+        return REQUEST_READER.readValue(json);
     }
 }

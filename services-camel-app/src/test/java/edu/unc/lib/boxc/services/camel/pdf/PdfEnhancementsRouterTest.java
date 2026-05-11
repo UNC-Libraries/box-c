@@ -56,7 +56,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
         var request = new PdfRequest();
         request.setAgent(agent);
         request.setMimetype("image/tiff");
-        request.setWorkPid(workPid);
+        request.setWorkPid(workPid.getId());
         var body = PdfRequestSerializationHelper.toJson(request);
         template.sendBody(body);
 

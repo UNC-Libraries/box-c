@@ -15,7 +15,6 @@ import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -36,6 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class PdfDerivativeServiceTest {
+    private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
@@ -66,18 +66,16 @@ public class PdfDerivativeServiceTest {
     @Test
     public void generatePdfDerivativeTest() throws Exception {
         try (MockedStatic<CLIMain> mockedStatic = Mockito.mockStatic(CLIMain.class)) {
-            var pid = makePid();
-            var pidString = pid.getId();
-            var parentRec = makeWorkRecord(pidString, "Work");
-            var rec1 = makeRecord(CHILD1_UUID, pidString, ResourceType.File, "File One",
+            var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+            var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
                     "file1.txt", "image/png", null);
-            var rec2 = makeRecord(CHILD2_UUID, pidString, ResourceType.File, "File Two",
+            var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
                     "file2.png", "image/png", null);
             mockParentResults(parentRec);
             mockChildrenResults(rec1, rec2);
 
             PdfRequest request = new PdfRequest();
-            request.setWorkPid(pid);
+            request.setWorkPid(PARENT_UUID);
             request.setMimetype("image/png");
             request.setAgent(agent);
 
@@ -104,18 +102,16 @@ public class PdfDerivativeServiceTest {
 
     @Test
     public void getInputFilePathTest() throws Exception {
-        var pid = makePid();
-        var pidString = pid.getId();
-        var parentRec = makeWorkRecord(pidString, "Work");
-        var rec1 = makeRecord(CHILD1_UUID, pidString, ResourceType.File, "File One",
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
                 "file1.png", "image/png", null);
-        var rec2 = makeRecord(CHILD2_UUID, pidString, ResourceType.File, "File Two",
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
                 "file2.png", "image/png", null);
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
 
         PdfRequest request = new PdfRequest();
-        request.setWorkPid(pid);
+        request.setWorkPid(PARENT_UUID);
         request.setMimetype("image/png");
         request.setAgent(agent);
 

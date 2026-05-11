@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.operations.jms.pdf;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Request to create pdf derivatives for a work
@@ -11,7 +10,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
  * @author krwong
  */
 public class PdfRequest {
-    private PID workPid;
+    private String workPid;
     private String mimetype;
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
@@ -19,11 +18,11 @@ public class PdfRequest {
     /**
      * @return work object
      */
-    public PID getWorkPid() {
+    public String getWorkPid() {
         return workPid;
     }
 
-    public void setWorkPid(PID workPid) {
+    public void setWorkPid(String workPid) {
         this.workPid = workPid;
     }
 

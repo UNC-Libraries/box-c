@@ -289,6 +289,7 @@
     <bean id="pdfDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor">
         <constructor-arg value="${cdr.enhancement.path.pdf}" />
         <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pdfDerivativeService" ref="pdfDerivativeService" />
     </bean>
 

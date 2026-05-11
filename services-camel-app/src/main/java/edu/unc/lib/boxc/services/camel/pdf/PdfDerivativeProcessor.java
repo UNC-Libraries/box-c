@@ -2,7 +2,10 @@ package edu.unc.lib.boxc.services.camel.pdf;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.pdf.PdfDerivativeService;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSerializationHelper;
@@ -32,6 +35,7 @@ public class PdfDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(PdfDerivativeProcessor.class);
 
     private AccessControlService aclService;
+    private RepositoryObjectLoader repositoryObjectLoader;
     private PdfDerivativeService pdfDerivativeService;
     private String derivativeBasePath;
 
@@ -48,13 +52,14 @@ public class PdfDerivativeProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         var request = deserializeRequest(exchange);
         var agent = request.getAgent();
-        var pid = request.getWorkPid();
-        Path derivativeFinalPath = setDerivativeFinalPath(pid.getId());
+        var pid = PIDs.get(request.getWorkPid());
+        var mimetype = request.getMimetype();
+        Path derivativeFinalPath = setDerivativeFinalPath(request.getWorkPid());
 
         aclService.assertHasAccess("User does not have permission to run enhancements",
                 pid, agent.getPrincipals(), Permission.runEnhancements);
 
-        assertValid(request);
+        assertValid(pid, mimetype);
 
         try {
             Path derivativeTmpPath = pdfDerivativeService.generatePdfDerivative(request);
@@ -76,12 +81,14 @@ public class PdfDerivativeProcessor implements Processor {
 
     /**
      * Returns message if the work file is not eligible for having pdf derivatives generated from it
-     * @param request
+     * @param pid work pid
+     * @param mimetype work mimetype
      * @return
      */
-    private String validate(PdfRequest request) {
-        String mimetype = request.getMimetype();
-        PID pid = request.getWorkPid();
+    private String validate(PID pid, String mimetype) {
+        if (StringUtils.isBlank(mimetype)) {
+            return "No mimetype provided for object " + pid;
+        }
 
         if (!MIMETYPE_PATTERN.matcher(mimetype).matches()) {
             return "File type " + mimetype + " on object " + pid + " is not applicable for pdf derivatives";
@@ -91,15 +98,22 @@ public class PdfDerivativeProcessor implements Processor {
             return "File type " + mimetype + " on object " + pid + " is disallowed for pdf derivatives";
         }
 
+        try {
+            repositoryObjectLoader.getWorkObject(pid);
+        } catch (ObjectTypeMismatchException e) {
+            return "Object is not a WorkObject";
+        }
+
         return null;
     }
 
     /**
      *  Throws an IllegalArgumentException if validate method returns any message
-     * @param request PdfRequest
+     * @param pid work pid
+     * @param mimetype work mimetype
      */
-    private void assertValid(PdfRequest request) {
-        var message = validate(request);
+    private void assertValid(PID pid, String mimetype) {
+        var message = validate(pid, mimetype);
         if (!StringUtils.isBlank(message)) {
             throw new IllegalArgumentException(message);
         }
@@ -122,6 +136,10 @@ public class PdfDerivativeProcessor implements Processor {
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
     }
 
     public void setPdfDerivativeService(PdfDerivativeService pdfDerivativeService) {

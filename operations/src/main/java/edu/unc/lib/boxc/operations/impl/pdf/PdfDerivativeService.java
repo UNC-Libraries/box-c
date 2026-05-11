@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -67,12 +68,12 @@ public class PdfDerivativeService {
         var workPid = request.getWorkPid();
         String inputFiles = getInputFiles(request);
         String transcriptFiles = getTranscriptFiles(request);
-        Path tempPath = prepareTempPath(workPid.getId(), ".pdf");
+        Path tempPath = prepareTempPath(workPid, ".pdf");
         String textType = getTextTypes(request);
 
         try {
             // check that object is a work object
-            repositoryObjectLoader.getWorkObject(workPid);
+            repositoryObjectLoader.getWorkObject(PIDs.get(workPid));
 
             String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles, "-o", tempPath.toString(),
                     "-t", transcriptFiles, "-tt", textType};
@@ -100,10 +101,11 @@ public class PdfDerivativeService {
      * @return .txt path to input files
      */
     public String getInputFiles(PdfRequest request) throws Exception {
-        var workPid = request.getWorkPid();
+        var workPidString = request.getWorkPid();
+        var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
 
-        var inputFilePath = prepareTempPath(workPid.getId() + "_input", ".txt");
+        var inputFilePath = prepareTempPath(workPidString + "_input", ".txt");
         try {
             var parentRec = getParentRecord(workPid, agent);
             assertParentRecordValid(workPid, parentRec);
@@ -134,7 +136,7 @@ public class PdfDerivativeService {
         var workPid = request.getWorkPid();
         var agent = request.getAgent();
 
-        var inputTranscriptPath = prepareTempPath(workPid.getId() + "_transcript", ".txt");
+        var inputTranscriptPath = prepareTempPath(workPid + "_transcript", ".txt");
 
         return inputTranscriptPath.toString();
     }
