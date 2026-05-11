@@ -103,6 +103,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			case 'assigned-as-thumbnail':
 				helpText = 'This file is the assigned thumbnail for the work which contains it';
 				break;
+			case 'has-transcript':
+				helpText = 'This file has a transcript';
+				break;
+			case 'has-full-description':
+				helpText = 'This file has a full description';
+				break;
 			default:
 				helpText = '';
 		}
