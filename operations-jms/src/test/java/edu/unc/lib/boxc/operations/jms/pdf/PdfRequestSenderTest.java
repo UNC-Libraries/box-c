@@ -44,7 +44,7 @@ public class PdfRequestSenderTest {
         var request = new PdfRequest();
         var agent = new AgentPrincipalsImpl(USERNAME, GROUPS);
         request.setAgent(agent);
-        request.setWorkPid(workPid);
+        request.setWorkPid(workPid.getId());
         request.setMimetype("image/tiff");
 
         requestSender.sendToQueue(request);
