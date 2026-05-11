@@ -51,9 +51,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @Mock
     private DestroyDerivativesProcessor destroyVideoProcessor;
 
-    @Mock
-    private DestroyDerivativesProcessor destroyPdfProcessor;
-
     @TempDir
     public Path tmpFolder;
 
@@ -70,7 +67,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         router.setDestroyFulltextProcessor(destroyFulltextProcessor);
         router.setDestroyAudioProcessor(destroyAudioProcessor);
         router.setDestroyVideoProcessor(destroyVideoProcessor);
-        router.setDestroyPdfProcessor(destroyPdfProcessor);
         router.setDestroyDerivativesStreamCamel("direct:destroy.derivatives.stream");
         return router;
     }
@@ -146,7 +142,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
         verify(destroyVideoProcessor, never()).process(any(Exchange.class));
-        verify(destroyPdfProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -161,7 +156,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
         verify(destroyVideoProcessor, never()).process(any(Exchange.class));
-        verify(destroyPdfProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -178,7 +172,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
         verify(destroyVideoProcessor, never()).process(any(Exchange.class));
-        verify(destroyPdfProcessor, never()).process(any(Exchange.class));
     }
 
     // See if any messages are routed for object with no mimetype

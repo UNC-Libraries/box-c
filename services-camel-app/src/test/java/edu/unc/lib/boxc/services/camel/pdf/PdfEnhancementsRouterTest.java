@@ -51,7 +51,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void requestSentTest() throws Exception {
-        createContext("pdfDerivatives");
+        createContext("PdfAccessCopy");
 
         var request = new PdfRequest();
         request.setAgent(agent);
