@@ -36,4 +36,9 @@ public abstract class FacetConstants {
     public static final String HAS_ALT_TEXT = "Has Alt Text";
     public static final String NO_ALT_TEXT = "No Alt Text";
     public static final String MANAGED_ASPACE_WORK = "Managed Aspace Work";
+    public static final String HAS_FULL_DESCRIPTION = "Has Full Description";
+    public static final String NO_FULL_DESCRIPTION = "No Full Description";
+    public static final String HAS_TRANSCRIPT = "Has Transcript";
+    public static final String NO_TRANSCRIPT = "No Transcript";
+
 }
