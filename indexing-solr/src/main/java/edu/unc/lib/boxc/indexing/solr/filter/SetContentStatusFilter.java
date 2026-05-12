@@ -86,6 +86,18 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         } else {
             status.add(FacetConstants.NO_ALT_TEXT);
         }
+
+        if (resc.hasProperty(Cdr.hasFullDescription)) {
+            status.add(FacetConstants.HAS_FULL_DESCRIPTION);
+        } else {
+            status.add(FacetConstants.NO_FULL_DESCRIPTION);
+        }
+
+        if (resc.hasProperty(Cdr.hasTranscript)) {
+            status.add(FacetConstants.HAS_TRANSCRIPT);
+        } else {
+            status.add(FacetConstants.NO_TRANSCRIPT);
+        }
     }
 
     private void addWorkObjectStatuses(List<String> status, Resource resource) {
