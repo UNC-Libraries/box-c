@@ -2,10 +2,27 @@
     <teleport to="#alt-text-admin">
         <div id="alt-text-viewer">
             <h1 class="has-text-weight-semibold is-size-3 has-text-centered">Machine Generated Alt Text for {{ currentUuid }}</h1>
-            <data-table v-if="showTable" :key="`alt-text-table-${itemsVersion}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
+            <div v-if="hasSearchPaneOptions" class="tag-filter-pane">
+                <button class="tag-filter-toggle" @click="paneExpanded = !paneExpanded">
+                    <span class="tag-filter-title">Search Tags</span>
+                    <span class="icon is-small">
+                        <i :class="paneExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                    </span>
+                </button>
+                <div v-if="paneExpanded" class="tag-filter-options">
+                    <div v-for="facet in contentTagFacets" :key="facet.value"
+                         class="tag-filter-option"
+                         :class="{ 'is-selected': selectedTags.includes(facet.value) }"
+                         @click="toggleTag(facet.value)">
+                        <span class="tag-filter-label">{{ facet.displayValue }}</span>
+                        <span class="tag-filter-count">{{ facet.count }}</span>
+                    </div>
+                </div>
+            </div>
+            <data-table v-if="currentUuid" :key="`alt-text-table-${currentUuid}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
                         :columns="columns"
                         :options="tableOptions"
-                        :data="items">
+                        :ajax="ajaxOptions">
                 <thead>
                 <tr>
                     <th><span class="is-sr-only">Thumbnail</span></th>
@@ -16,13 +33,12 @@
                     <th>Risk Score</th>
                     <th>Safety Assessment (AI)</th>
                     <th>Output Assessment (AI)</th>
-                    <th><span class="is-sr-only">Search Tags</span></th>
                     <th><span class="is-sr-only">Rerun Alt Text Generation</span></th>
                 </tr>
                 </thead>
                 <tbody></tbody>
             </data-table>
-            <p v-else class="has-text-centered mt-4">{{ loadingMessage }}</p>
+            <p v-else class="has-text-centered mt-4">No UUID provided.</p>
             <alt-text-messages></alt-text-messages>
             <alt-text-editor-modal></alt-text-editor-modal>
         </div>
@@ -35,15 +51,14 @@ import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
-import SearchPanes from 'datatables.net-searchpanes-bm';
 import 'datatables.mark.js';
-import 'datatables.net-select-bm';
 import {mapActions, mapState} from 'pinia';
 import {useAltTextStore} from '@/stores/alt-text';
 
 DataTable.use(DataTablesLib);
 DataTable.use(FixedHeader);
-DataTable.use(SearchPanes);
+
+const DEFAULT_PER_PAGE = 25;
 
 export default {
     name: 'modalAltText',
@@ -54,86 +69,89 @@ export default {
         return {
             altTextTableClickHandler: null,
             selected_field: '',
-            itemsVersion: 0
+            contentTagFacets: [],
+            selectedTags: [],
+            paneExpanded: false
         }
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['alertMessage' , 'currentUuid', 'isLoading', 'items']),
+        ...mapState(useAltTextStore, ['currentUuid']),
 
-        loadingMessage() {
-            let message = '';
-            if (this.isLoading) {
-                message = `Loading...`;
-            } else if (!this.isLoading && this.items.length === 0) {
-                message = `No images found for ${this.currentUuid}.`
-            }
-            return message;
-        },
+        ajaxOptions() {
+            let lastDraw = 0;
+            return {
+               // url: '/static/real-alt-text.json',
+                url: `/services/api/machineGeneratedSearch/${this.currentUuid}`,
+                data: (d) => {
+                    lastDraw = d.draw;
+                    // Column id, column name
+                    const sortFieldByColumn = {
+                        1: 'title',
+                        5: 'mgRiskScore'
+                    };
+                    const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
 
-        tagPaneOptions() {
-            const counts = new Map();
-            (Array.isArray(this.items) ? this.items : []).forEach((item) => {
-                const rowTags = this.getTags(item);
-                rowTags.forEach((tag) => {
-                    counts.set(tag, (counts.get(tag) || 0) + 1);
-                });
-            });
+                    if (d.order[0] !== undefined) {
+                        const columnIndex = d.order[0].column;
+                        const direction = sortOrder[d.order[0].dir];
+                        const sortField = sortFieldByColumn[columnIndex];
+                        d.sort = sortField && direction ? `${sortField},${direction}` : undefined;
+                    }
 
-            return Array.from(counts.entries())
-                .sort((a, b) => b[1] - a[1])
-                .map(([tag]) => ({
-                    label: `${this.fieldName(tag)}`,
-                    value: (rowData) => this.getTags(rowData).includes(tag)
-                }));
-        },
+                    return {
+                        format: 'Image',
+                        rows: d.length,
+                        page: Math.floor(d.start / d.length) + 1,
+                        start: d.start || 0,
+                        anywhere: d.search?.value,
 
-        hasSearchPaneOptions() {
-            return this.tagPaneOptions.length > 0;
-        },
-
-        hasItems() {
-            return Array.isArray(this.items) && this.items.length > 0;
-        },
-
-        showTable() {
-            return !this.isLoading && this.hasItems;
+                        rollup: false,
+                        // Conditionally adds sort and/or search tag depending on whether there's an active
+                        // sort or search, to avoid sending unnecessary query parameters
+                        ...(d.sort ? { sort: d.sort } : {}),
+                        ...(this.selectedTags.length > 0 ? { mgContentTags: this.selectedTags.join('||') } : {})
+                    };
+                },
+                dataSrc: (d) => Array.isArray(d.metadata) ? d.metadata : [],
+                dataFilter: (data) => {
+                    const json = JSON.parse(data);
+                    // Echo the draw counter back so DataTables processes responses in the correct sequence
+                    json.draw = lastDraw;
+                    // Map the API's resultCount to the field names DataTables expects for server-side pagination
+                    json.recordsTotal = Number(json.resultCount) || 0;
+                    json.recordsFiltered = Number(json.resultCount) || 0;
+                    // Populate the tag filter pane once from the first response; counts don't change across pages or sorts
+                    if (this.contentTagFacets.length === 0) {
+                        const mgTagsFacet = (json.facetFields || []).find(f => f.name === 'MG_CONTENT_TAGS');
+                        this.contentTagFacets = mgTagsFacet?.values || [];
+                    }
+                    return JSON.stringify(json);
+                }
+            };
         },
 
         tableOptions() {
             return {
+                serverSide: true,
                 columnDefs: this.columnDefs,
-                mark: true, // Enables the mark.js integration for search highlighting
+                mark: true,
                 searching: true,
                 order: [[1, 'asc']],
                 fixedHeader: true,
-                searchPanes: {
-                    columns: [],
-                    dtOpts: {
-                        order: [[1, 'desc'], [0, 'asc']]
-                    },
-                    panes: [
-                        {
-                            header: 'Search Tags',
-                            orderable: false,
-                            options: this.tagPaneOptions
-                        }
-                    ],
-                    threshold: 1,
-                    initCollapsed: true,
-                    orderable: false
-                },
                 layout: {
-                    topStart: this.hasSearchPaneOptions ? 'searchPanes' : null,
                     topEnd: {
                         search: {
                             placeholder: 'Search'
                         }
                     }
                 },
-                select: true,
-                pageLength: 25
+                pageLength: DEFAULT_PER_PAGE
             }
+        },
+
+        hasSearchPaneOptions() {
+            return this.contentTagFacets.length > 0;
         },
 
         columns() {
@@ -172,13 +190,6 @@ export default {
                     render: (data) => this.renderSafetyData(data)
                 },
                 {
-                    data: 'mgContentTags',
-                    render: (data) => {
-                        const tags = Array.isArray(data) ? data : [];
-                        return tags.join(', ');
-                    }
-                },
-                {
                     data: null,
                     defaultContent: '',
                     render: () => '<button class="button is-dark is-small rerun">Rerun</button>'
@@ -189,18 +200,15 @@ export default {
         columnDefs() {
             return [
                 { width: '15%', targets: [0] },
-                { width: '5%', targets: [1, 5, 8] },
-                { orderable: false, targets: [0, 2, 3, 4, 6, 7, 8, 9] },
-                { searchable: false, targets: [0, 9] },
-                { visible: false, targets: [8] },
-                // Ensure no non-custom pane is generated from any column.
-                { searchPanes: { show: false }, targets: '_all' }
+                { width: '5%', targets: [1, 5, 7] },
+                { orderable: false, targets: [0, 2, 3, 4, 6, 7, 8] },
+                { searchable: false, targets: [0, 8] }
             ]
         }
     },
 
     methods: {
-        ...mapActions(useAltTextStore, ['fetchTableItems', 'setActiveField', 'setAlertMessage',
+        ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage',
             'setCurrentRow', 'setCurrentUuid', 'setShowAltTextModal', 'setViewType']),
 
         fieldName(field) {
@@ -249,11 +257,7 @@ export default {
             return String(data).toLowerCase();
         },
 
-        renderSafetyData(data, type = 'display') {
-            if (type === 'sp') {
-                return this.extractLeafValues(data);
-            }
-
+        renderSafetyData(data) {
             let text = '<ul class="is-capitalized">';
             Object.entries(data || {}).forEach(([field, value]) => {
                 text += `<li><span class="has-text-weight-semibold">${this.fieldName(field)}</span>: ${this.formatSafetyValue(value)}</li>`;
@@ -300,19 +304,18 @@ export default {
 
         editCell() {
             this.bindTableEvents();
-        }
-    },
+        },
 
-    watch: {
-        items: {
-            deep: true,
-            immediate: true,
-            handler() {
-                this.itemsVersion += 1;
-                this.$nextTick(() => {
-                    this.unbindTableEvents();
-                    this.bindTableEvents();
-                });
+        toggleTag(value) {
+            const idx = this.selectedTags.indexOf(value);
+            if (idx === -1) {
+                this.selectedTags.push(value);
+            } else {
+                this.selectedTags.splice(idx, 1);
+            }
+            const dtApi = this.$refs.alt_text_table?.dt;
+            if (dtApi) {
+                dtApi.ajax.reload();
             }
         }
     },
@@ -323,7 +326,6 @@ export default {
     },
 
     mounted() {
-        this.fetchTableItems();
         this.$nextTick(() => {
             this.editCell();
         });
@@ -337,7 +339,6 @@ export default {
 
 <style>
 @import 'datatables.net-bm';
-@import 'datatables.net-searchpanes-bm';
 @import 'datatables.net-select-bm';
 
 #alt-text-viewer {
@@ -356,11 +357,57 @@ export default {
     div.dt-container div.dt-length select {
         min-width: 70px;
     }
-    div.dtsp-panesContainer div.dtsp-title {
-        padding-right: 5px;
+
+    .tag-filter-pane {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin: auto;
+        overflow: hidden;
+        width: 40%;
     }
-    div.dtsp-searchPane div.dt-container div.dt-scroll-body div.dtsp-nameCont span.dtsp-name {
+    .tag-filter-toggle {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: #f5f5f5;
+        border: none;
+        cursor: pointer;
+        padding: 8px 12px;
+        font-weight: 600;
+    }
+    .tag-filter-title {
+        flex-grow: 1;
+        text-align: left;
+    }
+    .tag-filter-options {
+        padding: 4px 0;
+    }
+    .tag-filter-option {
+        display: flex;
+        align-items: center;
+        padding: 6px 12px;
+        cursor: pointer;
+    }
+    .tag-filter-option:hover {
+        background: #f0f0f0;
+    }
+    .tag-filter-option.is-selected {
+        background: #dbf0fa;
+        font-weight: 600;
+    }
+    .tag-filter-label {
+        flex-grow: 1;
         text-transform: capitalize;
+    }
+    .tag-filter-count {
+        background: #e0e0e0;
+        border-radius: 10px;
+        padding: 1px 8px;
+        font-size: 0.85em;
+    }
+    .tag-filter-option.is-selected .tag-filter-count {
+        background: #1a698c;
+        color: white;
     }
 }
 </style>

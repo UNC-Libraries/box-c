@@ -44,13 +44,13 @@ const createSampleSafetyAssessment = (overrides = {}) => ({
 });
 const sampleReviewAssessment = createSampleReviewAssessment();
 const sampleSafetyAssessment = createSampleSafetyAssessment();
-const mountViewer = (items = []) => {
+
+const mountViewer = () => {
     return shallowMount(altTextViewer, {
         global: {
             plugins: [createTestingPinia({
                 initialState: {
                     'alt-text': {
-                        items,
                         currentUuid: uuid,
                         alertMessage: ''
                     }
@@ -73,40 +73,116 @@ const mountViewer = (items = []) => {
 
 describe('altTextViewer.vue', () => {
     describe('computed flags/options', () => {
-        it('reports hasItems and hasSearchPaneOptions based on items data', () => {
-            const emptyWrapper = mountViewer([]);
-            expect(emptyWrapper.vm.hasItems).toBe(false);
-            expect(emptyWrapper.vm.hasSearchPaneOptions).toBe(false);
+        it('has hasSearchPaneOptions based on contentTagFacets data', () => {
+            const wrapper = mountViewer();
+            expect(wrapper.vm.hasSearchPaneOptions).toBe(false);
 
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
-            expect(wrapper.vm.hasItems).toBe(true);
+            wrapper.vm.contentTagFacets = [{ value: 'people_visible' }];
             expect(wrapper.vm.hasSearchPaneOptions).toBe(true);
         });
 
-        it('includes custom SearchPanes config in tableOptions', () => {
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
-            const options = wrapper.vm.tableOptions;
-
-            expect(options.searchPanes.columns).toEqual([]);
-            expect(options.searchPanes.initCollapsed).toBe(true);
-            expect(options.searchPanes.panes[0].header).toBe('Search Tags');
-            expect(options.layout.topStart).toBe('searchPanes');
-        });
-
-        it('uses default table options for ordering, fixed header, select, and pagination', () => {
-            const wrapper = mountViewer([{ mgContentTags: ['tag-a'] }]);
+        it('uses default table options for ordering, fixed header, and pagination', () => {
+            const wrapper = mountViewer();
             const options = wrapper.vm.tableOptions;
 
             expect(options.order).toEqual([[1, 'asc']]);
             expect(options.fixedHeader).toBe(true);
-            expect(options.select).toBe(true);
             expect(options.pageLength).toBe(25);
             expect(options.layout.topEnd.search.placeholder).toBe('Search');
         });
+    });
 
-        it('hides search pane layout when there are no pane options', () => {
-            const wrapper = mountViewer([]);
-            expect(wrapper.vm.tableOptions.layout.topStart).toBeNull();
+    describe('ajax options', () => {
+        it('builds request params for current API payload', () => {
+            const wrapper = mountViewer();
+            const dataFn = wrapper.vm.ajaxOptions.data;
+
+            const params = dataFn({ draw: 2, start: 50, length: 25, search: { value: 'dogs' }, order: [] });
+            expect(params).toEqual({
+                format: 'Image',
+                rows: 25,
+                page: 3,
+                start: 50,
+                anywhere: 'dogs',
+                rollup: false
+            });
+            expect(params).not.toHaveProperty('mgContentTags');
+            expect(params).not.toHaveProperty('sort');
+        });
+
+        it('sends joined mgContentTags when tags are selected', () => {
+            const wrapper = mountViewer();
+            wrapper.vm.selectedTags = ['people_visible', 'text_present'];
+
+            const params = wrapper.vm.ajaxOptions.data({ draw: 3, start: 0, length: 25, search: { value: '' }, order: [] });
+            expect(params.mgContentTags).toBe('people_visible||text_present');
+            expect(params.anywhere).toBe('');
+        });
+
+        it('maps sort from title and risk score columns to API sort values', () => {
+            const wrapper = mountViewer();
+
+            const titleSort = wrapper.vm.ajaxOptions.data({
+                draw: 4,
+                start: 0,
+                length: 25,
+                search: { value: '' },
+                order: [{ column: 1, dir: 'asc' }]
+            });
+            expect(titleSort.sort).toBe('title,normal');
+
+            const riskSort = wrapper.vm.ajaxOptions.data({
+                draw: 5,
+                start: 0,
+                length: 25,
+                search: { value: '' },
+                order: [{ column: 5, dir: 'desc' }]
+            });
+            expect(riskSort.sort).toBe('mgRiskScore,reverse');
+        });
+
+        it('maps datatables draw and result counts in dataFilter', () => {
+            const wrapper = mountViewer();
+            wrapper.vm.ajaxOptions.data({ draw: 7, start: 0, length: 25, search: { value: '' }, order: [] });
+
+            const transformed = wrapper.vm.ajaxOptions.dataFilter(JSON.stringify({
+                resultCount: 2,
+                facetFields: []
+            }));
+            const json = JSON.parse(transformed);
+
+            expect(json.draw).toBe(7);
+            expect(json.recordsTotal).toBe(2);
+            expect(json.recordsFiltered).toBe(2);
+        });
+
+        it('populates tag facets once from MG_CONTENT_TAGS in first response', () => {
+            const wrapper = mountViewer();
+            wrapper.vm.ajaxOptions.data({ draw: 1, start: 0, length: 25, search: { value: '' }, order: [] });
+
+            const first = JSON.stringify({
+                resultCount: 1,
+                facetFields: [{
+                    name: 'MG_CONTENT_TAGS',
+                    values: [{ value: 'people_visible', displayValue: 'People Visible', count: 11 }]
+                }]
+            });
+            wrapper.vm.ajaxOptions.dataFilter(first);
+            expect(wrapper.vm.contentTagFacets).toEqual([
+                { value: 'people_visible', displayValue: 'People Visible', count: 11 }
+            ]);
+
+            const second = JSON.stringify({
+                resultCount: 1,
+                facetFields: [{
+                    name: 'MG_CONTENT_TAGS',
+                    values: [{ value: 'text_present', displayValue: 'Text Present', count: 9 }]
+                }]
+            });
+            wrapper.vm.ajaxOptions.dataFilter(second);
+            expect(wrapper.vm.contentTagFacets).toEqual([
+                { value: 'people_visible', displayValue: 'People Visible', count: 11 }
+            ]);
         });
     });
 
@@ -115,7 +191,7 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const columns = wrapper.vm.columns;
 
-            expect(columns).toHaveLength(10);
+            expect(columns).toHaveLength(9);
             expect(columns.map((column) => column.data)).toEqual([
                 'id',
                 'title',
@@ -125,7 +201,6 @@ describe('altTextViewer.vue', () => {
                 null,
                 'mgSafetyAssessment',
                 'mgReviewAssessment',
-                'mgContentTags',
                 null
             ]);
         });
@@ -164,42 +239,6 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             expect(wrapper.vm.getTags({})).toEqual([]);
             expect(wrapper.vm.getTags(null)).toEqual([]);
-        });
-    });
-
-    describe('tagPaneOptions', () => {
-        it('counts each tag once per row and sorts by descending count', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['people_visible', 'demographics', 'named_individuals'] },
-                { mgContentTags: ['people_visible', 'unsupported_claims'] },
-                { mgContentTags: ['people_visible', 'named_individuals'] }
-            ]);
-
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual([
-                'people visible',
-                'named individuals',
-                'demographics',
-                'unsupported claims'
-            ]);
-        });
-
-        it('keeps insertion order for tags with equal counts', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['beta', 'alpha'] },
-                { mgContentTags: ['alpha', 'beta'] }
-            ]);
-
-            expect(wrapper.vm.tagPaneOptions.map((option) => option.label)).toEqual(['beta', 'alpha']);
-        });
-
-        it('builds option matchers that use tag values from the row', () => {
-            const wrapper = mountViewer([
-                { mgContentTags: ['tag-a'] }
-            ]);
-            const tagA = wrapper.vm.tagPaneOptions.find((option) => option.label === 'tag-a');
-
-            expect(tagA.value({ mgContentTags: ['tag-a'] })).toBe(true);
-            expect(tagA.value({ mgContentTags: ['other'] })).toBe(false);
         });
     });
 
