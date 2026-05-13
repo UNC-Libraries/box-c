@@ -14,7 +14,7 @@
                          class="tag-filter-option"
                          :class="{ 'is-selected': selectedTags.includes(facet.value) }"
                          @click="toggleTag(facet.value)">
-                        <span class="tag-filter-label">{{ facet.displayValue }}</span>
+                        <span class="tag-filter-label">{{ fieldName(facet.displayValue) }}</span>
                         <span class="tag-filter-count">{{ facet.count }}</span>
                     </div>
                 </div>
@@ -105,7 +105,8 @@ export default {
                         page: Math.floor(d.start / d.length) + 1,
                         start: d.start || 0,
                         anywhere: d.search?.value,
-
+                        getFacets: true,
+                        facetSelect: 'mgContentTags',
                         rollup: false,
                         // Conditionally adds sort and/or search tag depending on whether there's an active
                         // sort or search, to avoid sending unnecessary query parameters
@@ -339,7 +340,6 @@ export default {
 
 <style>
 @import 'datatables.net-bm';
-@import 'datatables.net-select-bm';
 
 #alt-text-viewer {
     h1 {

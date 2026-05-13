@@ -104,7 +104,9 @@ describe('altTextViewer.vue', () => {
                 page: 3,
                 start: 50,
                 anywhere: 'dogs',
-                rollup: false
+                rollup: false,
+                getFacets: true,
+                facetSelect: 'mgContentTags'
             });
             expect(params).not.toHaveProperty('mgContentTags');
             expect(params).not.toHaveProperty('sort');
