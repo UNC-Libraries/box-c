@@ -198,7 +198,7 @@ public class MachineGeneratedContentServiceTest {
 
     @Test
     public void extractRiskScore_missingField_returnsNull() throws Exception {
-        JsonNode node = buildNodeWithoutField(parseDefaultJson(), "overall_risk_Score");
+        JsonNode node = buildNodeWithoutField(parseDefaultJson(), "overall_risk_score");
         assertNull(service.extractRiskScore(node));
     }
 
