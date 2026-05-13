@@ -36,6 +36,7 @@ public class SearchResultResponseDecoratorService {
         SearchState facetState = (SearchState) searchState.clone();
         SearchRequest facetRequest = new SearchRequest(facetState, principals, true);
         facetRequest.setApplyCutoffs(false);
+        facetRequest.setAllowAnyResourceTypesInFacets(searchRequest.isAllowAnyResourceTypesInFacets());
         if (resultResponse.getSelectedContainer() != null) {
             facetState.addFacet(resultResponse.getSelectedContainer().getPath());
         }

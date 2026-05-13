@@ -38,10 +38,14 @@ public class AbstractFacetListService extends AbstractQueryService {
      * Set the resource types counted in the facets to exclude File objects
      * @param searchState
      */
-    protected void assignResourceTypes(SearchState searchState) {
+    protected void assignResourceTypes(SearchState searchState, SearchRequest searchRequest) {
         if (searchState.getResourceTypes() == null) {
             searchState.setResourceTypes(DEFAULT_RESOURCE_TYPES);
         } else {
+            // Skip filtering of resource types
+            if (searchRequest.isAllowAnyResourceTypesInFacets()) {
+                return;
+            }
             searchState.setResourceTypes(searchState.getResourceTypes().stream()
                     .filter(t -> !t.equals(ResourceType.File.name()))
                     .collect(Collectors.toList()));
