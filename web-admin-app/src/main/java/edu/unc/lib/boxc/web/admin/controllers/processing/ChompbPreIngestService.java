@@ -93,7 +93,7 @@ public class ChompbPreIngestService {
             log.debug("Process exit code: {}", exitCode);
 
             if (exitCode != 0) {
-                throw new RepositoryException("Command exited with errors: " + command
+                throw new RepositoryException("Command exited with errors: " + Arrays.toString(command)
                         + "\n" + output + "\n" + exitCode);
             }
 
