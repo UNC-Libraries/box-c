@@ -12,7 +12,6 @@ import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.regex.Pattern;
 
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
@@ -39,11 +37,6 @@ public class PdfDerivativeProcessor implements Processor {
     private PdfDerivativeService pdfDerivativeService;
     private String derivativeBasePath;
 
-    private static final Pattern MIMETYPE_PATTERN = Pattern.compile("^(image.*$|application.*?(photoshop|psd|pdf)$)");
-
-    private static final Pattern DISALLOWED_PATTERN =
-            Pattern.compile(".*(vnd\\.fpx|x-icon|x-raw-panasonic|vnd\\.microsoft\\.icon).*");
-
     public PdfDerivativeProcessor(String derivativeBasePath) {
         this.derivativeBasePath = derivativeBasePath;
     }
@@ -59,13 +52,13 @@ public class PdfDerivativeProcessor implements Processor {
         aclService.assertHasAccess("User does not have permission to run enhancements",
                 pid, agent.getPrincipals(), Permission.runEnhancements);
 
-        assertValid(pid, mimetype);
+        assertValid(pid);
 
         try {
             Path derivativeTmpPath = pdfDerivativeService.generatePdfDerivative(request);
             moveFile(derivativeTmpPath, derivativeFinalPath);
-        } catch (Exception e) {
-            log.error("Failed to generate pdf derivative for {}: {}", pid, "");
+        } catch (IOException e) {
+            log.error("Failed to generate pdf derivative for {}", pid, e);
             throw e;
         }
     }
@@ -80,42 +73,14 @@ public class PdfDerivativeProcessor implements Processor {
     }
 
     /**
-     * Returns message if the work file is not eligible for having pdf derivatives generated from it
+     *  Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
      * @param pid work pid
-     * @param mimetype work mimetype
-     * @return
      */
-    private String validate(PID pid, String mimetype) {
-        if (StringUtils.isBlank(mimetype)) {
-            return "No mimetype provided for object " + pid;
-        }
-
-        if (!MIMETYPE_PATTERN.matcher(mimetype).matches()) {
-            return "File type " + mimetype + " on object " + pid + " is not applicable for pdf derivatives";
-        }
-
-        if (DISALLOWED_PATTERN.matcher(mimetype).matches()) {
-            return "File type " + mimetype + " on object " + pid + " is disallowed for pdf derivatives";
-        }
-
+    private void assertValid(PID pid) {
         try {
             repositoryObjectLoader.getWorkObject(pid);
         } catch (ObjectTypeMismatchException e) {
-            return "Object is not a WorkObject";
-        }
-
-        return null;
-    }
-
-    /**
-     *  Throws an IllegalArgumentException if validate method returns any message
-     * @param pid work pid
-     * @param mimetype work mimetype
-     */
-    private void assertValid(PID pid, String mimetype) {
-        var message = validate(pid, mimetype);
-        if (!StringUtils.isBlank(message)) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Object is not a Work Object");
         }
     }
 
