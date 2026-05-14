@@ -282,6 +282,7 @@
     </bean>
 
     <bean id="aggregatePdfService" class="edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService">
+        <property name="tmpDir" value="${services.tempDirectory}" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="solrSearchService" ref="solrSearchService" />
     </bean>

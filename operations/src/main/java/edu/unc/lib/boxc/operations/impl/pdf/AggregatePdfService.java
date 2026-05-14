@@ -236,4 +236,8 @@ public class AggregatePdfService {
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
     }
+
+    public void setTmpDir(Path tmpDir) {
+        this.tmpDir = tmpDir;
+    }
 }
