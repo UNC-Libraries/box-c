@@ -46,7 +46,7 @@ describe('altTextEditorModal.vue', () => {
             activeField: 'alt_text',
             currentRow: {
                 alt_text: 'Existing alt text',
-                filename: '/path/to/image-1.jpg'
+                title: 'image-1.jpg'
             }
         });
 
@@ -64,7 +64,7 @@ describe('altTextEditorModal.vue', () => {
             activeField: 'alt_text',
             currentRow: {
                 alt_text: 'Editable text',
-                filename: '/path/to/image-2.jpg'
+                title: 'image-2.jpg'
             }
         });
 
@@ -84,7 +84,7 @@ describe('altTextEditorModal.vue', () => {
             activeField: 'alt_text',
             currentRow: {
                 alt_text: 'Old text',
-                filename: '/path/to/image-3.jpg'
+                title: 'image-3.jpg'
             }
         });
         const store = useAltTextStore();
@@ -94,7 +94,7 @@ describe('altTextEditorModal.vue', () => {
         await wrapper.find('.button.is-info').trigger('click');
 
         expect(store.currentRow.alt_text).toBe('Updated alt text');
-        expect(store.alertMessage).toBe('Value updated successfully updated');
+        expect(store.alertMessage).toBe('Value updated successfully updated for image-3.jpg');
         expect(store.alertMessageType).toBe('success');
         expect(wrapper.vm.saving_data).toBe(false);
     });
@@ -106,7 +106,7 @@ describe('altTextEditorModal.vue', () => {
             activeField: 'alt_text',
             currentRow: {
                 alt_text: 'To be cleared',
-                filename: '/path/to/image-4.jpg'
+                title: 'image-4.jpg'
             }
         });
         const store = useAltTextStore();
@@ -126,7 +126,7 @@ describe('altTextEditorModal.vue', () => {
             activeField: 'alt_text',
             currentRow: {
                 alt_text: 'Initial text',
-                filename: '/path/to/image-5.jpg'
+                title: 'image-5.jpg'
             }
         });
         const store = useAltTextStore();
@@ -136,7 +136,7 @@ describe('altTextEditorModal.vue', () => {
 
         store.setCurrentRow({
             alt_text: 'Row changed text',
-            filename: '/path/to/image-6.jpg'
+            filename: 'image-6.jpg'
         });
         await wrapper.vm.$nextTick();
 
