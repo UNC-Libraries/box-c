@@ -47,6 +47,8 @@ export default {
         top: 50px;
         right: 25px;
         height: fit-content;
+        max-width: 450px;
+        overflow: auto;
         width: fit-content;
         z-index: 100;
 
