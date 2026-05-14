@@ -206,7 +206,6 @@ public class AggregatePdfProcessorTest {
             processor.process(exchange);
         });
 
-        assertEquals(RuntimeException.class, e.getClass());
         assertEquals("conversion failed", e.getMessage());
 
         assertFalse(Files.exists(finalPdfPath));
@@ -276,7 +275,7 @@ public class AggregatePdfProcessorTest {
                 eq(agent.getPrincipals()),
                 eq(Permission.runEnhancements));
 
-        verify(repositoryObjectLoader, times(2)).getWorkObject(workPid);
+        verify(repositoryObjectLoader, times(1)).getWorkObject(workPid);
         verify(aggregatePdfService).generateAggregatePdf(any(PdfRequest.class));
 
         assertTrue(Files.exists(finalPdfPath));

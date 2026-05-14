@@ -58,11 +58,6 @@ public class AggregatePdfService {
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
     public AggregatePdfService() {
-        try {
-            initializeTempImageFilesDir();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void init() throws IOException {
@@ -151,8 +146,8 @@ public class AggregatePdfService {
         for (var child : children) {
             var transcriptFilePath = prepareTempPath(child.getId() + "_transcript", ".txt");
             var transcriptValue = child.getTranscript();
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(transcriptFilePath.toFile()))) {
-                writer.write(transcriptValue);
+            try {
+                Files.write(transcriptFilePath, transcriptValue.getBytes());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

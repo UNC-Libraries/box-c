@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -50,21 +51,21 @@ public class AggregatePdfProcessor implements Processor {
         var request = deserializeRequest(exchange);
         var agent = request.getAgent();
         var workPid = PIDs.get(request.getWorkPid());
+
+        aclService.assertHasAccess("User does not have permission to generate aggregate PDF",
+                workPid, agent.getPrincipals(), Permission.runEnhancements);
+
         var pdfPid = pidMinter.mintContentPid();
         var originalFilePid = DatastreamPids.getOriginalFilePid(workPid);
         var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(workPid)
                 .getNewStorageUri(originalFilePid));
 
-        aclService.assertHasAccess("User does not have permission to generate aggregate PDF",
-                workPid, agent.getPrincipals(), Permission.runEnhancements);
-
-        assertValid(workPid);
+        var workObject = loadWorkObject(workPid);
 
         try {
             Path pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
             moveFile(pdfTmpPath, pdfStorageUri);
 
-            var workObject = repositoryObjectLoader.getWorkObject(workPid);
             Model model = ModelFactory.createDefaultModel();
             model.getResource("").addProperty(RDF.type, Cdr.AggregateFile);
             workObject.addDataFile(pdfPid, pdfStorageUri.toUri(), pdfStorageUri.getFileName().toString(),
@@ -88,9 +89,9 @@ public class AggregatePdfProcessor implements Processor {
      *  Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
      * @param pid work pid
      */
-    private void assertValid(PID pid) {
+    private WorkObject loadWorkObject(PID pid) {
         try {
-            repositoryObjectLoader.getWorkObject(pid);
+            return repositoryObjectLoader.getWorkObject(pid);
         } catch (ObjectTypeMismatchException e) {
             throw new IllegalArgumentException("Object is not a Work Object");
         }
