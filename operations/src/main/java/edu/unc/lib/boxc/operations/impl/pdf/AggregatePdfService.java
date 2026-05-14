@@ -1,13 +1,12 @@
 package edu.unc.lib.boxc.operations.impl.pdf;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -16,35 +15,37 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pdf4u.CLIMain;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
-import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
-import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 
 /**
- * Service for generating a derivative PDF with OCR
+ * Service for generating an aggregate PDF with OCR
  * @author krwong
  */
-public class PdfDerivativeService {
-    private static final Logger log = LoggerFactory.getLogger(PdfDerivativeService.class);
+public class AggregatePdfService {
+    private static final Logger log = LoggerFactory.getLogger(AggregatePdfService.class);
 
     private SolrSearchService solrSearchService;
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    public Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+    private Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
     public Path tmpFilesDir = tmpDir.resolve("pdf4u");
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
@@ -53,10 +54,10 @@ public class PdfDerivativeService {
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
 
     private static final List<String> FILE_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
-    public PdfDerivativeService() {
+    public AggregatePdfService() {
         try {
             initializeTempImageFilesDir();
         } catch (Exception e) {
@@ -64,10 +65,14 @@ public class PdfDerivativeService {
         }
     }
 
-    public Path generatePdfDerivative(PdfRequest request) throws Exception {
+    public void init() throws IOException {
+        initializeTempImageFilesDir();
+    }
+
+    public Path generateAggregatePdf(PdfRequest request) throws IOException {
         var workPid = request.getWorkPid();
-        String inputFiles = getInputFiles(request);
-        String transcriptFiles = getTranscriptFiles(request);
+        String inputFiles = createInputListFile(request).toString();
+        String transcriptFiles = createTranscriptListFile(request).toString();
         Path tempPath = prepareTempPath(workPid, ".pdf");
         String textType = getTextTypes(request);
 
@@ -85,8 +90,7 @@ public class PdfDerivativeService {
             log.debug("Object {} is not a work object", request.getWorkPid(), e);
             throw new IllegalArgumentException("Object " + workPid + " is not a work object");
         } catch (Exception e) {
-            log.error("Failed to generate pdf derivative to {} for {}", tempPath, workPid);
-            throw e;
+            throw new ServiceException("Failed to generate aggregate PDF to " + tempPath + " for " + workPid, e);
         } finally {
             List<String> temporaryFiles = Arrays.asList(inputFiles, transcriptFiles);
             for (String tempFile : temporaryFiles) {
@@ -96,49 +100,75 @@ public class PdfDerivativeService {
     }
 
     /**
-     * Get path for input file(s)
+     * Create .txt file with list of input files
      * @param request PdfRequest
      * @return .txt path to input files
      */
-    public String getInputFiles(PdfRequest request) throws Exception {
+    public Path createInputListFile(PdfRequest request) {
         var workPidString = request.getWorkPid();
         var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
 
         var inputFilePath = prepareTempPath(workPidString + "_input", ".txt");
-        try {
-            var parentRec = getParentRecord(workPid, agent);
-            assertParentRecordValid(workPid, parentRec);
+        var parentRec = getParentRecord(workPid, agent);
+        assertParentRecordValid(workPid, parentRec);
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(inputFilePath.toFile()));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(inputFilePath.toFile()))) {
             List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
+
             for (var child : children) {
-                var original = child.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-                if (original != null && !StringUtils.isBlank(original.getFilename())) {
-                    writer.write(original.getFilename() + System.lineSeparator());
+                var filePid = child.getPid();
+                var originalFilePid = DatastreamPids.getOriginalFilePid(filePid);
+                var originalFilePath = repositoryObjectLoader.getBinaryObject(originalFilePid).getContentUri();
+                if (originalFilePath != null) {
+                    writer.write(originalFilePath + System.lineSeparator());
                 }
             }
-            writer.close();
-
-            return inputFilePath.toString();
-        } catch (Exception e) {
-            throw new Exception("Failed to generate input txt file for " + workPid, e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        return inputFilePath;
     }
 
     /**
-     * Get path for transcript file(s)
+     * Retrieve transcript value and write to temp file, then create .txt file with list of all transcript files
      * @param request PdfRequest
      * @return .txt path to transcript files
      */
-    public String getTranscriptFiles(PdfRequest request) throws Exception {
-        //TODO: get transcript files from the alt text review
-        var workPid = request.getWorkPid();
+    public Path createTranscriptListFile(PdfRequest request) {
+        var workPidString = request.getWorkPid();
+        var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
 
-        var inputTranscriptPath = prepareTempPath(workPid + "_transcript", ".txt");
+        var transcriptListPath = prepareTempPath(workPid + "_transcriptlist", ".txt");
+        var transcriptList = new ArrayList<>();
+        var parentRec = getParentRecord(workPid, agent);
+        assertParentRecordValid(workPid, parentRec);
 
-        return inputTranscriptPath.toString();
+        // retrieve transcript and write to temporary transcript file
+        List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
+        for (var child : children) {
+            var transcriptFilePath = prepareTempPath(child.getId() + "_transcript", ".txt");
+            var transcriptValue = child.getTranscript();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(transcriptFilePath.toFile()))) {
+                writer.write(transcriptValue);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            transcriptList.add(transcriptFilePath);
+        }
+
+        // create .txt with list of temporary transcript file paths
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(transcriptListPath.toFile()))) {
+            for (var transcriptFilePath : transcriptList) {
+                writer.write(transcriptFilePath + System.lineSeparator());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return transcriptListPath;
     }
 
     /**
@@ -159,6 +189,7 @@ public class PdfDerivativeService {
         searchState.setRowsPerPage(DEFAULT_PAGE_SIZE);
         CutoffFacet selectedPath = parentRec.getPath();
         searchState.addFacet(selectedPath);
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Image"));
         searchState.setSortType("default");
         searchState.setResultFields(FILE_REQUEST_FIELDS);
         var searchRequest = new SearchRequest(searchState, agent.getPrincipals());
@@ -175,17 +206,13 @@ public class PdfDerivativeService {
             throw new NotFoundException("Unable to find requested record " + pid.getId()
                     + ", it either does not exist or is not accessible");
         }
-        var resourceType = ResourceType.valueOf(parentRec.getResourceType());
-        if (!supportsMemberOrdering(resourceType)) {
-            throw new InvalidOperationForObjectType(formatUnsupportedMessage(pid, resourceType));
-        }
     }
 
     /**
      * Create tmp pdf4u files directory for temporary files
      * @return tmpImageFilesDirectoryPath
      */
-    private void initializeTempImageFilesDir() throws Exception {
+    private void initializeTempImageFilesDir() throws IOException {
         Path path = tmpFilesDir;
         if (!Files.exists(path)) {
             Files.createDirectories(path);
@@ -196,11 +223,10 @@ public class PdfDerivativeService {
      * Create temporary file path and delete temporary file if it already exists
      * @return tmpImageFilesDirectoryPath
      */
-    private Path prepareTempPath(String fileName, String extension) throws Exception {
-        Path tempPath = Files.createTempFile(tmpFilesDir, FilenameUtils.getName(fileName), extension);
-        // delete temporary path so that it can be written over by whatever utility has requested a path
-        Files.delete(tempPath);
-        return tempPath;
+    private Path prepareTempPath(String fileName, String extension) {
+        String baseName = FilenameUtils.getBaseName(fileName);
+        String uniqueName = baseName + "_" + UUID.randomUUID() + extension;
+        return Path.of(System.getProperty("java.io.tmpdir"), uniqueName);
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {

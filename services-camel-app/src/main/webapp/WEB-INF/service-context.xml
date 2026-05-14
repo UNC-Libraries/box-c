@@ -281,16 +281,17 @@
     <bean id="videoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor">
     </bean>
 
-    <bean id="pdfDerivativeService" class="edu.unc.lib.boxc.operations.impl.pdf.PdfDerivativeService">
+    <bean id="aggregatePdfService" class="edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="solrSearchService" ref="solrSearchService" />
     </bean>
 
-    <bean id="pdfDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor">
-        <constructor-arg value="${cdr.enhancement.path.pdf}" />
+    <bean id="aggregatePdfProcessor" class="edu.unc.lib.boxc.services.camel.pdf.AggregatePdfProcessor">
         <property name="aclService" ref="aclService" />
+        <property name="pidMinter" ref="repositoryPIDMinter"/>
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="pdfDerivativeService" ref="pdfDerivativeService" />
+        <property name="locationManager" ref="storageLocationManager" />
+        <property name="aggregatePdfService" ref="aggregatePdfService" />
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">

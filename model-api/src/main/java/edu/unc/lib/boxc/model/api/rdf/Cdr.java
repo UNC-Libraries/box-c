@@ -199,6 +199,8 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#SourceMetadata" );
     public static final Resource DescriptiveMetadata = createResource(
             "http://cdr.unc.edu/definitions/model#DescriptiveMetadata" );
+    public static final Resource AggregateFile = createResource(
+            "http://cdr.unc.edu/definitions/model#AggregateFile");
     public static final Resource Tombstone = createResource(
             "http://cdr.unc.edu/definitions/model#Tombstone" );
 }

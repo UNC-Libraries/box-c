@@ -31,16 +31,16 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Produce("direct:start")
     protected ProducerTemplate template;
-    private String endpointUri = "direct:pdfderivative";
+    private String endpointUri = "direct:aggregatePdf";
 
     @Mock
-    private PdfDerivativeProcessor pdfDerivativeProcessor;
+    private AggregatePdfProcessor aggregatePdfProcessor;
 
     @Override
     protected RouteBuilder createRouteBuilder() {
         var router = new PdfEnhancementsRouter();
-        router.setPdfDerivativeProcessor(pdfDerivativeProcessor);
-        router.setPdfDerivativesStreamCamel(endpointUri);
+        router.setAggregatePdfProcessor(aggregatePdfProcessor);
+        router.setAggregatePdfStreamCamel(endpointUri);
         return router;
     }
 
@@ -51,7 +51,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void requestSentTest() throws Exception {
-        createContext("PdfAccessCopy");
+        createContext("AggregatePdf");
 
         var request = new PdfRequest();
         request.setAgent(agent);
@@ -60,7 +60,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
         var body = PdfRequestSerializationHelper.toJson(request);
         template.sendBody(body);
 
-        verify(pdfDerivativeProcessor).process(any());
+        verify(aggregatePdfProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {

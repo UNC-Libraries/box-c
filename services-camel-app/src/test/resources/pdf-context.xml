@@ -13,11 +13,11 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="pdfDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.pdf.PdfDerivativeProcessor" />
+    <bean id="aggregatePdfProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.pdf.AggregatePdfProcessor" />
     </bean>
 
-    <camel:camelContext id="PdfAccessCopy">
+    <camel:camelContext id="AggregatePdf">
         <camel:package>edu.unc.lib.boxc.services.camel.pdf</camel:package>
     </camel:camelContext>
 
