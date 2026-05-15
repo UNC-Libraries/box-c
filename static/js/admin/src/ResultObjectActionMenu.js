@@ -204,6 +204,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["editAltText"] = {name : 'Edit Alt Text'};
 		}
 
+		if ((metadata.type === 'Folder' || metadata.type === 'Collection') && $.inArray('editDescription', metadata.permissions) != -1) {
+			items["machineAltText"] = {name : 'Review AI Generated Alt Text'};
+		}
+
 		// Add files to work objects
 		if (!isContentRoot && metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
@@ -532,6 +536,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							action: 'DeleteStreamingPropertiesResult',
 							target : resultObject,
 							confirmAnchor : options.$trigger
+						});
+						break;
+					case "machineAltText":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: `altTextEditor/${resultObject.metadata.id}`,
+							newWindow: true
 						});
 						break;
 					case "patronPermissions":

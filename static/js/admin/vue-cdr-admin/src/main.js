@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import {useFormsStore} from './stores/forms';
-import { usePermissionsStore } from './stores/permissions';
+import {usePermissionsStore} from './stores/permissions';
 import Vueform from '@vueform/vueform';
 import vueformConfig from './../vueform.config';
 import './assets/vueform.nodark.css';
