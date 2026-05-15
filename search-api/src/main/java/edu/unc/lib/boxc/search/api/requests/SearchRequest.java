@@ -16,6 +16,7 @@ public class SearchRequest implements Serializable {
     protected SearchState searchState;
     private boolean retrieveFacets;
     private boolean applyCutoffs;
+    private boolean allowAnyResourceTypesInFacets = false;
     protected AccessGroupSet accessGroups;
     protected String rootId;
     protected PID rootPid;
@@ -85,4 +86,13 @@ public class SearchRequest implements Serializable {
     public void setRetrieveFacets(boolean retrieveFacets) {
         this.retrieveFacets = retrieveFacets;
     }
+
+    public boolean isAllowAnyResourceTypesInFacets() {
+        return allowAnyResourceTypesInFacets;
+    }
+
+    public void setAllowAnyResourceTypesInFacets(boolean include) {
+        this.allowAnyResourceTypesInFacets = include;
+    }
+
 }

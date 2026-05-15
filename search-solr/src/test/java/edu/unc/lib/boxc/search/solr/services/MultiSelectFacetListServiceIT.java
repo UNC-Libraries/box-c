@@ -642,6 +642,29 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
+    public void allowAnyResourceTypesInFacetsTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name(), FILE_FORMAT_CATEGORY.name()));
+        // Explicitly include File in resource types
+        searchState.setResourceTypes(Arrays.asList(
+                ResourceType.AdminUnit.name(), ResourceType.Collection.name(),
+                ResourceType.Folder.name(), ResourceType.Work.name(), ResourceType.File.name()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        request.setAllowAnyResourceTypesInFacets(true);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        // File objects should now be counted: coll1 has folder1 + work1 + work2 + work1File1 + work1File2 + work2File1 = 6
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 6);
+        // coll2 has work3 + privateFolder + privateWork + work3File1 + privateWorkFile1 = 5
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 5);
+
+        // File format categories now include File objects, which have format properties
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 5);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 4);
+    }
+
+    @Test
     public void noFacetsToRetrieveTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(Collections.emptyList());

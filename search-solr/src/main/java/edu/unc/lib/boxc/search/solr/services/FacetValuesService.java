@@ -33,7 +33,7 @@ public class FacetValuesService extends AbstractFacetListService {
         var facetSolrField = request.getFacetFieldKey().getSolrField();
 
         var searchState = request.getBaseSearchRequest().getSearchState();
-        assignResourceTypes(searchState);
+        assignResourceTypes(searchState, request.getBaseSearchRequest());
         addSelectedContainer(request.getBaseSearchRequest(), searchState);
         request.getBaseSearchRequest().setApplyCutoffs(false);
         // Remove any filters from the same facet being retrieved, so that all values from the facet are visible
