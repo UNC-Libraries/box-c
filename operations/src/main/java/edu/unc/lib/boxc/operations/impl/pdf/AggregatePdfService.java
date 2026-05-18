@@ -86,7 +86,7 @@ public class AggregatePdfService {
             throw new ServiceException("Failed to generate aggregate PDF to " + tempPath + " for " + workPid, e);
         } finally {
             // delete input list file, transcript list file, and all transcript files
-            List<String> temporaryFiles = Arrays.asList(inputFiles, transcriptFiles);
+            List<String> temporaryFiles = new ArrayList<>(Arrays.asList(inputFiles, transcriptFiles));
             temporaryFiles.addAll(Files.readAllLines(Path.of(transcriptFiles), StandardCharsets.UTF_8));
             for (String tempFile : temporaryFiles) {
                 Files.deleteIfExists(Path.of(tempFile));
@@ -207,7 +207,6 @@ public class AggregatePdfService {
 
     /**
      * Create tmp pdf4u files directory for temporary files
-     * @return tmpFilesDirectoryPath
      */
     private void initializeTempImageFilesDir() throws IOException {
         tmpFilesDir = tmpDir.resolve("pdf4u");

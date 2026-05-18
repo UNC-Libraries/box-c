@@ -56,7 +56,7 @@ public class AggregatePdfProcessor implements Processor {
                 workPid, agent.getPrincipals(), Permission.runEnhancements);
 
         var pdfPid = pidMinter.mintContentPid();
-        var originalFilePid = DatastreamPids.getOriginalFilePid(workPid);
+        var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
         var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(pdfPid)
                 .getNewStorageUri(originalFilePid));
 
