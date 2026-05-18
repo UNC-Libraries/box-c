@@ -25,6 +25,7 @@ import pdf4u.CLIMain;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,9 +73,6 @@ public class AggregatePdfService {
         String textType = getTextTypes(request);
 
         try {
-            // check that object is a work object
-            repositoryObjectLoader.getWorkObject(PIDs.get(workPid));
-
             String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles, "-o", tempPath.toString(),
                     "-t", transcriptFiles, "-tt", textType};
             log.debug("Run pdf4u command {} for work {}", command, workPid);
@@ -87,7 +85,9 @@ public class AggregatePdfService {
         } catch (Exception e) {
             throw new ServiceException("Failed to generate aggregate PDF to " + tempPath + " for " + workPid, e);
         } finally {
+            // delete input list file, transcript list file, and all transcript files
             List<String> temporaryFiles = Arrays.asList(inputFiles, transcriptFiles);
+            temporaryFiles.addAll(Files.readAllLines(Path.of(transcriptFiles), StandardCharsets.UTF_8));
             for (String tempFile : temporaryFiles) {
                 Files.deleteIfExists(Path.of(tempFile));
             }
@@ -136,7 +136,7 @@ public class AggregatePdfService {
         var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
 
-        var transcriptListPath = prepareTempPath(workPid + "_transcriptlist", ".txt");
+        var transcriptListPath = prepareTempPath(workPid.getId() + "_transcriptlist", ".txt");
         var transcriptList = new ArrayList<>();
         var parentRec = getParentRecord(workPid, agent);
         assertParentRecordValid(workPid, parentRec);
@@ -144,14 +144,16 @@ public class AggregatePdfService {
         // retrieve transcript and write to temporary transcript file
         List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
         for (var child : children) {
-            var transcriptFilePath = prepareTempPath(child.getId() + "_transcript", ".txt");
             var transcriptValue = child.getTranscript();
-            try {
-                Files.write(transcriptFilePath, transcriptValue.getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (transcriptValue != null) {
+                var transcriptFilePath = prepareTempPath(child.getId() + "_transcript", ".txt");
+                try {
+                    Files.write(transcriptFilePath, transcriptValue.getBytes(StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                transcriptList.add(transcriptFilePath);
             }
-            transcriptList.add(transcriptFilePath);
         }
 
         // create .txt with list of temporary transcript file paths
@@ -205,12 +207,12 @@ public class AggregatePdfService {
 
     /**
      * Create tmp pdf4u files directory for temporary files
-     * @return tmpImageFilesDirectoryPath
+     * @return tmpFilesDirectoryPath
      */
     private void initializeTempImageFilesDir() throws IOException {
-        Path path = tmpFilesDir;
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
+        tmpFilesDir = tmpDir.resolve("pdf4u");
+        if (!Files.exists(tmpFilesDir)) {
+            Files.createDirectories(tmpFilesDir);
         }
     }
 

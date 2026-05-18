@@ -57,20 +57,24 @@ public class AggregatePdfProcessor implements Processor {
 
         var pdfPid = pidMinter.mintContentPid();
         var originalFilePid = DatastreamPids.getOriginalFilePid(workPid);
-        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(workPid)
+        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(pdfPid)
                 .getNewStorageUri(originalFilePid));
 
         var workObject = loadWorkObject(workPid);
+        Path pdfTmpPath = null;
 
         try {
-            Path pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
+            pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
             moveFile(pdfTmpPath, pdfStorageUri);
 
             Model model = ModelFactory.createDefaultModel();
             model.getResource("").addProperty(RDF.type, Cdr.AggregateFile);
             workObject.addDataFile(pdfPid, pdfStorageUri.toUri(), pdfStorageUri.getFileName().toString(),
                     "application/pdf", null, null, model);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            if (pdfTmpPath != null) {
+                Files.deleteIfExists(pdfTmpPath);
+            }
             log.error("Failed to generate aggregate PDF for {}", workPid, e);
             throw e;
         }
