@@ -4,7 +4,7 @@
   "result": {
     "alt_text": "Mountain landscape with snow-covered peaks",
     "full_description": "A scenic mountain landscape with snow-capped peaks rising above a forested valley",
-    "overall_risk_Score": 0,
+    "overall_risk_score": 0,
     "review_assessment": {
       "biased_language": "NO",
       "concerns_for_review": [],

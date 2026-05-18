@@ -24,7 +24,7 @@ public class MachineGeneratedContentService {
     private static final Logger log = LoggerFactory.getLogger(MachineGeneratedContentService.class);
 
     public static final String MG_DESCRIPTION_FIELD = "full_description";
-    public static final String MG_RISK_SCORE_FIELD = "overall_risk_Score";
+    public static final String MG_RISK_SCORE_FIELD = "overall_risk_score";
     public static final String MG_ALT_TEXT = "alt_text";
     public static final String MG_TRANSCRIPT_FIELD = "transcript";
     public static final String MG_SAFETY_ASSESS_FIELD = "safety_assessment";

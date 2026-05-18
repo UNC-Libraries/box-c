@@ -66,7 +66,7 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
 
         searchState.setRowsPerPage(0);
         // Set the resource types counted in the facets to exclude File objects
-        assignResourceTypes(searchState);
+        assignResourceTypes(searchState, searchRequest);
 
         // Perform base search with all filters applied, generating the base result response which will be returned.
         SearchResultResponse resultResponse = searchService.getSearchResults(facetRequest);
