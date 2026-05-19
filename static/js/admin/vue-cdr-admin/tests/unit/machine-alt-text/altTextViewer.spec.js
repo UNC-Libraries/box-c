@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { vi } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import altTextViewer from '@/components/machine-alt-text/altTextViewer.vue';
 
@@ -90,6 +91,15 @@ describe('altTextViewer.vue', () => {
             expect(options.pageLength).toBe(25);
             expect(options.layout.topEnd.search.placeholder).toBe('Search');
         });
+
+        it('includes column visibility and reset controls in table layout', () => {
+            const wrapper = mountViewer();
+            const options = wrapper.vm.tableOptions;
+
+            expect(options.layout.top2Start.buttons[0].extend).toBe('colvis');
+            expect(options.layout.top2End.buttons[0].text).toBe('Reset Table');
+            expect(typeof options.layout.top2End.buttons[0].action).toBe('function');
+        });
     });
 
     describe('ajax options', () => {
@@ -117,7 +127,7 @@ describe('altTextViewer.vue', () => {
             wrapper.vm.selectedTags = ['people_visible', 'text_present'];
 
             const params = wrapper.vm.ajaxOptions.data({ draw: 3, start: 0, length: 25, search: { value: '' }, order: [] });
-            expect(params.mgContentTags).toBe('people_visible||text_present');
+            expect(params.mgContentTags).toBe('people_visible%7C%7Ctext_present');
             expect(params.anywhere).toBe('');
         });
 
@@ -138,7 +148,7 @@ describe('altTextViewer.vue', () => {
                 start: 0,
                 length: 25,
                 search: { value: '' },
-                order: [{ column: 5, dir: 'desc' }]
+                order: [{ column: 8, dir: 'desc' }]
             });
             expect(riskSort.sort).toBe('mgRiskScore,reverse');
         });
@@ -158,7 +168,7 @@ describe('altTextViewer.vue', () => {
             expect(json.recordsFiltered).toBe(2);
         });
 
-        it('populates tag facets once from MG_CONTENT_TAGS in first response', () => {
+        it('refreshes tag facets from MG_CONTENT_TAGS on each response', () => {
             const wrapper = mountViewer();
             wrapper.vm.ajaxOptions.data({ draw: 1, start: 0, length: 25, search: { value: '' }, order: [] });
 
@@ -169,7 +179,8 @@ describe('altTextViewer.vue', () => {
                     values: [{ value: 'people_visible', displayValue: 'People Visible', count: 11 }]
                 }]
             });
-            wrapper.vm.ajaxOptions.dataFilter(first);
+            const firstParsed = JSON.parse(wrapper.vm.ajaxOptions.dataFilter(first));
+            wrapper.vm.ajaxOptions.dataSrc(firstParsed);
             expect(wrapper.vm.contentTagFacets).toEqual([
                 { value: 'people_visible', displayValue: 'People Visible', count: 11 }
             ]);
@@ -181,9 +192,10 @@ describe('altTextViewer.vue', () => {
                     values: [{ value: 'text_present', displayValue: 'Text Present', count: 9 }]
                 }]
             });
-            wrapper.vm.ajaxOptions.dataFilter(second);
+            const secondParsed = JSON.parse(wrapper.vm.ajaxOptions.dataFilter(second));
+            wrapper.vm.ajaxOptions.dataSrc(secondParsed);
             expect(wrapper.vm.contentTagFacets).toEqual([
-                { value: 'people_visible', displayValue: 'People Visible', count: 11 }
+                { value: 'text_present', displayValue: 'Text Present', count: 9 }
             ]);
         });
     });
@@ -193,13 +205,16 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const columns = wrapper.vm.columns;
 
-            expect(columns).toHaveLength(9);
+            expect(columns).toHaveLength(12);
             expect(columns.map((column) => column.data)).toEqual([
                 'id',
                 'title',
                 'mgFullDescription',
+                'fullDescription',
+                'mgAltText',
                 'altText',
                 'mgTranscript',
+                'transcript',
                 null,
                 'mgSafetyAssessment',
                 'mgReviewAssessment',
@@ -244,16 +259,54 @@ describe('altTextViewer.vue', () => {
         });
     });
 
+    describe('successful row edits', () => {
+        it('patches the matching datatable row and clears the successful edit flag', () => {
+            const wrapper = mountViewer();
+            const row = {
+                _data: { id: 'abc-123', altText: 'Old text' },
+                data(newData) {
+                    if (newData) {
+                        this._data = newData;
+                        return this;
+                    }
+                    return this._data;
+                }
+            };
+
+            const ctx = {
+                $refs: {
+                    alt_text_table: {
+                        dt: {
+                            rows() {
+                                return {
+                                    every(callback) {
+                                        callback.call(row);
+                                    }
+                                };
+                            }
+                        }
+                    }
+                },
+                clearLastSuccessfulEdit: vi.fn()
+            };
+
+            altTextViewer.methods.applySuccessfulEdit.call(ctx, { id: 'abc-123', field: 'altText', value: 'New text' });
+
+            expect(row._data.altText).toBe('New text');
+            expect(ctx.clearLastSuccessfulEdit).toHaveBeenCalled();
+        });
+    });
+
     describe('longText and safety rendering', () => {
         it('renders short and long text variants in longText', () => {
             const wrapper = mountViewer();
 
-            const short = wrapper.vm.longText('short text', 'altText');
+            const short = wrapper.vm.longText('short text', 'altText', true);
             expect(short).toContain('short text');
             expect(short).toContain('data-action="edit"');
             expect(short).not.toContain('View All');
 
-            const long = wrapper.vm.longText('x'.repeat(260), 'mgFullDescription');
+            const long = wrapper.vm.longText('x'.repeat(260), 'mgFullDescription', false);
             expect(long).toContain('View All');
             expect(long).toContain('data-action="view"');
             expect(long).toContain('data-action-field="mgFullDescription"');

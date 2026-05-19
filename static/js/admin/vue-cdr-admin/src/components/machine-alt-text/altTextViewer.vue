@@ -28,8 +28,11 @@
                     <th><span class="is-sr-only">Thumbnail</span></th>
                     <th>Filename</th>
                     <th>Full Description (AI)</th>
+                    <th>Full Description (Human)</th>
                     <th>Alt Text (AI)</th>
+                    <th>Alt Text (Human)</th>
                     <th>Transcript (AI)</th>
+                    <th>Transcript (Human)</th>
                     <th>Risk Score</th>
                     <th>Safety Assessment (AI)</th>
                     <th>Output Assessment (AI)</th>
@@ -48,10 +51,13 @@
 <script>
 import altTextEditorModal from '@/components/machine-alt-text/altTextEditorModal.vue';
 import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
+import fetchUtils from "@/mixins/fetchUtils";
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
 import 'datatables.mark.js';
+import 'datatables.net-buttons-bm'
+import 'datatables.net-buttons/js/buttons.colVis.js';
 import {mapActions, mapState} from 'pinia';
 import {useAltTextStore} from '@/stores/alt-text';
 
@@ -65,6 +71,8 @@ export default {
 
     components: {AltTextMessages, altTextEditorModal, DataTable},
 
+    mixins: [fetchUtils],
+
     data() {
         return {
             altTextTableClickHandler: null,
@@ -75,20 +83,30 @@ export default {
         }
     },
 
+    watch: {
+        lastSuccessfulEdit(edit) {
+            if (!edit) {
+                return;
+            }
+            this.$nextTick(() => {
+                this.applySuccessfulEdit(edit);
+            });
+        }
+    },
+
     computed: {
-        ...mapState(useAltTextStore, ['currentUuid']),
+        ...mapState(useAltTextStore, ['currentUuid', 'lastSuccessfulEdit']),
 
         ajaxOptions() {
             let lastDraw = 0;
             return {
-               // url: '/static/real-alt-text.json',
                 url: `/services/api/machineGeneratedSearch/${this.currentUuid}`,
                 data: (d) => {
                     lastDraw = d.draw;
                     // Column id, column name
                     const sortFieldByColumn = {
                         1: 'title',
-                        5: 'mgRiskScore'
+                        8: 'mgRiskScore'
                     };
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
 
@@ -111,10 +129,21 @@ export default {
                         // Conditionally adds sort and/or search tag depending on whether there's an active
                         // sort or search, to avoid sending unnecessary query parameters
                         ...(d.sort ? { sort: d.sort } : {}),
-                        ...(this.selectedTags.length > 0 ? { mgContentTags: this.selectedTags.join('||') } : {})
+                        ...(this.selectedTags.length > 0 ? { mgContentTags: encodeURIComponent(this.selectedTags.join('||')) } : {})
                     };
                 },
-                dataSrc: (d) => Array.isArray(d.metadata) ? d.metadata : [],
+                dataSrc: (d) => {
+                    const items = Array.isArray(d.metadata) ? d.metadata : [];
+                    this.setItems(items);
+
+                    // Keep pane facets in sync with each consumed response so counts/options stay current in the UI.
+                    const mgTagsFacet = (d.facetFields || []).find(f => f.name === 'MG_CONTENT_TAGS');
+                    this.contentTagFacets = Array.isArray(mgTagsFacet?.values) ? [...mgTagsFacet.values] : [];
+                    const availableFacetValues = new Set(this.contentTagFacets.map(facet => facet.value));
+                    this.selectedTags = this.selectedTags.filter(tag => availableFacetValues.has(tag));
+
+                    return items;
+                },
                 dataFilter: (data) => {
                     const json = JSON.parse(data);
                     // Echo the draw counter back so DataTables processes responses in the correct sequence
@@ -122,11 +151,6 @@ export default {
                     // Map the API's resultCount to the field names DataTables expects for server-side pagination
                     json.recordsTotal = Number(json.resultCount) || 0;
                     json.recordsFiltered = Number(json.resultCount) || 0;
-                    // Populate the tag filter pane once from the first response; counts don't change across pages or sorts
-                    if (this.contentTagFacets.length === 0) {
-                        const mgTagsFacet = (json.facetFields || []).find(f => f.name === 'MG_CONTENT_TAGS');
-                        this.contentTagFacets = mgTagsFacet?.values || [];
-                    }
                     return JSON.stringify(json);
                 }
             };
@@ -141,6 +165,25 @@ export default {
                 order: [[1, 'asc']],
                 fixedHeader: true,
                 layout: {
+                    top2Start: {
+                        buttons: [
+                            {
+                                extend: 'colvis',
+                                postfixButtons: ['colvisRestore']
+                            }
+                        ]
+                    },
+                    top2End: {
+                        buttons: [
+                            {
+                                text: 'Reset Table',
+                                action: function(e, dt, node, config) {
+                                    dt.state.clear();
+                                    window.location.reload();
+                                }
+                            }
+                        ]
+                    },
                     topEnd: {
                         search: {
                             placeholder: 'Search'
@@ -167,15 +210,27 @@ export default {
                 },
                 {
                     data: 'mgFullDescription',
-                    render: (data) => this.longText(data, 'mgFullDescription')
+                    render: (data) => this.longText(data, 'mgFullDescription', false)
+                },
+                {
+                    data: 'fullDescription',
+                    render: (data) => this.longText(data, 'fullDescription', true)
+                },
+                {
+                    data: 'mgAltText',
+                    render: (data) => this.longText(data, 'mgAltText', false)
                 },
                 {
                     data: 'altText',
-                    render: (data) => this.longText(data, 'altText')
+                    render: (data) => this.longText(data, 'altText', true)
                 },
                 {
                     data: 'mgTranscript',
-                    render: (data) => this.longText(data, 'mgTranscript')
+                    render: (data) => this.longText(data, 'mgTranscript', false)
+                },
+                {
+                    data: 'transcript',
+                    render: (data) => this.longText(data, 'transcript', true)
                 },
                 {
                     data: null,
@@ -200,24 +255,24 @@ export default {
 
         columnDefs() {
             return [
-                { width: '15%', targets: [0] },
-                { width: '5%', targets: [1, 5, 7] },
-                { orderable: false, targets: [0, 2, 3, 4, 6, 7, 8] },
-                { searchable: false, targets: [0, 8] }
+                { width: '10%', targets: [0] },
+                { width: '5%', targets: [1, 8] },
+                { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 9, 10, 11] },
+                { searchable: false, targets: [0, 11] }
             ]
         }
     },
 
     methods: {
         ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage',
-            'setCurrentRow', 'setCurrentUuid', 'setShowAltTextModal', 'setViewType']),
+            'setCurrentRow', 'setCurrentUuid', 'setItems', 'clearLastSuccessfulEdit', 'setShowAltTextModal', 'setViewType']),
 
         fieldName(field) {
             const parts = field.split('_')
             return parts.join(' ');
         },
 
-        longText(data, field_name) {
+        longText(data, field_name, editable = false) {
             const normalized_text = data || '';
             const has_long_text = normalized_text.length > 250;
             const text = (has_long_text) ? `${normalized_text.substring(0, 250)}... ` : normalized_text;
@@ -226,7 +281,11 @@ export default {
                 sub_text += `<div class="is-hidden">${normalized_text}</div>`;
                 sub_text += `<a data-action="view" data-action-field="${field_name}" href="#">View All</a><br/>`
             }
-            return `${text}${sub_text}<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a></div>`;
+            let text_display = `${text}${sub_text}`;
+            if (editable) {
+                text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
+            }
+            return `${text_display}</div>`;
         },
 
         formatSafetyValue(data) {
@@ -318,6 +377,29 @@ export default {
             if (dtApi) {
                 dtApi.ajax.reload();
             }
+        },
+
+        applySuccessfulEdit(edit) {
+            const dtApi = this.$refs.alt_text_table?.dt;
+            if (!dtApi || !edit?.id || !edit?.field) {
+                this.clearLastSuccessfulEdit();
+                return;
+            }
+
+            dtApi.rows().every(function() {
+                const rowData = this.data();
+                if (rowData?.id === edit.id) {
+                    const updatedRow = {
+                        ...rowData,
+                        [edit.field]: edit.value
+                    };
+                    this.data(updatedRow);
+                    return false;
+                }
+                return true;
+            });
+
+            this.clearLastSuccessfulEdit();
         }
     },
 
@@ -340,6 +422,7 @@ export default {
 
 <style>
 @import 'datatables.net-bm';
+@import 'datatables.net-buttons-bm';
 
 #alt-text-viewer {
     h1 {
