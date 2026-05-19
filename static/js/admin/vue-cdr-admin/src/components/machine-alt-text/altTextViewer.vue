@@ -210,27 +210,27 @@ export default {
                 },
                 {
                     data: 'mgFullDescription',
-                    render: (data) => this.longText(data, 'mgFullDescription', false)
+                    render: (data) => this.longText(data, 'mgFullDescription')
                 },
                 {
                     data: 'fullDescription',
-                    render: (data) => this.longText(data, 'fullDescription', true)
+                    render: (data) => this.longText(data, 'fullDescription')
                 },
                 {
                     data: 'mgAltText',
-                    render: (data) => this.longText(data, 'mgAltText', false)
+                    render: (data) => this.longText(data, 'mgAltText')
                 },
                 {
                     data: 'altText',
-                    render: (data) => this.longText(data, 'altText', true)
+                    render: (data) => this.longText(data, 'altText')
                 },
                 {
                     data: 'mgTranscript',
-                    render: (data) => this.longText(data, 'mgTranscript', false)
+                    render: (data) => this.longText(data, 'mgTranscript')
                 },
                 {
                     data: 'transcript',
-                    render: (data) => this.longText(data, 'transcript', true)
+                    render: (data) => this.longText(data, 'transcript')
                 },
                 {
                     data: null,
@@ -272,7 +272,7 @@ export default {
             return parts.join(' ');
         },
 
-        longText(data, field_name, editable = false) {
+        longText(data, field_name) {
             const normalized_text = data || '';
             const has_long_text = normalized_text.length > 250;
             const text = (has_long_text) ? `${normalized_text.substring(0, 250)}... ` : normalized_text;
@@ -282,7 +282,8 @@ export default {
                 sub_text += `<a data-action="view" data-action-field="${field_name}" href="#">View All</a><br/>`
             }
             let text_display = `${text}${sub_text}`;
-            if (editable) {
+            // Machine generated fields should not be editable
+            if (!/^mg/.test(field_name)) {
                 text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
             }
             return `${text_display}</div>`;
@@ -339,7 +340,7 @@ export default {
                 return;
             }
             this.altTextTableClickHandler = (e) => {
-                const action_fields = ['mgFullDescription', 'altText', 'mgTranscript'];
+                const action_fields = ['mgFullDescription', 'fullDescription', 'mgAltText', 'altText', 'mgTranscript', 'transcript'];
                 if (action_fields.includes(e.target.dataset.actionField)) {
                     e.preventDefault();
                     this.setCurrentRow(dtApi.row(e.currentTarget).data());

@@ -301,12 +301,12 @@ describe('altTextViewer.vue', () => {
         it('renders short and long text variants in longText', () => {
             const wrapper = mountViewer();
 
-            const short = wrapper.vm.longText('short text', 'altText', true);
+            const short = wrapper.vm.longText('short text', 'altText');
             expect(short).toContain('short text');
             expect(short).toContain('data-action="edit"');
             expect(short).not.toContain('View All');
 
-            const long = wrapper.vm.longText('x'.repeat(260), 'mgFullDescription', false);
+            const long = wrapper.vm.longText('x'.repeat(260), 'mgFullDescription');
             expect(long).toContain('View All');
             expect(long).toContain('data-action="view"');
             expect(long).toContain('data-action-field="mgFullDescription"');
