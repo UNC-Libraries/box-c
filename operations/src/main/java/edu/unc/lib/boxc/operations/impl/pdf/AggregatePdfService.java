@@ -79,9 +79,6 @@ public class AggregatePdfService {
             CLIMain.runCommand(command);
 
             return tempPath;
-        } catch (ObjectTypeMismatchException e) {
-            log.debug("Object {} is not a work object", request.getWorkPid(), e);
-            throw new IllegalArgumentException("Object " + workPid + " is not a work object");
         } catch (Exception e) {
             throw new ServiceException("Failed to generate aggregate PDF to " + tempPath + " for " + workPid, e);
         } finally {
