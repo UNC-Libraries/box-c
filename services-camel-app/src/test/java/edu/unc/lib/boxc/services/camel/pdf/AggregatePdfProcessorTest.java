@@ -88,10 +88,10 @@ public class AggregatePdfProcessorTest {
 
         finalPdfPath = tmpFolder.resolve("aggregate.pdf");
 
-        var originalFilePid = DatastreamPids.getOriginalFilePid(workPid);
+        var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
 
         when(pidMinter.mintContentPid()).thenReturn(pdfPid);
-        when(locationManager.getDefaultStorageLocation(workPid)).thenReturn(storageLocation);
+        when(locationManager.getDefaultStorageLocation(pdfPid)).thenReturn(storageLocation);
         when(storageLocation.getNewStorageUri(originalFilePid)).thenReturn(finalPdfPath.toUri());
 
         processor = new AggregatePdfProcessor();
@@ -224,9 +224,9 @@ public class AggregatePdfProcessorTest {
 
         processor.process(exchange);
 
-        var originalFilePid = DatastreamPids.getOriginalFilePid(workPid);
+        var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
 
-        verify(locationManager).getDefaultStorageLocation(workPid);
+        verify(locationManager).getDefaultStorageLocation(pdfPid);
         verify(storageLocation).getNewStorageUri(originalFilePid);
     }
 
