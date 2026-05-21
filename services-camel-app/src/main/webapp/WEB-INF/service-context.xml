@@ -291,7 +291,7 @@
     <bean id="aggregatePdfService" class="edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService">
         <property name="tmpDir" value="${services.tempDirectory}" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="solrSearchService" ref="solrSearchService" />
+        <property name="solrSearchService" ref="queryLayer" />
     </bean>
 
     <bean id="aggregatePdfProcessor" class="edu.unc.lib.boxc.services.camel.pdf.AggregatePdfProcessor">
