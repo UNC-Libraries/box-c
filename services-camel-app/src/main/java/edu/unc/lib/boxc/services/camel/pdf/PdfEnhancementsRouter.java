@@ -36,7 +36,7 @@ public class PdfEnhancementsRouter extends RouteBuilder {
         this.aggregatePdfProcessor = aggregatePdfProcessor;
     }
 
-    @PropertyInject("cdr.enhancement.pdf.stream.camel")
+    @PropertyInject("cdr.aggregate.pdf.stream.camel")
     public void setAggregatePdfStreamCamel(String aggregatePdfStreamCamel) {
         this.aggregatePdfStreamCamel = aggregatePdfStreamCamel;
     }
