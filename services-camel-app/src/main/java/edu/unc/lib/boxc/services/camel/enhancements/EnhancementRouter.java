@@ -112,6 +112,5 @@ public class EnhancementRouter extends RouteBuilder {
 
         from("direct:process.enhancement.machineGenDescription")
                 .to("{{cdr.machine.gen.description.stream.camel}}");
-
     }
 }

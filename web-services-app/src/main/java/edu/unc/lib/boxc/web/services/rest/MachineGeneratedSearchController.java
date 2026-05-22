@@ -64,6 +64,7 @@ public class MachineGeneratedSearchController extends AbstractSolrSearchControll
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(pid); // Only children of this object will be returned
         searchRequest.setApplyCutoffs(false); // Filters to all children, not just immediate
+        searchRequest.setAllowAnyResourceTypesInFacets(true);
 
         SearchState searchState = searchRequest.getSearchState();
         // filter to FileObjects
