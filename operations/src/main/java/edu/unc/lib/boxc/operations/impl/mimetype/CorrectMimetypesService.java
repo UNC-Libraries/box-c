@@ -104,20 +104,20 @@ public class CorrectMimetypesService {
             throw new InvalidMimeTypeException(mimetype, "Invalid mimetype");
         }
 
+        aclService.assertHasAccess(
+                "User does not have permissions to edit mimetypes",
+                PIDs.get(id), agent.getPrincipals(), Permission.editDescription);
+
+        RepositoryObject obj = repositoryObjectLoader.getRepositoryObject(PIDs.get(id));
+
+        // Verify object is a file object
+        if (!(obj instanceof FileObject)) {
+            throw new IllegalArgumentException("Cannot update mimetype for non-file object " + obj.getPid());
+        }
+
         FedoraTransaction tx = txManager.startTransaction();
 
         try (Timer.Context context = timer.time()) {
-            aclService.assertHasAccess(
-                    "User does not have permissions to edit mimetypes",
-                    PIDs.get(id), agent.getPrincipals(), Permission.editDescription);
-
-            RepositoryObject obj = repositoryObjectLoader.getRepositoryObject(PIDs.get(id));
-
-            // Verify object is a file object
-            if (!(obj instanceof FileObject)) {
-                throw new IllegalArgumentException("Cannot update mimetype for non-file object " + obj.getPid());
-            }
-
             // Get original_file and its mimetype
             BinaryObject binaryObject = ((FileObject) obj).getOriginalFile();
             String oldMimetype = binaryObject.getMimetype();
@@ -132,8 +132,6 @@ public class CorrectMimetypesService {
                     .writeAndClose();
         } catch (AccessRestrictionException e) {
             throw new AccessRestrictionException("Permission denied for " + id);
-        } catch (ObjectTypeMismatchException e) {
-            throw new ObjectTypeMismatchException("Object {} is not a File Object" + id);
         } catch (RuntimeException e) {
             tx.cancel(e);
             throw e;
