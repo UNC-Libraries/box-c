@@ -17,7 +17,6 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
-import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
@@ -36,7 +35,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.util.InvalidMimeTypeException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -156,11 +158,9 @@ public class CorrectMimetypesService {
         Resource binaryResource = model.getResource(binaryObject.getPid().getRepositoryPath());
 
         // Clear out existing mimetypes
-        binaryResource.removeAll(Ebucore.hasMimeType);
         binaryResource.removeAll(CdrDeposit.mimetype);
 
         // Add new mimetypes
-        binaryResource.addProperty(Ebucore.hasMimeType, mimetype);
         binaryResource.addProperty(CdrDeposit.mimetype, mimetype);
 
         // Push the updated model back to fedora
