@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -162,7 +161,9 @@ public class CorrectMimetypesService {
         binaryResource.addProperty(CdrDeposit.mimetype, mimetype);
 
         // Push the updated model back to fedora
-        repositoryObjectFactory.createOrTransformObject(binaryObject.getUri(), model);
+        repositoryObjectFactory.createOrUpdateBinary(binaryObject.getPid(), binaryObject.getUri(),
+                binaryObject.getFilename(), mimetype, binaryObject.getSha1Checksum(), binaryObject.getMd5Checksum(),
+                binaryObject.getModel());
     }
 
     private boolean isValidMimetype(String mimetype) {

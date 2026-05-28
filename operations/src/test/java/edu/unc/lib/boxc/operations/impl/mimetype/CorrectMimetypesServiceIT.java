@@ -56,7 +56,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/acl-service-context.xml"),
+        @ContextConfiguration("/spring-test/acl-service-context.xml")
 })
 public class CorrectMimetypesServiceIT {
     private static final String USER_PRINC = "user";
@@ -114,8 +114,8 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
-        PID filePid1 = addFileObject("file1.png", "image/png");
-        PID filePid2 = addFileObject("file2.jpg", "image/jpeg");
+        PID filePid1 = addFileObject("file1.tif", "image/png");
+        PID filePid2 = addFileObject("file2.pdf", "image/jpeg");
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
@@ -192,7 +192,6 @@ public class CorrectMimetypesServiceIT {
 
         verifyNoInteractions(operationsMessageSender);
     }
-
 
     private InputStream csv(String... rows) {
         String body = String.join(",", CorrectMimetypesService.CSV_HEADERS) + "\n"

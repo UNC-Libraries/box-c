@@ -111,7 +111,6 @@ public class CorrectMimetypesServiceTest {
     @Test
     public void testInsufficientPermissions() {
         PID filePid = PIDs.get(CHILD1_UUID);
-        when(txManager.startTransaction()).thenReturn(tx);
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(
@@ -159,7 +158,6 @@ public class CorrectMimetypesServiceTest {
 
     @Test
     public void testNotFileObject() {
-        when(txManager.startTransaction()).thenReturn(tx);
         PID filePid = PIDs.get(CHILD1_UUID);
 
         RepositoryObject nonFileObject = mock(RepositoryObject.class);
@@ -176,9 +174,6 @@ public class CorrectMimetypesServiceTest {
         verify(repoObjLoader).getRepositoryObject(filePid);
         verify(repoObjFactory, never()).createOrTransformObject(any(), any());
         verify(operationsMessageSender, never()).sendUpdateDescriptionOperation(anyString(), anyList());
-
-        verify(tx).cancel(any(IllegalArgumentException.class));
-        verify(tx).close();
     }
 
     @Test
@@ -199,7 +194,8 @@ public class CorrectMimetypesServiceTest {
         verify(repoObjLoader).getRepositoryObject(pid1);
         verify(repoObjLoader).getRepositoryObject(pid2);
 
-        verify(repoObjFactory, times(2)).createOrTransformObject(any(), any(Model.class));
+        verify(repoObjFactory, times(2))
+                .createOrUpdateBinary(any(), any(), any(), any(), any(), any(), any());
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(
                 eq(agent.getUsername()),
