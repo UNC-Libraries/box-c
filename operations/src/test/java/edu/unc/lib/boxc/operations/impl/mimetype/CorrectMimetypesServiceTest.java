@@ -195,7 +195,7 @@ public class CorrectMimetypesServiceTest {
         verify(repoObjLoader).getRepositoryObject(pid2);
 
         verify(repoObjFactory, times(2))
-                .createOrUpdateBinary(any(), any(), any(), any(), any(), any(), any());
+                .createOrTransformObject(any(), any(Model.class));
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(
                 eq(agent.getUsername()),
@@ -227,11 +227,13 @@ public class CorrectMimetypesServiceTest {
 
         when(binaryObject.getPid()).thenReturn(originalFilePid);
         when(binaryObject.getMimetype()).thenReturn(oldMimetype);
-        when(binaryObject.getUri()).thenReturn(originalFilePid.getRepositoryUri());
+        when(binaryObject.getMetadataUri()).thenReturn(originalFilePid.getRepositoryUri());
 
         Model model = ModelFactory.createDefaultModel();
         Resource resource = model.createResource(originalFilePid.getRepositoryPath());
         resource.addProperty(CdrDeposit.mimetype, oldMimetype);
+
+        when(binaryObject.getModel(true)).thenReturn(model);
 
         when(repoObjLoader.getRepositoryObject(filePid)).thenReturn(fileObject);
     }

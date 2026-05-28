@@ -150,9 +150,16 @@ public class CorrectMimetypesService {
      * @param mimetype the new mimetype of the given object
      */
     private void updateMimetype(BinaryObject binaryObject, String mimetype) {
-        repositoryObjectFactory.createOrUpdateBinary(binaryObject.getPid(), binaryObject.getUri(),
-                binaryObject.getFilename(), mimetype, binaryObject.getSha1Checksum(), binaryObject.getMd5Checksum(),
-                binaryObject.getModel());
+        // Update a copy of the model for this object
+        Model model = binaryObject.getModel(true);
+        Resource resource = model.getResource(binaryObject.getPid().getRepositoryPath());
+
+        // Clear out existing mimetypes and add new mimetypes
+        resource.removeAll(CdrDeposit.mimetype);
+        resource.addProperty(CdrDeposit.mimetype, mimetype);
+
+        // Push the updated object back to fedora
+        repositoryObjectFactory.createOrTransformObject(binaryObject.getMetadataUri(), model);
     }
 
     private boolean isValidMimetype(String mimetype) {
