@@ -233,8 +233,6 @@ public class CorrectMimetypesServiceTest {
         Resource resource = model.createResource(originalFilePid.getRepositoryPath());
         resource.addProperty(CdrDeposit.mimetype, oldMimetype);
 
-        when(binaryObject.getModel(true)).thenReturn(model);
-
         when(repoObjLoader.getRepositoryObject(filePid)).thenReturn(fileObject);
     }
 }
