@@ -87,7 +87,7 @@ public class CorrectMimetypesServiceIT {
     private CorrectMimetypesService service;
     private AgentPrincipals agent;
     private ContentRootObject contentRoot;
-    private PID workPid = pidMinter.mintContentPid();
+    private PID workPid;
 
     @BeforeEach
     public void setup() {
@@ -106,6 +106,7 @@ public class CorrectMimetypesServiceIT {
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        workPid = pidMinter.mintContentPid();
     }
 
     @AfterEach
