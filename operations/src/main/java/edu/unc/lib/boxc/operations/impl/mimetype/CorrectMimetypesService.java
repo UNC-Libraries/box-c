@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
@@ -26,9 +25,6 @@ import io.dropwizard.metrics5.Timer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import org.slf4j.LoggerFactory;
 
 import org.slf4j.Logger;
@@ -107,22 +103,17 @@ public class CorrectMimetypesService {
                 "User does not have permissions to edit mimetypes",
                 PIDs.get(id), agent.getPrincipals(), Permission.editDescription);
 
-        RepositoryObject obj = repositoryObjectLoader.getRepositoryObject(PIDs.get(id));
-
-        // Verify object is a file object
-        if (!(obj instanceof FileObject)) {
-            throw new IllegalArgumentException("Cannot update mimetype for non-file object " + obj.getPid());
-        }
+        FileObject obj = repositoryObjectLoader.getFileObject(PIDs.get(id));
 
         FedoraTransaction tx = txManager.startTransaction();
 
         try (Timer.Context context = timer.time()) {
             // Get original_file and its mimetype
-            BinaryObject binaryObject = ((FileObject) obj).getOriginalFile();
+            BinaryObject binaryObject = obj.getOriginalFile();
             String oldMimetype = binaryObject.getMimetype();
 
             // Update original_file's mimetype
-            updateMimetype(binaryObject, mimetype);
+            repositoryObjectFactory.createExclusiveRelationship(binaryObject, CdrDeposit.mimetype, mimetype);
 
             premisLoggerFactory.createPremisLogger(obj)
                     .buildEvent(Premis.MetadataModification)
@@ -139,27 +130,9 @@ public class CorrectMimetypesService {
         }
 
         // Send message that the action completed
-        operationsMessageSender.sendUpdateDescriptionOperation(agent.getUsername(),
-                Collections.singletonList(PIDs.get(id)));
+        operationsMessageSender.sendAddOperation(agent.getUsername(), Collections.singletonList(obj.getParentPid()),
+                Collections.singletonList(PIDs.get(id)), null, null);
         return PIDs.get(id);
-    }
-
-    /**
-     * Update the mimetype
-     * @param binaryObject file object to update
-     * @param mimetype the new mimetype of the given object
-     */
-    private void updateMimetype(BinaryObject binaryObject, String mimetype) {
-        // Update a copy of the model for this object
-        Model model = binaryObject.getModel(true);
-        Resource resource = model.getResource(binaryObject.getPid().getRepositoryPath());
-
-        // Clear out existing mimetypes and add new mimetypes
-        resource.removeAll(CdrDeposit.mimetype);
-        resource.addProperty(CdrDeposit.mimetype, mimetype);
-
-        // Push the updated object back to fedora
-        repositoryObjectFactory.createOrTransformObject(binaryObject.getMetadataUri(), model);
     }
 
     private boolean isValidMimetype(String mimetype) {
@@ -193,6 +166,9 @@ public class CorrectMimetypesService {
         this.operationsMessageSender = operationsMessageSender;
     }
 
+    /**
+     * @param premisLoggerFactory the premisLoggerFactory to set
+     */
     public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
         this.premisLoggerFactory = premisLoggerFactory;
     }

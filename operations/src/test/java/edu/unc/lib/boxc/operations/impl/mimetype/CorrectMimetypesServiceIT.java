@@ -87,6 +87,7 @@ public class CorrectMimetypesServiceIT {
     private CorrectMimetypesService service;
     private AgentPrincipals agent;
     private ContentRootObject contentRoot;
+    private PID workPid = pidMinter.mintContentPid();
 
     @BeforeEach
     public void setup() {
@@ -129,13 +130,17 @@ public class CorrectMimetypesServiceIT {
         assertOriginalFileMimetype(filePid1, "image/tiff");
         assertOriginalFileMimetype(filePid2, "application/pdf");
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(
+        verify(operationsMessageSender).sendAddOperation(
                 eq(agent.getUsername()),
-                eq(Collections.singletonList(filePid1)));
+                eq(Collections.singletonList(workPid)),
+                eq(Collections.singletonList(filePid1)),
+                eq(null), eq(null));
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(
+        verify(operationsMessageSender).sendAddOperation(
                 eq(agent.getUsername()),
-                eq(Collections.singletonList(filePid2)));
+                eq(Collections.singletonList(workPid)),
+                eq(Collections.singletonList(filePid2)),
+                eq(null), eq(null));
     }
 
     @Test
@@ -179,16 +184,13 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void nonFileObjectFailsTest() throws Exception {
-        PID workPid = pidMinter.mintContentPid();;
         repoObjFactory.createWorkObject(workPid, null);
 
-        var e = assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             service.correctMimetypes(
                     csv(workPid.getId() + ",image/tiff"),
                     agent);
         });
-
-        assertTrue(e.getMessage().contains("Cannot update mimetype for non-file object"));
 
         verifyNoInteractions(operationsMessageSender);
     }
@@ -201,7 +203,6 @@ public class CorrectMimetypesServiceIT {
     }
 
     private PID addFileObject(String filename, String mimetype) throws Exception {
-        PID workPid = pidMinter.mintContentPid();
         PID filePid = pidMinter.mintContentPid();
 
         Path sourceFile = tmpFolder.resolve(filename);

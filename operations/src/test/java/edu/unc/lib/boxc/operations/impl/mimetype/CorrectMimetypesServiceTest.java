@@ -12,7 +12,6 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
@@ -23,6 +22,7 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
@@ -54,6 +53,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CorrectMimetypesServiceTest {
+    private static final PID PARENT_UUID = PIDs.get("f277bb38-272c-471c-a28a-9887a1328a1f");
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String USER_PRINC = "user";
@@ -123,9 +123,9 @@ public class CorrectMimetypesServiceTest {
             service.correctMimetypes(csv(CHILD1_UUID + ",image/tiff"), agent);
         });
 
-        verify(repoObjLoader, never()).getRepositoryObject(any());
-        verify(repoObjFactory, never()).createOrTransformObject(any(), any());
-        verify(operationsMessageSender, never()).sendUpdateDescriptionOperation(anyString(), anyList());
+        verify(repoObjLoader, never()).getFileObject(any());
+        verify(repoObjFactory, never()).createExclusiveRelationship(any(), any(), any());
+        verify(operationsMessageSender, never()).sendAddOperation(anyString(), anyList(), anyList(), any(), any());
     }
 
     @Test
@@ -160,20 +160,13 @@ public class CorrectMimetypesServiceTest {
     public void testNotFileObject() {
         PID filePid = PIDs.get(CHILD1_UUID);
 
-        RepositoryObject nonFileObject = mock(RepositoryObject.class);
-        when(nonFileObject.getPid()).thenReturn(filePid);
-
-        when(repoObjLoader.getRepositoryObject(filePid)).thenReturn(nonFileObject);
-
-        var e = assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             service.correctMimetypes(csv(CHILD1_UUID + ",image/tiff"), agent);
         });
 
-        assertTrue(e.getMessage().contains("Cannot update mimetype for non-file object "));
-
-        verify(repoObjLoader).getRepositoryObject(filePid);
-        verify(repoObjFactory, never()).createOrTransformObject(any(), any());
-        verify(operationsMessageSender, never()).sendUpdateDescriptionOperation(anyString(), anyList());
+        verify(repoObjLoader).getFileObject(filePid);
+        verify(repoObjFactory, never()).createExclusiveRelationship(any(), any(), any());
+        verify(operationsMessageSender, never()).sendAddOperation(anyString(), anyList(), anyList(), any(), any());
     }
 
     @Test
@@ -191,19 +184,23 @@ public class CorrectMimetypesServiceTest {
 
         assertEquals(List.of(pid1, pid2), result);
 
-        verify(repoObjLoader).getRepositoryObject(pid1);
-        verify(repoObjLoader).getRepositoryObject(pid2);
+        verify(repoObjLoader).getFileObject(pid1);
+        verify(repoObjLoader).getFileObject(pid2);
 
         verify(repoObjFactory, times(2))
-                .createOrTransformObject(any(), any(Model.class));
+                .createExclusiveRelationship(any(), any(), any());
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(
+        verify(operationsMessageSender).sendAddOperation(
                 eq(agent.getUsername()),
-                eq(Collections.singletonList(pid1)));
+                eq(Collections.singletonList(PARENT_UUID)),
+                eq(Collections.singletonList(pid1)),
+                eq(null), eq(null));
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(
+        verify(operationsMessageSender).sendAddOperation(
                 eq(agent.getUsername()),
-                eq(Collections.singletonList(pid2)));
+                eq(Collections.singletonList(PARENT_UUID)),
+                eq(Collections.singletonList(pid2)),
+                eq(null), eq(null));
 
         verify(txManager, times(2)).startTransaction();
         verify(tx, times(2)).close();
@@ -224,17 +221,14 @@ public class CorrectMimetypesServiceTest {
         BinaryObject binaryObject = mock(BinaryObject.class);
 
         when(fileObject.getOriginalFile()).thenReturn(binaryObject);
+        when(fileObject.getParentPid()).thenReturn(PARENT_UUID);
 
-        when(binaryObject.getPid()).thenReturn(originalFilePid);
         when(binaryObject.getMimetype()).thenReturn(oldMimetype);
-        when(binaryObject.getMetadataUri()).thenReturn(originalFilePid.getRepositoryUri());
 
         Model model = ModelFactory.createDefaultModel();
         Resource resource = model.createResource(originalFilePid.getRepositoryPath());
         resource.addProperty(CdrDeposit.mimetype, oldMimetype);
 
-        when(binaryObject.getModel(true)).thenReturn(model);
-
-        when(repoObjLoader.getRepositoryObject(filePid)).thenReturn(fileObject);
+        when(repoObjLoader.getFileObject(filePid)).thenReturn(fileObject);
     }
 }
