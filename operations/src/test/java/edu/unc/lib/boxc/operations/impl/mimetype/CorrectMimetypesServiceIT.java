@@ -48,6 +48,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -217,13 +218,17 @@ public class CorrectMimetypesServiceIT {
 
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addLiteral(Cdr.storageLocation, "loc1");
+        fileResc.addLiteral(CdrDeposit.label, filename);
 
         PID origPid = DatastreamPids.getOriginalFilePid(filePid);
         Resource origResc = fileResc.getModel().getResource(origPid.getRepositoryPath());
         fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
+
         Path sourceFile = tmpFolder.resolve(filename);
         Files.writeString(sourceFile, "test file content");
         origResc.addLiteral(CdrDeposit.stagingLocation, sourceFile.toUri().toString());
+        origResc.addProperty(CdrDeposit.storageUri, sourceFile.toUri().toString());
         origResc.addProperty(CdrDeposit.mimetype, mimetype);
 
         workBag.add(fileResc);
