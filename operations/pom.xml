@@ -133,5 +133,9 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <version>${jakarta.annotation.version}</version>
         </dependency>
+        <dependency>
+            <groupId>edu.unc.lib</groupId>
+            <artifactId>pdf4u</artifactId>
+        </dependency>
     </dependencies>
 </project>
