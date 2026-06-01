@@ -7,22 +7,27 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -187,7 +192,7 @@ public class CorrectMimetypesServiceIT {
     public void nonFileObjectFailsTest() throws Exception {
         repoObjFactory.createWorkObject(workPid, null);
 
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(ObjectTypeMismatchException.class, () -> {
             service.correctMimetypes(
                     csv(workPid.getId() + ",image/tiff"),
                     agent);
@@ -204,23 +209,26 @@ public class CorrectMimetypesServiceIT {
     }
 
     private PID addFileObject(String filename, String mimetype) throws Exception {
+        Model model = ModelFactory.createDefaultModel();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+
         PID filePid = pidMinter.mintContentPid();
 
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+
+        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
+        Resource origResc = fileResc.getModel().getResource(origPid.getRepositoryPath());
+        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
         Path sourceFile = tmpFolder.resolve(filename);
         Files.writeString(sourceFile, "test file content");
+        origResc.addLiteral(CdrDeposit.stagingLocation, sourceFile.toUri().toString());
+        origResc.addProperty(CdrDeposit.mimetype, mimetype);
 
-        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+        workBag.add(fileResc);
 
-        workObject.addDataFile(
-                filePid,
-                sourceFile.toUri(),
-                filename,
-                mimetype,
-                null,
-                null,
-                null);
-
-        return repoObjLoader.getFileObject(filePid).getPid();
+        return filePid;
     }
 
     private void assertOriginalFileMimetype(PID filePid, String expectedMimetype) {
