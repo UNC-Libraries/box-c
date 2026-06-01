@@ -19,28 +19,29 @@
                     </div>
                 </div>
             </div>
-            <data-table v-if="currentUuid" :key="`alt-text-table-${currentUuid}`" class="display table is-bordered is-striped is-fullwidth" ref="alt_text_table"
-                        :columns="columns"
-                        :options="tableOptions"
-                        :ajax="ajaxOptions">
-                <thead>
-                <tr>
-                    <th><span class="is-sr-only">Thumbnail</span></th>
-                    <th>Filename</th>
-                    <th>Full Description (AI)</th>
-                    <th>Full Description (Human)</th>
-                    <th>Alt Text (AI)</th>
-                    <th>Alt Text (Human)</th>
-                    <th>Transcript (AI)</th>
-                    <th>Transcript (Human)</th>
-                    <th>Risk Score</th>
-                    <th>Safety Assessment (AI)</th>
-                    <th>Output Assessment (AI)</th>
-                    <th><span class="is-sr-only">Rerun Alt Text Generation</span></th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </data-table>
+            <div v-if="currentUuid" class="table-container">
+                <data-table :key="`alt-text-table-${currentUuid}`" class="display table is-bordered is-hoverable is-striped is-fullwidth" ref="alt_text_table"
+                            :columns="columns"
+                            :options="tableOptions"
+                            :ajax="ajaxOptions">
+                    <thead>
+                    <tr>
+                        <th><span class="is-sr-only">Thumbnail</span></th>
+                        <th>Filename</th>
+                        <th>Full Description (AI)</th>
+                        <th>Full Description (Human)</th>
+                        <th>Alt Text (AI)</th>
+                        <th>Alt Text (Human)</th>
+                        <th>Transcript (AI)</th>
+                        <th>Transcript (Human)</th>
+                        <th>Risk Score</th>
+                        <th>Safety Assessment (AI)</th>
+                        <th>Output Assessment (AI)</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </data-table>
+            </div>
             <p v-else class="has-text-centered mt-4">No UUID provided.</p>
             <alt-text-messages></alt-text-messages>
             <alt-text-editor-modal></alt-text-editor-modal>
@@ -124,6 +125,7 @@ export default {
                         start: d.start || 0,
                         anywhere: d.search?.value,
                         getFacets: true,
+                        facetLimits: `mgContentTags${encodeURIComponent(':')}50`,
                         facetSelect: 'mgContentTags',
                         rollup: false,
                         // Conditionally adds sort and/or search tag depending on whether there's an active
@@ -176,7 +178,7 @@ export default {
                     top2End: {
                         buttons: [
                             {
-                                text: 'Reset Table',
+                                text: 'Clear Filters and Reload Data',
                                 action: function(e, dt, node, config) {
                                     dt.state.clear();
                                     window.location.reload();
@@ -202,7 +204,17 @@ export default {
             return [
                 {
                     data: 'id',
-                    render: (data) => `<figure class="thumbnail"><a href="/record/${data}" target="_blank"><img alt="" loading="lazy" src="/services/api/thumb/${data}/small"></a></figure>`
+                    render: (data) => `
+    <div>
+        <figure class="thumbnail">
+            <a href="/record/${data}" target="_blank">
+                <img alt="" loading="lazy" src="/services/api/thumb/${data}/small">
+            </a>
+        </figure>
+    </div>
+    <div>
+        <button class="button is-dark is-small rerun">Rerun</button>
+    </div>`
                 },
                 {
                     data: 'title',
@@ -244,11 +256,6 @@ export default {
                 {
                     data: 'mgReviewAssessment',
                     render: (data) => this.renderSafetyData(data)
-                },
-                {
-                    data: null,
-                    defaultContent: '',
-                    render: () => '<button class="button is-dark is-small rerun">Rerun</button>'
                 }
             ]
         },
@@ -257,15 +264,16 @@ export default {
             return [
                 { width: '10%', targets: [0] },
                 { width: '5%', targets: [1, 8] },
-                { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 9, 10, 11] },
-                { searchable: false, targets: [0, 11] }
+                { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 9, 10] },
+                { searchable: false, targets: [0] }
             ]
         }
     },
 
     methods: {
         ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage',
-            'setCurrentRow', 'setCurrentUuid', 'setItems', 'clearLastSuccessfulEdit', 'setShowAltTextModal', 'setViewType']),
+            'setCurrentRow', 'setCurrentUuid', 'setItems', 'clearLastSuccessfulEdit',
+            'setShowAltTextModal', 'setViewType', 'closeModalWindow']),
 
         fieldName(field) {
             const parts = field.split('_')
@@ -401,6 +409,12 @@ export default {
             });
 
             this.clearLastSuccessfulEdit();
+        },
+
+        closeModal(event) {
+            if (event.code === 'Escape') {
+                this.closeModalWindow();
+            }
         }
     },
 
@@ -413,10 +427,12 @@ export default {
         this.$nextTick(() => {
             this.editCell();
         });
+        window.addEventListener('keyup', this.closeModal);
     },
 
     beforeUnmount() {
         this.unbindTableEvents();
+        window.removeEventListener('keyup', this.closeModal);
     }
 }
 </script>

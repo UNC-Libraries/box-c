@@ -58,6 +58,12 @@ export const useAltTextStore = defineStore('alt-text', {
         },
         setViewType(viewType) {
             this.viewType = viewType;
-        }
+        },
+        closeModalWindow() {
+            this.setShowAltTextModal(false);
+            this.setViewType('view');
+            this.setActiveField('');
+            this.setCurrentRow(null);
+        },
     }
 });

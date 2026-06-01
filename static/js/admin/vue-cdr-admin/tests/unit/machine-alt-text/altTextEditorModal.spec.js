@@ -27,6 +27,9 @@ const mountModal = (initialState = {}) => {
     });
 };
 
+const findButtonByText = (buttonText) => wrapper.findAll('button')
+    .find(button => button.text() === buttonText);
+
 let wrapper;
 
 describe('altTextEditorModal.vue', () => {
@@ -54,8 +57,32 @@ describe('altTextEditorModal.vue', () => {
         expect(wrapper.find('.modal').classes()).toContain('is-active');
         expect(wrapper.find('.modal-view').text()).toBe('Existing alt text');
         expect(wrapper.find('textarea').exists()).toBe(false);
+        expect(findButtonByText('Edit Text')?.exists()).toBe(true);
+        expect(findButtonByText('Update Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Close');
         expect(wrapper.find('.modal-card-title').text()).toContain('Viewing alt text for image-1.jpg');
+    });
+
+    it('switches from viewing mode to editing mode when edit text is clicked', async () => {
+        wrapper = mountModal({
+            showAltTextModal: true,
+            viewType: 'view',
+            activeField: 'alt_text',
+            currentRow: {
+                alt_text: 'Big image',
+                title: 'image-view.jpg'
+            }
+        });
+        const store = useAltTextStore();
+
+        await findButtonByText('Edit Text').trigger('click');
+        await wrapper.vm.$nextTick();
+
+        expect(store.viewType).toBe('edit');
+        expect(wrapper.find('textarea').exists()).toBe(true);
+        expect(wrapper.find('textarea').element.value).toBe('Big image');
+        expect(findButtonByText('Edit Text')).toBeUndefined();
+        expect(findButtonByText('Update Text')?.exists()).toBe(true);
     });
 
     it('renders edit mode with textarea and cancel label', async () => {
@@ -64,7 +91,7 @@ describe('altTextEditorModal.vue', () => {
             viewType: 'edit',
             activeField: 'alt_text',
             currentRow: {
-                alt_text: 'Editable text',
+                alt_text: 'Strange picture',
                 title: 'image-2.jpg'
             }
         });
@@ -73,7 +100,8 @@ describe('altTextEditorModal.vue', () => {
 
         expect(wrapper.find('textarea').exists()).toBe(true);
         expect(wrapper.find('textarea').element.value).toBe('');
-        expect(wrapper.find('.button.is-info').exists()).toBe(true);
+        expect(findButtonByText('Update Text')?.exists()).toBe(true);
+        expect(findButtonByText('Edit Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Cancel');
         expect(wrapper.find('.modal-card-title').text()).toContain('Editing alt text for image-2.jpg');
     });
@@ -95,7 +123,7 @@ describe('altTextEditorModal.vue', () => {
  
          await wrapper.vm.$nextTick();
          await wrapper.find('textarea').setValue('Updated alt text');
-         await wrapper.find('.button.is-info').trigger('click');
+         await findButtonByText('Update Text').trigger('click');
          await flushPromises();
  
          expect(store.setCurrentRowFieldValue).toHaveBeenCalledWith('mgDescription', 'Updated alt text');
@@ -122,12 +150,11 @@ describe('altTextEditorModal.vue', () => {
                  title: 'image-4.jpg'
              }
          });
-         const store = useAltTextStore();
          global.fetchMock.mockResponseOnce(JSON.stringify({}));
  
          await wrapper.vm.$nextTick();
          await wrapper.find('textarea').setValue('New alt text');
-         await wrapper.find('.button.is-info').trigger('click');
+         await findButtonByText('Update Text').trigger('click');
          await flushPromises();
  
          expect(global.fetchMock).toHaveBeenCalledWith(
@@ -158,7 +185,7 @@ describe('altTextEditorModal.vue', () => {
  
          await wrapper.vm.$nextTick();
          await wrapper.find('textarea').setValue('New text');
-         await wrapper.find('.button.is-info').trigger('click');
+         await findButtonByText('Update Text').trigger('click');
          await flushPromises();
  
          expect(store.alertMessage).toBe('Unable to update alt_text for image-5.jpg');

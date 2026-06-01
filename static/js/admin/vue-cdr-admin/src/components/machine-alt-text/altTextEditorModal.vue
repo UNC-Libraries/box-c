@@ -4,7 +4,7 @@
         <div class="modal-card">
             <header class="modal-card-head modal-head">
                 <p class="modal-card-title is-capitalized">{{ modalHeader }}</p>
-                <button class="delete" aria-label="close" @click="closeModal()"><span class="is-sr-only">Close</span></button>
+                <button class="delete" aria-label="close" @click=" closeModalWindow()"><span class="is-sr-only">Close</span></button>
             </header>
             <section class="modal-card-body">
                 <textarea v-if="viewType ==='edit'" v-model="updated_text" class="modal-edit textarea" rows="20" aria-label="Edit"></textarea>
@@ -13,7 +13,8 @@
             <footer class="modal-card-foot">
                 <div class="buttons">
                     <button v-if="viewType ==='edit'" @click="updateValue()" class="button is-info" :class="{'is-loading': saving_data}">Update Text</button>
-                    <button @click="closeModal()" class="button is-danger">{{ closeModalButtonText }}</button>
+                    <button v-if="viewType ==='view'" @click="setViewType('edit')" class="button is-info">Edit Text</button>
+                    <button @click=" closeModalWindow()" class="button is-danger">{{ closeModalButtonText }}</button>
                 </div>
             </footer>
         </div>
@@ -85,7 +86,8 @@ export default {
 
     methods: {
         ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage', 'setAlertMessageType',
-            'setCurrentRow', 'setCurrentRowFieldValue', 'setLastSuccessfulEdit', 'setShowAltTextModal', 'setViewType']),
+            'setCurrentRow', 'setCurrentRowFieldValue', 'setLastSuccessfulEdit',
+            'setShowAltTextModal', 'setViewType', 'closeModalWindow']),
 
         async updateValue() {
             this.saving_data = true;
@@ -118,19 +120,12 @@ export default {
                 this.setAlertMessageType('error');
             } finally {
                 this.saving_data = false;
-                this.closeModal();
+                this.closeModalWindow();
                 setTimeout(() => {
                     this.setAlertMessage('');
                     this.setAlertMessageType('');
                 }, 3500);
             }
-        },
-
-        closeModal() {
-            this.setShowAltTextModal(false);
-            this.setViewType('view');
-            this.setActiveField('');
-            this.setCurrentRow(null);
         }
     }
 }

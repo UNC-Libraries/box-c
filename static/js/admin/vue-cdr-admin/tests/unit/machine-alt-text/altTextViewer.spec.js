@@ -97,7 +97,7 @@ describe('altTextViewer.vue', () => {
             const options = wrapper.vm.tableOptions;
 
             expect(options.layout.top2Start.buttons[0].extend).toBe('colvis');
-            expect(options.layout.top2End.buttons[0].text).toBe('Reset Table');
+            expect(options.layout.top2End.buttons[0].text).toBe('Clear Filters and Reload Data');
             expect(typeof options.layout.top2End.buttons[0].action).toBe('function');
         });
     });
@@ -116,6 +116,7 @@ describe('altTextViewer.vue', () => {
                 anywhere: 'dogs',
                 rollup: false,
                 getFacets: true,
+                facetLimits: `mgContentTags${encodeURIComponent(':')}50`,
                 facetSelect: 'mgContentTags'
             });
             expect(params).not.toHaveProperty('mgContentTags');
@@ -205,7 +206,7 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const columns = wrapper.vm.columns;
 
-            expect(columns).toHaveLength(12);
+            expect(columns).toHaveLength(11);
             expect(columns.map((column) => column.data)).toEqual([
                 'id',
                 'title',
@@ -217,8 +218,7 @@ describe('altTextViewer.vue', () => {
                 'transcript',
                 null,
                 'mgSafetyAssessment',
-                'mgReviewAssessment',
-                null
+                'mgReviewAssessment'
             ]);
         });
 
