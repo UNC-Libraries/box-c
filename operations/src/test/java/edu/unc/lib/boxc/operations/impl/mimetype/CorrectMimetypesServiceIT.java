@@ -10,10 +10,7 @@ import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.*;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
@@ -23,6 +20,8 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -41,10 +40,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.InvalidMimeTypeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -82,6 +83,8 @@ public class CorrectMimetypesServiceIT {
     private PIDMinter pidMinter;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private StorageLocationManagerImpl locationManager;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -122,8 +125,8 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
-        PID filePid1 = addFileObject("file1.tif", "image/png");
-        PID filePid2 = addFileObject("file2.pdf", "image/jpeg");
+        PID filePid1 = addFileObject(".tif", "image/png");
+        PID filePid2 = addFileObject(".pdf", "image/jpeg");
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
@@ -152,7 +155,7 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testInvalidMimetype() throws Exception {
-        PID filePid = addFileObject("file1.png", "image/png");
+        PID filePid = addFileObject(".png", "image/png");
 
         var e = assertThrows(InvalidMimeTypeException.class, () -> {
             service.correctMimetypes(
@@ -169,7 +172,7 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testPermissionDenied() throws Exception {
-        PID filePid = addFileObject("file1.tif", "image/png");
+        PID filePid = addFileObject(".tif", "image/png");
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(
@@ -209,31 +212,21 @@ public class CorrectMimetypesServiceIT {
         return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
     }
 
-    private PID addFileObject(String filename, String mimetype) throws Exception {
-        Model model = ModelFactory.createDefaultModel();
-        Bag workBag = model.createBag(workPid.getRepositoryPath());
-        workBag.addProperty(RDF.type, Cdr.Work);
+    private PID addFileObject(String fileExtension, String mimetype) throws Exception {
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
 
-        PID filePid = pidMinter.mintContentPid();
+        String bodyString = "Content";
+        Path storagePath = Paths.get(locationManager.getStorageLocationById("loc1")
+                .getNewStorageUri(workObject.getPid()));
+        Files.createDirectories(storagePath);
+        File contentFile = Files.createTempFile(storagePath, "file", fileExtension).toFile();
+        String filename = contentFile.getName();
+        FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
 
-        Resource fileResc = model.createResource(filePid.getRepositoryPath());
-        fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addLiteral(Cdr.storageLocation, "loc1");
-        fileResc.addLiteral(CdrDeposit.label, filename);
+        FileObject fileObject = workObject.addDataFile(contentFile.toPath().toUri(), filename, mimetype,
+                null, null);
 
-        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
-        Resource origResc = fileResc.getModel().getResource(origPid.getRepositoryPath());
-        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
-
-        Path sourceFile = tmpFolder.resolve(filename);
-        Files.writeString(sourceFile, "test file content");
-        origResc.addLiteral(CdrDeposit.stagingLocation, sourceFile.toUri().toString());
-        origResc.addProperty(CdrDeposit.storageUri, sourceFile.toUri().toString());
-        origResc.addProperty(CdrDeposit.mimetype, mimetype);
-
-        workBag.add(fileResc);
-
-        return filePid;
+        return fileObject.getPid();
     }
 
     private void assertOriginalFileMimetype(PID filePid, String expectedMimetype) {
