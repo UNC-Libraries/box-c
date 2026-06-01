@@ -125,8 +125,10 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
-        PID filePid1 = addFileObject(".tif", "image/png");
-        PID filePid2 = addFileObject(".pdf", "image/jpeg");
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+
+        PID filePid1 = addFileObject(workObject, ".tif", "image/png");
+        PID filePid2 = addFileObject(workObject, ".pdf", "image/jpeg");
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
@@ -155,7 +157,8 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testInvalidMimetype() throws Exception {
-        PID filePid = addFileObject(".png", "image/png");
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+        PID filePid = addFileObject(workObject, ".png", "image/png");
 
         var e = assertThrows(InvalidMimeTypeException.class, () -> {
             service.correctMimetypes(
@@ -172,7 +175,8 @@ public class CorrectMimetypesServiceIT {
 
     @Test
     public void testPermissionDenied() throws Exception {
-        PID filePid = addFileObject(".tif", "image/png");
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+        PID filePid = addFileObject(workObject, ".tif", "image/png");
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(
@@ -212,9 +216,7 @@ public class CorrectMimetypesServiceIT {
         return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
     }
 
-    private PID addFileObject(String fileExtension, String mimetype) throws Exception {
-        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
-
+    private PID addFileObject(WorkObject workObject, String fileExtension, String mimetype) throws Exception {
         String bodyString = "Content";
         Path storagePath = Paths.get(locationManager.getStorageLocationById("loc1")
                 .getNewStorageUri(workObject.getPid()));
@@ -233,10 +235,6 @@ public class CorrectMimetypesServiceIT {
         FileObject fileObject = repoObjLoader.getFileObject(filePid);
         BinaryObject originalFile = fileObject.getOriginalFile();
 
-        Model model = originalFile.getModel(true);
-        Resource binaryResource = model.getResource(originalFile.getPid().getRepositoryPath());
-
-        assertTrue(model.contains(binaryResource, CdrDeposit.mimetype, expectedMimetype),
-                "Expected CdrDeposit.mimetype to be " + expectedMimetype);
+        assertEquals(expectedMimetype, originalFile.getMimetype());
     }
 }
