@@ -52,6 +52,7 @@
 import altTextEditorModal from '@/components/machine-alt-text/altTextEditorModal.vue';
 import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import fetchUtils from "@/mixins/fetchUtils";
+import DOMPurify from 'dompurify';
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
@@ -208,7 +209,7 @@ export default {
                         if (type === 'sort' || type === 'type') {
                             return row.title || '';
                         }
-                        return `
+                        const html = `
                             <div>
                                 <figure class="thumbnail">
                                     <a href="/record/${data}" target="_blank">
@@ -218,9 +219,10 @@ export default {
                                 </figure>
                             </div>
                             <div>
-                                <button class="button is-dark is-small rerun">Rerun</button>
+                                <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${row.title}">Rerun</button>
                             </div>
                         `;
+                        return DOMPurify.sanitize(html);
                     }
                 },
                 {
@@ -273,8 +275,9 @@ export default {
 
     methods: {
         ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage',
-            'setCurrentRow', 'setCurrentUuid', 'setItems', 'clearLastSuccessfulEdit',
-            'setShowAltTextModal', 'setViewType', 'closeModalWindow']),
+            'setAlertMessageType', 'setCurrentRow', 'setCurrentUuid', 'setItems',
+            'clearLastSuccessfulEdit', 'setShowAltTextModal', 'setViewType', 'closeModalWindow']),
+
 
         fieldName(field) {
             const parts = field.split('_')
@@ -295,7 +298,7 @@ export default {
             if (!/^mg/.test(field_name)) {
                 text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
             }
-            return `${text_display}</div>`;
+            return DOMPurify.sanitize(`${text_display}</div>`);
         },
 
         formatSafetyValue(data) {
@@ -308,7 +311,7 @@ export default {
                     text += `<li>${this.formatSafetyValue(item)}</li>`;
                 });
                 text += '</ul></div>';
-                return text;
+                return DOMPurify.sanitize(text);
             }
 
             if (data && typeof data === 'object') {
@@ -317,14 +320,14 @@ export default {
                     text += `<li><span class="has-text-weight-semibold">${this.fieldName(field)}</span>: ${this.formatSafetyValue(value)}</li>`;
                 });
                 text += '</ul></div>';
-                return text;
+                return DOMPurify.sanitize(text);
             }
 
             if (data === null || data === undefined || data === '') {
                 return 'None';
             }
 
-            return String(data).toLowerCase();
+            return DOMPurify.sanitize(String(data).toLowerCase());
         },
 
         renderSafetyData(data) {
@@ -334,10 +337,29 @@ export default {
             });
             text += '</ul>';
 
-            return text;
+            return DOMPurify.sanitize(text);
         },
 
-        rerunAltTextGeneration() {},
+        async rerunAltTextGeneration(e) {
+           try {
+              /* await this.fetchWrapper(`/services/api/edit/${endpoint}/${e.target.dataset.id}`,
+                   true, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                       body: formBody.toString()
+                   });*/
+               this.setAlertMessage(`${e.target.dataset.title} sent for reprocessing`);
+               this.setAlertMessageType('success');
+           } catch (error) {
+               this.setAlertMessage(`Error reprocessing ${e.target.dataset.title}`);
+               this.setAlertMessageType('danger');
+           } finally {
+               setTimeout(() => {
+                   this.setAlertMessage('');
+                   this.setAlertMessageType('');
+               }, 3500);
+           }
+        },
 
         getTags(rowData) {
             return Array.isArray(rowData?.mgContentTags) ? rowData.mgContentTags : [];
@@ -358,7 +380,7 @@ export default {
                     this.setShowAltTextModal(true);
                 }
                 if (e.target.className.includes('rerun')) {
-                    console.log('rerun')
+                    this.rerunAltTextGeneration(e);
                 }
             };
             dtApi.on('click', 'tbody tr', this.altTextTableClickHandler);

@@ -23,6 +23,7 @@
 
 <script>
 import fetchUtils from "@/mixins/fetchUtils";
+import DOMPurify from 'dompurify';
 import {mapActions, mapState} from "pinia";
 import {useAltTextStore} from "@/stores/alt-text";
 
@@ -70,7 +71,7 @@ export default {
 
         modalHeader() {
             let header_text = (this.viewType === 'edit') ? 'Editing' : 'Viewing';
-            return `${header_text} ${this.fieldTitle} for ${this.currentRow?.title}`;
+            return DOMPurify.sanitize(`${header_text} ${this.fieldTitle} for ${this.currentRow?.title}`);
         },
 
         /**
