@@ -265,6 +265,7 @@ export default {
 
         columnDefs() {
             return [
+                { width: '20%', targets: [0] },
                 { orderable: false, targets: [1, 2, 3, 4, 5, 6, 8, 9] }
             ]
         }
