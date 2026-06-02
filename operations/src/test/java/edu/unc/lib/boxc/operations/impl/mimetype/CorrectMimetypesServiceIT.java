@@ -11,10 +11,7 @@ import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.*;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -22,11 +19,6 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +41,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -127,8 +118,10 @@ public class CorrectMimetypesServiceIT {
     public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
 
-        PID filePid1 = addFileObject(workObject, ".tif", "image/png");
-        PID filePid2 = addFileObject(workObject, ".pdf", "image/jpeg");
+        FileObject fileObject1 = addFileObject(workObject, ".tif", "image/png");
+        PID filePid1 = fileObject1.getPid();
+        FileObject fileObject2 = addFileObject(workObject, ".pdf", "image/jpeg");
+        PID filePid2 = fileObject2.getPid();
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
@@ -139,8 +132,8 @@ public class CorrectMimetypesServiceIT {
 
         assertEquals(List.of(filePid1, filePid2), updatedPids);
 
-        assertOriginalFileMimetype(filePid1, "image/tiff");
-        assertOriginalFileMimetype(filePid2, "application/pdf");
+        assertOriginalFileMimetype(fileObject1, "image/tiff");
+        assertOriginalFileMimetype(fileObject2, "application/pdf");
 
         verify(operationsMessageSender).sendAddOperation(
                 eq(agent.getUsername()),
@@ -158,7 +151,8 @@ public class CorrectMimetypesServiceIT {
     @Test
     public void testInvalidMimetype() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
-        PID filePid = addFileObject(workObject, ".png", "image/png");
+        FileObject fileObject = addFileObject(workObject, ".png", "image/png");
+        PID filePid = fileObject.getPid();
 
         var e = assertThrows(InvalidMimeTypeException.class, () -> {
             service.correctMimetypes(
@@ -168,7 +162,7 @@ public class CorrectMimetypesServiceIT {
 
         assertTrue(e.getMessage().contains("Invalid mimetype"));
 
-        assertOriginalFileMimetype(filePid, "image/png");
+        assertOriginalFileMimetype(fileObject, "image/png");
 
         verifyNoInteractions(operationsMessageSender);
     }
@@ -176,7 +170,8 @@ public class CorrectMimetypesServiceIT {
     @Test
     public void testPermissionDenied() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
-        PID filePid = addFileObject(workObject, ".tif", "image/png");
+        FileObject fileObject = addFileObject(workObject, ".tif", "image/png");
+        PID filePid = fileObject.getPid();
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(
@@ -191,7 +186,7 @@ public class CorrectMimetypesServiceIT {
                     agent);
         });
 
-        assertOriginalFileMimetype(filePid, "image/png");
+        assertOriginalFileMimetype(fileObject, "image/png");
 
         verifyNoInteractions(operationsMessageSender);
     }
@@ -216,7 +211,7 @@ public class CorrectMimetypesServiceIT {
         return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
     }
 
-    private PID addFileObject(WorkObject workObject, String fileExtension, String mimetype) throws Exception {
+    private FileObject addFileObject(WorkObject workObject, String fileExtension, String mimetype) throws Exception {
         String bodyString = "Content";
         Path storagePath = Paths.get(locationManager.getStorageLocationById("loc1")
                 .getNewStorageUri(workObject.getPid()));
@@ -228,13 +223,11 @@ public class CorrectMimetypesServiceIT {
         FileObject fileObject = workObject.addDataFile(contentFile.toPath().toUri(), filename, mimetype,
                 null, null);
 
-        return fileObject.getPid();
+        return fileObject;
     }
 
-    private void assertOriginalFileMimetype(PID filePid, String expectedMimetype) {
-        FileObject fileObject = repoObjLoader.getFileObject(filePid);
+    private void assertOriginalFileMimetype(FileObject fileObject, String expectedMimetype) {
         BinaryObject originalFile = fileObject.getOriginalFile();
-
         assertEquals(expectedMimetype, originalFile.getMimetype());
     }
 }
