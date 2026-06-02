@@ -118,15 +118,15 @@ public class CorrectMimetypesServiceIT {
     public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
 
-        FileObject fileObject1 = addFileObject(workObject, ".tif", "image/png");
-        PID filePid1 = fileObject1.getPid();
-        FileObject fileObject2 = addFileObject(workObject, ".pdf", "image/jpeg");
-        PID filePid2 = fileObject2.getPid();
+        PID filePid1 = pidMinter.mintContentPid();
+        FileObject fileObject1 = addFileObject(workObject, filePid1, ".tif", "image/png");
+        PID filePid2 = pidMinter.mintContentPid();
+        FileObject fileObject2 = addFileObject(workObject, filePid2, ".pdf", "image/jpeg");
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
-                        filePid1 + ",image/tiff",
-                        filePid2 + ",application/pdf"
+                        filePid1.getId() + ",image/tiff",
+                        filePid2.getId() + ",application/pdf"
                 ),
                 agent);
 
@@ -151,8 +151,8 @@ public class CorrectMimetypesServiceIT {
     @Test
     public void testInvalidMimetype() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
-        FileObject fileObject = addFileObject(workObject, ".png", "image/png");
-        PID filePid = fileObject.getPid();
+        PID filePid = pidMinter.mintContentPid();
+        FileObject fileObject = addFileObject(workObject, filePid, ".png", "image/png");
 
         var e = assertThrows(InvalidMimeTypeException.class, () -> {
             service.correctMimetypes(
@@ -170,8 +170,8 @@ public class CorrectMimetypesServiceIT {
     @Test
     public void testPermissionDenied() throws Exception {
         WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
-        FileObject fileObject = addFileObject(workObject, ".tif", "image/png");
-        PID filePid = fileObject.getPid();
+        PID filePid = pidMinter.mintContentPid();
+        FileObject fileObject = addFileObject(workObject, filePid, ".tif", "image/png");
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(
@@ -211,7 +211,8 @@ public class CorrectMimetypesServiceIT {
         return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
     }
 
-    private FileObject addFileObject(WorkObject workObject, String fileExtension, String mimetype) throws Exception {
+    private FileObject addFileObject(WorkObject workObject, PID filePid, String fileExtension, String mimetype)
+            throws Exception {
         String bodyString = "Content";
         Path storagePath = Paths.get(locationManager.getStorageLocationById("loc1")
                 .getNewStorageUri(workObject.getPid()));
@@ -220,10 +221,8 @@ public class CorrectMimetypesServiceIT {
         String filename = contentFile.getName();
         FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
 
-        FileObject fileObject = workObject.addDataFile(contentFile.toPath().toUri(), filename, mimetype,
-                null, null);
-
-        return fileObject;
+        return workObject.addDataFile(filePid, contentFile.toPath().toUri(), filename, mimetype,
+                null, null, null);
     }
 
     private void assertOriginalFileMimetype(FileObject fileObject, String expectedMimetype) {
