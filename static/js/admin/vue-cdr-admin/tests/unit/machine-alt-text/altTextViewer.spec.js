@@ -86,7 +86,7 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const options = wrapper.vm.tableOptions;
 
-            expect(options.order).toEqual([[1, 'asc']]);
+            expect(options.order).toEqual([[0, 'asc']]);
             expect(options.fixedHeader).toBe(true);
             expect(options.pageLength).toBe(25);
             expect(options.layout.topEnd.search.placeholder).toBe('Search');
@@ -140,7 +140,7 @@ describe('altTextViewer.vue', () => {
                 start: 0,
                 length: 25,
                 search: { value: '' },
-                order: [{ column: 1, dir: 'asc' }]
+                order: [{ column: 0, dir: 'asc' }]
             });
             expect(titleSort.sort).toBe('title,normal');
 
@@ -149,7 +149,7 @@ describe('altTextViewer.vue', () => {
                 start: 0,
                 length: 25,
                 search: { value: '' },
-                order: [{ column: 8, dir: 'desc' }]
+                order: [{ column: 7, dir: 'desc' }]
             });
             expect(riskSort.sort).toBe('mgRiskScore,reverse');
         });
@@ -206,10 +206,9 @@ describe('altTextViewer.vue', () => {
             const wrapper = mountViewer();
             const columns = wrapper.vm.columns;
 
-            expect(columns).toHaveLength(11);
+            expect(columns).toHaveLength(10);
             expect(columns.map((column) => column.data)).toEqual([
                 'id',
-                'title',
                 'mgFullDescription',
                 'fullDescription',
                 'mgAltText',
@@ -222,17 +221,17 @@ describe('altTextViewer.vue', () => {
             ]);
         });
 
-        it('renders thumbnail and title columns from record id and title', () => {
+        it('renders thumbnail markup and uses image filename for column sorting', () => {
             const wrapper = mountViewer();
             const row = { id: 'abc-123', title: 'Sample title' };
 
-            const thumbnailCell = wrapper.vm.columns[0].render(row.id, 'display', row);
-            const titleCell = wrapper.vm.columns[1].render(row.title, 'display', row);
+            const displayCell = wrapper.vm.columns[0].render(row.id, 'display', row);
+            const sortCell = wrapper.vm.columns[0].render(row.id, 'sort', row);
 
-            expect(thumbnailCell).toContain('/record/abc-123');
-            expect(thumbnailCell).toContain('/services/api/thumb/abc-123/small');
-            expect(titleCell).toContain('Sample title');
-            expect(titleCell).toContain('/record/abc-123');
+            expect(displayCell).toContain('/record/abc-123');
+            expect(displayCell).toContain('/services/api/thumb/abc-123/large');
+            expect(displayCell).toContain('<figcaption>Sample title</figcaption>');
+            expect(sortCell).toBe('Sample title');
         });
 
         it('formats snake_case names into spaced labels', () => {

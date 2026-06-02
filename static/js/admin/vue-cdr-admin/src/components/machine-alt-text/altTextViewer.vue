@@ -26,8 +26,7 @@
                             :ajax="ajaxOptions">
                     <thead>
                     <tr>
-                        <th><span class="is-sr-only">Thumbnail</span></th>
-                        <th>Filename</th>
+                        <th>Thumbnail</th>
                         <th>Full Description (AI)</th>
                         <th>Full Description (Human)</th>
                         <th>Alt Text (AI)</th>
@@ -106,8 +105,8 @@ export default {
                     lastDraw = d.draw;
                     // Column id, column name
                     const sortFieldByColumn = {
-                        1: 'title',
-                        8: 'mgRiskScore'
+                        0: 'title',
+                        7: 'mgRiskScore'
                     };
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
 
@@ -164,7 +163,7 @@ export default {
                 columnDefs: this.columnDefs,
                 mark: true,
                 searching: true,
-                order: [[1, 'asc']],
+                order: [[0, 'asc']],
                 fixedHeader: true,
                 layout: {
                     top2Start: {
@@ -204,21 +203,25 @@ export default {
             return [
                 {
                     data: 'id',
-                    render: (data) => `
-    <div>
-        <figure class="thumbnail">
-            <a href="/record/${data}" target="_blank">
-                <img alt="" loading="lazy" src="/services/api/thumb/${data}/small">
-            </a>
-        </figure>
-    </div>
-    <div>
-        <button class="button is-dark is-small rerun">Rerun</button>
-    </div>`
-                },
-                {
-                    data: 'title',
-                    render: (data, type, row) => `<a href="/record/${row.id}" target="_blank">${data}</a>`
+                    render: (data, type, row) => {
+                        // Sort by title
+                        if (type === 'sort' || type === 'type') {
+                            return row.title || '';
+                        }
+                        return `
+                            <div>
+                                <figure class="thumbnail">
+                                    <a href="/record/${data}" target="_blank">
+                                        <img alt="" loading="lazy" src="/services/api/thumb/${data}/large">
+                                    </a>
+                                    <figcaption>${row.title}</figcaption>
+                                </figure>
+                            </div>
+                            <div>
+                                <button class="button is-dark is-small rerun">Rerun</button>
+                            </div>
+                        `;
+                    }
                 },
                 {
                     data: 'mgFullDescription',
@@ -262,10 +265,7 @@ export default {
 
         columnDefs() {
             return [
-                { width: '10%', targets: [0] },
-                { width: '5%', targets: [1, 8] },
-                { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 9, 10] },
-                { searchable: false, targets: [0] }
+                { orderable: false, targets: [1, 2, 3, 4, 5, 6, 8, 9] }
             ]
         }
     },
@@ -450,7 +450,7 @@ export default {
         width: 98%;
         margin: auto;
     }
-    td.filename {
+    figcaption {
         overflow-wrap: break-word;
         word-break: break-all;
     }
