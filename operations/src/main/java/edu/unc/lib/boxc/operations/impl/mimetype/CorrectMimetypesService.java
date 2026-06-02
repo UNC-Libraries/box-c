@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.operations.impl.mimetype;
 
 import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
@@ -120,8 +119,6 @@ public class CorrectMimetypesService {
                     .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Object mimetype updated from " + oldMimetype + " to " + mimetype)
                     .writeAndClose();
-        } catch (AccessRestrictionException e) {
-            throw new AccessRestrictionException("Permission denied for " + id);
         } catch (RuntimeException e) {
             tx.cancel(e);
             throw e;
