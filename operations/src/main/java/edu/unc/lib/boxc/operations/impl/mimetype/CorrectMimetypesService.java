@@ -98,11 +98,13 @@ public class CorrectMimetypesService {
             throw new InvalidMimeTypeException(mimetype, "Invalid mimetype");
         }
 
+        PID pid = PIDs.get(id);
+
         aclService.assertHasAccess(
                 "User does not have permissions to edit mimetypes",
-                PIDs.get(id), agent.getPrincipals(), Permission.editDescription);
+                pid, agent.getPrincipals(), Permission.editDescription);
 
-        FileObject obj = repositoryObjectLoader.getFileObject(PIDs.get(id));
+        FileObject obj = repositoryObjectLoader.getFileObject(pid);
 
         FedoraTransaction tx = txManager.startTransaction();
 
@@ -110,6 +112,10 @@ public class CorrectMimetypesService {
             // Get original_file and its mimetype
             BinaryObject binaryObject = obj.getOriginalFile();
             String oldMimetype = binaryObject.getMimetype();
+
+            if (oldMimetype.equals(mimetype)) {
+                return pid;
+            }
 
             // Update original_file's mimetype
             repositoryObjectFactory.createExclusiveRelationship(binaryObject, Ebucore.hasMimeType, mimetype);
@@ -128,16 +134,12 @@ public class CorrectMimetypesService {
 
         // Send message that the action completed
         operationsMessageSender.sendAddOperation(agent.getUsername(), Collections.singletonList(obj.getParentPid()),
-                Collections.singletonList(PIDs.get(id)), null, null);
-        return PIDs.get(id);
+                Collections.singletonList(pid), null, null);
+        return pid;
     }
 
     private boolean isValidMimetype(String mimetype) {
-        try {
-            return mimetype.contains("/");
-        } catch (Exception e) {
-            return false;
-        }
+        return mimetype.contains("/");
     }
 
     private CSVParser parser(InputStream csvInputStream) throws IOException {

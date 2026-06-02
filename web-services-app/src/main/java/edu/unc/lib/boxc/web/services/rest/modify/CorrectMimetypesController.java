@@ -50,9 +50,6 @@ public class CorrectMimetypesController {
         try (InputStream correctMimetypeStream = file.getInputStream()) {
             pids = correctMimetypesService.correctMimetypes(correctMimetypeStream, AgentPrincipalsImpl.createFromThread());
             result.put("status", "Corrected mimetypes for " + pids);
-        } catch (StateUnmodifiedException e) {
-            log.info("No changes were made");
-            result.put("status", "unchanged");
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();
