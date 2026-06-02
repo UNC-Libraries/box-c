@@ -125,8 +125,8 @@ public class CorrectMimetypesServiceIT {
 
         List<PID> updatedPids = service.correctMimetypes(
                 csv(
-                        filePid1.getId() + ",image/tiff",
-                        filePid2.getId() + ",application/pdf"
+                        filePid1 + ",image/tiff",
+                        filePid2 + ",application/pdf"
                 ),
                 agent);
 
