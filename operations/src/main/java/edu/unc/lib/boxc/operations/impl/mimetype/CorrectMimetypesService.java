@@ -14,7 +14,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
@@ -113,7 +113,7 @@ public class CorrectMimetypesService {
             String oldMimetype = binaryObject.getMimetype();
 
             // Update original_file's mimetype
-            repositoryObjectFactory.createExclusiveRelationship(binaryObject, CdrDeposit.mimetype, mimetype);
+            repositoryObjectFactory.createExclusiveRelationship(binaryObject, Ebucore.hasMimeType, mimetype);
 
             premisLoggerFactory.createPremisLogger(obj)
                     .buildEvent(Premis.MetadataModification)
