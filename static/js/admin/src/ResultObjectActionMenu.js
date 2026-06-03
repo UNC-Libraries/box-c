@@ -1,8 +1,8 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
 		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'CollectionDisplaySettingsForm', 'EditStreamingPropertiesForm',
-		'EditAltTextForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, CollectionDisplaySettingsForm, EditStreamingPropertiesForm, EditAltTextForm) {
+		'EditAltTextForm', 'CorrectMimetypesForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, CollectionDisplaySettingsForm, EditStreamingPropertiesForm, EditAltTextForm, CorrectMimetypesForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -202,6 +202,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editAltText"] = {name : 'Edit Alt Text'};
+		}
+
+		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
+			items["correctMimetypes"] = {name: 'Correct Mimetypes'};
 		}
 
 		// Add files to work objects
@@ -549,6 +553,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						perms_editor_store.setShowPermissionsModal(true);
 						perms_editor_store.setAlertHandler(self.options.alertHandler);
 						break;
+					case "correctMimetypes" :
+						self.correctMimetypes(resultObject);
+						break;
 				}
 			},
 			items : items
@@ -680,6 +687,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		});
 		collectionDisplaySettingsForm.open(resultObject);
 	}
+
+	ResultObjectActionMenu.prototype.correctMimetypes = function(resultObject) {
+		var correctMimetypesForm = new CorrectMimetypesForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		correctMimetypesForm.open(resultObject);
+	};
 
 	ResultObjectActionMenu.prototype.disable = function() {
 		$(this.options.selector).contextMenu(false);
