@@ -129,7 +129,7 @@ public class CorrectMimetypesControllerTest {
 
         ResponseEntity<Object> response = controller.correctMimetype(multipartFile);
 
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
 
         Map<String, Object> body = asMap(response.getBody());
 

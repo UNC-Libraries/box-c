@@ -31,7 +31,7 @@ define('CorrectMimetypesForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!templ
         };
 
         CorrectMimetypesForm.prototype.getSuccessMessage = function(data) {
-            return this.ingestFile.name + " has been successfully uploaded for updating.  You will receive an email when it completes.";
+            return this.ingestFile.name + " has been successfully uploaded for updating.";
         };
 
         CorrectMimetypesForm.prototype.getErrorMessage = function(data) {
