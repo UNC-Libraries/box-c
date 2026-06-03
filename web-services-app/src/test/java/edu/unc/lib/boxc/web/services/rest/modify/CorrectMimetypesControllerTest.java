@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -108,6 +109,33 @@ public class CorrectMimetypesControllerTest {
         assertTrue(body.containsKey("timestamp"));
 
         verifyNoInteractions(correctMimetypesService);
+    }
+
+    @Test
+    public void correctMimetypesFailTest() throws Exception {
+        String csv = """
+                id,mimetype
+                83c2d7f8-2e6b-4f0b-ab7e-7397969c0682,image/png
+                """;
+
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getInputStream())
+                .thenReturn(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+
+        when(correctMimetypesService.correctMimetypes(
+                any(InputStream.class),
+                any(AgentPrincipals.class)))
+                .thenThrow(new AccessRestrictionException());
+
+        ResponseEntity<Object> response = controller.correctMimetype(multipartFile);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+
+        Map<String, Object> body = asMap(response.getBody());
+
+        assertEquals("correct mimetypes", body.get("action"));
+        assertTrue(body.containsKey("error"));
+        assertTrue(body.containsKey("timestamp"));
     }
 
     private Map<String, Object> asMap(Object body) {
