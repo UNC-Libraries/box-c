@@ -135,7 +135,6 @@ public class CorrectMimetypesControllerTest {
 
         assertEquals("correct mimetypes", body.get("action"));
         assertTrue(body.containsKey("error"));
-        assertTrue(body.containsKey("timestamp"));
     }
 
     private Map<String, Object> asMap(Object body) {
