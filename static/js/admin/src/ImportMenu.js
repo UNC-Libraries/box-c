@@ -1,5 +1,5 @@
-define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderForm', 'ImportMetadataXMLForm', 'BulkImportRefIdsForm', 'qtip'],
-    function($, ui, _, ImportMemberOrderForm, ImportMetadataXMLForm, BulkImportRefIdsForm) {
+define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderForm', 'ImportMetadataXMLForm', 'BulkImportRefIdsForm', 'CorrectMimetypesForm', 'qtip'],
+    function($, ui, _, ImportMemberOrderForm, ImportMetadataXMLForm, BulkImportRefIdsForm, CorrectMimetypesForm) {
 
         function ImportMenu(options) {
             this.options = $.extend({}, options);
@@ -19,6 +19,11 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
             if (this.container !== undefined && (this.container.type === 'AdminUnit' || this.container.type === 'Collection' || this.container.type === 'Folder')
                 && $.inArray('editAspaceProperties', this.container.permissions) !== -1) {
                 items["importRefIds"] = {name : "Bulk Ref Ids"};
+            }
+
+            if (this.container !== undefined && this.container.type === 'File'
+                && $.inArray('editDescription', metadata.permissions) != -1) {
+                items["correctMimetypes"] = {name: 'Correct Mimetypes'};
             }
 
             return items;
@@ -72,6 +77,11 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
                                     break;
                                 case "importRefIds" :
                                     new BulkImportRefIdsForm({
+                                        alertHandler : self.options.alertHandler
+                                    }).open();
+                                    break;
+                                case "correctMimetypes" :
+                                    new CorrectMimetypesForm({
                                         alertHandler : self.options.alertHandler
                                     }).open();
                                     break;
