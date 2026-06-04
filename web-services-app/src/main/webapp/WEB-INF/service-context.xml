@@ -602,6 +602,15 @@
         <property name="aclService" ref="aclService" />
         <property name="solrSearchService" ref="queryLayer" />
     </bean>
+
+    <bean id="correctMimetypesService" class="edu.unc.lib.boxc.operations.impl.mimetype.CorrectMimetypesService">
+        <property name="aclService" ref="aclService" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
