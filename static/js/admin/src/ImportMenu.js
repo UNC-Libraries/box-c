@@ -21,8 +21,7 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
                 items["importRefIds"] = {name : "Bulk Ref Ids"};
             }
 
-            if (this.container !== undefined && this.container.type === 'File'
-                && $.inArray('editDescription', metadata.permissions) != -1) {
+            if (this.container !== undefined && $.inArray('editDescription', metadata.permissions) != -1) {
                 items["correctMimetypes"] = {name: 'Correct Mimetypes'};
             }
 
