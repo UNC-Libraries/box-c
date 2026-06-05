@@ -23,7 +23,6 @@
 
 <script>
 import fetchUtils from "@/mixins/fetchUtils";
-import DOMPurify from 'dompurify';
 import {mapActions, mapState} from "pinia";
 import {useAltTextStore} from "@/stores/alt-text";
 
@@ -58,7 +57,7 @@ export default {
         ...mapState(useAltTextStore, ['activeField', 'currentRow', 'currentUuid', 'showAltTextModal', 'viewType']),
 
         fieldTitle() {
-            return this.activeField.split('_').join(' ');
+            return this.activeField?.split('_').join(' ') ?? '';
         },
 
         fieldText() {
@@ -71,7 +70,7 @@ export default {
 
         modalHeader() {
             let header_text = (this.viewType === 'edit') ? 'Editing' : 'Viewing';
-            return DOMPurify.sanitize(`${header_text} ${this.fieldTitle} for ${this.currentRow?.title}`);
+            return `${header_text} ${this.fieldTitle} for ${this.currentRow?.title}`;
         },
 
         /**
@@ -99,34 +98,35 @@ export default {
             try {
                 const endpoint = this.updateEndpoint;
                 const targetId = this.currentRow?.id || this.currentUuid;
-                const formBody = new URLSearchParams();
-                formBody.append(endpoint, this.updated_text);
-
-                await this.fetchWrapper(`/services/api/edit/${endpoint}/${targetId}`,
-                    true, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                        body: formBody.toString()
-                    });
-                this.setCurrentRowFieldValue(this.activeField, this.updated_text);
-                this.setLastSuccessfulEdit({
-                    id: targetId,
-                    field: this.activeField,
-                    value: this.updated_text
-                });
-                this.setAlertMessage(`${this.activeField} updated successfully for ${this.currentRow?.title}`);
-                this.setAlertMessageType('success');
+                await this.postUpdate(endpoint, targetId);
+                this.onUpdateSuccess(targetId);
             } catch {
                 this.setAlertMessage(`Unable to update ${this.activeField} for ${this.currentRow?.title}`);
                 this.setAlertMessageType('error');
             } finally {
                 this.saving_data = false;
-                this.closeModalWindow();
                 setTimeout(() => {
                     this.setAlertMessage('');
                     this.setAlertMessageType('');
                 }, 3500);
             }
+        },
+
+        async postUpdate(endpoint, targetId) {
+            const formBody = new URLSearchParams({ [endpoint]: this.updated_text });
+            await this.fetchWrapper(`/services/api/edit/${endpoint}/${targetId}`, true, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: formBody.toString()
+            });
+        },
+
+        onUpdateSuccess(targetId) {
+            this.setCurrentRowFieldValue(this.activeField, this.updated_text);
+            this.setLastSuccessfulEdit({ id: targetId, field: this.activeField, value: this.updated_text });
+            this.setAlertMessage(`${this.activeField} updated successfully for ${this.currentRow?.title}`);
+            this.setAlertMessageType('success');
+            this.closeModalWindow();
         }
     }
 }

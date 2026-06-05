@@ -52,7 +52,7 @@
 import altTextEditorModal from '@/components/machine-alt-text/altTextEditorModal.vue';
 import AltTextMessages from '@/components/machine-alt-text/altTextMessages.vue';
 import fetchUtils from "@/mixins/fetchUtils";
-import DOMPurify from 'dompurify';
+import sanitizeUtils from "@/mixins/sanitizeUtils";
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
 import FixedHeader from 'datatables.net-fixedheader';
@@ -72,12 +72,11 @@ export default {
 
     components: {AltTextMessages, altTextEditorModal, DataTable},
 
-    mixins: [fetchUtils],
+    mixins: [fetchUtils, sanitizeUtils],
 
     data() {
         return {
             altTextTableClickHandler: null,
-            selected_field: '',
             contentTagFacets: [],
             selectedTags: [],
             paneExpanded: false
@@ -207,22 +206,21 @@ export default {
                     render: (data, type, row) => {
                         // Sort by title
                         if (type === 'sort' || type === 'type') {
-                            return row.title || '';
+                            return this.sanitizeText(row.title) || '';
                         }
-                        const html = `
+                        return `
                             <div>
                                 <figure class="thumbnail">
                                     <a href="/record/${data}" target="_blank">
                                         <img alt="" loading="lazy" src="/services/api/thumb/${data}/large">
                                     </a>
-                                    <figcaption>${row.title}</figcaption>
+                                    <figcaption>${this.sanitizeText(row.title)}</figcaption>
                                 </figure>
                             </div>
                             <div>
-                                <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${row.title}">Rerun</button>
+                                <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${this.sanitizeText(row.title)}">Rerun</button>
                             </div>
                         `;
-                        return DOMPurify.sanitize(html);
                     }
                 },
                 {
@@ -285,7 +283,7 @@ export default {
         },
 
         longText(data, field_name) {
-            const normalized_text = data || '';
+            const normalized_text = this.sanitizeText(data) || '';
             const has_long_text = normalized_text.length > 250;
             const text = (has_long_text) ? `${normalized_text.substring(0, 250)}... ` : normalized_text;
             let sub_text = '<div class="mt-2">';
@@ -298,7 +296,7 @@ export default {
             if (!/^mg/.test(field_name)) {
                 text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
             }
-            return DOMPurify.sanitize(`${text_display}</div>`);
+            return `${text_display}</div>`;
         },
 
         formatSafetyValue(data) {
@@ -311,7 +309,7 @@ export default {
                     text += `<li>${this.formatSafetyValue(item)}</li>`;
                 });
                 text += '</ul></div>';
-                return DOMPurify.sanitize(text);
+                return text;
             }
 
             if (data && typeof data === 'object') {
@@ -320,14 +318,14 @@ export default {
                     text += `<li><span class="has-text-weight-semibold">${this.fieldName(field)}</span>: ${this.formatSafetyValue(value)}</li>`;
                 });
                 text += '</ul></div>';
-                return DOMPurify.sanitize(text);
+                return text;
             }
 
             if (data === null || data === undefined || data === '') {
                 return 'None';
-            }
+            }x
 
-            return DOMPurify.sanitize(String(data).toLowerCase());
+            return this.sanitizeText(String(data).toLowerCase());
         },
 
         renderSafetyData(data) {

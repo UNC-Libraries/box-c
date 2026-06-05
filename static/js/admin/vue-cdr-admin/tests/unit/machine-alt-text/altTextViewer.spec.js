@@ -3,6 +3,8 @@ import { vi } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import altTextViewer from '@/components/machine-alt-text/altTextViewer.vue';
 
+const sanitizeSpy = vi.fn((text) => text);
+
 const uuid = '67ff0cb6-c360-439a-a194-b271cd4177e4';
 const createSampleReviewAssessment = (overrides = {}) => ({
     concerns_for_review: [
@@ -73,6 +75,15 @@ const mountViewer = () => {
 };
 
 describe('altTextViewer.vue', () => {
+    beforeEach(() => {
+        sanitizeSpy.mockClear();
+        globalThis.DOMPurify = { sanitize: sanitizeSpy };
+    });
+
+    afterAll(() => {
+        delete globalThis.DOMPurify;
+    });
+
     describe('computed flags/options', () => {
         it('has hasSearchPaneOptions based on contentTagFacets data', () => {
             const wrapper = mountViewer();
@@ -260,7 +271,6 @@ describe('altTextViewer.vue', () => {
 
     describe('successful row edits', () => {
         it('patches the matching datatable row and clears the successful edit flag', () => {
-            const wrapper = mountViewer();
             const row = {
                 _data: { id: 'abc-123', altText: 'Old text' },
                 data(newData) {
@@ -294,6 +304,66 @@ describe('altTextViewer.vue', () => {
             expect(row._data.altText).toBe('New text');
             expect(ctx.clearLastSuccessfulEdit).toHaveBeenCalled();
         });
+
+        it('does not patch rows when no matching id is found and still clears the successful edit flag', () => {
+            const row = {
+                _data: { id: 'different-id', altText: 'Old text' },
+                data(newData) {
+                    if (newData) {
+                        this._data = newData;
+                        return this;
+                    }
+                    return this._data;
+                }
+            };
+
+            const ctx = {
+                $refs: {
+                    alt_text_table: {
+                        dt: {
+                            rows() {
+                                return {
+                                    every(callback) {
+                                        callback.call(row);
+                                    }
+                                };
+                            }
+                        }
+                    }
+                },
+                clearLastSuccessfulEdit: vi.fn()
+            };
+
+            altTextViewer.methods.applySuccessfulEdit.call(ctx, { id: 'abc-123', field: 'altText', value: 'New text' });
+
+            expect(row._data.altText).toBe('Old text');
+            expect(ctx.clearLastSuccessfulEdit).toHaveBeenCalled();
+        });
+
+        it('clears successful edit and exits when the Datatables API is missing or edit payload is incomplete', () => {
+            const clearLastSuccessfulEdit = vi.fn();
+            const noApiCtx = { $refs: {}, clearLastSuccessfulEdit };
+            const withApiCtx = {
+                $refs: {
+                    alt_text_table: {
+                        dt: {
+                            rows() {
+                                return {
+                                    every() {}
+                                };
+                            }
+                        }
+                    }
+                },
+                clearLastSuccessfulEdit
+            };
+
+            altTextViewer.methods.applySuccessfulEdit.call(noApiCtx, { id: 'abc-123', field: 'altText', value: 'New text' });
+            altTextViewer.methods.applySuccessfulEdit.call(withApiCtx, { id: 'abc-123', value: 'New text' });
+            altTextViewer.methods.applySuccessfulEdit.call(withApiCtx, { field: 'altText', value: 'New text' });
+
+            expect(clearLastSuccessfulEdit).toHaveBeenCalledTimes(3);
+        });
     });
 
     describe('longText and safety rendering', () => {
@@ -311,6 +381,12 @@ describe('altTextViewer.vue', () => {
             expect(long).toContain('data-action-field="mgFullDescription"');
         });
 
+        it('does not render edit link for machine-generated fields in longText', () => {
+            const wrapper = mountViewer();
+            const machineText = wrapper.vm.longText('short text', 'mgAltText');
+            expect(machineText).not.toContain('data-action="edit"');
+        });
+
         it('formats safety values for arrays, objects, and empty values', () => {
             const wrapper = mountViewer();
 
@@ -320,11 +396,23 @@ describe('altTextViewer.vue', () => {
 
             expect(wrapper.vm.formatSafetyValue([])).toBe('none');
             expect(wrapper.vm.formatSafetyValue(null)).toBe('None');
+            expect(wrapper.vm.formatSafetyValue(undefined)).toBe('None');
+            expect(wrapper.vm.formatSafetyValue('')).toBe('None');
             expect(wrapper.vm.formatSafetyValue(sampleReviewAssessment.stereotyping)).toBe('no');
 
             const objectText = wrapper.vm.formatSafetyValue(sampleSafetyAssessment);
             expect(objectText).toContain('people visible');
             expect(objectText).toContain('symbols present');
+        });
+
+        it('formats nested objects inside arrays without flattening to object strings', () => {
+            const wrapper = mountViewer();
+            const nestedArray = [{ concern_level: 'HIGH' }];
+
+            const text = wrapper.vm.formatSafetyValue(nestedArray);
+            expect(text).toContain('concern level');
+            expect(text).toContain('high');
+            expect(text).not.toContain('[object Object]');
         });
 
         it('renders structured safety data list', () => {
@@ -333,6 +421,18 @@ describe('altTextViewer.vue', () => {
             expect(rendered).toContain('<ul class="is-capitalized">');
             expect(rendered).toContain('people visible');
             expect(rendered).toContain('symbols present');
+            expect(sanitizeSpy).toHaveBeenCalled();
+        });
+
+        it('renders structured safety data list for null and empty inputs', () => {
+            const wrapper = mountViewer();
+
+            const renderedNull = wrapper.vm.renderSafetyData(null);
+            const renderedEmpty = wrapper.vm.renderSafetyData({});
+
+            expect(renderedNull).toContain('<ul class="is-capitalized">');
+            expect(renderedEmpty).toContain('<ul class="is-capitalized">');
+            expect(sanitizeSpy).toHaveBeenCalledTimes(2);
         });
     });
 });

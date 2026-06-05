@@ -63,6 +63,19 @@ describe('altTextEditorModal.vue', () => {
         expect(wrapper.find('.modal-card-title').text()).toContain('Viewing alt text for image-1.jpg');
     });
 
+    it('returns an empty fieldTitle when activeField is null', () => {
+        wrapper = mountModal({
+            showAltTextModal: true,
+            viewType: 'view',
+            activeField: null,
+            currentRow: {
+                title: 'image-null-field.jpg'
+            }
+        });
+
+        expect(wrapper.vm.fieldTitle).toBe('');
+    });
+
     it('switches from viewing mode to editing mode when edit text is clicked', async () => {
         wrapper = mountModal({
             showAltTextModal: true,
