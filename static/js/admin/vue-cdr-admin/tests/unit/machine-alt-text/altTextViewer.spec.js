@@ -381,6 +381,13 @@ describe('altTextViewer.vue', () => {
             expect(long).toContain('data-action-field="mgFullDescription"');
         });
 
+        it('preserves newline characters in longText output', () => {
+            const wrapper = mountViewer();
+            const multiline = wrapper.vm.longText('UNC\nPARACHUTE\nCLUB\nCAPTAIN', 'altText');
+
+            expect(multiline).toContain('UNC<br/>PARACHUTE<br/>CLUB<br/>CAPTAIN');
+        });
+
         it('does not render edit link for machine-generated fields in longText', () => {
             const wrapper = mountViewer();
             const machineText = wrapper.vm.longText('short text', 'mgAltText');
@@ -398,6 +405,7 @@ describe('altTextViewer.vue', () => {
             expect(wrapper.vm.formatSafetyValue(null)).toBe('None');
             expect(wrapper.vm.formatSafetyValue(undefined)).toBe('None');
             expect(wrapper.vm.formatSafetyValue('')).toBe('None');
+            expect(wrapper.vm.formatSafetyValue('LINE 1\nLINE 2')).toBe('line 1<br/>line 2');
             expect(wrapper.vm.formatSafetyValue(sampleReviewAssessment.stereotyping)).toBe('no');
 
             const objectText = wrapper.vm.formatSafetyValue(sampleSafetyAssessment);

@@ -282,16 +282,21 @@ export default {
             return parts.join(' ');
         },
 
+        maintainLineBreaks(text) {
+            return String(text).replace(/\r\n|\r|\n/g, '<br/>');
+        },
+
         longText(data, field_name) {
             const normalized_text = this.sanitizeText(data) || '';
             const has_long_text = normalized_text.length > 250;
             const text = (has_long_text) ? `${normalized_text.substring(0, 250)}... ` : normalized_text;
+            const text_with_breaks = this.maintainLineBreaks(text);
             let sub_text = '<div class="mt-2">';
             if (has_long_text) {
-                sub_text += `<div class="is-hidden">${normalized_text}</div>`;
+                sub_text += `<div class="is-hidden">${this.maintainLineBreaks(normalized_text)}</div>`;
                 sub_text += `<a data-action="view" data-action-field="${field_name}" href="#">View All</a><br/>`
             }
-            let text_display = `${text}${sub_text}`;
+            let text_display = `${text_with_breaks}${sub_text}`;
             // Machine generated fields should not be editable
             if (!/^mg/.test(field_name)) {
                 text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
@@ -323,9 +328,9 @@ export default {
 
             if (data === null || data === undefined || data === '') {
                 return 'None';
-            }x
+            }
 
-            return this.sanitizeText(String(data).toLowerCase());
+            return this.maintainLineBreaks(this.sanitizeText(String(data).toLowerCase()));
         },
 
         renderSafetyData(data) {
@@ -335,7 +340,7 @@ export default {
             });
             text += '</ul>';
 
-            return DOMPurify.sanitize(text);
+            return text;
         },
 
         async rerunAltTextGeneration(e) {
