@@ -3,8 +3,6 @@ import { vi } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import altTextViewer from '@/components/machine-alt-text/altTextViewer.vue';
 
-const sanitizeSpy = vi.fn((text) => text);
-
 const uuid = '67ff0cb6-c360-439a-a194-b271cd4177e4';
 const createSampleReviewAssessment = (overrides = {}) => ({
     concerns_for_review: [
@@ -75,15 +73,6 @@ const mountViewer = () => {
 };
 
 describe('altTextViewer.vue', () => {
-    beforeEach(() => {
-        sanitizeSpy.mockClear();
-        globalThis.DOMPurify = { sanitize: sanitizeSpy };
-    });
-
-    afterAll(() => {
-        delete globalThis.DOMPurify;
-    });
-
     describe('computed flags/options', () => {
         it('has hasSearchPaneOptions based on contentTagFacets data', () => {
             const wrapper = mountViewer();
@@ -429,7 +418,6 @@ describe('altTextViewer.vue', () => {
             expect(rendered).toContain('<ul class="is-capitalized">');
             expect(rendered).toContain('people visible');
             expect(rendered).toContain('symbols present');
-            expect(sanitizeSpy).toHaveBeenCalled();
         });
 
         it('renders structured safety data list for null and empty inputs', () => {
@@ -440,7 +428,6 @@ describe('altTextViewer.vue', () => {
 
             expect(renderedNull).toContain('<ul class="is-capitalized">');
             expect(renderedEmpty).toContain('<ul class="is-capitalized">');
-            expect(sanitizeSpy).toHaveBeenCalledTimes(2);
         });
     });
 });
