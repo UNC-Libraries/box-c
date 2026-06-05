@@ -1,0 +1,232 @@
+package edu.unc.lib.boxc.operations.impl.mimetype;
+
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.*;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.InvalidMimeTypeException;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+@ExtendWith(SpringExtension.class)
+@ContextHierarchy({
+        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+        @ContextConfiguration("/spring-test/acl-service-context.xml")
+})
+public class CorrectMimetypesServiceIT {
+    private static final String USER_PRINC = "user";
+    private static final String GRP_PRINC = "group";
+
+    @Autowired
+    private String baseAddress;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private TransactionManager txManager;
+    @Autowired
+    private PIDMinter pidMinter;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private StorageLocationManagerImpl locationManager;
+    @Mock
+    private AccessControlService aclService;
+    @Mock
+    private OperationsMessageSender operationsMessageSender;
+    @TempDir
+    public Path tmpFolder;
+
+    private AutoCloseable closeable;
+    private CorrectMimetypesService service;
+    private AgentPrincipals agent;
+    private ContentRootObject contentRoot;
+    private PID workPid;
+
+    @BeforeEach
+    public void setup() {
+        closeable = openMocks(this);
+        TestHelper.setContentBase(baseAddress);
+
+        service = new CorrectMimetypesService();
+        service.setAclService(aclService);
+        service.setOperationsMessageSender(operationsMessageSender);
+        service.setPremisLoggerFactory(premisLoggerFactory);
+        service.setRepositoryObjectLoader(repoObjLoader);
+        service.setRepositoryObjectFactory(repoObjFactory);
+        service.setTransactionManager(txManager);
+
+        agent = new AgentPrincipalsImpl(USER_PRINC, new AccessGroupSetImpl(GRP_PRINC));
+        PID contentRootPid = RepositoryPaths.getContentRootPid();
+        repoInitializer.initializeRepository();
+        contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        workPid = pidMinter.mintContentPid();
+    }
+
+    @AfterEach
+    public void cleanup() throws Exception {
+        closeable.close();
+    }
+
+    @Test
+    public void testCorrectMimetypesUpdatesMultipleFiles() throws Exception {
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+
+        PID filePid1 = pidMinter.mintContentPid();
+        FileObject fileObject1 = addFileObject(workObject, filePid1, ".tif", "image/png");
+        PID filePid2 = pidMinter.mintContentPid();
+        FileObject fileObject2 = addFileObject(workObject, filePid2, ".pdf", "image/jpeg");
+
+        List<PID> updatedPids = service.correctMimetypes(
+                csv(
+                        filePid1.getId() + ",image/tiff",
+                        filePid2.getId() + ",application/pdf"
+                ),
+                agent);
+
+        assertEquals(List.of(filePid1, filePid2), updatedPids);
+
+        assertOriginalFileMimetype(fileObject1, "image/tiff");
+        assertOriginalFileMimetype(fileObject2, "application/pdf");
+
+        verify(operationsMessageSender).sendAddOperation(
+                eq(agent.getUsername()),
+                eq(Collections.singletonList(workPid)),
+                eq(Collections.singletonList(filePid1)),
+                eq(null), eq(null));
+
+        verify(operationsMessageSender).sendAddOperation(
+                eq(agent.getUsername()),
+                eq(Collections.singletonList(workPid)),
+                eq(Collections.singletonList(filePid2)),
+                eq(null), eq(null));
+    }
+
+    @Test
+    public void testInvalidMimetype() throws Exception {
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+        PID filePid = pidMinter.mintContentPid();
+        FileObject fileObject = addFileObject(workObject, filePid, ".png", "image/png");
+
+        var e = assertThrows(InvalidMimeTypeException.class, () -> {
+            service.correctMimetypes(
+                    csv(filePid.getId() + ",image"),
+                    agent);
+        });
+
+        assertTrue(e.getMessage().contains("Invalid mimetype"));
+
+        assertOriginalFileMimetype(fileObject, "image/png");
+
+        verifyNoInteractions(operationsMessageSender);
+    }
+
+    @Test
+    public void testPermissionDenied() throws Exception {
+        WorkObject workObject = repoObjFactory.createWorkObject(workPid, null);
+        PID filePid = pidMinter.mintContentPid();
+        FileObject fileObject = addFileObject(workObject, filePid, ".tif", "image/png");
+
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(
+                        eq("User does not have permissions to edit mimetypes"),
+                        eq(filePid),
+                        any(),
+                        eq(Permission.editDescription));
+
+        assertThrows(AccessRestrictionException.class, () -> {
+            service.correctMimetypes(
+                    csv(filePid.getId() + ",image/tiff"),
+                    agent);
+        });
+
+        assertOriginalFileMimetype(fileObject, "image/png");
+
+        verifyNoInteractions(operationsMessageSender);
+    }
+
+    @Test
+    public void nonFileObjectFailsTest() throws Exception {
+        repoObjFactory.createWorkObject(workPid, null);
+
+        assertThrows(ObjectTypeMismatchException.class, () -> {
+            service.correctMimetypes(
+                    csv(workPid.getId() + ",image/tiff"),
+                    agent);
+        });
+
+        verifyNoInteractions(operationsMessageSender);
+    }
+
+    private InputStream csv(String... rows) {
+        String body = String.join(",", CorrectMimetypesService.CSV_HEADERS) + "\n"
+                + String.join("\n", rows);
+
+        return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private FileObject addFileObject(WorkObject workObject, PID filePid, String fileExtension, String mimetype)
+            throws Exception {
+        String bodyString = "Content";
+        Path storagePath = Paths.get(locationManager.getStorageLocationById("loc1")
+                .getNewStorageUri(workObject.getPid()));
+        Files.createDirectories(storagePath);
+        File contentFile = Files.createTempFile(storagePath, "file", fileExtension).toFile();
+        String filename = contentFile.getName();
+        FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
+
+        return workObject.addDataFile(filePid, contentFile.toPath().toUri(), filename, mimetype,
+                null, null, null);
+    }
+
+    private void assertOriginalFileMimetype(FileObject fileObject, String expectedMimetype) {
+        BinaryObject originalFile = fileObject.getOriginalFile();
+        assertEquals(expectedMimetype, originalFile.getMimetype());
+    }
+}
