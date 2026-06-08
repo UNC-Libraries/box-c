@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.operations.impl.pdf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
 
 /**
  * Service for generating an aggregate PDF with OCR
@@ -43,6 +46,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 public class AggregatePdfService {
     private static final Logger log = LoggerFactory.getLogger(AggregatePdfService.class);
 
+    private MachineGeneratedContentService machineGeneratedContentService;
     private SolrSearchService solrSearchService;
     private RepositoryObjectLoader repositoryObjectLoader;
 
@@ -171,9 +175,34 @@ public class AggregatePdfService {
      * @return textType
      */
     public String getTextTypes(PdfRequest request) {
-        //TODO: get text type from the alt text review
+        var textType = RESULT_HANDWRITTEN_CURSIVE;
 
-        return "HANDWRITTEN-PRINT";
+        var workPid = PIDs.get(request.getWorkPid());
+        var agent = request.getAgent();
+        var parentRec = getParentRecord(workPid, agent);
+        List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
+        var filePid = children.getFirst().getPid();
+
+        String mgdString = getMachineGeneratedDescriptionJson(filePid);
+        JsonNode mgdNode = null;
+        if (mgdString != null) {
+            mgdNode = machineGeneratedContentService.deserializeMachineGeneratedDescription(mgdString);
+            log.debug("Loaded machine gen datastream for {}", request.getWorkPid());
+        }
+        textType = machineGeneratedContentService.extractTextType(mgdNode);
+
+        return textType;
+    }
+
+    private String getMachineGeneratedDescriptionJson(PID filePid) {
+        try {
+            return machineGeneratedContentService.loadMachineGeneratedDescription(filePid);
+        } catch (NoSuchFileException e) {
+            log.debug("No machine generated description datastream found for {}", filePid);
+            return null;
+        } catch (IOException e) {
+            throw new ServiceException("Failed to read machine generated description for " + filePid, e);
+        }
     }
 
     // Query for all immediate children/members of the specified record, in default sort order
@@ -220,6 +249,10 @@ public class AggregatePdfService {
         String baseName = FilenameUtils.getBaseName(fileName);
         String uniqueName = baseName + "_" + UUID.randomUUID() + extension;
         return Path.of(System.getProperty("java.io.tmpdir"), uniqueName);
+    }
+
+    public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
+        this.machineGeneratedContentService = machineGeneratedContentService;
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {

@@ -121,6 +121,26 @@ public class MachineGeneratedContentService {
         return extractTextField(mgdNode, MG_TRANSCRIPT_FIELD);
     }
 
+    /**
+     * Extracts the text type from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return text type if it exists, otherwise null
+     */
+    public String extractTextType(JsonNode mgdNode) {
+        JsonNode textTypeNode = mgdNode.path(RESULT_FIELD).path("text_type");
+
+        if (!textTypeNode.isMissingNode()) {
+            String textType = textTypeNode.asText();
+            if (RESULT_HANDWRITTEN_PRINT.equalsIgnoreCase(textType)
+                    || RESULT_HANDWRITTEN_CURSIVE.equalsIgnoreCase(textType)
+                    || RESULT_TEXT_MIXED.equalsIgnoreCase(textType)) {
+                return textTypeNode.asText();
+            }
+        }
+
+        return extractTextField(mgdNode, "text_type");
+    }
+
     private String extractTextField(JsonNode mgdNode, String fieldName) {
         if (mgdNode == null) {
             return null;

@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
+public class AggregatePdfRouterTest extends CamelSpringTestSupport {
     private final PID workPid = PIDs.get(UUID.randomUUID().toString());
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
@@ -38,7 +38,7 @@ public class PdfEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() {
-        var router = new PdfEnhancementsRouter();
+        var router = new AggregatePdfRouter();
         router.setAggregatePdfProcessor(aggregatePdfProcessor);
         router.setAggregatePdfStreamCamel(endpointUri);
         return router;

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.pdf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
@@ -15,6 +16,7 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +42,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_TEXT_MIXED;
+
 public class AggregatePdfServiceTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
@@ -47,6 +53,8 @@ public class AggregatePdfServiceTest {
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
 
+    @Mock
+    private MachineGeneratedContentService machineGeneratedContentService;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
@@ -60,6 +68,7 @@ public class AggregatePdfServiceTest {
     public void setup() {
         closeable = openMocks(this);
         pdfService = new AggregatePdfService();
+        pdfService.setMachineGeneratedContentService(machineGeneratedContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
     }
@@ -107,7 +116,7 @@ public class AggregatePdfServiceTest {
                             && "-o".equals(command[4])
                             && "-t".equals(command[6])
                             && "-tt".equals(command[8])
-                            && "HANDWRITTEN-PRINT".equals(command[9])
+                            && RESULT_HANDWRITTEN_CURSIVE.equals(command[9])
             )));
         }
     }
@@ -164,7 +173,28 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void getTextTypeTest() throws Exception {
-        // todo
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png");
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
+                "file2.png", "image/png");
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec1, rec2);
+        mockOriginalFile(CHILD1_UUID, "photo.jpg");
+        mockOriginalFile(CHILD2_UUID, "file2.png");
+
+        JsonNode mgDescJson = MachineGeneratedContentService.MAPPER.readTree(loadDefaultJson());
+        when(machineGeneratedContentService.deserializeMachineGeneratedDescription(any())).thenReturn(mgDescJson);
+
+        PdfRequest request = new PdfRequest();
+        request.setWorkPid(PARENT_UUID);
+        request.setMimetype("image/png");
+        request.setAgent(agent);
+
+        var textType = pdfService.getTextTypes(request);
+        assertEquals(RESULT_HANDWRITTEN_PRINT, textType);
+
     }
 
     public static SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
@@ -224,5 +254,10 @@ public class AggregatePdfServiceTest {
         when(binaryObject.getContentUri()).thenReturn(URI.create(contentUri));
 
         when(repositoryObjectLoader.getBinaryObject(originalFilePid)).thenReturn(binaryObject);
+    }
+
+    private String loadDefaultJson() throws Exception {
+        return Files.readString(
+                Path.of("src/test/resources/machineGeneratedDescriptionDefaults.json"));
     }
 }
