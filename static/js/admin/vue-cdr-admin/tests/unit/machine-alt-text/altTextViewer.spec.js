@@ -73,6 +73,37 @@ const mountViewer = () => {
 };
 
 describe('altTextViewer.vue', () => {
+    describe('rerunAltTextGeneration', () => {
+        it('shows a success alert and clears it after the timeout when regeneration request was successful', async () => {
+            vi.useFakeTimers();
+
+            const ctx = {
+                setAlertMessage: vi.fn(),
+                setAlertMessageType: vi.fn()
+            };
+            const event = {
+                target: {
+                    dataset: {
+                        id: 'abc-123',
+                        title: 'My test title'
+                    }
+                }
+            };
+
+            await altTextViewer.methods.rerunAltTextGeneration.call(ctx, event);
+
+            expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(1, 'My test title sent for reprocessing');
+            expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(1, 'success');
+
+            vi.advanceTimersByTime(3500);
+
+            expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(2, '');
+            expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(2, '');
+
+            vi.useRealTimers();
+        });
+    });
+
     describe('computed flags/options', () => {
         it('has hasSearchPaneOptions based on contentTagFacets data', () => {
             const wrapper = mountViewer();
