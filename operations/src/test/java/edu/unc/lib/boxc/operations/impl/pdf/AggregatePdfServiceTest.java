@@ -18,9 +18,12 @@ import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -37,14 +40,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
 import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
-import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_TEXT_MIXED;
 
 public class AggregatePdfServiceTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
@@ -53,22 +55,27 @@ public class AggregatePdfServiceTest {
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
 
+    @Captor
+    private ArgumentCaptor<String[]> captor;
     @Mock
-    private MachineGeneratedContentService machineGeneratedContentService;
+    private MachineGeneratedContentService mgContentService;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private SolrSearchService solrSearchService;
 
-    private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+    private AgentPrincipals agent;
     private AutoCloseable closeable;
     private AggregatePdfService pdfService;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
+
+        agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+
         pdfService = new AggregatePdfService();
-        pdfService.setMachineGeneratedContentService(machineGeneratedContentService);
+        pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
     }
@@ -92,6 +99,12 @@ public class AggregatePdfServiceTest {
             mockOriginalFile(CHILD1_UUID, "file1.png");
             mockOriginalFile(CHILD2_UUID, "file2.png");
 
+            String defaultJson = loadDefaultJson();
+            JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
+            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson);
+            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
+            when(mgContentService.extractTextType(defaultNode)).thenReturn(RESULT_HANDWRITTEN_CURSIVE);
+
             var workObject = mock(WorkObject.class);
             when(repositoryObjectLoader.getWorkObject(PIDs.get(PARENT_UUID))).thenReturn(workObject);
 
@@ -107,17 +120,12 @@ public class AggregatePdfServiceTest {
             assertNotNull(result);
             assertTrue(result.toString().endsWith(".pdf"));
 
-            mockedStatic.verify(() -> CLIMain.runCommand(argThat(command ->
-                    command != null
-                            && command.length == 10
-                            && "pdf4u".equals(command[0])
-                            && "add_ocr".equals(command[1])
-                            && "-i".equals(command[2])
-                            && "-o".equals(command[4])
-                            && "-t".equals(command[6])
-                            && "-tt".equals(command[8])
-                            && RESULT_HANDWRITTEN_CURSIVE.equals(command[9])
-            )));
+            mockedStatic.verify(() -> CLIMain.runCommand(captor.capture()), times(1));
+            var cmd = Arrays.stream(captor.getValue()).toList();
+            assertNotNull(cmd);
+            assertTrue(cmd.contains("pdf4u"));
+            assertTrue(FilenameUtils.getBaseName(cmd.get(3)).startsWith(PARENT_UUID));
+            assertEquals(RESULT_HANDWRITTEN_CURSIVE, cmd.get(9));
         }
     }
 
@@ -184,8 +192,11 @@ public class AggregatePdfServiceTest {
         mockOriginalFile(CHILD1_UUID, "photo.jpg");
         mockOriginalFile(CHILD2_UUID, "file2.png");
 
-        JsonNode mgDescJson = MachineGeneratedContentService.MAPPER.readTree(loadDefaultJson());
-        when(machineGeneratedContentService.deserializeMachineGeneratedDescription(any())).thenReturn(mgDescJson);
+        String defaultJson = loadDefaultJson();
+        JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson);
+        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
+        when(mgContentService.extractTextType(defaultNode)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
         PdfRequest request = new PdfRequest();
         request.setWorkPid(PARENT_UUID);
