@@ -1,7 +1,15 @@
-define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
+//console.log("module loaded with deps:", arguments);
+define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities',
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'SearchTags', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ImportMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'],
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, SearchTags, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ImportMenu, ResultTableView) {
-	$.widget("cdr.resultView", {
+			console.log("before widget call:");
+			console.log("$ === window.jQuery?", $ === window.jQuery);
+			console.log("typeof $.widget:", typeof $.widget);
+			console.log("typeof window.jQuery.widget:", typeof window.jQuery.widget);
+			console.log("$.fn.jquery:", $.fn && $.fn.jquery);
+			console.log("window.jQuery.fn.jquery:", window.jQuery && window.jQuery.fn && window.jQuery.fn.jquery);
+
+			$.widget("cdr.resultView", {
 		options : {
 			url : null,
 			container : null,

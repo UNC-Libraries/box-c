@@ -2,50 +2,63 @@ require.config({
 	urlArgs: "v=5.0-SNAPSHOT",
 	baseUrl: "/static/",
 	paths: {
-		"jquery" : "assets/admin/cdr-admin",
-		"jquery-ui" : "assets/admin/cdr-admin",
-		"text" : "js/admin/lib/text",
-		"dompurify" : "js/admin/lib/dompurify.min",
-		"underscore" : "js/admin/lib/underscore",
-		"tpl" : "js/admin/lib/tpl",
-		"autosize" : "js/xmleditor/lib/jquery.autosize-min",
-		"json2" : "js/xmleditor/lib/json2",
-		"cycle" : "js/xmleditor/lib/cycle",
-		"ace" : "js/xmleditor/lib/ace/src-min/ace",
-		"vkbeautify" : "js/xmleditor/lib/vkbeautify",
-		"xmleditor" : "js/xmleditor/jquery.xmleditor"
+		"jquery-legacy": "js/admin/lib/jquery-legacy-global",
+		"jquery-ui-legacy" : "js/admin/lib/jquery-ui.min",
+		"text": "js/admin/lib/text",
+		"dompurify": "js/admin/lib/dompurify.min",
+		"underscore": "js/admin/lib/underscore",
+		"tpl": "js/admin/lib/tpl",
+		"autosize": "js/xmleditor/lib/jquery.autosize-min",
+		"json2": "js/xmleditor/lib/json2",
+		"cycle": "js/xmleditor/lib/cycle",
+		"ace": "js/xmleditor/lib/ace/src-min/ace",
+		"vkbeautify": "js/xmleditor/lib/vkbeautify",
+		"xmleditor": "js/xmleditor/jquery.xmleditor"
+	},
+	map: {
+		"*": {
+			"jquery": "jquery-legacy",
+			"jquery-ui": "jquery-ui-legacy"
+		}
 	},
 	shim: {
-		"ace" : ["jquery"],
-		"autosize" : ["jquery"],
-		"xmleditor" : ["jquery-ui", "text", "autosize", "json2", "cycle", "ace", "vkbeautify"],
+		"ace": ["jquery"],
+		"autosize": ["jquery"],
+		"xmleditor": ["jquery-ui", "text", "autosize", "json2", "cycle", "ace", "vkbeautify"],
 		"underscore": {
 			exports: "_"
 		}
 	}
 });
 
-define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", "xmleditor", "tpl!templates/admin/pathTrail"], function(module, $, ui, DomPurify, ace, xmleditor, pathTemplate) {
-	
+define("editDescription", ["module", "jquery", "dompurify", "ace", "xmleditor", "tpl!templates/admin/pathTrail"], function(module, $, DomPurify, ace, xmleditor, pathTemplate) {
+
+	if (!$.widget) {
+		throw new Error(
+			"Legacy jQuery UI is not attached to the RequireJS jQuery instance. " +
+			"jQuery version: " + ($.fn && $.fn.jquery ? $.fn.jquery : "unknown")
+		);
+	}
+
 	var pid = window.location.pathname;
 	pid = pid.substring(pid.lastIndexOf("/") + 1);
 
 	var loadingIcon = $("#loading-icon");
 	loadingIcon.removeClass("hidden");
-	
+
 	var fields = "id,title,path,contentStatus,type";
 	$.getJSON("/services/api/record/" + pid + "?fields=" + fields, function(data) {
 		var resultObject = data;
-		
+
 		var containerPath = pathTemplate({
-			objectPath : resultObject.objectPath? resultObject.objectPath : [],
-			queryMethod : 'list',
+			objectPath : resultObject.objectPath ? resultObject.objectPath : [],
+			queryMethod : "list",
 			filterParams : "",
 			skipLast : false,
 			DomPurify : DomPurify
 		});
 
-		$(".results_header_hierarchy_path").html(DomPurify.sanitize(containerPath), { ALLOWED_TAGS: ['#text'] });
+		$(".results_header_hierarchy_path").html(DomPurify.sanitize(containerPath), { ALLOWED_TAGS: ["#text"] });
 
 		var originalUrl = module.config().originalUrl;
 		var recordUrl = module.config().recordUrl;
@@ -57,7 +70,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 			action : recordUrl
 		}, {
 			label : "View in DCR",
-			enabled : true, 
+			enabled : true,
 			itemClass : "header_menu_link",
 			action : recordUrl
 		}, {
@@ -66,7 +79,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 			itemClass: "header_menu_link",
 			action: "/services/api/file/" + pid + "/md_descriptive_history"
 		}];
-		if ((data.type === 'File' || data.type === 'Work') && originalUrl && originalUrl.length > 1) {
+
+		if ((data.type === "File" || data.type === "Work") && originalUrl && originalUrl.length > 1) {
 			menuEntries.push({
 				insertPath : ["View"],
 				label : "View original file",
@@ -76,17 +90,17 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 			});
 			menuEntries.push({
 				label : "View File",
-				enabled : true, 
+				enabled : true,
 				itemClass : "header_menu_link",
 				action : originalUrl
 			});
 		}
-		
+
 		var modsRetrievalPath;
-		if ($.inArray('Described', resultObject.contentStatus) != -1) {
-			modsRetrievalPath = "/services/api/file/" + pid + '/md_descriptive';
+		if ($.inArray("Described", resultObject.contentStatus) != -1) {
+			modsRetrievalPath = "/services/api/file/" + pid + "/md_descriptive";
 		}
-		
+
 		var editorOptions = {
 			schema : "../../static/schemas/mods-3-8.json",
 			ajaxOptions : {
@@ -94,49 +108,49 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 				xmlUploadPath : "/services/api/edit/description/" + pid
 			},
 			templateOptions : {
-				templatePath: '../../static/js/xmleditor/templates/',
+				templatePath: "../../static/js/xmleditor/templates/",
 				templates: [
 					{
-						filename: 'mods.xml',
+						filename: "mods.xml",
 						title: "Blank",
-						description: 'An empty MODS document',
-						icon_class: 'fa fa-file-o'
+						description: "An empty MODS document",
+						icon_class: "fa fa-file-o"
 					},
 					{
-						filename: 'generic.xml',
+						filename: "generic.xml",
 						title: "Generic Work",
-						description: 'Generic MODS template prepopulated with common fields',
-						icon_class: 'fa fa-file-text-o'
+						description: "Generic MODS template prepopulated with common fields",
+						icon_class: "fa fa-file-text-o"
 					},
 					{
-						filename: 'minimal_metadata.xml',
+						filename: "minimal_metadata.xml",
 						title: "Minimal Metadata",
-						description: 'Simplified MODS template with basic fields',
-						icon_class: 'fa fa-file-text-o'
+						description: "Simplified MODS template with basic fields",
+						icon_class: "fa fa-file-text-o"
 					},
 					{
-						filename: 'archives.xml',
-						title: 'Archival Folder',
-						description: 'Wilson MODS template with common fields',
-						icon_class: 'fa fa-archive'
+						filename: "archives.xml",
+						title: "Archival Folder",
+						description: "Wilson MODS template with common fields",
+						icon_class: "fa fa-archive"
 					},
 					{
-						filename: 'continuing_resource.xml',
+						filename: "continuing_resource.xml",
 						title: "Continuing Resource",
-						description: 'Template with standard fields to describe continuing resources',
-						icon_class: 'fa fa-newspaper-o'
+						description: "Template with standard fields to describe continuing resources",
+						icon_class: "fa fa-newspaper-o"
 					},
 					{
-						filename: 'oral_histories_interviews.xml',
-						title: 'Oral History Interview',
-						description: 'Oral histories MODS template with common fields',
-						icon_class: 'fas fa-microphone'
+						filename: "oral_histories_interviews.xml",
+						title: "Oral History Interview",
+						description: "Oral histories MODS template with common fields",
+						icon_class: "fas fa-microphone"
 					},
 					{
-						filename: 'oral_histories_series.xml',
+						filename: "oral_histories_series.xml",
 						title: "Oral Histories Series",
-						description: 'Template with standard fields to describe oral histories series',
-						icon_class: 'fas fa-microphone'
+						description: "Template with standard fields to describe oral histories series",
+						icon_class: "fas fa-microphone"
 					}
 				],
 				cancelFunction: function() {
@@ -159,39 +173,39 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 			textEditorLabel : "XML",
 			submitResponseHandler : function(response) {
 				var json;
-				if (typeof response == 'object') {
+				if (typeof response == "object") {
 					json = response;
 				} else {
 					json = JSON.parse(response);
 				}
-				return json.hasOwnProperty('error');
+				return json.hasOwnProperty("error");
 			},
 			submitErrorHandler : function(jqXHR, exception) {
 				var error_msg;
 				try {
 					var error_json = JSON.parse(jqXHR.responseText);
-					error_msg = error_json['error'];
+					error_msg = error_json["error"];
 				} catch (e) {
 					alert("An unexpected error occurred while updating the description, please contact administrators.");
 					return;
 				}
-				
+
 				if (error_msg) {
 					alert(error_msg);
 				} else if (jqXHR.status === 0) {
-					alert('Could not connect.\n Verify Network.');
+					alert("Could not connect.\n Verify Network.");
 				} else if (jqXHR.status == 404) {
-					alert('Requested page not found. [404]');
+					alert("Requested page not found. [404]");
 				} else if (jqXHR.status == 500) {
-					alert('Internal Server Error [500].');
-				} else if (exception === 'parsererror') {
-					alert('Requested JSON parse failed.');
-				} else if (exception === 'timeout') {
-					alert('Time out error.');
-				} else if (exception === 'abort') {
-					alert('Ajax request aborted.');
+					alert("Internal Server Error [500].");
+				} else if (exception === "parsererror") {
+					alert("Requested JSON parse failed.");
+				} else if (exception === "timeout") {
+					alert("Time out error.");
+				} else if (exception === "abort") {
+					alert("Ajax request aborted.");
 				} else {
-					alert('Uncaught Error.\n' + jqXHR.responseText);
+					alert("Uncaught Error.\n" + jqXHR.responseText);
 				}
 			}
 		};
@@ -199,7 +213,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "dompurify", "ace", 
 		loadingIcon.addClass("hidden");
 
 		$("#xml_editor").xmlEditor(editorOptions);
-		
+
 		$(window).resize();
 	});
 });

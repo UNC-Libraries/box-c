@@ -1,4 +1,10 @@
 define('AlertHandler', ['jquery', 'jquery-ui', 'qtip'], function($) {
+	console.log("before widget call:");
+	console.log("$ === window.jQuery?", $ === window.jQuery);
+	console.log("typeof $.widget:", typeof $.widget);
+	console.log("typeof window.jQuery.widget:", typeof window.jQuery.widget);
+	console.log("$.fn.jquery:", $.fn && $.fn.jquery);
+	console.log("window.jQuery.fn.jquery:", window.jQuery && window.jQuery.fn && window.jQuery.fn.jquery);
 	$.widget("cdr.alertHandler", {
 		_create: function() {
 			// Utilise delegate so we don't have to rebind for every qTip!
