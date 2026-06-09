@@ -20,6 +20,7 @@ require.config({
 		'moment' : 'assets/admin/cdr-admin'
 	},
 	shim: {
+		'jquery-ui' : ['jquery'],
 		'qtip' : ['jquery'],
 		'underscore': {
 			exports: '_'

@@ -18,7 +18,14 @@ build-admin-concat:
 
 	cat static/js/admin/lib/jquery.min.js > static/build/admin/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/build/admin/cdr-admin.js
+	# Shadow the global 'define' inside this callback so that jQuery UI's own AMD detection
+	# (typeof define === 'function' && define.amd) evaluates to false. Without this, jQuery UI
+	# calls its own inner define(["jquery"], factory), creating an async anonymous module whose
+	# factory (which sets up $.widget) may not complete before the outer jquery-ui module
+	# resolves — causing the intermittent "$.widget is not a function" error.
+	echo "var define = undefined;" >> static/build/admin/cdr-admin.js
 	cat static/js/admin/lib/jquery-ui.min.js >> static/build/admin/cdr-admin.js
+	echo "return jQuery.ui;" >> static/build/admin/cdr-admin.js
 	echo "});" >> static/build/admin/cdr-admin.js
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
 		static/js/admin/lib/jquery.detachplus.js \
