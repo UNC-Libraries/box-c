@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class AggregatePdfController {
 
         Map<String, Object> result = new HashMap<>();
         var agent = AgentPrincipalsImpl.createFromThread();
-        result.put("action", "generateAggregatePdf");
+        result.put("action", "generate aggregate PDF");
 
         for (String id : ids.split("\n")) {
             PdfRequest pdfRequest = new PdfRequest();
