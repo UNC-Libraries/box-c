@@ -125,7 +125,7 @@ public class AggregatePdfServiceTest {
             assertNotNull(cmd);
             assertTrue(cmd.contains("pdf4u"));
             assertTrue(FilenameUtils.getBaseName(cmd.get(3)).startsWith(PARENT_UUID));
-            assertEquals(RESULT_HANDWRITTEN_CURSIVE, cmd.get(9));
+            assertEquals(List.of(RESULT_HANDWRITTEN_CURSIVE).toString(), cmd.get(9));
         }
     }
 
@@ -203,8 +203,8 @@ public class AggregatePdfServiceTest {
         request.setMimetype("image/png");
         request.setAgent(agent);
 
-        var textType = pdfService.getTextTypes(request);
-        assertEquals(RESULT_HANDWRITTEN_PRINT, textType);
+        var textType = pdfService.createTextTypeList(request);
+        assertEquals(List.of(RESULT_HANDWRITTEN_PRINT), textType);
 
     }
 

@@ -74,11 +74,11 @@ public class AggregatePdfService {
         String inputFiles = createInputListFile(request).toString();
         String transcriptFiles = createTranscriptListFile(request).toString();
         Path tempPath = prepareTempPath(workPid, ".pdf");
-        String textType = getTextTypes(request);
+        String textTypeList = String.valueOf(createTextTypeList(request));
 
         try {
             String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles, "-o", tempPath.toString(),
-                    "-t", transcriptFiles, "-tt", textType};
+                    "-t", transcriptFiles, "-tt", textTypeList};
             log.debug("Run pdf4u command {} for work {}", command, workPid);
             CLIMain.runCommand(command);
 
@@ -170,28 +170,38 @@ public class AggregatePdfService {
     }
 
     /**
-     * Get text type from boxctron's alt text review
+     * Retrieve text type value from boxctron's alt text review and create list of all text types
      * @param request PdfRequest
-     * @return textType
+     * @return list of text types
      */
-    public String getTextTypes(PdfRequest request) {
+    public List<String> createTextTypeList(PdfRequest request) {
         var textType = RESULT_HANDWRITTEN_CURSIVE;
 
-        var workPid = PIDs.get(request.getWorkPid());
+        var workPidString = request.getWorkPid();
+        var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
         var parentRec = getParentRecord(workPid, agent);
+        assertParentRecordValid(workPid, parentRec);
+
+        var textTypeList = new ArrayList<String>();
+
         List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
-        var filePid = children.getFirst().getPid();
+        for (var child : children) {
+            var filePid = child.getPid();
+            String mgdString = getMachineGeneratedDescriptionJson(filePid);
+            JsonNode mgdNode = null;
+            if (mgdString != null) {
+                mgdNode = machineGeneratedContentService.deserializeMachineGeneratedDescription(mgdString);
+                log.debug("Loaded machine gen datastream for {}", filePid);
+            }
 
-        String mgdString = getMachineGeneratedDescriptionJson(filePid);
-        JsonNode mgdNode = null;
-        if (mgdString != null) {
-            mgdNode = machineGeneratedContentService.deserializeMachineGeneratedDescription(mgdString);
-            log.debug("Loaded machine gen datastream for {}", request.getWorkPid());
+            textType = machineGeneratedContentService.extractTextType(mgdNode);
+            if (textType != null) {
+                textTypeList.add(textType);
+            }
         }
-        textType = machineGeneratedContentService.extractTextType(mgdNode);
 
-        return textType;
+        return textTypeList;
     }
 
     private String getMachineGeneratedDescriptionJson(PID filePid) {

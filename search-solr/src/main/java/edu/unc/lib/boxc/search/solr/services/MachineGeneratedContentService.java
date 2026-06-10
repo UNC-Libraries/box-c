@@ -183,9 +183,7 @@ public class MachineGeneratedContentService {
 
         if (!textTypeNode.isMissingNode()) {
             String textType = textTypeNode.asText();
-            if (RESULT_HANDWRITTEN_PRINT.equalsIgnoreCase(textType)
-                    || RESULT_HANDWRITTEN_CURSIVE.equalsIgnoreCase(textType)
-                    || RESULT_TEXT_MIXED.equalsIgnoreCase(textType)) {
+            if (!textType.equalsIgnoreCase("N/A")) {
                 return textType;
             }
         }
