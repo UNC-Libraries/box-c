@@ -1,28 +1,37 @@
 require.config({
 	urlArgs: "v=5.0-SNAPSHOT",
-	baseUrl: '/static/',
+	baseUrl: "/static/",
+
 	paths: {
-		'jquery' : 'assets/admin/cdr-admin',
-		'jquery-ui' : 'assets/admin/cdr-admin',
-		'text' : 'js/admin/lib/text',
-		'underscore' : 'js/admin/lib/underscore',
-		'tpl' : 'js/admin/lib/tpl',
-		'qtip' : 'js/admin/lib/jquery.qtip.min',
-		'dompurify' : 'js/admin/lib/dompurify.min',
-		
-		'StatusMonitorManager' : 'assets/admin/cdr-admin',
-		'AbstractStatusMonitor' : 'assets/admin/cdr-admin',
-		'ActionEventHandler' : 'assets/admin/cdr-admin',
-		'DepositMonitor' : 'assets/admin/cdr-admin',
-		'URLUtilities' : 'assets/admin/cdr-admin',
-		
-		"editable" : "js/admin/lib/jqueryui-editable.min",
-		'moment' : 'assets/admin/cdr-admin'
+		"jquery-legacy": "js/admin/lib/jquery.min",
+		"jquery-ui": "js/admin/lib/jquery-ui.min",
+		"text": "js/admin/lib/text",
+		"underscore": "js/admin/lib/underscore",
+		"tpl": "js/admin/lib/tpl",
+		"qtip": "js/admin/lib/jquery.qtip.min",
+		"dompurify": "js/admin/lib/dompurify.min",
+		"StatusMonitorManager": "assets/admin/cdr-admin",
+		"AbstractStatusMonitor": "assets/admin/cdr-admin",
+		"ActionEventHandler": "assets/admin/cdr-admin",
+		"DepositMonitor": "assets/admin/cdr-admin",
+		"URLUtilities": "assets/admin/cdr-admin",
+
+		"editable": "js/admin/lib/jqueryui-editable.min",
+		"moment": "assets/admin/cdr-admin"
+	},
+	map: {
+		"*": {
+			"jquery": "jquery-legacy"
+		}
 	},
 	shim: {
-		'qtip' : ['jquery'],
-		'underscore': {
-			exports: '_'
+		"jquery-legacy": {
+			exports: "$"
+		},
+		"jquery-ui": ["jquery"],
+		"qtip": ["jquery"],
+		"underscore": {
+			exports: "_"
 		}
 	}
 });
