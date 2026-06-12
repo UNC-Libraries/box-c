@@ -1,14 +1,27 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [vue()],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src')
-        }
+        },
+        dedupe: ['jquery']
+    },
+    optimizeDeps: {
+        include: [
+            'jquery',
+            'datatables.net-vue3',
+            'datatables.net-bm',
+            'datatables.net-fixedheader',
+            'datatables.net-buttons-bm',
+            'datatables.net-buttons/js/buttons.colVis.js',
+            'datatables.net-searchpanes-bm',
+            'datatables.net-select-bm',
+            'datatables.mark.js'
+        ]
     },
     build: {
         minify: false,
