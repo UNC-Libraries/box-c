@@ -27,18 +27,24 @@ public class RunEnhancementsMessageHelpers {
      * @param force
      * @return
      */
-    public static Document makeEnhancementOperationBody(String userid, PID pid, Boolean force) {
+    public static Document makeEnhancementOperationBody(String userid, PID pid, Boolean force, Boolean regenerateDescription) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
 
         Element paramForce = new Element("force", CDR_MESSAGE_NS);
-
         if (force) {
             paramForce.setText("true");
         } else {
             paramForce.setText("false");
+        }
+
+        Element paramRegen = new Element("regenerateDescription", CDR_MESSAGE_NS);
+        if (regenerateDescription) {
+            paramRegen.setText("true");
+        } else {
+            paramRegen.setText("false");
         }
 
         Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);

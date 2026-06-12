@@ -220,6 +220,28 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         verify(messageSender, never()).sendMessage(any(Document.class));
     }
 
+    @Test
+    public void setRunEnhancementsRegenerateDescription() throws Exception {
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
+        PID filePid = fileObj.getPid();
+        fileObj.addOriginalFile(makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null);
+        setResultMetadataObject(filePid, ResourceType.File.name());
+
+        MvcResult result = mvc.perform(post("/runEnhancements")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"force\":true,\"pids\":[\"" + filePid.getId() + "\"],\"regenerateDescription\":true}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        assertResponseSuccess(result);
+
+        verify(messageSender).sendMessage(docCaptor.capture());
+        Document msgDoc = docCaptor.getValue();
+        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), USER_NAME);
+    }
+
+
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
         Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(mvcResult);
         assertTrue(resp.containsKey("message"), "Missing run enhancements message");

@@ -73,7 +73,6 @@ public class EnhancementRouter extends RouteBuilder {
         from("direct:process.original")
             .routeId("ProcessOriginalBinary")
             .startupOrder(108)
-            .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
                 .to("{{cdr.enhancement.perform.camel}}");

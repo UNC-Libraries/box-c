@@ -65,6 +65,7 @@ public class RunEnhancementsService {
             var objectPids = request.getPids();
             var force = request.isForce();
             var recursive = request.isRecursive();
+            var regenerateDescription = request.isRegenerateDescription();
             for (String objectPid : objectPids) {
                 PID pid = PIDs.get(objectPid);
 
@@ -73,16 +74,16 @@ public class RunEnhancementsService {
 
                 if (recursive && !(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     LOG.debug("Queueing object and children for enhancements: {}", pid);
-                    recursiveEnhancements(pid, agent, force);
+                    recursiveEnhancements(pid, agent, force, regenerateDescription);
                 } else {
                     LOG.debug("Queueing object for enhancements: {}", pid);
-                    shallowEnhancements(pid, agent, force);
+                    shallowEnhancements(pid, agent, force, regenerateDescription);
                 }
             }
         }
     }
 
-    private void recursiveEnhancements(PID pid, AgentPrincipals agent, Boolean force) {
+    private void recursiveEnhancements(PID pid, AgentPrincipals agent, Boolean force, Boolean regenerateDescription) {
         SearchState searchState = new SearchState();
         searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
         searchState.setResultFields(RESULTS_FIELD_LIST);
@@ -105,33 +106,33 @@ public class RunEnhancementsService {
                 LOG.debug("Found {} items to queue for enhancement run", totalResults);
                 // Add the root container itself
                 ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
-                createMessage(rootContainer, agent.getUsername(), force);
+                createMessage(rootContainer, agent.getUsername(), force, regenerateDescription);
             }
             for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-                createMessage(metadata, agent.getUsername(), force);
+                createMessage(metadata, agent.getUsername(), force, regenerateDescription);
                 count++;
             }
             LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
         } while(count < totalResults);
     }
 
-    private void shallowEnhancements(PID pid, AgentPrincipals agent, Boolean force) {
+    private void shallowEnhancements(PID pid, AgentPrincipals agent, Boolean force, Boolean regenerateDescription) {
         SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
         ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
-        createMessage(metadata, agent.getUsername(), force);
+        createMessage(metadata, agent.getUsername(), force, regenerateDescription);
     }
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
     }
 
-    private void createMessage(ContentObjectRecord metadata, String username, Boolean force) {
+    private void createMessage(ContentObjectRecord metadata, String username, Boolean force, Boolean regenerateDescription) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
         String resourceType = metadata.getResourceType();
         PID originalPid = (ResourceType.File.equals(resourceType) && originalDs != null) ?
                 DatastreamPids.getOriginalFilePid(pid) : pid;
-        Document msg = makeEnhancementOperationBody(username, originalPid, force);
+        Document msg = makeEnhancementOperationBody(username, originalPid, force, regenerateDescription);
         messageSender.sendMessage(msg);
     }
 
