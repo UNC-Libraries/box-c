@@ -1,5 +1,4 @@
-define('AggregatePdfAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/admin/aggregatePdfForm"],
-    function($, AbstractBatchAction, aggregatePdfTemplate) {
+define('AggregatePdfAction', [ 'jquery', 'AbstractBatchAction' ], function($, AbstractBatchAction) {
 
     function AggregatePdfAction(context) {
         this._create(context);
@@ -9,8 +8,9 @@ define('AggregatePdfAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/a
     AggregatePdfAction.prototype = Object.create( AbstractBatchAction.prototype );
 
     AggregatePdfAction.prototype.isValidTarget = function(target) {
-        return target.isSelected() && target.isEnabled() && $.inArray("editResourceType", target.metadata.permissions) != -1
-            && "Folder" == target.getMetadata().type;
+        return target.isSelected() && target.isEnabled()
+            && $.inArray("reindex", target.metadata.permissions) !== -1
+            && "Work" === target.getMetadata().type;
     };
 
         AggregatePdfAction.prototype.getTargets = function(targets) {
@@ -24,49 +24,66 @@ define('AggregatePdfAction', [ 'jquery', 'AbstractBatchAction', "tpl!templates/a
         var self = this;
 
         this.targets = this.getTargets();
-        if (this.targets.length == 1) {
-            title = "Create aggregrate PDFs for " + this.targets[0].metadata.title.substring(0, 30);
+
+        var title;
+        var promptText;
+
+        if (this.targets.length === 1) {
+            title = "Create aggregate PDF";
+            promptText = "Create aggregate PDFs for " + this.targets[0].metadata.title.substring(0, 30) + "?";
         } else {
-            title = "Create aggregate PDFs for " + this.targets.length + " objects";
+            title = "Create aggregate PDFs";
+            promptText = "Create aggregate PDFs for " + this.targets.length + " objects?";
         }
 
-        var aggregatePdfForm = aggregatePdfTemplate();
-        this.dialog = $("<div class='containingDialog'>" + aggregatePdfForm + "</div>");
+        this.dialog = $("<div class='containingDialog'>" + promptText + "</div>");
+
         this.dialog.dialog({
             autoOpen: true,
             width: 'auto',
             minWidth: '500',
             modal: true,
-            title: title
-        });
-        this.$form = this.dialog.first();
-
-        this.$form.submit(function(e){
-            var pids = [];
-            for (var index in self.targets) {
-                pids += this.targets[index].getPid() + "\n";
-            }
-
-            $.ajax({
-                url : "/services/api/edit/aggregatePdf",
-                type : "POST",
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                data : JSON.stringify({
-                    pids : pids,
-                })
-            }).done(function(response) {
-                self.context.view.$alertHandler.alertHandler("message", "Aggregate PDF generation of "
-                    + self.targets.length + " object(s) has started.");
+            title: title,
+            buttons: {
+                "Create PDFs": function() {
+                    self.dialog.dialog("close");
+                    self._submitAggregatePdfRequest();
+                },
+                "Cancel": function() {
+                    self.dialog.dialog("close");
+                    self.dialog.remove();
+                }
+            },
+            close: function() {
                 self.dialog.remove();
-            }).fail(function() {
-                self.context.view.$alertHandler.alertHandler("error", "Failed to generate aggregate PDF for "
-                    + self.targets.length + " object(s)");
-            });
-
-            e.preventDefault();
+            }
         });
-    }
+    };
+
+    AggregatePdfAction.prototype._submitAggregatePdfRequest = function() {
+        var self = this;
+
+        var pids = [];
+        for (var index in self.targets) {
+            pids.push(self.targets[index].getPid());
+        }
+
+        $.ajax({
+            url: "/services/api/edit/aggregatePdf",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({
+                pids: pids.join("\n")
+            })
+        }).done(function(response) {
+            self.context.view.$alertHandler.alertHandler("message", "Aggregate PDF generation of "
+                + self.targets.length + " object(s) has started.");
+        }).fail(function() {
+            self.context.view.$alertHandler.alertHandler("error", "Failed to generate aggregate PDF for "
+                + self.targets.length + " object(s)");
+        });
+    };
 
     return AggregatePdfAction;
 });

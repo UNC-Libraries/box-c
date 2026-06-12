@@ -36,7 +36,7 @@ public class AggregatePdfController {
 
         Map<String, Object> result = new HashMap<>();
         var agent = AgentPrincipalsImpl.createFromThread();
-        result.put("action", "generate aggregate PDF");
+        result.put("action", "generate aggregate PDFs");
 
         for (String id : ids.split("\n")) {
             PdfRequest pdfRequest = new PdfRequest();
