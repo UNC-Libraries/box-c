@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
@@ -27,7 +28,8 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-
+    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
+            "videoAccessCopy,machineGenDescription";
     private RepositoryObjectLoader repoObjLoader;
 
     @Override
@@ -60,6 +62,16 @@ public class BinaryEnhancementProcessor implements Processor {
                         in.setHeader("force", forceText.getTextTrim());
                     } else {
                         in.setHeader("force", "false");
+                    }
+
+                    // if the request specifies machine gen description regeneration,
+                    // only run the machine Gen Description enhancement and force it
+                    Element regenerateDescriptionElement = enhancementsEl.getChild("regenerateDescription", CDR_MESSAGE_NS);
+                    if (regenerateDescriptionElement != null) {
+                        in.setHeader(CdrEnhancementSet, "machineGenDescription");
+                        in.setHeader("force", "true");
+                    } else {
+                        in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
                     }
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
