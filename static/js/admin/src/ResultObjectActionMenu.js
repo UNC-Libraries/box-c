@@ -257,6 +257,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			if (!isContentRoot && $.inArray('destroy', metadata.permissions) != -1) {
 				items["destroy"] = {name : 'Destroy', disabled :  !resultObject.isDeleted};
 			}
+			if (metadata.type === 'Work' && $.inArray('reindex', metadata.permissions) != -1) {
+				items["aggregatePdf"] = {name : 'Aggregate Pdf'};
+			}
 		}
 		
 		// Trash actions
@@ -515,6 +518,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							targets : [resultObject]
 						});
 						break;
+					case "aggregatePdf" :
+						self.actionHandler.addEvent({
+							action : "AggregatePdfBatch",
+							targets : [resultObject]
+						});
 					case "copyid" :
 						(async function() {
 							try {

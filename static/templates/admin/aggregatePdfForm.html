@@ -1,0 +1,16 @@
+<form id="aggregate_pdf_form" action="services/api/edit/aggregatePdf" class="edit_form">
+    <p>
+        Agggregate PDFs will be generated for each work in this folder"
+    </p>
+
+    <input type="hidden" value="<%= metadata.type %>" id="folder_name" name="folder_name"/>
+    <div class="update_field">
+        <input type="submit" id="aggregate_pdf_submit_button" class="update_button" value="Run" autofocus />
+    </div>
+
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack">
+        </div>
+    </div>
+</form>

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Service for sending requests for pdf gen
+ * Service for sending requests for aggregate PDF generation
  * @author krwong
  */
 public class PdfRequestSender extends MessageSender {
@@ -24,6 +24,6 @@ public class PdfRequestSender extends MessageSender {
     public void sendToQueue(PdfRequest request) throws IOException {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
-        log.info("Job to generate derivative PDF with OCR has been queued for {}", request.getAgent().getUsername());
+        log.info("Job to generate aggregate PDF with OCR has been queued for {}", request.getAgent().getUsername());
     }
 }
