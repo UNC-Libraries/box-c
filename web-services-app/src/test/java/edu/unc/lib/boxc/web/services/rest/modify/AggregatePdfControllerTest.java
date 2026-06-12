@@ -101,7 +101,7 @@ public class AggregatePdfControllerTest {
                 .andReturn();
 
         var respMap = getMapFromResponse(result);
-        assertEquals("generate aggregate PDF", respMap.get("action"));
+        assertEquals("generate aggregate PDFs", respMap.get("action"));
 
         ArgumentCaptor<PdfRequest> captor = ArgumentCaptor.forClass(PdfRequest.class);
         verify(requestSender, times(2)).sendToQueue(captor.capture());
