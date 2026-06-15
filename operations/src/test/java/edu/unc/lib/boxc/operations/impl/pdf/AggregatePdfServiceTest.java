@@ -215,7 +215,7 @@ public class AggregatePdfServiceTest {
         request.setAgent(agent);
 
         var textType = pdfService.createTextTypeList(request);
-        assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, textType);
+        assertEquals(List.of(RESULT_HANDWRITTEN_PRINT, RESULT_HANDWRITTEN_PRINT), textType);
     }
 
     public static SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
