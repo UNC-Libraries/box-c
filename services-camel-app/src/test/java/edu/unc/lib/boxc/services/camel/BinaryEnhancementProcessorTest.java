@@ -169,10 +169,9 @@ public class BinaryEnhancementProcessorTest {
             Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
             enhancements.addContent(new Element("force", CDR_MESSAGE_NS).setText(String.valueOf(force)));
-            if (regenDescription) {
-                enhancements.addContent(new Element("regenerateDescription", CDR_MESSAGE_NS)
-                        .setText("true"));
-            }
+            enhancements.addContent(new Element("regenerateDescription", CDR_MESSAGE_NS)
+                    .setText(String.valueOf(regenDescription)));
+
             entry.addContent(enhancements);
         }
 

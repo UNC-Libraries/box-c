@@ -61,8 +61,9 @@ public class BinaryEnhancementProcessor implements Processor {
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
                     Element regenerateDescriptionElement = enhancementsEl.getChild("regenerateDescription", CDR_MESSAGE_NS);
-                    // force is set to true if it's a regen request
-                    if (regenerateDescriptionElement != null) {
+                    var isRegenRequest = Objects.equals(regenerateDescriptionElement.getTextTrim(), "true");
+                    // if it's a regen request set force to true
+                    if (isRegenRequest) {
                         in.setHeader("force", "true");
                     } else if (forceText != null) {
                         in.setHeader("force", forceText.getTextTrim());
@@ -72,7 +73,7 @@ public class BinaryEnhancementProcessor implements Processor {
 
                     // if the request specifies machine gen description regeneration,
                     // only run the machine Gen Description enhancement
-                    if (regenerateDescriptionElement != null) {
+                    if (isRegenRequest) {
                         in.setHeader(CdrEnhancementSet, "machineGenDescription");
                     } else {
                         in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
