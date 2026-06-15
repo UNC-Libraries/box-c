@@ -9,7 +9,7 @@ define('AggregatePdfAction', [ 'jquery', 'AbstractBatchAction' ], function($, Ab
 
     AggregatePdfAction.prototype.isValidTarget = function(target) {
         return target.isSelected() && target.isEnabled()
-            && $.inArray("reindex", target.metadata.permissions) !== -1
+            && $.inArray("editResourceType", target.metadata.permissions) !== -1
             && "Work" === target.getMetadata().type;
     };
 

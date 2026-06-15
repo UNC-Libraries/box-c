@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
@@ -74,7 +75,7 @@ public class AggregatePdfService {
         String inputFiles = createInputListFile(request).toString();
         String transcriptFiles = createTranscriptListFile(request).toString();
         Path tempPath = prepareTempPath(workPid, ".pdf");
-        String textTypeList = String.valueOf(createTextTypeList(request));
+        String textTypeList = createTextTypeList(request);
 
         try {
             String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles, "-o", tempPath.toString(),
@@ -172,9 +173,9 @@ public class AggregatePdfService {
     /**
      * Retrieve text type value from boxctron's alt text review and create list of all text types
      * @param request PdfRequest
-     * @return list of text types
+     * @return list of text types as comma-delineated string
      */
-    public List<String> createTextTypeList(PdfRequest request) {
+    public String createTextTypeList(PdfRequest request) {
         var textType = RESULT_HANDWRITTEN_CURSIVE;
 
         var workPidString = request.getWorkPid();
@@ -201,7 +202,7 @@ public class AggregatePdfService {
             }
         }
 
-        return textTypeList;
+        return textTypeList.stream().map(Object::toString).collect(Collectors.joining(","));
     }
 
     private String getMachineGeneratedDescriptionJson(PID filePid) {

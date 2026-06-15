@@ -45,7 +45,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
 import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
 
 public class AggregatePdfServiceTest {
@@ -99,11 +98,17 @@ public class AggregatePdfServiceTest {
             mockOriginalFile(CHILD1_UUID, "file1.png");
             mockOriginalFile(CHILD2_UUID, "file2.png");
 
-            String defaultJson = loadDefaultJson();
-            JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
-            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson);
-            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
-            when(mgContentService.extractTextType(defaultNode)).thenReturn(RESULT_HANDWRITTEN_CURSIVE);
+            String defaultJson1 = loadDefaultJson();
+            JsonNode defaultNode1 = MachineGeneratedContentService.MAPPER.readTree(defaultJson1);
+            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson1);
+            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson1)).thenReturn(defaultNode1);
+            when(mgContentService.extractTextType(defaultNode1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+
+            String defaultJson2 = loadDefaultJson();
+            JsonNode defaultNode2 = MachineGeneratedContentService.MAPPER.readTree(defaultJson2);
+            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(defaultJson2);
+            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson2)).thenReturn(defaultNode2);
+            when(mgContentService.extractTextType(defaultNode2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
             var workObject = mock(WorkObject.class);
             when(repositoryObjectLoader.getWorkObject(PIDs.get(PARENT_UUID))).thenReturn(workObject);
@@ -125,7 +130,7 @@ public class AggregatePdfServiceTest {
             assertNotNull(cmd);
             assertTrue(cmd.contains("pdf4u"));
             assertTrue(FilenameUtils.getBaseName(cmd.get(3)).startsWith(PARENT_UUID));
-            assertEquals(List.of(RESULT_HANDWRITTEN_CURSIVE).toString(), cmd.get(9));
+            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, cmd.get(9));
         }
     }
 
@@ -192,11 +197,17 @@ public class AggregatePdfServiceTest {
         mockOriginalFile(CHILD1_UUID, "photo.jpg");
         mockOriginalFile(CHILD2_UUID, "file2.png");
 
-        String defaultJson = loadDefaultJson();
-        JsonNode defaultNode = MachineGeneratedContentService.MAPPER.readTree(defaultJson);
-        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson);
-        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson)).thenReturn(defaultNode);
-        when(mgContentService.extractTextType(defaultNode)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+        String defaultJson1 = loadDefaultJson();
+        JsonNode defaultNode1 = MachineGeneratedContentService.MAPPER.readTree(defaultJson1);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson1);
+        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson1)).thenReturn(defaultNode1);
+        when(mgContentService.extractTextType(defaultNode1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+
+        String defaultJson2 = loadDefaultJson();
+        JsonNode defaultNode2 = MachineGeneratedContentService.MAPPER.readTree(defaultJson2);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(defaultJson2);
+        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson2)).thenReturn(defaultNode2);
+        when(mgContentService.extractTextType(defaultNode2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
         PdfRequest request = new PdfRequest();
         request.setWorkPid(PARENT_UUID);
@@ -204,8 +215,7 @@ public class AggregatePdfServiceTest {
         request.setAgent(agent);
 
         var textType = pdfService.createTextTypeList(request);
-        assertEquals(List.of(RESULT_HANDWRITTEN_PRINT), textType);
-
+        assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, textType);
     }
 
     public static SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
