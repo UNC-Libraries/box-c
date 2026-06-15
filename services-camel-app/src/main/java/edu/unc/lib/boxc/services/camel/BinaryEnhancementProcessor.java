@@ -21,6 +21,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 
+import java.util.Objects;
+
 /**
  * Sets headers related to identifying binary objects to run enhancement operations on
  *
@@ -28,7 +30,7 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
+    public static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
             "videoAccessCopy,machineGenDescription";
     private RepositoryObjectLoader repoObjLoader;
 
@@ -58,18 +60,21 @@ public class BinaryEnhancementProcessor implements Processor {
                     in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
-                    if (forceText != null) {
+                    Element regenerateDescriptionElement = enhancementsEl.getChild("regenerateDescription", CDR_MESSAGE_NS);
+                    // force is set to true if it's a regen request
+                    if (regenerateDescriptionElement != null) {
+                        in.setHeader("force", "true");
+                    }
+                    else if (forceText != null) {
                         in.setHeader("force", forceText.getTextTrim());
                     } else {
                         in.setHeader("force", "false");
                     }
 
                     // if the request specifies machine gen description regeneration,
-                    // only run the machine Gen Description enhancement and force it
-                    Element regenerateDescriptionElement = enhancementsEl.getChild("regenerateDescription", CDR_MESSAGE_NS);
+                    // only run the machine Gen Description enhancement
                     if (regenerateDescriptionElement != null) {
                         in.setHeader(CdrEnhancementSet, "machineGenDescription");
-                        in.setHeader("force", "true");
                     } else {
                         in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
                     }

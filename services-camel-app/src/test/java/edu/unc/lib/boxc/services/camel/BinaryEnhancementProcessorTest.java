@@ -22,6 +22,8 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor.DEFAULT_ENHANCEMENTS;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -76,17 +78,19 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain", true, false);
+        setMessageBody("text/plain", true, false, false);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
+        verify(message).setHeader("force", "false");
     }
 
     @Test
     public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
-        setMessageBody("image/png", true, false);
+        setMessageBody("image/png", true, false, false);
 
         processor.process(exchange);
 
@@ -97,7 +101,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testThumbForce() throws Exception {
-        setMessageBody("image/png", true, true);
+        setMessageBody("image/png", true, true, false);
 
         processor.process(exchange);
 
@@ -108,7 +112,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testThumbNoForce() throws Exception {
-        setMessageBody("image/png", true, false);
+        setMessageBody("image/png", true, false, false);
 
         processor.process(exchange);
 
@@ -120,7 +124,7 @@ public class BinaryEnhancementProcessorTest {
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png", false, false);
+        setMessageBody("image/png", false, false, false);
 
         processor.process(exchange);
 
@@ -133,7 +137,7 @@ public class BinaryEnhancementProcessorTest {
     public void testNonBinary() throws Exception {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
-        setMessageBody("image/*", true, false);
+        setMessageBody("image/*", true, false, false);
 
         processor.process(exchange);
 
@@ -142,7 +146,21 @@ public class BinaryEnhancementProcessorTest {
         verify(message).setHeader("force", "false");
     }
 
-    private void setMessageBody(String mimeType, boolean addEnhancementHeader, boolean force) {
+    @Test
+    public void testRegenerateDescription() throws Exception {
+        setMessageBody("image/png", true, false, true);
+
+        processor.process(exchange);
+
+        verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
+        // check that force has been turned to true
+        verify(message).setHeader("force", "true");
+        // the only enhancement run will be machine generated description
+        verify(message).setHeader(CdrEnhancementSet, "machineGenDescription");
+    }
+
+    private void setMessageBody(String mimeType, boolean addEnhancementHeader, boolean force, boolean regenDescription) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
@@ -151,6 +169,10 @@ public class BinaryEnhancementProcessorTest {
             Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
             enhancements.addContent(new Element("force", CDR_MESSAGE_NS).setText(String.valueOf(force)));
+            if (regenDescription) {
+                enhancements.addContent(new Element("regenerateDescription", CDR_MESSAGE_NS)
+                        .setText("true"));
+            }
             entry.addContent(enhancements);
         }
 

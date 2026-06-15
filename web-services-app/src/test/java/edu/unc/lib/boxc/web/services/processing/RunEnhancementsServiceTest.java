@@ -141,6 +141,24 @@ public class RunEnhancementsServiceTest {
     }
 
     @Test
+    public void runFileObjectWithRegenDescriptionTest() {
+        var request = new RunEnhancementsRequest();
+        request.setAgent(agent);
+        request.setRecursive(true);
+        request.setForce(true);
+        request.setRegenerateDescription(true);
+        request.setPids(List.of(filePid.getId()));
+
+        service.run(request);
+
+        verify(messageSender).sendMessage(docCaptor.capture());
+        Document msgDoc = docCaptor.getValue();
+        var dsPid = DatastreamPids.getOriginalFilePid(filePid);
+        assertMessageValues(msgDoc, dsPid, true);
+        assertRegenDescValue(msgDoc, true);
+    }
+
+    @Test
     public void runWorkObjectShallowTest() {
         var request = new RunEnhancementsRequest();
         request.setAgent(agent);
@@ -174,6 +192,30 @@ public class RunEnhancementsServiceTest {
         assertMessageValues(msgDocs.get(0), workPid, false);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
         assertMessageValues(msgDocs.get(1), dsPid, false);
+    }
+
+    @Test
+    public void runWorkObjectRecursiveWithRegenDescriptionTest() {
+        when(searchResultResp.getResultCount()).thenReturn(1L);
+        when(searchResultResp.getSelectedContainer()).thenReturn(workRecord);
+        when(searchResultResp.getResultList()).thenReturn(List.of(fileRecord));
+
+        var request = new RunEnhancementsRequest();
+        request.setAgent(agent);
+        request.setRecursive(true);
+        request.setForce(true);
+        request.setRegenerateDescription(true);
+        request.setPids(List.of(workPid.getId()));
+
+        service.run(request);
+
+        verify(messageSender, times(2)).sendMessage(docCaptor.capture());
+        var msgDocs = docCaptor.getAllValues();
+        assertMessageValues(msgDocs.get(0), workPid, true);
+        assertRegenDescValue(msgDocs.get(0), true);
+        var dsPid = DatastreamPids.getOriginalFilePid(filePid);
+        assertMessageValues(msgDocs.get(1), dsPid, true);
+        assertRegenDescValue(msgDocs.get(1), true);
     }
 
     @Test
@@ -245,5 +287,12 @@ public class RunEnhancementsServiceTest {
         assertEquals(expectedPid, PIDs.get(pidString));
         assertEquals(USER_NAME, author);
         assertEquals(expectedForce, force);
+    }
+
+    private void assertRegenDescValue(Document msgDoc, boolean expectedRegenerateDescription) {
+        Element entry = msgDoc.getRootElement();
+        Element runEl = entry.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+        var regenerateDescription = Boolean.valueOf(runEl.getChildText("regenerateDescription", CDR_MESSAGE_NS));
+        assertEquals(expectedRegenerateDescription, regenerateDescription);
     }
 }

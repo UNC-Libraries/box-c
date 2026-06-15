@@ -50,6 +50,7 @@ public class RunEnhancementsMessageHelpers {
         Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
         enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
         enhancements.addContent(paramForce);
+        enhancements.addContent(paramRegen);
         entry.addContent(enhancements);
 
         msg.addContent(entry);
