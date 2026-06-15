@@ -9,8 +9,10 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor.DEFAULT_ENHANCEMENTS;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrImagePathCleanup;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -413,7 +415,28 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testRegenerateMachineGenDescription() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
+        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+                null, "image/png", null, null);
+
+        Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        headers.replace(CdrEnhancementSet, "machineGenDescription");
+        headers.put("force", "true");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addVideoAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(machineGenDescriptionProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
@@ -425,6 +448,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
+        headers.put(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
 
         return headers;
     }

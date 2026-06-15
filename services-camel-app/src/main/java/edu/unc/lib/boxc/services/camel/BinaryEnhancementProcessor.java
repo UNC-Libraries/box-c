@@ -64,8 +64,7 @@ public class BinaryEnhancementProcessor implements Processor {
                     // force is set to true if it's a regen request
                     if (regenerateDescriptionElement != null) {
                         in.setHeader("force", "true");
-                    }
-                    else if (forceText != null) {
+                    } else if (forceText != null) {
                         in.setHeader("force", forceText.getTextTrim());
                     } else {
                         in.setHeader("force", "false");
