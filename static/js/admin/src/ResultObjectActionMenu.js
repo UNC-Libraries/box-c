@@ -517,7 +517,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "aggregatePdf" :
 						self.actionHandler.addEvent({
 							action : "AggregatePdfAction",
-							targets : resultObject
+							url : "api/edit/aggregatePdf",
+							application : "services"
 						});
 						break;
 					case "copyid" :
