@@ -1,6 +1,8 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 
 import java.util.Arrays;
@@ -132,7 +134,8 @@ public class RunEnhancementsService {
         String resourceType = metadata.getResourceType();
         PID originalPid = (ResourceType.File.equals(resourceType) && originalDs != null) ?
                 DatastreamPids.getOriginalFilePid(pid) : pid;
-        Document msg = makeEnhancementOperationBody(username, originalPid, force, regenerateDescription);
+        var enhancements = regenerateDescription ? List.of(MACHINE_GEN_DESCRIPTION) : DEFAULT_ENHANCEMENTS;
+        Document msg = makeEnhancementOperationBody(username, originalPid, force, enhancements);
         messageSender.sendMessage(msg);
     }
 

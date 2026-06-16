@@ -2,6 +2,8 @@ package edu.unc.lib.boxc.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -60,8 +62,8 @@ public class BinaryEnhancementProcessor implements Processor {
                     in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
-                    Element regenerateDescriptionElement = enhancementsEl.getChild("regenerateDescription", CDR_MESSAGE_NS);
-                    var isRegenRequest = Objects.equals(regenerateDescriptionElement.getTextTrim(), "true");
+                    Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
+                    var isRegenRequest = Objects.equals(enhancementsList.getTextTrim(), MACHINE_GEN_DESCRIPTION);
                     // if it's a regen request set force to true
                     if (isRegenRequest) {
                         in.setHeader("force", "true");
@@ -70,14 +72,9 @@ public class BinaryEnhancementProcessor implements Processor {
                     } else {
                         in.setHeader("force", "false");
                     }
+                    // set list of enhancements as specified
+                    in.setHeader(CdrEnhancementSet, enhancementsList);
 
-                    // if the request specifies machine gen description regeneration,
-                    // only run the machine Gen Description enhancement
-                    if (isRegenRequest) {
-                        in.setHeader(CdrEnhancementSet, "machineGenDescription");
-                    } else {
-                        in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
-                    }
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
                 }

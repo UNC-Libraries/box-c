@@ -9,6 +9,7 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor.DEFAULT_ENHANCEMENTS;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
@@ -430,7 +431,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 null, "image/png", null, null);
 
         Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
-        headers.replace(CdrEnhancementSet, "machineGenDescription");
+        headers.replace(CdrEnhancementSet, MACHINE_GEN_DESCRIPTION);
         headers.put("force", "true");
 
         template.sendBodyAndHeaders("", headers);

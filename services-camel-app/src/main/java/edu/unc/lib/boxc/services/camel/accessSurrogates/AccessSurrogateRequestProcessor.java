@@ -61,7 +61,7 @@ public class AccessSurrogateRequestProcessor implements Processor {
             }
 
             PID originalPid = DatastreamPids.getOriginalFilePid(pid);
-            Document msg = makeEnhancementOperationBody(agent.getUsername(), originalPid, true, false);
+            Document msg = makeEnhancementOperationBody(agent.getUsername(), originalPid, true);
             messageSender.sendMessage(msg);
         } else {
             log.error("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",
