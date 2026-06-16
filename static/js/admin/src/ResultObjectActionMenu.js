@@ -254,7 +254,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				items["destroy"] = {name : 'Destroy', disabled :  !resultObject.isDeleted};
 			}
 		}
-		if (metadata.type === 'Work' && $.inArray('editResourceType', metadata.permissions) != -1) {
+		if (metadata.type === 'Work' && $.inArray('editResourceType', metadata.permissions) !== -1) {
 			items["aggregatePdf"] = {name : 'Aggregate Pdf'};
 		}
 		
@@ -517,7 +517,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "aggregatePdf" :
 						self.actionHandler.addEvent({
 							action : "AggregatePdfAction",
-							targets : [resultObject]
+							targets : resultObject
 						});
 						break;
 					case "copyid" :
