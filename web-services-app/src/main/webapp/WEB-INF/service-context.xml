@@ -138,6 +138,10 @@
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
             <constructor-arg value="${services.move.workers:1}"/>
     </bean>
+
+    <bean id="pdfRequestSender" class="edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+    </bean>
     
     <!-- Access related beans -->
     
