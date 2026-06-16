@@ -253,9 +253,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			if (!isContentRoot && $.inArray('destroy', metadata.permissions) != -1) {
 				items["destroy"] = {name : 'Destroy', disabled :  !resultObject.isDeleted};
 			}
-			if (metadata.type === 'Work' && $.inArray('reindex', metadata.permissions) != -1) {
-				items["aggregatePdf"] = {name : 'Aggregate Pdf'};
-			}
+		}
+		if (metadata.type === 'Work' && $.inArray('editResourceType', metadata.permissions) != -1) {
+			items["aggregatePdf"] = {name : 'Aggregate Pdf'};
 		}
 		
 		// Trash actions
