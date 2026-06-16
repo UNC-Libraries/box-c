@@ -516,9 +516,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "aggregatePdf" :
 						self.actionHandler.addEvent({
-							action : "AggregatePdfBatch",
+							action : "AggregatePdfAction",
 							targets : [resultObject]
 						});
+						break;
 					case "copyid" :
 						(async function() {
 							try {
