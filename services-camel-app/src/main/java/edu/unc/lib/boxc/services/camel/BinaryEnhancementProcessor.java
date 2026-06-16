@@ -32,8 +32,6 @@ import java.util.Objects;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-    public static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy," +
-            "videoAccessCopy,machineGenDescription";
     private RepositoryObjectLoader repoObjLoader;
 
     @Override
@@ -63,9 +61,9 @@ public class BinaryEnhancementProcessor implements Processor {
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
                     Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    var isRegenRequest = Objects.equals(enhancementsList.getTextTrim(), MACHINE_GEN_DESCRIPTION);
+                    var enhancements = enhancementsList.getTextTrim();
                     // if it's a regen request set force to true
-                    if (isRegenRequest) {
+                    if (Objects.equals(enhancements, MACHINE_GEN_DESCRIPTION)) {
                         in.setHeader("force", "true");
                     } else if (forceText != null) {
                         in.setHeader("force", forceText.getTextTrim());
@@ -73,7 +71,7 @@ public class BinaryEnhancementProcessor implements Processor {
                         in.setHeader("force", "false");
                     }
                     // set list of enhancements as specified
-                    in.setHeader(CdrEnhancementSet, enhancementsList);
+                    in.setHeader(CdrEnhancementSet, enhancements);
 
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());

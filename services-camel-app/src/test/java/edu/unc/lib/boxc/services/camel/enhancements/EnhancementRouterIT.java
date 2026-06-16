@@ -9,8 +9,9 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
-import static edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor.DEFAULT_ENHANCEMENTS;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
@@ -449,7 +450,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
-        headers.put(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
+        headers.put(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
 
         return headers;
     }

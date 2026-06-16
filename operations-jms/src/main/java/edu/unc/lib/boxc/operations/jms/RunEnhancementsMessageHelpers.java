@@ -25,7 +25,7 @@ public class RunEnhancementsMessageHelpers {
     public static final String MACHINE_GEN_DESCRIPTION = "machineGenDescription";
     public static final List<String> DEFAULT_ENHANCEMENTS = List.of(IMAGE_ACCESS_COPY,EXTRACT_FULLTEXT,
             AUDIO_ACCESS_COPY, VIDEO_ACCESS_COPY, MACHINE_GEN_DESCRIPTION);
-
+    public static final String DEFAULT_ENHANCEMENTS_STRING = String.join(",", DEFAULT_ENHANCEMENTS);
     private RunEnhancementsMessageHelpers() {
     }
 
@@ -49,6 +49,9 @@ public class RunEnhancementsMessageHelpers {
         } else {
             paramForce.setText("false");
         }
+
+        Element paramEnhancementList = new Element("enhancementList", CDR_MESSAGE_NS);
+        paramEnhancementList.setText(DEFAULT_ENHANCEMENTS_STRING);
 
         Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
         enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
@@ -83,7 +86,7 @@ public class RunEnhancementsMessageHelpers {
         }
 
         Element paramEnhancementList = new Element("enhancementList", CDR_MESSAGE_NS);
-        paramEnhancementList.setText(enhancementList.toString());
+        paramEnhancementList.setText(String.join(",",enhancementList));
 
         Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
         enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));

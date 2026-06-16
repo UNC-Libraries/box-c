@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.Collections;
+import java.util.List;
 
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.rdf.Cdr.Collection;
@@ -22,7 +23,10 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor.DEFAULT_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,19 +82,19 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain", true, false, false);
+        setMessageBody("text/plain", true, false, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
-        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS);
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
         verify(message).setHeader("force", "false");
     }
 
     @Test
     public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
-        setMessageBody("image/png", true, false, false);
+        setMessageBody("image/png", true, false, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
@@ -101,7 +105,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testThumbForce() throws Exception {
-        setMessageBody("image/png", true, true, false);
+        setMessageBody("image/png", true, true, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
@@ -112,7 +116,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testThumbNoForce() throws Exception {
-        setMessageBody("image/png", true, false, false);
+        setMessageBody("image/png", true, false, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
@@ -124,7 +128,7 @@ public class BinaryEnhancementProcessorTest {
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png", false, false, false);
+        setMessageBody("image/png", false, false, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
@@ -137,7 +141,7 @@ public class BinaryEnhancementProcessorTest {
     public void testNonBinary() throws Exception {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
-        setMessageBody("image/*", true, false, false);
+        setMessageBody("image/*", true, false, DEFAULT_ENHANCEMENTS);
 
         processor.process(exchange);
 
@@ -148,7 +152,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testRegenerateDescription() throws Exception {
-        setMessageBody("image/png", true, false, true);
+        setMessageBody("image/png", true, false, List.of(MACHINE_GEN_DESCRIPTION));
 
         processor.process(exchange);
 
@@ -157,10 +161,10 @@ public class BinaryEnhancementProcessorTest {
         // check that force has been turned to true
         verify(message).setHeader("force", "true");
         // the only enhancement run will be machine generated description
-        verify(message).setHeader(CdrEnhancementSet, "machineGenDescription");
+        verify(message).setHeader(CdrEnhancementSet, MACHINE_GEN_DESCRIPTION);
     }
 
-    private void setMessageBody(String mimeType, boolean addEnhancementHeader, boolean force, boolean regenDescription) {
+    private void setMessageBody(String mimeType, boolean addEnhancementHeader, boolean force, List<String> enhancementsList) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
@@ -169,8 +173,8 @@ public class BinaryEnhancementProcessorTest {
             Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
             enhancements.addContent(new Element("force", CDR_MESSAGE_NS).setText(String.valueOf(force)));
-            enhancements.addContent(new Element("regenerateDescription", CDR_MESSAGE_NS)
-                    .setText(String.valueOf(regenDescription)));
+            enhancements.addContent(new Element(ENHANCEMENT_LIST, CDR_MESSAGE_NS)
+                    .setText(String.join(",",enhancementsList)));
 
             entry.addContent(enhancements);
         }
