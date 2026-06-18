@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
@@ -67,8 +68,12 @@ public class BinaryEnhancementProcessor implements Processor {
                     }
 
                     Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    var enhancements = enhancementsList.getTextTrim();
-                    in.setHeader(CdrEnhancementSet, enhancements);
+                    if (enhancementsList == null) {
+                        in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
+                    } else {
+                        var enhancements = enhancementsList.getTextTrim();
+                        in.setHeader(CdrEnhancementSet, enhancements);
+                    }
 
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());

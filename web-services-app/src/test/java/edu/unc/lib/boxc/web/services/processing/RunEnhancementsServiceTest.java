@@ -124,7 +124,7 @@ public class RunEnhancementsServiceTest {
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDoc, dsPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDoc, dsPid, false, null);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class RunEnhancementsServiceTest {
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDoc, dsPid, true, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDoc, dsPid, true, null);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class RunEnhancementsServiceTest {
         request.setAgent(agent);
         request.setRecursive(true);
         request.setForce(true);
-        request.setRegenerateDescription(true);
+        request.setEnhancements(List.of(MACHINE_GEN_DESCRIPTION));
         request.setPids(List.of(filePid.getId()));
 
         service.run(request);
@@ -172,7 +172,7 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, workPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDoc, workPid, false, null);
     }
 
     @Test
@@ -191,9 +191,9 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(2)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
     }
 
     @Test
@@ -206,7 +206,7 @@ public class RunEnhancementsServiceTest {
         request.setAgent(agent);
         request.setRecursive(true);
         request.setForce(true);
-        request.setRegenerateDescription(true);
+        request.setEnhancements(List.of(MACHINE_GEN_DESCRIPTION));
         request.setPids(List.of(workPid.getId()));
 
         service.run(request);
@@ -235,10 +235,10 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(3)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false, DEFAULT_ENHANCEMENTS_STRING);
-        assertMessageValues(msgDocs.get(2), collPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
+        assertMessageValues(msgDocs.get(2), collPid, false, null);
     }
 
     @Test
@@ -268,12 +268,12 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(4)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false, DEFAULT_ENHANCEMENTS_STRING);
-        assertMessageValues(msgDocs.get(2), workPid2, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
+        assertMessageValues(msgDocs.get(2), workPid2, false, null);
         var dsPid2 = DatastreamPids.getOriginalFilePid(filePid2);
-        assertMessageValues(msgDocs.get(3), dsPid2, false, DEFAULT_ENHANCEMENTS_STRING);
+        assertMessageValues(msgDocs.get(3), dsPid2, false, null);
     }
 
     private void assertMessageValues(Document msgDoc, PID expectedPid, boolean expectedForce, String expectedEnhancements) {

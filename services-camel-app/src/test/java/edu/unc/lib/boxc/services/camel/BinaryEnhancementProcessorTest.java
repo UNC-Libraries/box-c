@@ -82,7 +82,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain", true, false, DEFAULT_ENHANCEMENTS);
+        setMessageBody("text/plain", true, false, null);
 
         processor.process(exchange);
 
@@ -94,60 +94,65 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
-        setMessageBody("image/png", true, false, DEFAULT_ENHANCEMENTS);
+        setMessageBody("image/png", true, false, null);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test
     public void testThumbForce() throws Exception {
-        setMessageBody("image/png", true, true, DEFAULT_ENHANCEMENTS);
+        setMessageBody("image/png", true, true, null);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "true");
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test
     public void testThumbNoForce() throws Exception {
-        setMessageBody("image/png", true, false, DEFAULT_ENHANCEMENTS);
+        setMessageBody("image/png", true, false, null);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png", false, false, DEFAULT_ENHANCEMENTS);
+        setMessageBody("image/png", false, false, null);
 
         processor.process(exchange);
 
         verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
         verify(message, never()).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message, never()).setHeader("force", "false");
+        verify(message, never()).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test
     public void testNonBinary() throws Exception {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
-        setMessageBody("image/*", true, false, DEFAULT_ENHANCEMENTS);
+        setMessageBody("image/*", true, false, null);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Collection.getURI());
         verify(message).setHeader("force", "false");
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test
@@ -172,8 +177,10 @@ public class BinaryEnhancementProcessorTest {
             Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
             enhancements.addContent(new Element("force", CDR_MESSAGE_NS).setText(String.valueOf(force)));
-            enhancements.addContent(new Element(ENHANCEMENT_LIST, CDR_MESSAGE_NS)
-                    .setText(String.join(",",enhancementsList)));
+            if (enhancementsList != null) {
+                enhancements.addContent(new Element(ENHANCEMENT_LIST, CDR_MESSAGE_NS)
+                        .setText(String.join(",",enhancementsList)));
+            }
 
             entry.addContent(enhancements);
         }
