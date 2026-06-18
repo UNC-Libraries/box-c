@@ -158,8 +158,7 @@ public class BinaryEnhancementProcessorTest {
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
-        // check that force has been turned to true
-        verify(message).setHeader("force", "true");
+        verify(message).setHeader("force", "false");
         // the only enhancement run will be machine generated description
         verify(message).setHeader(CdrEnhancementSet, MACHINE_GEN_DESCRIPTION);
     }

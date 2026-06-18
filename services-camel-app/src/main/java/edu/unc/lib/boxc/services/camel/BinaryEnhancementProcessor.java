@@ -60,17 +60,14 @@ public class BinaryEnhancementProcessor implements Processor {
                     in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
-                    Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    var enhancements = enhancementsList.getTextTrim();
-                    // if it's a regen request set force to true
-                    if (Objects.equals(enhancements, MACHINE_GEN_DESCRIPTION)) {
-                        in.setHeader("force", "true");
-                    } else if (forceText != null) {
+                    if (forceText != null) {
                         in.setHeader("force", forceText.getTextTrim());
                     } else {
                         in.setHeader("force", "false");
                     }
-                    // set list of enhancements as specified
+
+                    Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
+                    var enhancements = enhancementsList.getTextTrim();
                     in.setHeader(CdrEnhancementSet, enhancements);
 
                 } catch (ObjectTypeMismatchException e) {

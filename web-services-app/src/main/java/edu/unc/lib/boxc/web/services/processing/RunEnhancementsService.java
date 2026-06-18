@@ -1,8 +1,6 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS;
-import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 
 import java.util.Arrays;
@@ -67,7 +65,7 @@ public class RunEnhancementsService {
             var objectPids = request.getPids();
             var force = request.isForce();
             var recursive = request.isRecursive();
-            var regenerateDescription = request.isRegenerateDescription();
+            var enhancements = request.getEnhancements();
             for (String objectPid : objectPids) {
                 PID pid = PIDs.get(objectPid);
 
@@ -76,16 +74,16 @@ public class RunEnhancementsService {
 
                 if (recursive && !(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     LOG.debug("Queueing object and children for enhancements: {}", pid);
-                    recursiveEnhancements(pid, agent, force, regenerateDescription);
+                    recursiveEnhancements(pid, agent, force, enhancements);
                 } else {
                     LOG.debug("Queueing object for enhancements: {}", pid);
-                    shallowEnhancements(pid, agent, force, regenerateDescription);
+                    shallowEnhancements(pid, agent, force, enhancements);
                 }
             }
         }
     }
 
-    private void recursiveEnhancements(PID pid, AgentPrincipals agent, Boolean force, Boolean regenerateDescription) {
+    private void recursiveEnhancements(PID pid, AgentPrincipals agent, Boolean force, List<String> enhancements) {
         SearchState searchState = new SearchState();
         searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
         searchState.setResultFields(RESULTS_FIELD_LIST);
@@ -108,33 +106,32 @@ public class RunEnhancementsService {
                 LOG.debug("Found {} items to queue for enhancement run", totalResults);
                 // Add the root container itself
                 ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
-                createMessage(rootContainer, agent.getUsername(), force, regenerateDescription);
+                createMessage(rootContainer, agent.getUsername(), force, enhancements);
             }
             for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-                createMessage(metadata, agent.getUsername(), force, regenerateDescription);
+                createMessage(metadata, agent.getUsername(), force, enhancements);
                 count++;
             }
             LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
         } while(count < totalResults);
     }
 
-    private void shallowEnhancements(PID pid, AgentPrincipals agent, Boolean force, Boolean regenerateDescription) {
+    private void shallowEnhancements(PID pid, AgentPrincipals agent, Boolean force, List<String> enhancements) {
         SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
         ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
-        createMessage(metadata, agent.getUsername(), force, regenerateDescription);
+        createMessage(metadata, agent.getUsername(), force, enhancements);
     }
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
     }
 
-    private void createMessage(ContentObjectRecord metadata, String username, Boolean force, Boolean regenerateDescription) {
+    private void createMessage(ContentObjectRecord metadata, String username, Boolean force, List<String> enhancements) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
         String resourceType = metadata.getResourceType();
         PID originalPid = (ResourceType.File.equals(resourceType) && originalDs != null) ?
                 DatastreamPids.getOriginalFilePid(pid) : pid;
-        var enhancements = regenerateDescription ? List.of(MACHINE_GEN_DESCRIPTION) : DEFAULT_ENHANCEMENTS;
         Document msg = makeEnhancementOperationBody(username, originalPid, force, enhancements);
         messageSender.sendMessage(msg);
     }

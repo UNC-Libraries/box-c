@@ -12,7 +12,7 @@ public class RunEnhancementsRequest {
     private boolean force;
     private AgentPrincipals agent;
     private boolean recursive;
-    private boolean regenerateDescription;
+    private List<String> enhancements;
 
     public List<String> getPids() {
         return pids;
@@ -46,11 +46,11 @@ public class RunEnhancementsRequest {
         this.recursive = recursive;
     }
 
-    public boolean isRegenerateDescription() {
-        return regenerateDescription;
+    public List<String> getEnhancements() {
+        return enhancements;
     }
 
-    public void setRegenerateDescription(boolean regenerateDescription) {
-        this.regenerateDescription = regenerateDescription;
+    public void setEnhancements(List<String> enhancements) {
+        this.enhancements = enhancements;
     }
 }

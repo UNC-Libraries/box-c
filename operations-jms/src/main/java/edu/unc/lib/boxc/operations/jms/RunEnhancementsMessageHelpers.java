@@ -35,40 +35,6 @@ public class RunEnhancementsMessageHelpers {
      * @param userid
      * @param pid
      * @param force
-     * @return
-     */
-    public static Document makeEnhancementOperationBody(String userid, PID pid, Boolean force) {
-        Document msg = new Document();
-        Element entry = new Element("entry", ATOM_NS);
-        entry.addContent(new Element("author", ATOM_NS)
-                .addContent(new Element("name", ATOM_NS).setText(userid)));
-
-        Element paramForce = new Element("force", CDR_MESSAGE_NS);
-        if (force) {
-            paramForce.setText("true");
-        } else {
-            paramForce.setText("false");
-        }
-
-        Element paramEnhancementList = new Element("enhancementList", CDR_MESSAGE_NS);
-        paramEnhancementList.setText(DEFAULT_ENHANCEMENTS_STRING);
-
-        Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
-        enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
-        enhancements.addContent(paramForce);
-        entry.addContent(enhancements);
-
-        msg.addContent(entry);
-
-        return msg;
-    }
-
-    /**
-     * Generate the body for a run enhancement request message
-     *
-     * @param userid
-     * @param pid
-     * @param force
      * @param enhancementList list of enhancements to run
      * @return
      */
@@ -85,15 +51,17 @@ public class RunEnhancementsMessageHelpers {
             paramForce.setText("false");
         }
 
-        Element paramEnhancementList = new Element("enhancementList", CDR_MESSAGE_NS);
-        paramEnhancementList.setText(String.join(",",enhancementList));
-
         Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
         enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
         enhancements.addContent(paramForce);
-        enhancements.addContent(paramEnhancementList);
-        entry.addContent(enhancements);
 
+        if (enhancementList != null) {
+            Element paramEnhancementList = new Element("enhancementList", CDR_MESSAGE_NS);
+            paramEnhancementList.setText(String.join(",",enhancementList));
+            enhancements.addContent(paramEnhancementList);
+        }
+
+        entry.addContent(enhancements);
         msg.addContent(entry);
 
         return msg;
