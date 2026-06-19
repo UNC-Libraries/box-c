@@ -25,8 +25,14 @@ export default defineConfig({
     },
     build: {
         minify: false,
+        // Keep a single distributable JS file because the deployment copy step
+        // only ships vue-admin-index.js into /static/assets/admin.
+        codeSplitting: false,
         rollupOptions: {
             output: {
+                // Some bundled UMD dependencies probe `define.amd`; shadowing `define`
+                // keeps them from registering anonymous AMD modules into RequireJS.
+                banner: 'var define = undefined;',
                 entryFileNames: `assets/vue-admin-[name].js`,
                 chunkFileNames: `assets/vue-admin-[name].js`,
                 assetFileNames: `assets/[name].[ext]`
