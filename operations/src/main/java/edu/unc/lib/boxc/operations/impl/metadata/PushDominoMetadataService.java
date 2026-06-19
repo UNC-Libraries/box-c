@@ -68,6 +68,7 @@ public class PushDominoMetadataService {
     private ObjectWriter configWriter;
     private ObjectReader configReader;
     private ObjectReader authReader;
+    private long selectionDelayMinutes = 0;
 
     public PushDominoMetadataService() {
         configWriter = new ObjectMapper().writerFor(DominoPushConfig.class);
@@ -87,11 +88,13 @@ public class PushDominoMetadataService {
      */
     @Scheduled(cron = "${domino.push.schedule}")
     public void pushNewDigitalObjects() {
-        LOG.debug("Running scheduled push of new digital objects to Domino");
+        LOG.info("Running scheduled push of new digital objects to Domino with {} min delay", selectionDelayMinutes);
         // Load previous run config
         var config = loadConfig();
 
-        var endDate = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+        var endDate = ZonedDateTime.now(ZoneOffset.UTC)
+                .minusMinutes(selectionDelayMinutes) // move end date back to allow for a delay before objects selected
+                .format(DateTimeFormatter.ISO_INSTANT);
         Path csvPath = null;
         try {
             // Export the new objects to a CSV file
@@ -290,6 +293,10 @@ public class PushDominoMetadataService {
 
     public void setAccessGroups(AccessGroupSet accessGroups) {
         this.agentPrincipals = new AgentPrincipalsImpl(AGENT_NAME, accessGroups);
+    }
+
+    public void setSelectionDelayMinutes(long selectionDelayMinutes) {
+        this.selectionDelayMinutes = selectionDelayMinutes;
     }
 
     public void setEmailHandler(EmailHandler emailHandler) {
