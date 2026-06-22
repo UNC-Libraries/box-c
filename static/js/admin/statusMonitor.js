@@ -25,6 +25,7 @@ require.config({
 		}
 	},
 	shim: {
+		"editable": ["jquery"],
 		"jquery-legacy": {
 			exports: "$"
 		},
