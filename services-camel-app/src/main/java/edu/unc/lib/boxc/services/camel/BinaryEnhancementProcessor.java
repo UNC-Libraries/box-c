@@ -48,7 +48,7 @@ public class BinaryEnhancementProcessor implements Processor {
             }
             Element body = msgBody.getRootElement();
 
-            Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+           Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             if (enhancementsEl != null) {
                 String pidValue = enhancementsEl.getChild("pid", CDR_MESSAGE_NS).getTextTrim();
                 PID objPid = PIDs.get(pidValue);
@@ -67,12 +67,11 @@ public class BinaryEnhancementProcessor implements Processor {
                         in.setHeader("force", "false");
                     }
 
-                    Element enhancementsList = enhancementsEl.getChild(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    if (enhancementsList == null) {
+                    var enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
+                    if (enhancementsList.isEmpty() || enhancementsList.isBlank()) {
                         in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
                     } else {
-                        var enhancements = enhancementsList.getTextTrim();
-                        in.setHeader(CdrEnhancementSet, enhancements);
+                        in.setHeader(CdrEnhancementSet, enhancementsList);
                     }
 
                 } catch (ObjectTypeMismatchException e) {

@@ -44,12 +44,15 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -229,7 +232,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"force\":true,\"pids\":[\"" + filePid.getId() + "\"],\"regenerateDescription\":true}")
+                        .content("{\"force\":true,\"pids\":[\"" + filePid.getId() + "\"]," +
+                                "\"enhancements\":[\"" + MACHINE_GEN_DESCRIPTION + "\"]}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -239,6 +243,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
         assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), USER_NAME);
+        assertEnhancementMessageValues(msgDoc, List.of(MACHINE_GEN_DESCRIPTION));
     }
 
 
@@ -277,5 +282,13 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         assertEquals(expectedPid, PIDs.get(pidString));
         assertEquals(expectedAuthor, author);
+    }
+
+    private void assertEnhancementMessageValues(Document msgDoc, List<String> enhancementsList) {
+        Element entry = msgDoc.getRootElement();
+        String enhancements = entry.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS)
+                .getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
+
+        assertEquals(String.join(",",enhancementsList), enhancements);
     }
 }

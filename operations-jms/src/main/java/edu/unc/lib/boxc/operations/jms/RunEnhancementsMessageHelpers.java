@@ -44,15 +44,15 @@ public class RunEnhancementsMessageHelpers {
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
 
+        Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+        enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
+
         Element paramForce = new Element("force", CDR_MESSAGE_NS);
         if (force) {
             paramForce.setText("true");
         } else {
             paramForce.setText("false");
         }
-
-        Element enhancements = new Element(CDRActions.RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
-        enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
         enhancements.addContent(paramForce);
 
         if (enhancementList != null) {
