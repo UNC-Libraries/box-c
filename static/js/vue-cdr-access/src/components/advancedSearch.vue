@@ -95,6 +95,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="field">
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select name="wcag_compliance" aria-label="WCAG Compliance Level">
+                                        <option value="">WCAG Compliance Level</option>
+                                        <template v-for="level in wcagComplianceLevels">
+                                            <option :value="level">{{ level }}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <h3 class="title is-6 mb-2 mt-5">
                         {{ $t('adv_search.date_deposited') }}
@@ -177,6 +189,26 @@ export default {
     head() {
         return {
             title: 'Advanced Search'
+        }
+    },
+
+    computed: {
+        wcagComplianceLevels() {
+            return [
+                'WCAG 1.0 Level A',
+                'WCAG 1.0 Level AA',
+                'WCAG 1.0 Level AAA',
+                'WCAG 2.0 Level A',
+                'WCAG 2.0 Level AA',
+                'WCAG 2.0 Level AAA',
+                'WCAG 2.1 Level A',
+                'WCAG 2.1 Level AA',
+                'WCAG 2.1 Level AAA',
+                'WCAG 2.2 Level A',
+                'WCAG 2.2 Level AA',
+                'WCAG 2.2 Level AAA'
+            ]
+
         }
     },
 
