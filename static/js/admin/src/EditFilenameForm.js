@@ -19,9 +19,11 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 		resultObject.metadata.currentFilename = this.getCurrentFilename(resultObject.metadata.datastream);
 		AbstractForm.prototype.open.call(this, resultObject);
 	};
-	
+
+	// Display label is also being sent as form data via submitAjax in the abstractForm, which the server ignores
+	// as it's looking for the request param we pass here.
 	EditFilenameForm.prototype.preprocessForm = function(resultObject) {
-		var newLabel = $("input[name='label']", this.$form).val();
+		var newLabel = $("input[name='display_label']", this.$form).val();
 		var pid = resultObject.metadata.id;
 
 		this.action_url = "/services/api/edit/filename/" + pid + "?label=" + newLabel;
@@ -29,7 +31,7 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 	
 	EditFilenameForm.prototype.validationErrors = function() {
 		var errors = [];
-		var label = $("input[name='label']", this.$form).val();
+		var label = $("input[name='display_label']", this.$form).val();
 		// Validate input
 		if (!label)
 			errors.push("You must specify a filename.");
