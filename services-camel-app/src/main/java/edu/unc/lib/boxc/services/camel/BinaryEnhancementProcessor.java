@@ -68,7 +68,7 @@ public class BinaryEnhancementProcessor implements Processor {
                     }
 
                     var enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    if (enhancementsList.isEmpty() || enhancementsList.isBlank()) {
+                    if (enhancementsList == null || enhancementsList.isBlank()) {
                         in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
                     } else {
                         in.setHeader(CdrEnhancementSet, enhancementsList);

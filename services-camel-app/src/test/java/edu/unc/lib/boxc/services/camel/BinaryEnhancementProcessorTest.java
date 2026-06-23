@@ -82,7 +82,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain", true, false, null);
+        setMessageBody("text/plain", true, false, List.of());
 
         processor.process(exchange);
 
