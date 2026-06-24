@@ -45,28 +45,10 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	};
 	
 	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
-		this.containerName = $("input[name='name']", this.$form).val();
-		let collNumber = $("input[name='coll_number']", this.$form).val();
-		this.staffOnly = $("input[name='staff_only']", this.$form);
-
-		var pid;
-		if ($.type(resultObject) === 'string') {
-			pid = resultObject;
-		} else {
-			pid = resultObject.id;
-		}
-
+		this.containerName = $("input[name='label']", this.$form).val();
+		var pid = ($.type(resultObject) === 'string') ? resultObject : resultObject.id;
 		var typeName = this.options.containerType.charAt(0).toLowerCase() + this.options.containerType.substr(1);
-		var apiUrl = "/services/api/edit/create/" + typeName + "/" + pid + "?label=" + this.containerName;
-
-		if (collNumber !== undefined && collNumber.length > 0) {
-			apiUrl += "&collectionNumber=" + collNumber;
-		}
-		if (this.staffOnly.length > 0) {
-			apiUrl += "&staffOnly=" + this.staffOnly.is(':checked');
-		}
-
-		this.action_url = apiUrl;
+		this.action_url = "/services/api/edit/create/" + typeName + "/" + pid;
 	};
 	
 	CreateContainerForm.prototype.getSuccessMessage = function(data) {
