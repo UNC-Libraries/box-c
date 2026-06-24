@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -20,14 +21,18 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -36,6 +41,7 @@ import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * @author bbpennel
@@ -59,6 +65,9 @@ public class PushDominoMetadataServiceTest {
 
     @TempDir
     Path tempDir;
+
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
 
     private Path configPath;
     private Path testCsvPath;
@@ -121,6 +130,7 @@ public class PushDominoMetadataServiceTest {
         stubSuccessfulLogin();
         stubSuccessfulPush();
 
+        var targetEndDateTime = ZonedDateTime.now(ZoneOffset.UTC);
         // Execute the push
         service.pushNewDigitalObjects();
 
@@ -130,14 +140,65 @@ public class PushDominoMetadataServiceTest {
 
         // Verify the config was updated
         var updatedConfig = service.loadConfig();
-        assertTrue(updatedConfig.getLastNewObjectsRunTimestamp().compareTo(lastRunTimestamp) > 0,
+        var lastRun = updatedConfig.getLastNewObjectsRunTimestamp();
+        assertTrue(lastRun.compareTo(lastRunTimestamp) > 0,
                 "Last run timestamp should be updated");
+        // Last run timestamp must be roughly now
+        assertDateWithinNSeconds(targetEndDateTime, lastRun, 5);
 
         // Verify no email was sent (since there was no error)
         assertNoEmailSent();
 
         // Verify CSV file was cleaned up
         assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+
+        verify(exportService).exportCsv(anyList(), any(AgentPrincipals.class),
+                eq(lastRunTimestamp), stringCaptor.capture());
+        assertDateWithinNSeconds(targetEndDateTime, stringCaptor.getValue(), 5);
+    }
+
+    @Test
+    public void testPushNewDigitalObjectsWithDelay() throws IOException {
+        service.setSelectionDelayMinutes(60);
+
+        stubSuccessfulLogin();
+        stubSuccessfulPush();
+
+        var targetEndDateTime = ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(60);
+        // Execute the push
+        service.pushNewDigitalObjects();
+
+        // Verify the request was made
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/users/testuser/login")));
+        WireMock.verify(WireMock.postRequestedFor(WireMock.urlPathMatching("/" + DOM_SUB_PATH + "/manage.*")));
+
+        // Verify the config was updated
+        var updatedConfig = service.loadConfig();
+        // parse updatedConfig.getLastNewObjectsRunTimestamp() to a ZonedDateTime
+        var lastRun = updatedConfig.getLastNewObjectsRunTimestamp();
+        assertTrue(lastRun.compareTo(lastRunTimestamp) > 0,
+                "Last run timestamp should be updated");
+        // Last run timestamp must be roughly 60 minutes ago
+        assertDateWithinNSeconds(targetEndDateTime, lastRun, 5);
+
+        // Verify no email was sent (since there was no error)
+        assertNoEmailSent();
+
+        // Verify CSV file was cleaned up
+        assertTrue(Files.notExists(testCsvPath), "CSV file should be deleted after successful push");
+
+        verify(exportService).exportCsv(anyList(), any(AgentPrincipals.class),
+                eq(lastRunTimestamp), stringCaptor.capture());
+        assertDateWithinNSeconds(targetEndDateTime, stringCaptor.getValue(), 5);
+    }
+
+    private void assertDateWithinNSeconds(ZonedDateTime targetDateTime, String actualDateTimeString, int seconds) {
+        var rangeStart = targetDateTime.minusMinutes(seconds).format(DateTimeFormatter.ISO_INSTANT);
+        var rangeEnd =  targetDateTime.plusMinutes(seconds).format(DateTimeFormatter.ISO_INSTANT);
+        assertTrue(actualDateTimeString.compareTo(rangeStart) >= 0,
+                "Actual time was " + actualDateTimeString + " but it should have been after " + rangeStart);
+        assertTrue(actualDateTimeString.compareTo(rangeEnd) <= 0,
+                "Actual time was " + actualDateTimeString + " but it should have been before " + rangeEnd);
     }
 
     @Test
