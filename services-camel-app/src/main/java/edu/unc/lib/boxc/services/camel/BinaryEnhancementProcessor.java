@@ -2,6 +2,10 @@ package edu.unc.lib.boxc.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
@@ -20,6 +24,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 
+import java.util.Objects;
+
 /**
  * Sets headers related to identifying binary objects to run enhancement operations on
  *
@@ -27,7 +33,6 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-
     private RepositoryObjectLoader repoObjLoader;
 
     @Override
@@ -43,7 +48,7 @@ public class BinaryEnhancementProcessor implements Processor {
             }
             Element body = msgBody.getRootElement();
 
-            Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+           Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             if (enhancementsEl != null) {
                 String pidValue = enhancementsEl.getChild("pid", CDR_MESSAGE_NS).getTextTrim();
                 PID objPid = PIDs.get(pidValue);
@@ -61,6 +66,14 @@ public class BinaryEnhancementProcessor implements Processor {
                     } else {
                         in.setHeader("force", "false");
                     }
+
+                    var enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
+                    if (enhancementsList == null || enhancementsList.isBlank()) {
+                        in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
+                    } else {
+                        in.setHeader(CdrEnhancementSet, enhancementsList);
+                    }
+
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
                 }

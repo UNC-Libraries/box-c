@@ -34,6 +34,9 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -121,7 +124,7 @@ public class RunEnhancementsServiceTest {
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDoc, dsPid, false);
+        assertMessageValues(msgDoc, dsPid, false, null);
     }
 
     @Test
@@ -137,7 +140,24 @@ public class RunEnhancementsServiceTest {
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDoc, dsPid, true);
+        assertMessageValues(msgDoc, dsPid, true, null);
+    }
+
+    @Test
+    public void runFileObjectWithRegenDescriptionTest() {
+        var request = new RunEnhancementsRequest();
+        request.setAgent(agent);
+        request.setRecursive(true);
+        request.setForce(true);
+        request.setEnhancements(List.of(MACHINE_GEN_DESCRIPTION));
+        request.setPids(List.of(filePid.getId()));
+
+        service.run(request);
+
+        verify(messageSender).sendMessage(docCaptor.capture());
+        Document msgDoc = docCaptor.getValue();
+        var dsPid = DatastreamPids.getOriginalFilePid(filePid);
+        assertMessageValues(msgDoc, dsPid, true, MACHINE_GEN_DESCRIPTION);
     }
 
     @Test
@@ -152,7 +172,7 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, workPid, false);
+        assertMessageValues(msgDoc, workPid, false, null);
     }
 
     @Test
@@ -171,9 +191,31 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(2)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
+    }
+
+    @Test
+    public void runWorkObjectRecursiveWithRegenDescriptionTest() {
+        when(searchResultResp.getResultCount()).thenReturn(1L);
+        when(searchResultResp.getSelectedContainer()).thenReturn(workRecord);
+        when(searchResultResp.getResultList()).thenReturn(List.of(fileRecord));
+
+        var request = new RunEnhancementsRequest();
+        request.setAgent(agent);
+        request.setRecursive(true);
+        request.setForce(true);
+        request.setEnhancements(List.of(MACHINE_GEN_DESCRIPTION));
+        request.setPids(List.of(workPid.getId()));
+
+        service.run(request);
+
+        verify(messageSender, times(2)).sendMessage(docCaptor.capture());
+        var msgDocs = docCaptor.getAllValues();
+        assertMessageValues(msgDocs.get(0), workPid, true, MACHINE_GEN_DESCRIPTION);
+        var dsPid = DatastreamPids.getOriginalFilePid(filePid);
+        assertMessageValues(msgDocs.get(1), dsPid, true, MACHINE_GEN_DESCRIPTION);
     }
 
     @Test
@@ -193,10 +235,10 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(3)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false);
-        assertMessageValues(msgDocs.get(2), collPid, false);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
+        assertMessageValues(msgDocs.get(2), collPid, false, null);
     }
 
     @Test
@@ -226,24 +268,26 @@ public class RunEnhancementsServiceTest {
 
         verify(messageSender, times(4)).sendMessage(docCaptor.capture());
         var msgDocs = docCaptor.getAllValues();
-        assertMessageValues(msgDocs.get(0), workPid, false);
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
-        assertMessageValues(msgDocs.get(1), dsPid, false);
-        assertMessageValues(msgDocs.get(2), workPid2, false);
+        assertMessageValues(msgDocs.get(1), dsPid, false, null);
+        assertMessageValues(msgDocs.get(2), workPid2, false, null);
         var dsPid2 = DatastreamPids.getOriginalFilePid(filePid2);
-        assertMessageValues(msgDocs.get(3), dsPid2, false);
+        assertMessageValues(msgDocs.get(3), dsPid2, false, null);
     }
 
-    private void assertMessageValues(Document msgDoc, PID expectedPid, boolean expectedForce) {
+    private void assertMessageValues(Document msgDoc, PID expectedPid, boolean expectedForce, String expectedEnhancements) {
         Element entry = msgDoc.getRootElement();
         Element runEl = entry.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
         String pidString = runEl.getChildText("pid", CDR_MESSAGE_NS);
         String author = entry.getChild("author", ATOM_NS)
                 .getChildText("name", ATOM_NS);
         var force = Boolean.valueOf(runEl.getChildText("force", CDR_MESSAGE_NS));
+        var enhancements = runEl.getChildText(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
 
         assertEquals(expectedPid, PIDs.get(pidString));
         assertEquals(USER_NAME, author);
         assertEquals(expectedForce, force);
+        assertEquals(expectedEnhancements, enhancements);
     }
 }
