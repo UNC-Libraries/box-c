@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.utils.PropertiesUtil;
 import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
@@ -44,7 +45,7 @@ public class RefIdService {
                     + " cannot be assigned an Aspace Ref ID.");
         }
 
-        var currentRefId = getCurrentRefId(repoObj);
+        var currentRefId = PropertiesUtil.getValue(repoObj, CdrAspace.refId);
         var requestRefId = request.getRefId();
         // if currentRefId is null (does not exist) and the request ID is blank, do nothing
         if (currentRefId == null && StringUtils.isBlank(requestRefId)) {
