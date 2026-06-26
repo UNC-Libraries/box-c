@@ -33,7 +33,7 @@ public class WcagComplianceRequestSerializationHelper {
     }
 
     /**
-     * Transform JSON string to a ThumbnailRequest
+     * Transform JSON string to a WcagComplianceRequest
      * @param json
      * @return WCAG Compliance Request
      * @throws IOException

@@ -29,9 +29,21 @@ public class WcagComplianceService {
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private IndexingMessageSender indexingMessageSender;
-    private static final List<String> ACCEPTED_LEVELS = Arrays.asList("WCAG 1.0 Level A","WCAG 1.0 Level AA",
-            "WCAG 1.0 Level AAA","WCAG 2.0 Level A","WCAG 2.0 Level AA","WCAG 2.0 Level AAA","WCAG 2.1 Level A",
-            "WCAG 2.1 Level AA","WCAG 2.1 Level AAA","WCAG 2.2 Level A","WCAG 2.2 Level AA","WCAG 2.2 Level AAA");
+    public static final String LEVEL_A_10 = "WCAG 1.0 Level A";
+    public static final String LEVEL_AA_10 = "WCAG 1.0 Level AA";
+    public static final String LEVEL_AAA_10 = "WCAG 1.0 Level AAA";
+    public static final String LEVEL_A_20 = "WCAG 2.0 Level A";
+    public static final String LEVEL_AA_20 = "WCAG 2.0 Level AA";
+    public static final String LEVEL_AAA_20 = "WCAG 2.0 Level AAA";
+    public static final String LEVEL_A_21 = "WCAG 2.1 Level A";
+    public static final String LEVEL_AA_21 = "WCAG 2.1 Level AA";
+    public static final String LEVEL_AAA_21 = "WCAG 2.1 Level AAA";
+    public static final String LEVEL_A_22 = "WCAG 2.2 Level A";
+    public static final String LEVEL_AA_22 = "WCAG 2.2 Level AA";
+    public static final String LEVEL_AAA_22 = "WCAG 2.2 Level AAA";
+    public static final List<String> ACCEPTED_LEVELS = Arrays.asList(LEVEL_A_10, LEVEL_AA_10,
+            LEVEL_AAA_10, LEVEL_A_20, LEVEL_AA_20, LEVEL_AAA_20, LEVEL_A_21, LEVEL_AA_21, LEVEL_AAA_21,
+            LEVEL_A_22, LEVEL_AA_22, LEVEL_AAA_22);
 
     public void updateWcagCompliance(WcagComplianceRequest request) {
         var pidString = request.getPidString();

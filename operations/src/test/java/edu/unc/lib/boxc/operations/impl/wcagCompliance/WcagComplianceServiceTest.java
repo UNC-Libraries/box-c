@@ -11,10 +11,8 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.jms.aspace.RefIdRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.wcagCompliance.WcagComplianceRequest;
@@ -26,6 +24,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import static edu.unc.lib.boxc.operations.impl.wcagCompliance.WcagComplianceService.LEVEL_AA_10;
+import static edu.unc.lib.boxc.operations.impl.wcagCompliance.WcagComplianceService.LEVEL_A_10;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class WcagComplianceServiceTest {
-    private static final String LEVEL = "WCAG 1.0 Level A";
     private WcagComplianceService service;
     private PID pid;
     private String pidString;
@@ -85,7 +84,7 @@ public class WcagComplianceServiceTest {
 
     @Test
     public void testNoPermission() {
-        var request = buildRequest(LEVEL);
+        var request = buildRequest(LEVEL_A_10);
         doThrow(new AccessRestrictionException("Access Denied")).when(aclService)
                 .assertHasAccess(any(), eq(pid), any(), eq(Permission.editResourceType));
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
@@ -97,7 +96,7 @@ public class WcagComplianceServiceTest {
     public void testNotAWork() {
         var workObject = mock(WorkObject.class);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(workObject);
-        var request = buildRequest(LEVEL);
+        var request = buildRequest(LEVEL_A_10);
         Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
             service.updateWcagCompliance(request);
         });
@@ -113,12 +112,12 @@ public class WcagComplianceServiceTest {
 
     @Test
     public void testUpdateCurrentLevelWithIdenticalLevel() {
-        var request = buildRequest(LEVEL);
-        when(statement.getString()).thenReturn(LEVEL);
+        var request = buildRequest(LEVEL_A_10);
+        when(statement.getString()).thenReturn(LEVEL_A_10);
 
         service.updateWcagCompliance(request);
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL));
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL_A_10));
         verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.ADD));
     }
@@ -126,12 +125,12 @@ public class WcagComplianceServiceTest {
     @Test
     public void testUpdateCurrentLevelWithBlankLevel() {
         var request = buildRequest("");
-        when(statement.getString()).thenReturn(LEVEL);
+        when(statement.getString()).thenReturn(LEVEL_A_10);
 
         service.updateWcagCompliance(request);
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.wcagCompliance));
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL));
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL_A_10));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.ADD));
     }
@@ -144,7 +143,7 @@ public class WcagComplianceServiceTest {
         service.updateWcagCompliance(request);
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.wcagCompliance));
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL));
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL_A_10));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.ADD));
     }
@@ -156,19 +155,32 @@ public class WcagComplianceServiceTest {
 
         service.updateWcagCompliance(request);
         verify(repositoryObjectFactory, never()).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL));
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(""));
         verify(indexingMessageSender, never()).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.ADD));
     }
 
     @Test
-    public void testUpdateLevelSuccess() {
+    public void testUpdateNullLevelSuccess() {
         when(resource.getProperty(any())).thenReturn(null);
-        var request = buildRequest(LEVEL);
+        var request = buildRequest(LEVEL_A_10);
 
         service.updateWcagCompliance(request);
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL));
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL_A_10));
+        verify(indexingMessageSender).sendIndexingOperation(eq(username),
+                eq(pid), eq(IndexingActionType.ADD));
+
+    }
+
+    @Test
+    public void testUpdateNewLevelSuccess() {
+        when(statement.getString()).thenReturn(LEVEL_A_10);
+        var request = buildRequest(LEVEL_AA_10);
+
+        service.updateWcagCompliance(request);
+        verify(repositoryObjectFactory).createExclusiveRelationship(
+                eq(fileObject), eq(Cdr.wcagCompliance), eq(LEVEL_AA_10));
         verify(indexingMessageSender).sendIndexingOperation(eq(username),
                 eq(pid), eq(IndexingActionType.ADD));
 
