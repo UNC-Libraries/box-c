@@ -255,7 +255,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			}
 		}
 		if (metadata.type === 'Work' && $.inArray('editResourceType', metadata.permissions) !== -1) {
-			items["aggregatePdf"] = {name : 'Aggregate Pdf'};
+			items["aggregatePdf"] = {name : 'Generate Aggregate Pdf'};
 		}
 		
 		// Trash actions
@@ -516,9 +516,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "aggregatePdf" :
 						self.actionHandler.addEvent({
-							action : "AggregatePdfAction",
-							url : "api/edit/aggregatePdf",
-							application : "services"
+							action : "AggregatePdf",
+							target : resultObject
 						});
 						break;
 					case "copyid" :

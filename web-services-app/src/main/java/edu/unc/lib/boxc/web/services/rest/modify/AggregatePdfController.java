@@ -27,18 +27,29 @@ public class AggregatePdfController {
     @Autowired
     private PdfRequestSender pdfRequestSender;
 
-    @RequestMapping(value = "edit/aggregatePdf")
+    @PostMapping(value = "/edit/aggregatePdf/{id}")
     @ResponseBody
-    public ResponseEntity<Object> aggregatePdf(@RequestParam("ids") String ids) {
+    public ResponseEntity<Object> aggregatePdfObject(@PathVariable("id") String id) {
+        return aggregatePdfs(id);
+    }
+
+    @PostMapping(value = "/edit/aggregatePdf")
+    @ResponseBody
+    public ResponseEntity<Object> aggregatePdfBatch(@RequestParam("ids") String ids) {
         if (isEmpty(ids)) {
             throw new IllegalArgumentException("Must provide one or more ids");
         }
 
+        return aggregatePdfs(ids.split("\n"));
+    }
+
+    private ResponseEntity<Object> aggregatePdfs(String... ids) {
         Map<String, Object> result = new HashMap<>();
         var agent = AgentPrincipalsImpl.createFromThread();
+
         result.put("action", "generate aggregate PDFs");
 
-        for (String id : ids.split("\n")) {
+        for (String id : ids) {
             PdfRequest pdfRequest = new PdfRequest();
             pdfRequest.setAgent(agent);
             pdfRequest.setWorkPid(id);

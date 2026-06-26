@@ -75,10 +75,10 @@ public class AggregatePdfControllerTest {
 
     @Test
     void aggregatePdfWithSingleIdTest() throws Exception {
-        var ids = PID_1 + "\n";
+        var ids = PID_1;
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/aggregatePdf"))
-                        .param("ids", ids))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/aggregatePdf/" + PID_1))
+                        .param("id", ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
