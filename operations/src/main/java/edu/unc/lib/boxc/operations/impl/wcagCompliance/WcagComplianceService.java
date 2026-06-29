@@ -8,7 +8,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.impl.utils.PropertiesUtil;
+import edu.unc.lib.boxc.operations.impl.utils.FedoraPropertiesUtil;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.wcagCompliance.WcagComplianceRequest;
@@ -69,7 +69,7 @@ public class WcagComplianceService {
                     + " cannot be assigned a WCAG compliance level.");
         }
 
-        var currentLevel = PropertiesUtil.getValue(repoObj, Cdr.wcagCompliance);
+        var currentLevel = FedoraPropertiesUtil.getValue(repoObj, Cdr.wcagCompliance);
         // if current level is null (does not exist) and the requested level is blank, do nothing
         if (currentLevel == null && StringUtils.isBlank(requestLevel)) {
             log.debug("The current WCAG compliance level is null and the requested level is blank");
@@ -77,7 +77,7 @@ public class WcagComplianceService {
         }
         // if we're just updating to the same existing compliance level, do nothing
         if (!StringUtils.isBlank(currentLevel) && Objects.equals(currentLevel, requestLevel)) {
-            log.debug("The current WCAG compliance level is null and the requested level is blank");
+            log.debug("The current WCAG compliance level and the requested level are the same value");
             return;
         }
 

@@ -93,7 +93,7 @@ public class WcagComplianceServiceTest {
     }
 
     @Test
-    public void testNotAWork() {
+    public void testNotAFile() {
         var workObject = mock(WorkObject.class);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(workObject);
         var request = buildRequest(LEVEL_A_10);
