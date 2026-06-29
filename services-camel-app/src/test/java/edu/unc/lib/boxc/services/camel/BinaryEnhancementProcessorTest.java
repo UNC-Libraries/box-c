@@ -23,7 +23,6 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
@@ -138,7 +137,7 @@ public class BinaryEnhancementProcessorTest {
         verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
         verify(message, never()).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message, never()).setHeader("force", "false");
-        verify(message, never()).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
+        verify(message).setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
     }
 
     @Test

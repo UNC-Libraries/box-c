@@ -39,6 +39,7 @@ public class BinaryEnhancementProcessor implements Processor {
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         String fcrepoBinaryUri = MessageUtil.getFcrepoUri(in);
+        String enhancementsList = null;
 
         if (fcrepoBinaryUri == null) {
             Document msgBody = MessageUtil.getDocumentBody(in);
@@ -48,7 +49,7 @@ public class BinaryEnhancementProcessor implements Processor {
             }
             Element body = msgBody.getRootElement();
 
-           Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+            Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
             if (enhancementsEl != null) {
                 String pidValue = enhancementsEl.getChild("pid", CDR_MESSAGE_NS).getTextTrim();
                 PID objPid = PIDs.get(pidValue);
@@ -56,7 +57,7 @@ public class BinaryEnhancementProcessor implements Processor {
                 try {
                     RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
 
-                    log.info("Adding enhancement headers for " + pidValue);
+                    log.info("Adding enhancement headers for {}", pidValue);
                     in.setHeader(FCREPO_URI, pidValue);
                     in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
@@ -67,17 +68,17 @@ public class BinaryEnhancementProcessor implements Processor {
                         in.setHeader("force", "false");
                     }
 
-                    var enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
-                    if (enhancementsList == null || enhancementsList.isBlank()) {
-                        in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
-                    } else {
-                        in.setHeader(CdrEnhancementSet, enhancementsList);
-                    }
-
+                    enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
                 }
             }
+        }
+
+        if (enhancementsList == null || enhancementsList.isBlank()) {
+            in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
+        } else {
+            in.setHeader(CdrEnhancementSet, enhancementsList);
         }
     }
 
