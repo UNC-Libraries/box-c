@@ -185,6 +185,11 @@ public class Cdr {
     public static final Property warnInvalidTerms = createProperty(
             "http://cdr.unc.edu/definitions/model#warnInvalidTerms" );
 
+    /** Property which records the WCAG compliance level
+     */
+    public static final Property wcagCompliance = createProperty(
+            "http://cdr.unc.edu/definitions/model#wcagCompliance");
+
     public static final Resource FileObject = createResource(
             "http://cdr.unc.edu/definitions/model#FileObject" );
     public static final Resource Work = createResource(
