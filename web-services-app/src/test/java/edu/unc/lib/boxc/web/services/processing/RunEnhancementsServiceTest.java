@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.jdom2.Document;
@@ -29,6 +30,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 
 import java.util.List;
+import java.util.Collections;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
@@ -216,6 +218,49 @@ public class RunEnhancementsServiceTest {
         assertMessageValues(msgDocs.get(0), workPid, true, MACHINE_GEN_DESCRIPTION);
         var dsPid = DatastreamPids.getOriginalFilePid(filePid);
         assertMessageValues(msgDocs.get(1), dsPid, true, MACHINE_GEN_DESCRIPTION);
+    }
+
+    @Test
+    public void runWorkObjectRecursiveAcrossMultiplePagesTest() {
+        PID filePid2 = TestHelper.makePid();
+        var fileObject2 = mock(FileObject.class);
+        var fileRecord2 = mock(ContentObjectRecord.class);
+        mockObject(filePid2, fileObject2, fileRecord2, ResourceType.File);
+        when(fileRecord2.getDatastreamObject(ORIGINAL_FILE.getId())).thenReturn(originalDs);
+
+        var firstPageResp = mock(SearchResultResponse.class);
+        when(firstPageResp.getResultCount()).thenReturn(1001L);
+        when(firstPageResp.getSelectedContainer()).thenReturn(workRecord);
+        when(firstPageResp.getResultList()).thenReturn(Collections.nCopies(1000, fileRecord));
+
+        var secondPageResp = mock(SearchResultResponse.class);
+        when(secondPageResp.getResultCount()).thenReturn(1001L);
+        when(secondPageResp.getResultList()).thenReturn(List.of(fileRecord2));
+
+        when(queryLayer.performSearch(any())).thenAnswer(invocation -> {
+            SearchRequest request = invocation.getArgument(0);
+            Integer startRow = request.getSearchState().getStartRow();
+            if (startRow == null || startRow == 0) {
+                return firstPageResp;
+            }
+            if (startRow == 1000) {
+                return secondPageResp;
+            }
+            throw new AssertionError("Unexpected startRow: " + startRow);
+        });
+
+        var request = new RunEnhancementsRequest();
+        request.setAgent(agent);
+        request.setRecursive(true);
+        request.setForce(false);
+        request.setPids(List.of(workPid.getId()));
+
+        service.run(request);
+
+        verify(messageSender, times(1002)).sendMessage(docCaptor.capture());
+        var msgDocs = docCaptor.getAllValues();
+        assertMessageValues(msgDocs.get(0), workPid, false, null);
+        assertMessageValues(msgDocs.get(1001), DatastreamPids.getOriginalFilePid(filePid2), false, null);
     }
 
     @Test
