@@ -140,7 +140,13 @@
     </bean>
 
     <bean id="pdfRequestSender" class="edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender">
-        <property name="jmsTemplate" ref="jmsTemplate" />
+        <property name="jmsTemplate" ref="pdfRequestJmsTemplate" />
+    </bean>
+
+    <bean id="pdfRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.aggregate.pdf.stream}" />
+        <property name="pubSubDomain" value="false" />
     </bean>
     
     <!-- Access related beans -->
