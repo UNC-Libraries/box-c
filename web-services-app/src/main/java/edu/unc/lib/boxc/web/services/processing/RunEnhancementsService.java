@@ -112,6 +112,7 @@ public class RunEnhancementsService {
                 createMessage(metadata, agent.getUsername(), force, enhancements);
                 count++;
             }
+            searchState.setStartRow(count);
             LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
         } while(count < totalResults);
     }
