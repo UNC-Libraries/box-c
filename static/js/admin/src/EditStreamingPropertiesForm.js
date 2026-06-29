@@ -15,10 +15,7 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
         EditStreamingPropertiesForm.prototype = Object.create( AbstractForm.prototype );
 
         EditStreamingPropertiesForm.prototype.preprocessForm = function() {
-            let resultObjId = $('#streaming_file_id', this.$form).val();
-            let streamingUrl = $('#streaming_url', this.$form).val();
-            let streamingType = $('#streaming_type', this.$form).val();
-            this.action_url = `/services/api/edit/streamingProperties?id=${resultObjId}&url=${encodeURIComponent(streamingUrl)}&action=add&type=${streamingType}`;
+            this.action_url = '/services/api/edit/streamingProperties';
         }
 
         EditStreamingPropertiesForm.prototype.validationErrors = function(resultObject) {

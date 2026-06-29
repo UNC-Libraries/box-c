@@ -16,15 +16,12 @@ define('EditAspaceRefIdForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
         EditAspaceRefIdForm.prototype = Object.create(AbstractForm.prototype);
 
         EditAspaceRefIdForm.prototype.preprocessForm = function(resultObject) {
-            var newAspaceRefId = $("input[name='aspace_ref_id']", this.$form).val();
-            var pid = resultObject.metadata.id;
-
-            this.action_url = `/services/api/edit/aspace/updateRefId/${pid}?aspaceRefId=${encodeURIComponent(newAspaceRefId)}`;
+            this.action_url = `/services/api/edit/aspace/updateRefId/${resultObject.metadata.id}`;
         };
 
         EditAspaceRefIdForm.prototype.validationErrors = function() {
             var errors = [];
-            var ref_id = $("input[name='aspace_ref_id']", this.$form).val();
+            var ref_id = $("input[name='aspaceRefId']", this.$form).val();
             // Validate input
             if (!ref_id)
                 errors.push("You must specify an Aspace Ref Id.");
