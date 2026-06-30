@@ -53,14 +53,15 @@ public class AggregatePdfProcessor implements Processor {
         var workPid = PIDs.get(request.getWorkPid());
 
         aclService.assertHasAccess("User does not have permission to generate aggregate PDF",
-                workPid, agent.getPrincipals(), Permission.runEnhancements);
+                workPid, agent.getPrincipals(), Permission.editResourceType);
+
+        var workObject = loadWorkObject(workPid);
 
         var pdfPid = pidMinter.mintContentPid();
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
-        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(pdfPid)
+        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(workPid)
                 .getNewStorageUri(originalFilePid));
 
-        var workObject = loadWorkObject(workPid);
         Path pdfTmpPath = null;
 
         try {

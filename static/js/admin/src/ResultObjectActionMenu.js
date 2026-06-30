@@ -258,6 +258,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				items["destroy"] = {name : 'Destroy', disabled :  !resultObject.isDeleted};
 			}
 		}
+		if (metadata.type === 'Work' && $.inArray('editResourceType', metadata.permissions) !== -1) {
+			items["aggregatePdf"] = {name : 'Generate Aggregate Pdf'};
+		}
 		
 		// Trash actions
 		if (!isContentRoot && ($.inArray('markForDeletionUnit', metadata.permissions) != -1 || ($.inArray('markForDeletion', metadata.permissions) != -1))) {
@@ -513,6 +516,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'RunEnhancementsBatch',
 							targets : [resultObject]
+						});
+						break;
+					case "aggregatePdf" :
+						self.actionHandler.addEvent({
+							action : "AggregatePdf",
+							target : resultObject
 						});
 						break;
 					case "copyid" :
