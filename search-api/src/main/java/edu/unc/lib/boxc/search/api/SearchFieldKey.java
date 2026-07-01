@@ -81,7 +81,8 @@ public enum SearchFieldKey {
     TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
     TRANSCRIPT("transcript", "transcript", "Transcript"),
     VERSION("_version_", "version", "Version"),
-    VIEW_BEHAVIOR("viewBehavior", "viewBehavior", "View Behavior");
+    VIEW_BEHAVIOR("viewBehavior", "viewBehavior", "View Behavior"),
+    WCAG_COMPLIANCE("wcagCompliance", "wcagCompliance", "WCAG Compliance");
 
     private final String solrField;
     private final String displayLabel;
