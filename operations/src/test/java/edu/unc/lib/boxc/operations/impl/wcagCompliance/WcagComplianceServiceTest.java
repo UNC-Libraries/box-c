@@ -65,7 +65,7 @@ public class WcagComplianceServiceTest {
         closeable = openMocks(this);
         service = new WcagComplianceService();
         service.setAclService(aclService);
-        service.setRepoObjLoader(repositoryObjectLoader);
+        service.setRepositoryObjectLoader(repositoryObjectLoader);
         service.setRepositoryObjectFactory(repositoryObjectFactory);
         service.setIndexingMessageSender(indexingMessageSender);
         pid = TestHelper.makePid();
