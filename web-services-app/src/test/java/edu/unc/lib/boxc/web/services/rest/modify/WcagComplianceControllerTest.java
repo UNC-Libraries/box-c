@@ -59,9 +59,8 @@ public class WcagComplianceControllerTest {
         doThrow(new AccessRestrictionException("Access Denied"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{id}", pid.getId())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("level", LEVEL_A_10))
+        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+                        pid.getId(), LEVEL_A_10))
                 .andExpect(status().isForbidden());
 
     }
@@ -72,9 +71,8 @@ public class WcagComplianceControllerTest {
         doThrow(new IllegalArgumentException("not the best level"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{id}", pid.getId())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("level", level))
+        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+                        pid.getId(), level))
                 .andExpect(status().isBadRequest());
     }
 
@@ -83,21 +81,19 @@ public class WcagComplianceControllerTest {
         doThrow(new InvalidOperationForObjectType("This is a work"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{id}", pid.getId())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("level", LEVEL_A_10))
+        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+                        pid.getId(), LEVEL_A_10))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testUpdateWcagComplianceSuccess() throws Exception {
         var level = LEVEL_A_10;
-        var result = mockMvc.perform(post("/edit/wcagCompliance/{id}", pid.getId())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("level", level))
+        var result = mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+                        pid.getId(), level))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();;
+                .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("updateWcagCompliance", respMap.get("action"));
