@@ -173,12 +173,11 @@ public class AggregatePdfService {
 
     /**
      * Retrieve text type value from boxctron's alt text review and create list of all text types
+     * text types: printed, typed, handwritten printed, handwritten cursive, mixed
      * @param request PdfRequest
      * @return list of text types
      */
     public List<String> createTextTypeList(PdfRequest request) {
-        var textType = RESULT_HANDWRITTEN_CURSIVE;
-
         var workPidString = request.getWorkPid();
         var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
@@ -197,7 +196,7 @@ public class AggregatePdfService {
                 log.debug("Loaded machine gen datastream for {}", filePid);
             }
 
-            textType = machineGeneratedContentService.extractTextType(mgdNode);
+            var textType = machineGeneratedContentService.extractTextType(mgdNode);
             if (textType != null) {
                 textTypeList.add(textType);
             }

@@ -298,8 +298,17 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
+        <property name="derivativeDir" value="target/" />
+    </bean>
+
+    <bean id="machineGeneratedContentService" class="edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService"/>
+    </bean>
+
     <bean id="aggregatePdfService" class="edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService">
         <property name="tmpDir" value="${services.tempDirectory}" />
+        <property name="machineGeneratedContentService" ref="machineGeneratedContentService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="solrSearchService" ref="queryLayer" />
     </bean>
