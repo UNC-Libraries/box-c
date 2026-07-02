@@ -24,12 +24,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class WcagComplianceControllerTest {
-
     @Mock
     private WcagComplianceService service;
     private MockMvc mockMvc;
@@ -55,11 +54,10 @@ public class WcagComplianceControllerTest {
 
     @Test
     public void testUpdateWcagComplianceNoPermission() throws Exception {
-
         doThrow(new AccessRestrictionException("Access Denied"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+        mockMvc.perform(put("/edit/wcagCompliance/{pidString}?level={level}",
                         pid.getId(), LEVEL_A_10))
                 .andExpect(status().isForbidden());
 
@@ -71,7 +69,7 @@ public class WcagComplianceControllerTest {
         doThrow(new IllegalArgumentException("not the best level"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+        mockMvc.perform(put("/edit/wcagCompliance/{pidString}?level={level}",
                         pid.getId(), level))
                 .andExpect(status().isBadRequest());
     }
@@ -81,7 +79,7 @@ public class WcagComplianceControllerTest {
         doThrow(new InvalidOperationForObjectType("This is a work"))
                 .when(service).updateWcagCompliance(any());
 
-        mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+        mockMvc.perform(put("/edit/wcagCompliance/{pidString}?level={level}",
                         pid.getId(), LEVEL_A_10))
                 .andExpect(status().isBadRequest());
     }
@@ -89,7 +87,7 @@ public class WcagComplianceControllerTest {
     @Test
     public void testUpdateWcagComplianceSuccess() throws Exception {
         var level = LEVEL_A_10;
-        var result = mockMvc.perform(post("/edit/wcagCompliance/{pidString}?level={level}",
+        var result = mockMvc.perform(put("/edit/wcagCompliance/{pidString}?level={level}",
                         pid.getId(), level))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

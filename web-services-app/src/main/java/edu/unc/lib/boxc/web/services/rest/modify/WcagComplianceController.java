@@ -6,8 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
@@ -24,9 +23,9 @@ public class WcagComplianceController {
     @Autowired
     private WcagComplianceService service;
 
-    @PostMapping(value = "/edit/wcagCompliance/{pidString}", produces = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/edit/wcagCompliance/{pidString}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<Object> updateWcagCompliance(@ModelAttribute WcagComplianceRequest request) {
+    public ResponseEntity<Object> updateWcagCompliance(WcagComplianceRequest request) {
         request.setAgent(getAgentPrincipals());
         service.updateWcagCompliance(request);
 
