@@ -17,7 +17,7 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 
         EditWcagComplianceForm.prototype.preprocessForm = function(resultObject) {
             var pid = resultObject.metadata.id;
-            this.action_url = "/services/api/edit/wcag/" + pid;
+            this.action_url = "/services/api//edit/wcagCompliance/" + pid;
         };
 
         EditWcagComplianceForm.prototype.validationErrors = function() {
