@@ -7,9 +7,11 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.utils.FedoraPropertiesUtil;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSender;
 import org.apache.jena.rdf.model.Property;
@@ -64,8 +66,7 @@ public class StreamingPropertiesController {
                     repositoryObject.getClass().getName() + ", as only FileObjects have streaming properties");
         }
 
-        var resource = repositoryObject.getResource();
-        var properties = getProperties(id, resource);
+        var properties = getProperties(id, repositoryObject);
 
         return new ResponseEntity<>(properties, HttpStatus.OK);
     }
@@ -118,14 +119,10 @@ public class StreamingPropertiesController {
         return false;
     }
 
-    private String getValue(Resource resource, Property property) {
-        var propValue = resource.getProperty(property);
-        return propValue == null ? null : propValue.getString();
-    }
-    private Map<String, String> getProperties(String id, Resource resource) {
+    private Map<String, String> getProperties(String id, RepositoryObject repositoryObject) {
         Map<String, String> result = new HashMap<>();
-        var url = getValue(resource, Cdr.streamingUrl);
-        var type = getValue(resource, Cdr.streamingType);
+        var url = FedoraPropertiesUtil.getValue(repositoryObject, Cdr.streamingUrl);
+        var type = FedoraPropertiesUtil.getValue(repositoryObject, Cdr.streamingType);
 
         result.put("id", id);
         result.put("url", url);
