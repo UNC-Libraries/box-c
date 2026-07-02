@@ -232,6 +232,8 @@
         <field name="transcript" type="string" indexed="true" stored="true"/>
         <!-- View behavior for Clover -->
         <field name="viewBehavior" type="string" indexed="true" stored="true" />
+        <!-- Stores WCAG compliance level or list of levels for child FileObjects -->
+        <field name="wcagCompliance" type="string" indexed="true" stored="true" />
 
         <!-- Machine generated description workflow fields -->
         <field name="mgDescription" type="string" indexed="true" stored="true" />

@@ -199,4 +199,11 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
     String getTranscript();
 
     void setTranscript(String transcript);
+
+   /**
+    * @return WCAG compliance level for this object
+    */
+   String getWcagCompliance();
+
+    void setWcagCompliance(String wcagCompliance);
 }
