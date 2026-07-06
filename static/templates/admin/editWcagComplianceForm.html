@@ -1,7 +1,7 @@
 <form id="edit_wcag_compliance_form" class="edit_form edit_wcag_compliance_form">
     <div class="form_field">
         <label for="edit_wcag_compliance"><span class="required">*</span> WCAG Compliance Level</label>
-        <select id="edit_wcag_compliance">
+        <select id="edit_wcag_compliance" name="level">
             <option value="" <%= (metadata.wcag_level === undefined || metadata.wcag_level === '') ? "selected='selected'" : "" %>>-- Set WCAG Compliance Level --</option>
             <option value="WCAG 1.0 Level A" <%= "WCAG 1.0 Level A" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 1.0 Level A</option>
             <option value="WCAG 1.0 Level AA" <%= "WCAG 1.0 Level AA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 1.0 Level AA</option>

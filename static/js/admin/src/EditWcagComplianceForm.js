@@ -5,7 +5,7 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
         var defaultOptions = {
             title : 'Edit WCAG Compliance Level',
             createFormTemplate : editWcagComplianceForm,
-            submitMethod: 'PUT'
+            submitMethod: 'POST'
         };
 
         function EditWcagComplianceForm(options) {
@@ -17,7 +17,7 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 
         EditWcagComplianceForm.prototype.preprocessForm = function(resultObject) {
             var pid = resultObject.metadata.id;
-            this.action_url = "/services/api//edit/wcagCompliance/" + pid;
+            this.action_url = "/services/api/edit/wcagCompliance/" + pid;
         };
 
         EditWcagComplianceForm.prototype.validationErrors = function() {
