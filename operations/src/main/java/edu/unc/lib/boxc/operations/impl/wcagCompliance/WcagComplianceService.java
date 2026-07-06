@@ -26,7 +26,7 @@ import java.util.Objects;
 public class WcagComplianceService {
     private static final Logger log = LoggerFactory.getLogger(WcagComplianceService.class);
     private AccessControlService aclService;
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private IndexingMessageSender indexingMessageSender;
     public static final String LEVEL_A_10 = "WCAG 1.0 Level A";
@@ -62,7 +62,7 @@ public class WcagComplianceService {
                 "User does not have permission to edit WCAG compliance level",
                 filePid, agentPrincipals, Permission.editResourceType);
 
-        var repoObj = repoObjLoader.getRepositoryObject(filePid);
+        var repoObj = repositoryObjectLoader.getRepositoryObject(filePid);
 
         if (!(repoObj instanceof FileObject)) {
             throw new InvalidOperationForObjectType("Object " + pidString + " of type " + repoObj.getClass().getName()
@@ -95,8 +95,8 @@ public class WcagComplianceService {
         this.aclService = aclService;
     }
 
-    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
     }
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {

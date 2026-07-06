@@ -81,7 +81,8 @@
 
         <joda-time.version>2.14.0</joda-time.version>
         <jmustache.version>1.16</jmustache.version>
-        <mail.version>2.0.2</mail.version>
+        <jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
+        <mail.version>2.0.5</mail.version>
         <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
         <guava.version>32.1.3-jre</guava.version>
@@ -741,7 +742,6 @@
                 <artifactId>xml-apis</artifactId>
                 <version>${xml-apis.version}</version>
             </dependency>
-            
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
@@ -763,9 +763,15 @@
                 <version>${jmustache.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${jakarta.mail-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
                 <version>${mail.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>gov.loc</groupId>
