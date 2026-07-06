@@ -1,11 +1,5 @@
 package edu.unc.lib.boxc.search.api.models;
 
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_DESCRIPTION;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_CONTENT_TAGS;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_DESCRIPTION;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.MG_RISK_SCORE;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.TRANSCRIPT;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -203,7 +197,7 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
    /**
     * @return WCAG compliance level for this object
     */
-   String getWcagCompliance();
+   List<String> getWcagComplianceLevel();
 
-    void setWcagCompliance(String wcagCompliance);
+    void setWcagComplianceLevel(List<String> wcagCompliance);
 }

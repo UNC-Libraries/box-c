@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.utils.SearchGeneratorUtil;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
-import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -16,11 +16,6 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.io.FilenameUtils;
@@ -53,8 +48,6 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     private Properties contentTypeProperties;
     private Properties mimeTypeToDescProperties;
     private Properties extMimetypeOverridesProperties;
-
-    private static final int MAX_FILES_PER_WORK = 10000;
     private static final List<String> WORK_FILE_FIELDS = Arrays.asList(SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(),
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name());
     private SolrSearchService solrSearchService;
@@ -128,15 +121,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     }
 
     private void addFileContentTypesToWork(IndexDocumentBean doc) {
-        var searchState = new SearchState();
-        var objectPath = getObjectPath(doc);
-        searchState.setFacet(objectPath);
-        searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
-        searchState.setRowsPerPage(MAX_FILES_PER_WORK);
+        var searchState = SearchGeneratorUtil.getSearchState(doc,contentPathFactory);
         searchState.setResultFields(WORK_FILE_FIELDS);
-        var searchRequest = new SearchRequest();
-        searchRequest.setSearchState(searchState);
-        var result = solrSearchService.getSearchResults(searchRequest);
+        var result = SearchGeneratorUtil.getSearchResults(searchState, solrSearchService);
         var categories = new HashSet<String>();
         var fileTypes = new HashSet<String>();
         var descriptions = new HashSet<String>();
@@ -164,18 +151,6 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
      */
     private String getBaseMimeType(String mimetype) {
         return mimetype == null ? null : mimetype.split(";", 2)[0];
-    }
-
-    private CutoffFacet getObjectPath(IndexDocumentBean doc) {
-        CutoffFacetImpl ancestorPath;
-        if (doc.getAncestorPath() != null && !doc.getAncestorPath().isEmpty()) {
-            ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
-        } else {
-            var ancestorPids = contentPathFactory.getAncestorPids(doc.getPid());
-            ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), ancestorPids);
-        }
-        ancestorPath.addNode(doc.getId());
-        return ancestorPath;
     }
 
     /**

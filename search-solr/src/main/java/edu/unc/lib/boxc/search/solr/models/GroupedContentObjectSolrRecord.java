@@ -463,12 +463,12 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public String getWcagCompliance() {
-        return representative.getWcagCompliance();
+    public List<String> getWcagComplianceLevel() {
+        return representative.getWcagComplianceLevel();
     }
 
     @Override
-    public void setWcagCompliance(String wcagCompliance) {
-        representative.setWcagCompliance(wcagCompliance);
+    public void setWcagComplianceLevel(List<String> wcagCompliance) {
+        representative.setWcagComplianceLevel(wcagCompliance);
     }
 }
