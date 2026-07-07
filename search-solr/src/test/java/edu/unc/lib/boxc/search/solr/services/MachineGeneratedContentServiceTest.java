@@ -212,13 +212,13 @@ public class MachineGeneratedContentServiceTest {
 
     @Test
     public void extractTextType_nullNode_returnsNull() {
-        assertNull(service.extractTextType(null));
+        assertEquals("no text", service.extractTextType(null));
     }
 
     @Test
     public void extractTextType_missingField_returnsNull() throws Exception {
         JsonNode node = buildNodeWithoutField(parseDefaultJson(), "text_type");
-        assertNull(service.extractTextType(node));
+        assertEquals("no text", service.extractTextType(node));
     }
 
     // ─── extractContentTags – defaults (no tags) ─────────────────────────────

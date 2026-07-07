@@ -79,8 +79,8 @@ public class AggregatePdfService {
                 .collect(Collectors.joining(","));
 
         try {
-            String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles, "-o", tempPath.toString(),
-                    "-t", transcriptFiles, "-tt", textTypeList};
+            String[] command = new String[]{"pdf4u", "multiple_images", "add_ocr", "-i", inputFiles,
+                    "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
             log.debug("Run pdf4u command {} for work {}", command, workPid);
             CLIMain.runCommand(command);
 
@@ -145,6 +145,7 @@ public class AggregatePdfService {
         assertParentRecordValid(workPid, parentRec);
 
         // retrieve transcript and write to temporary transcript file
+        // if transcript value is null, write null
         List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
         for (var child : children) {
             var transcriptValue = child.getTranscript();
@@ -156,6 +157,8 @@ public class AggregatePdfService {
                     throw new RuntimeException(e);
                 }
                 transcriptList.add(transcriptFilePath);
+            } else {
+                transcriptList.add(null);
             }
         }
 
@@ -173,7 +176,7 @@ public class AggregatePdfService {
 
     /**
      * Retrieve text type value from boxctron's alt text review and create list of all text types
-     * text types: printed, typed, handwritten printed, handwritten cursive, mixed
+     * text types: printed, typed, handwritten printed, handwritten cursive, mixed, no text
      * @param request PdfRequest
      * @return list of text types
      */

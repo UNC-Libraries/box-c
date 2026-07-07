@@ -171,11 +171,11 @@ public class MachineGeneratedContentService {
     /**
      * Extracts the text type from the machine generated description JSON, if it exists.
      * @param mgdNode the machine generated description JSON root node
-     * @return text type if it exists, otherwise null
+     * @return text type if it exists, otherwise no text
      */
     public String extractTextType(JsonNode mgdNode) {
         if (mgdNode == null) {
-            return null;
+            return "no text";
         }
 
         JsonNode textTypeNode = extractSafetyAssessment(mgdNode).path("text_characteristics")
@@ -188,7 +188,7 @@ public class MachineGeneratedContentService {
             }
         }
 
-        return null;
+        return "no text";
     }
 
     /**
