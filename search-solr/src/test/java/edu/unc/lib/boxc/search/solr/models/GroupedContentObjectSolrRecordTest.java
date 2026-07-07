@@ -432,6 +432,15 @@ public class GroupedContentObjectSolrRecordTest {
         assertEquals("uuid:thumb", grouped.getThumbnailId());
     }
 
+    @Test
+    public void getWcagComplianceLevel_delegatesToRepresentative() {
+        var level = List.of("WCAG 1.0 Level A");
+        ContentObjectSolrRecord rep = makeRecord(UUID3, GROUP_ID);
+        rep.setWcagComplianceLevel(level);
+        GroupedContentObjectSolrRecord grouped = grouped(rep);
+        assertEquals(level, grouped.getWcagComplianceLevel());
+    }
+
     private ContentObjectSolrRecord makeRecord(String id, String rollup) {
         ContentObjectSolrRecord record = new ContentObjectSolrRecord();
         record.setId(id);
