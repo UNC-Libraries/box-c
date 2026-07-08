@@ -158,7 +158,7 @@ public class AggregatePdfService {
                 }
                 transcriptList.add(transcriptFilePath);
             } else {
-                transcriptList.add(null);
+                transcriptList.add("no transcript");
             }
         }
 
