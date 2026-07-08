@@ -12,19 +12,22 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
+/**
+ * Convenience methods for generating search related objects for Filter classes
+ */
 public class SearchGeneratorUtil {
     private static final int MAX_FILES_PER_WORK = 10000;
     private SearchGeneratorUtil(){
     }
-    public static SearchState getSearchState(IndexDocumentBean doc, ContentPathFactory contentPathFactory) {
+    public static SearchState getChildrenFileObjectsSearchState(IndexDocumentBean doc, ContentPathFactory contentPathFactory) {
         var searchState = new SearchState();
-        var objectPath = getObjectPath(doc, contentPathFactory);
+        var objectPath = getAncestorPath(doc, contentPathFactory);
         searchState.setFacet(objectPath);
         searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
         searchState.setRowsPerPage(MAX_FILES_PER_WORK);
         return searchState;
     }
-    private static CutoffFacet getObjectPath(IndexDocumentBean doc, ContentPathFactory contentPathFactory) {
+    private static CutoffFacet getAncestorPath(IndexDocumentBean doc, ContentPathFactory contentPathFactory) {
         CutoffFacetImpl ancestorPath;
         if (doc.getAncestorPath() != null && !doc.getAncestorPath().isEmpty()) {
             ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
@@ -34,11 +37,5 @@ public class SearchGeneratorUtil {
         }
         ancestorPath.addNode(doc.getId());
         return ancestorPath;
-    }
-
-    public static SearchResultResponse getSearchResults(SearchState searchState, SolrSearchService solrSearchService) {
-        var searchRequest = new SearchRequest();
-        searchRequest.setSearchState(searchState);
-        return solrSearchService.getSearchResults(searchRequest);
     }
 }

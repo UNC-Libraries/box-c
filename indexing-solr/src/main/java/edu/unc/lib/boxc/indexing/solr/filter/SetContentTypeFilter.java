@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.io.FilenameUtils;
@@ -121,9 +122,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     }
 
     private void addFileContentTypesToWork(IndexDocumentBean doc) {
-        var searchState = SearchGeneratorUtil.getSearchState(doc,contentPathFactory);
+        var searchState = SearchGeneratorUtil.getChildrenFileObjectsSearchState(doc, contentPathFactory);
         searchState.setResultFields(WORK_FILE_FIELDS);
-        var result = SearchGeneratorUtil.getSearchResults(searchState, solrSearchService);
+        var result = solrSearchService.getSearchResults(new SearchRequest(searchState, null));
         var categories = new HashSet<String>();
         var fileTypes = new HashSet<String>();
         var descriptions = new HashSet<String>();

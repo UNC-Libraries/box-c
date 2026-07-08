@@ -15,189 +15,189 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
  * @author bbpennel
  *
  */
- public interface ContentObjectRecord {
-    CutoffFacet getAncestorPathFacet();
+public interface ContentObjectRecord {
+   CutoffFacet getAncestorPathFacet();
 
-    ObjectPath getObjectPath();
+   ObjectPath getObjectPath();
 
-    void setObjectPath(ObjectPath objectPath);
+   void setObjectPath(ObjectPath objectPath);
 
-    CutoffFacet getPath();
+   CutoffFacet getPath();
 
-    List<HierarchicalFacet> getContentTypeFacet();
+   List<HierarchicalFacet> getContentTypeFacet();
 
-    List<Datastream> getDatastreamObjects();
+   List<Datastream> getDatastreamObjects();
 
-    Datastream getDatastreamObject(String datastreamName);
+   Datastream getDatastreamObject(String datastreamName);
 
-    Map<String, Collection<String>> getGroupRoleMap();
+   Map<String, Collection<String>> getGroupRoleMap();
 
-    void setCountMap(Map<String,Long> countMap);
+   void setCountMap(Map<String,Long> countMap);
 
-    Map<String,Long> getCountMap();
+   Map<String,Long> getCountMap();
 
-    String getId();
+   String getId();
 
-    PID getPid();
+   PID getPid();
 
-    List<String> getAncestorPath();
+   List<String> getAncestorPath();
 
-    String getAncestorIds();
+   String getAncestorIds();
 
-    String getParentCollectionName();
+   String getParentCollectionName();
 
-    String getParentCollection();
+   String getParentCollection();
 
-    String getParentCollectionId();
+   String getParentCollectionId();
 
-    String getRollup();
+   String getRollup();
 
-    Long get_version_();
+   Long get_version_();
 
-    List<String> getDatastream();
+   List<String> getDatastream();
 
-    Long getFilesizeSort();
+   Long getFilesizeSort();
 
-    Long getFilesizeTotal();
+   Long getFilesizeTotal();
 
-    String getResourceType();
+   String getResourceType();
 
-    Integer getResourceTypeSort();
+   Integer getResourceTypeSort();
 
-    List<String> getFileFormatCategory();
+   List<String> getFileFormatCategory();
 
-    List<String> getFileFormatType();
+   List<String> getFileFormatType();
 
-    List<String> getFileFormatDescription();
+   List<String> getFileFormatDescription();
 
-    Date getTimestamp();
+   Date getTimestamp();
 
-    Date getLastIndexed();
+   Date getLastIndexed();
 
-    List<String> getRoleGroup();
+   List<String> getRoleGroup();
 
-    List<String> getReadGroup();
+   List<String> getReadGroup();
 
-    List<String> getAdminGroup();
+   List<String> getAdminGroup();
 
-    List<String> getStatus();
+   List<String> getStatus();
 
-    List<String> getContentStatus();
+   List<String> getContentStatus();
 
-    List<String> getIdentifier();
+   List<String> getIdentifier();
 
-    String getIdentifierSort();
+   String getIdentifierSort();
 
-    Integer getMemberOrderId();
+   Integer getMemberOrderId();
 
-    String getTitle();
+   String getTitle();
 
-    String getAncestorNames();
+   String getAncestorNames();
 
-    List<String> getOtherTitle();
+   List<String> getOtherTitle();
 
-    String getAbstractText();
+   String getAbstractText();
 
-    List<String> getKeyword();
+   List<String> getKeyword();
 
-    List<String> getExhibit();
+   List<String> getExhibit();
 
-    List<String> getSubject();
+   List<String> getSubject();
 
-    String getStreamingType();
+   String getStreamingType();
 
-    String getStreamingUrl();
+   String getStreamingUrl();
 
-    String getCollectionDisplaySettings();
+   String getCollectionDisplaySettings();
 
-    List<String> getLocation();
+   List<String> getLocation();
 
-    List<String> getGenre();
+   List<String> getGenre();
 
-    List<String> getLanguage();
+   List<String> getLanguage();
 
-    List<String> getCreator();
+   List<String> getCreator();
 
-    List<String> getContributor();
+   List<String> getContributor();
 
-    List<String> getCreatorContributor();
+   List<String> getCreatorContributor();
 
-    List<String> getPublisher();
+   List<String> getPublisher();
 
-    Date getDateCreated();
+   Date getDateCreated();
 
-    String getDateCreatedYear();
+   String getDateCreatedYear();
 
-    Date getDateAdded();
+   Date getDateAdded();
 
-    Date getDateUpdated();
+   Date getDateUpdated();
 
-    String getCitation();
+   String getCitation();
 
-    String getFullText();
+   String getFullText();
 
-    Map<String,Object> getDynamicFields();
+   Map<String,Object> getDynamicFields();
 
-    String getCollectionId();
+   String getCollectionId();
 
-    String getAspaceRefId();
-    String getHookId();
+   String getAspaceRefId();
+   String getHookId();
 
-    /**
-     * @return ID of the object holding the thumbnail for this object, if one is present. Otherwise, null.
-     */
-    String getThumbnailId();
+   /**
+    * @return ID of the object holding the thumbnail for this object, if one is present. Otherwise, null.
+    */
+   String getThumbnailId();
 
-    void setThumbnailId(String id);
+   void setThumbnailId(String id);
 
-    String getViewBehavior();
+   String getViewBehavior();
 
-    /**
-     * @return The alt text for this object, if one is present.
-     */
-    String getAltText();
+   /**
+    * @return The alt text for this object, if one is present.
+    */
+   String getAltText();
 
-    void setAltText(String altText);
+   void setAltText(String altText);
 
-    /**
-     * @return The full content description for this object.
-     */
-    String getFullDescription();
+   /**
+    * @return The full content description for this object.
+    */
+   String getFullDescription();
 
-    void setFullDescription(String fullDescription);
+   void setFullDescription(String fullDescription);
 
-    /**
-     * @return A list of content tags generated for this object.
-     */
-    List<String> getMgContentTags();
+   /**
+    * @return A list of content tags generated for this object.
+    */
+   List<String> getMgContentTags();
 
-    void setMgContentTags(List<String> mgContentTags);
+   void setMgContentTags(List<String> mgContentTags);
 
-    /**
-     * @return The full machine generated description output for this object.
-     */
-    String getMgDescription();
+   /**
+    * @return The full machine generated description output for this object.
+    */
+   String getMgDescription();
 
-    void setMgDescription(String mgDescription);
+   void setMgDescription(String mgDescription);
 
-    /**
-     * @return A risk score generated for this object based on its content and machine generated output.
-     */
-    Integer getMgRiskScore();
+   /**
+    * @return A risk score generated for this object based on its content and machine generated output.
+    */
+   Integer getMgRiskScore();
 
-    void setMgRiskScore(Integer mgRiskScore);
+   void setMgRiskScore(Integer mgRiskScore);
 
-    /**
-     * @return The transcript for this object.
-     */
-    String getTranscript();
+   /**
+    * @return The transcript for this object.
+    */
+   String getTranscript();
 
-    void setTranscript(String transcript);
+   void setTranscript(String transcript);
 
    /**
     * @return WCAG compliance level for this object
     */
    List<String> getWcagComplianceLevel();
 
-    void setWcagComplianceLevel(List<String> wcagCompliance);
+   void setWcagComplianceLevel(List<String> wcagCompliance);
 }

@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.slf4j.Logger;
@@ -41,9 +42,9 @@ public class SetWcagComplianceFilter implements IndexDocumentFilter {
     }
 
     private void setWcagComplianceForWorkObject(IndexDocumentBean doc) {
-        var searchState = SearchGeneratorUtil.getSearchState(doc, contentPathFactory);
+        var searchState = SearchGeneratorUtil.getChildrenFileObjectsSearchState(doc, contentPathFactory);
         searchState.setResultFields(List.of(SearchFieldKey.WCAG_COMPLIANCE.name()));
-        var result = SearchGeneratorUtil.getSearchResults(searchState, solrSearchService);
+        var result = solrSearchService.getSearchResults(new SearchRequest(searchState, null));
         var levels = new HashSet<String>();
         for (var child: result.getResultList()) {
             if (child.getWcagComplianceLevel() != null) {
@@ -60,10 +61,9 @@ public class SetWcagComplianceFilter implements IndexDocumentFilter {
         var level = resource.hasProperty(Cdr.wcagCompliance) ?
                 resource.getProperty(Cdr.wcagCompliance).getString() : null;
         if (level != null) {
-            log.debug("FileObject {} has WCAG compliance level {} indexed", fileObj.getPid().getId(), level);
             doc.setWcagComplianceLevel(List.of(level));
         }
-        log.debug("FileObject {} WCAG compliance level is null", fileObj.getPid().getId());
+        log.debug("FileObject {} has WCAG compliance level {} indexed", fileObj.getPid().getId(), level);
     }
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
