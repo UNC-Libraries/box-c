@@ -50,6 +50,11 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 			var force = document.getElementById('run_enhancements_force').checked;
 			var recursive = document.getElementById('run_enhancements_recursive').checked;
 			var targetIdsString = document.getElementById('run_enhancements_ids').value;
+			// Collect the values of all checked "enhancements" checkboxes, turn the nodeList into an array.
+			// split any comma-separated values into individual items and flatten the result into a single array.
+			var enhancements = [...document.querySelectorAll('input[name="enhancements"]:checked')]
+				.map(cb => cb.value.split(','))
+				.flat();
 
 			var pids = targetIdsString.split("\n").map((id) => id.trim()).filter((id) => id.length > 0);
 
@@ -61,7 +66,8 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 				data : JSON.stringify({
 					force : force,
 					pids : pids,
-					recursive : recursive
+					recursive : recursive,
+					enhancements : enhancements
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);

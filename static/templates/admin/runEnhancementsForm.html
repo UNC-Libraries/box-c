@@ -11,6 +11,17 @@
 	<p>
 		<input type="checkbox" id="run_enhancements_recursive" name="run_enhancements_recursive" /><label for="run_enhancements_recursive">Run enhancements for children too?</label>
 	</p>
+	<p style="margin-top: 1em;">Select enhancements to run:</p>
+	<div style="padding-left: 2em; margin-bottom: 1em;">
+		<input type="checkbox" id="run_enhancements_access_copy" name="enhancements" value="imageAccessCopy,audioAccessCopy,videoAccessCopy" checked="checked" />
+		<label for="run_enhancements_access_copy">Access copies</label>
+
+		<input type="checkbox" id="run_enhancements_extract_text" name="enhancements" value="extractFulltext" checked="checked" />
+		<label for="run_enhancements_extract_text">Extract fulltext</label>
+
+		<input type="checkbox" id="run_enhancements_machine_gen_description" name="enhancements" value="machineGenDescription" checked="checked" />
+		<label for="run_enhancements_machine_gen_description">Machine generated description</label>
+	</div>
 
 	<div class="update_field">
 		<input type="submit" id="run_enhancements_submit_button" class="update_button" value="Run" autofocus />
