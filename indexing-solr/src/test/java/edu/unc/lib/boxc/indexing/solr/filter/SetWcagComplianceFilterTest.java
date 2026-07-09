@@ -106,9 +106,9 @@ public class SetWcagComplianceFilterTest {
         dip.setContentObject(workObj);
 
         var fileRec1 = new ContentObjectSolrRecord();
-        fileRec1.setWcagComplianceLevel(List.of("WCAG 1.0 Level A"));
+        fileRec1.setWcagCompliance(List.of("WCAG 1.0 Level A"));
         var fileRec2 = new ContentObjectSolrRecord();
-        fileRec2.setWcagComplianceLevel(List.of("WCAG 1.0 Level AA"));
+        fileRec2.setWcagCompliance(List.of("WCAG 1.0 Level AA"));
         when(searchResultResponse.getResultList()).thenReturn(List.of(fileRec1, fileRec2));
 
         filter.filter(dip);
@@ -120,7 +120,7 @@ public class SetWcagComplianceFilterTest {
         dip.setContentObject(folderObject);
 
         filter.filter(dip);
-        assertNull(idb.getWcagComplianceLevel());
+        assertNull(idb.getWcagCompliance());
     }
 
     @Test
@@ -129,16 +129,16 @@ public class SetWcagComplianceFilterTest {
         when(searchResultResponse.getResultList()).thenReturn(Collections.emptyList());
 
         filter.filter(dip);
-        assertEquals(List.of(), idb.getWcagComplianceLevel());
+        assertEquals(List.of(), idb.getWcagCompliance());
     }
 
     private void assertHasLevels(IndexDocumentBean idb, String... expectedLevels) {
         for (var expected: expectedLevels) {
-            assertTrue(idb.getWcagComplianceLevel().contains(expected),
-                    "Object did not have expected type " + expected + ", types were: " + idb.getWcagComplianceLevel());
+            assertTrue(idb.getWcagCompliance().contains(expected),
+                    "Object did not have expected type " + expected + ", types were: " + idb.getWcagCompliance());
         }
-        assertEquals(expectedLevels.length, idb.getWcagComplianceLevel().size(),
+        assertEquals(expectedLevels.length, idb.getWcagCompliance().size(),
                 "Incorrect number of types, expected: " + Arrays.toString(expectedLevels) +
-                        ", found: " + idb.getWcagComplianceLevel());
+                        ", found: " + idb.getWcagCompliance());
     }
 }

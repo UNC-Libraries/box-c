@@ -488,8 +488,8 @@ public class IndexDocumentBeanTest {
     @Test
     public void testWcagCompliance() {
         var level = List.of("WCAG 1.0 Level A");
-        assertNull(bean.getWcagComplianceLevel());
-        bean.setWcagComplianceLevel(level);
-        assertEquals(level, bean.getWcagComplianceLevel());
+        assertNull(bean.getWcagCompliance());
+        bean.setWcagCompliance(level);
+        assertEquals(level, bean.getWcagCompliance());
     }
 }

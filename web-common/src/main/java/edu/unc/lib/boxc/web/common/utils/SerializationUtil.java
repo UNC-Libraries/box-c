@@ -259,8 +259,8 @@ public class SerializationUtil {
             result.put("viewBehavior", metadata.getViewBehavior());
         }
 
-        if (metadata.getWcagComplianceLevel() != null) {
-            result.put("wcagCompliance", metadata.getWcagComplianceLevel());
+        if (metadata.getWcagCompliance() != null) {
+            result.put("wcagCompliance", metadata.getWcagCompliance());
         }
 
         if (groups != null && metadata.getRoleGroup() != null) {

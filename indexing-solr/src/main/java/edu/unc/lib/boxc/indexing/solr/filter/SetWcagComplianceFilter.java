@@ -47,13 +47,13 @@ public class SetWcagComplianceFilter implements IndexDocumentFilter {
         var result = solrSearchService.getSearchResults(new SearchRequest(searchState, null));
         var levels = new HashSet<String>();
         for (var child: result.getResultList()) {
-            if (child.getWcagComplianceLevel() != null) {
-                levels.addAll(child.getWcagComplianceLevel());
+            if (child.getWcagCompliance() != null) {
+                levels.addAll(child.getWcagCompliance());
             }
         }
         log.debug("Query for children of work {} had WCAG compliance levels {} from {} files",
                 doc.getId(), levels, result.getResultCount());
-        doc.setWcagComplianceLevel(new ArrayList<>(levels));
+        doc.setWcagCompliance(new ArrayList<>(levels));
     }
 
     private void setWcagComplianceForFileObject(FileObject fileObj, IndexDocumentBean doc) {
@@ -61,7 +61,7 @@ public class SetWcagComplianceFilter implements IndexDocumentFilter {
         var level = resource.hasProperty(Cdr.wcagCompliance) ?
                 resource.getProperty(Cdr.wcagCompliance).getString() : null;
         if (level != null) {
-            doc.setWcagComplianceLevel(List.of(level));
+            doc.setWcagCompliance(List.of(level));
         }
         log.debug("FileObject {} has WCAG compliance level {} indexed", fileObj.getPid().getId(), level);
     }

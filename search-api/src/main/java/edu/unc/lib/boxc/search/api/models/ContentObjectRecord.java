@@ -197,7 +197,7 @@ public interface ContentObjectRecord {
     /**
     * @return WCAG compliance level for this object
     */
-    List<String> getWcagComplianceLevel();
+    List<String> getWcagCompliance();
 
-    void setWcagComplianceLevel(List<String> wcagCompliance);
+    void setWcagCompliance(List<String> wcagCompliance);
 }

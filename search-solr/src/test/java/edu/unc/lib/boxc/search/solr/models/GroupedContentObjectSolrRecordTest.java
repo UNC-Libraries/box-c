@@ -433,12 +433,12 @@ public class GroupedContentObjectSolrRecordTest {
     }
 
     @Test
-    public void getWcagComplianceLevel_delegatesToRepresentative() {
+    public void getWcagCompliance_delegatesToRepresentative() {
         var level = List.of("WCAG 1.0 Level A");
         ContentObjectSolrRecord rep = makeRecord(UUID3, GROUP_ID);
-        rep.setWcagComplianceLevel(level);
+        rep.setWcagCompliance(level);
         GroupedContentObjectSolrRecord grouped = grouped(rep);
-        assertEquals(level, grouped.getWcagComplianceLevel());
+        assertEquals(level, grouped.getWcagCompliance());
     }
 
     private ContentObjectSolrRecord makeRecord(String id, String rollup) {

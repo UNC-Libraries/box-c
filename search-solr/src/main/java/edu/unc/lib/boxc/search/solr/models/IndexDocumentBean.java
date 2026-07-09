@@ -649,12 +649,12 @@ public class IndexDocumentBean {
         fields.put(HOOK_ID.getSolrField(), hookId);
     }
 
-    public List<String> getWcagComplianceLevel() {
+    public List<String> getWcagCompliance() {
         return (List<String>) fields.get(WCAG_COMPLIANCE.getSolrField());
     }
 
     @Field
-    public void setWcagComplianceLevel(List<String> wcagCompliance) {
+    public void setWcagCompliance(List<String> wcagCompliance) {
         fields.put(WCAG_COMPLIANCE.getSolrField(), wcagCompliance);
     }
 
