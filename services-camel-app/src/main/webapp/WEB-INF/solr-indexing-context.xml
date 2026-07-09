@@ -94,6 +94,7 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
+                <ref bean="setWcagComplianceFilter" />
             </list>
         </property>
     </bean>
