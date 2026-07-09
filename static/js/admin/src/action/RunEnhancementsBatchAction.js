@@ -20,12 +20,10 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 	
 	RunEnhancementsBatchAction.prototype.execute = function() {
 		var self = this;
-		
-		var exportContainerMode = this.context.exportContainerMode;
-		
+
 		this.targets = this.getTargets();
 		var title;
-		if (this.targets.length == 1) {
+		if (this.targets.length === 1) {
 			title = "Run enhancements on " + this.targets[0].metadata.title.substring(0, 30);
 		} else {
 			title = "Run enhancements on " + this.targets.length + " objects";
@@ -50,8 +48,17 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 			var force = document.getElementById('run_enhancements_force').checked;
 			var recursive = document.getElementById('run_enhancements_recursive').checked;
 			var targetIdsString = document.getElementById('run_enhancements_ids').value;
-
+			// Collect the values of all checked "enhancements" checkboxes, turn the nodeList into an array.
+			// split any comma-separated values into individual items and flatten the result into a single array.
+			var enhancements = [...document.querySelectorAll('input[name="enhancements"]:checked')]
+				.map(cb => cb.value.split(','))
+				.flat();
 			var pids = targetIdsString.split("\n").map((id) => id.trim()).filter((id) => id.length > 0);
+
+			if (!self.validateForm(enhancements, pids)) {
+				e.preventDefault();
+				return false;
+			}
 
 			$.ajax({
 				url : "/services/api/runEnhancements",
@@ -61,7 +68,8 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 				data : JSON.stringify({
 					force : force,
 					pids : pids,
-					recursive : recursive
+					recursive : recursive,
+					enhancements : enhancements
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);
@@ -73,6 +81,35 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 			e.preventDefault();
 		});
 	}
-	
+
+	RunEnhancementsBatchAction.prototype.validateForm = function(enhancements, pids) {
+		var $errors = $(".errors", this.$form);
+		var $errorStack = $(".error_stack", this.$form);
+		var errors = [];
+
+		$errors.hide();
+		$errorStack.empty();
+
+		if (!this.targets || this.targets.length === 0 || pids.length === 0) {
+			errors.push("Select at least one target to run enhancements on.");
+		}
+
+		if (enhancements.length === 0) {
+			errors.push("Select at least one enhancement to run.");
+		}
+
+		if (errors.length > 0) {
+			errors.forEach(function(error) {
+				$errorStack.append($("<div>").text(error));
+			});
+			$errors.show();
+			this.dialog.dialog("option", "position", "center");
+
+			return false;
+		}
+
+		return true;
+	};
+
 	return RunEnhancementsBatchAction;
 });
