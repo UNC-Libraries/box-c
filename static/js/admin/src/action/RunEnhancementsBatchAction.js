@@ -3,21 +3,31 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 	function RunEnhancementsBatchAction(context) {
 		this._create(context);
 	};
-	
+
 	RunEnhancementsBatchAction.prototype.constructor = RunEnhancementsBatchAction;
-	RunEnhancementsBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
-	
+	RunEnhancementsBatchAction.prototype = Object.create(AbstractBatchAction.prototype);
+
 	RunEnhancementsBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected() && target.isEnabled() && $.inArray("reindex", target.metadata.permissions) != -1;
 	};
-	
-	RunEnhancementsBatchAction.prototype.getTargets = function(targets) {
+
+	RunEnhancementsBatchAction.prototype.getTargets = function() {
 		if (this.context.targets) {
 			return this.context.targets;
-		} 
+		}
 		return AbstractBatchAction.prototype.getTargets.call(this);
 	};
-	
+
+	RunEnhancementsBatchAction.prototype.getPids = function() {
+		var targetIdsString = this.$dialog.find("#run_enhancements_ids").val() || "";
+
+		return targetIdsString.split("\n").map(function(id) {
+			return id.trim();
+		}).filter(function(id) {
+			return id.length > 0;
+		});
+	};
+
 	RunEnhancementsBatchAction.prototype.execute = function() {
 		var self = this;
 
@@ -33,58 +43,66 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 		for (var index in this.targets) {
 			targetIds += this.targets[index].getPid() + "\n";
 		}
-		var form = runEnhancementsTemplate({ targetIds : targetIds });
-		this.dialog = $("<div class='containingDialog'>" + form + "</div>");
-		this.dialog.dialog({
+		var form = runEnhancementsTemplate({ targetIds: targetIds });
+		this.$dialog = $("<div class='containingDialog'>" + form + "</div>");
+		this.$dialog.dialog({
 			autoOpen: true,
-			width: 'auto',
-			minWidth: '500',
+			width: "auto",
+			minWidth: "500",
 			modal: true,
-			title: title
+			title: title,
+			close: function() {
+				self.$dialog.remove();
+				self.$dialog = null;
+			}
 		});
-		this.$form = this.dialog.first();
-		
-		this.$form.submit(function(e){
-			var force = document.getElementById('run_enhancements_force').checked;
-			var recursive = document.getElementById('run_enhancements_recursive').checked;
-			var targetIdsString = document.getElementById('run_enhancements_ids').value;
-			// Collect the values of all checked "enhancements" checkboxes, turn the nodeList into an array.
-			// split any comma-separated values into individual items and flatten the result into a single array.
-			var enhancements = [...document.querySelectorAll('input[name="enhancements"]:checked')]
-				.map(cb => cb.value.split(','))
-				.flat();
-			var pids = targetIdsString.split("\n").map((id) => id.trim()).filter((id) => id.length > 0);
 
-			if (!self.validateForm(enhancements, pids)) {
+		this.$dialog.find("form").first().off("submit").on("submit", function(e) {
+			var $form = self.$dialog.find("form").first();
+			var force = $form.find("#run_enhancements_force").prop("checked");
+			var recursive = $form.find("#run_enhancements_recursive").prop("checked");
+			// Collect all checked enhancement checkboxes.
+			// Split any comma-separated checkbox values into individual enhancement names.
+			// Convert it to a plain array and flatten the results.
+			var enhancements = [...$form.find('input[name="enhancements"]:checked')
+					.map(function() {
+						return this.value.split(",");
+					})
+					.get()
+					.flat()
+			];
+			var pids = self.getPids();
+
+			if (!self.validateForm(enhancements, pids, $form)) {
 				e.preventDefault();
 				return false;
 			}
 
 			$.ajax({
-				url : "/services/api/runEnhancements",
-				type : "POST",
+				url: "/services/api/runEnhancements",
+				type: "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
-				data : JSON.stringify({
-					force : force,
-					pids : pids,
-					recursive : recursive,
-					enhancements : enhancements
+				data: JSON.stringify({
+					force: force,
+					pids: pids,
+					recursive: recursive,
+					enhancements: enhancements
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);
-				self.dialog.dialog("destroy");
+				self.$dialog.dialog("close");
 			}).fail(function() {
 				self.context.view.$alertHandler.alertHandler("error", "Failed to run enhancements for " + self.targets.length + " objects");
 			});
-			
+
 			e.preventDefault();
 		});
-	}
+	};
 
-	RunEnhancementsBatchAction.prototype.validateForm = function(enhancements, pids) {
-		var $errors = $(".errors", this.$form);
-		var $errorStack = $(".error_stack", this.$form);
+	RunEnhancementsBatchAction.prototype.validateForm = function(enhancements, pids, $form) {
+		var $errors = $(".errors", $form);
+		var $errorStack = $(".error_stack", $form);
 		var errors = [];
 
 		$errors.hide();
@@ -103,7 +121,7 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!tem
 				$errorStack.append($("<div>").text(error));
 			});
 			$errors.show();
-			this.dialog.dialog("option", "position", "center");
+			this.$dialog.dialog("option", "position", "center");
 
 			return false;
 		}
