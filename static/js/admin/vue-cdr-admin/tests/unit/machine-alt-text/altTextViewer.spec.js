@@ -78,6 +78,7 @@ describe('altTextViewer.vue', () => {
             vi.useFakeTimers();
 
             const ctx = {
+                fetchWrapper: vi.fn().mockResolvedValueOnce({}),
                 setAlertMessage: vi.fn(),
                 setAlertMessageType: vi.fn()
             };
@@ -92,8 +93,48 @@ describe('altTextViewer.vue', () => {
 
             await altTextViewer.methods.rerunAltTextGeneration.call(ctx, event);
 
+            expect(ctx.fetchWrapper).toHaveBeenCalledWith('/services/api/runEnhancements', true, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify({
+                    force: true,
+                    pids: ['abc-123'],
+                    enhancements: ['machineGenDescription']
+                })
+            });
+
             expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(1, 'My test title sent for reprocessing');
             expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(1, 'success');
+
+            vi.advanceTimersByTime(3500);
+
+            expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(2, '');
+            expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(2, '');
+
+            vi.useRealTimers();
+        });
+
+        it('shows an error alert and clears it after the timeout when regeneration request fails', async () => {
+            vi.useFakeTimers();
+
+            const ctx = {
+                fetchWrapper: vi.fn().mockRejectedValueOnce(new Error('boom')),
+                setAlertMessage: vi.fn(),
+                setAlertMessageType: vi.fn()
+            };
+            const event = {
+                target: {
+                    dataset: {
+                        id: 'abc-123',
+                        title: 'My test title'
+                    }
+                }
+            };
+
+            await altTextViewer.methods.rerunAltTextGeneration.call(ctx, event);
+
+            expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(1, 'Error reprocessing My test title');
+            expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(1, 'danger');
 
             vi.advanceTimersByTime(3500);
 
