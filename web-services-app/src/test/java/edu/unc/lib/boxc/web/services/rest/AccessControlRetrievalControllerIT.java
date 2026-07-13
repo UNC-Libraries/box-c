@@ -27,6 +27,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,8 +45,6 @@ public class AccessControlRetrievalControllerIT {
     private MockMvc mvc;
     private PID pid;
     private PID parentPid;
-    @InjectMocks
-    private AccessControlRetrievalController controller;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -67,6 +67,8 @@ public class AccessControlRetrievalControllerIT {
     private DepositRecord depositRecord;
     @Mock
     private RepositoryObject parentObject;
+    @InjectMocks
+    private AccessControlRetrievalController controller;
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
@@ -90,9 +92,9 @@ public class AccessControlRetrievalControllerIT {
     @Test
     public void testNoPermission() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(eq(pid), any(), eq(Permission.viewHidden));
+                .assertHasAccess(any(), eq(pid), any(), eq(viewHidden));
 
-        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+        mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().isForbidden())
                 .andReturn();
     }
@@ -113,13 +115,14 @@ public class AccessControlRetrievalControllerIT {
     public void testGetStaffRolesWithCollectionObject() throws Exception {
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(collectionObject);
         when(collectionObject.getParent()).thenReturn(parentObject);
+        when(parentObject.getPid()).thenReturn(parentPid);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         verify(objectAclFactory).getStaffRoleAssignments(eq(pid));
-        verify(inheritedAclFactory).getStaffRoleAssignments(eq(pid));
+        verify(inheritedAclFactory).getStaffRoleAssignments(eq(parentPid));
     }
 
     @Test
@@ -132,7 +135,7 @@ public class AccessControlRetrievalControllerIT {
                 .andReturn();
 
         verify(objectAclFactory, never()).getStaffRoleAssignments(eq(pid));
-        verify(inheritedAclFactory, never()).getStaffRoleAssignments(eq(pid));
+        verify(inheritedAclFactory).getStaffRoleAssignments(eq(pid));
     }
 
     @Test
@@ -140,7 +143,7 @@ public class AccessControlRetrievalControllerIT {
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(depositRecord);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andReturn();
 
         verify(objectAclFactory, never()).getStaffRoleAssignments(eq(pid));
