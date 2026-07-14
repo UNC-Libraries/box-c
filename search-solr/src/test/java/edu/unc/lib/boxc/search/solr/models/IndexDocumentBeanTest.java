@@ -484,4 +484,12 @@ public class IndexDocumentBeanTest {
         assertEquals("My Title", bean.getFields().get("title"));
         assertEquals("Work", bean.getFields().get("resourceType"));
     }
+
+    @Test
+    public void testWcagCompliance() {
+        var level = List.of("WCAG 1.0 Level A");
+        assertNull(bean.getWcagCompliance());
+        bean.setWcagCompliance(level);
+        assertEquals(level, bean.getWcagCompliance());
+    }
 }
