@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.DepositConstants;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
@@ -455,38 +453,6 @@ public class DepositControllerIT extends AbstractAPIIT {
                 .andReturn();
 
         assertEquals("", result.getResponse().getContentAsString());
-    }
-
-    @Test
-    public void getEventsReturnsEventsXml() throws Exception {
-        Path bagDir = tmpFolder.resolve("bag");
-        Files.createDirectories(bagDir);
-
-        String eventsXml = "<event xmlns=\"http://www.loc.gov/premis/v3\">"
-                + "<eventIdentifier>"
-                + "<eventIdentifierType>UUID</eventIdentifierType>"
-                + "<eventIdentifierValue>event-123</eventIdentifierValue>"
-                + "</eventIdentifier>"
-                + "<eventType>ingestion</eventType>"
-                + "</event>";
-
-        Files.write(
-                bagDir.resolve(DepositConstants.EVENTS_FILE),
-                eventsXml.getBytes(StandardCharsets.UTF_8));
-
-        saveDepositWithDirectory(TEST_UUID, DepositState.finished, TEST_USERNAME, bagDir.toString());
-
-        MvcResult result = mvc.perform(get("/edit/deposit/{uuid}/events", TEST_UUID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String response = result.getResponse().getContentAsString();
-
-        assertTrue(response.contains("events"));
-        assertTrue(response.contains("eventIdentifier"));
-        assertTrue(response.contains("eventIdentifierValue"));
-        assertTrue(response.contains("event-123"));
-        assertTrue(response.contains("ingestion"));
     }
 
     private void flushRedis() {

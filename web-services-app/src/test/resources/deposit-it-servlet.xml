@@ -28,6 +28,8 @@
         </property>
     </bean>
 
+    <bean class="edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler"/>
+
     <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl">
         <constructor-arg ref="aclGlobalProperties" />
     </bean>
@@ -42,6 +44,10 @@
 
     <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
+    </bean>
+
+    <bean id="batchIngestFolder" class="java.io.File" init-method="mkdirs">
+        <constructor-arg value="src/test/resources/temp"/>
     </bean>
 
     <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
