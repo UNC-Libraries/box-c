@@ -345,12 +345,16 @@ export default {
 
         async rerunAltTextGeneration(e) {
            try {
-              /* await this.fetchWrapper(`/services/api/edit/${endpoint}/${e.target.dataset.id}`,
+               await this.fetchWrapper('/services/api/runEnhancements',
                    true, {
                        method: 'POST',
-                       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                       body: formBody.toString()
-                   });*/
+                       headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                       body: JSON.stringify({
+                           force: true,
+                           pids: [e.target.dataset.id],
+                           enhancements: ['machineGenDescription']
+                       })
+                   });
                this.setAlertMessage(`${e.target.dataset.title} sent for reprocessing`);
                this.setAlertMessageType('success');
            } catch (error) {
