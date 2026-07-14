@@ -36,7 +36,7 @@
                     </template>
                     <template v-if="fieldExists(this.recordData.briefObject.wcagCompliance)">
                         <dt>{{ $t('full_record.wgac_compliance') }}</dt>
-                        <dd>{{ this.recordData.briefObject.wcagCompliance }}</dd>
+                        <dd>{{ this.recordData.briefObject.wcagCompliance.join(', ') }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.filesize)">
                         <dt>{{ $t('full_record.filesize') }}</dt>
