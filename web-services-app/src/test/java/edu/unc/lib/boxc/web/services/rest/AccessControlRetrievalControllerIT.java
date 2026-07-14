@@ -1,11 +1,14 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
@@ -16,6 +19,7 @@ import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.web.common.auth.IPAddressPatronPrincipalConfig;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -73,6 +77,8 @@ public class AccessControlRetrievalControllerIT {
     private DepositRecord depositRecord;
     @Mock
     private RepositoryObject parentObject;
+    @Mock
+    private IPAddressPatronPrincipalConfig config;
     @InjectMocks
     private AccessControlRetrievalController controller;
     private final static String USERNAME = "test_user";
@@ -96,10 +102,11 @@ public class AccessControlRetrievalControllerIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        GroupsThreadStore.clearStore();
     }
 
     @Test
-    public void testNoPermission() throws Exception {
+    public void testGetStaffRolesNoPermission() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(any(), eq(pid), any(), eq(viewHidden));
 
@@ -158,8 +165,6 @@ public class AccessControlRetrievalControllerIT {
         assertEquals(parentRoleAssignment.getPrincipal(), inheritedRoles.get("principal").textValue());
         assertEquals(parentRoleAssignment.getRole().name(), inheritedRoles.get("role").textValue());
         assertEquals(parentRoleAssignment.getAssignedTo(), inheritedRoles.get("assignedTo").textValue());
-
-
     }
 
     @Test
@@ -203,5 +208,31 @@ public class AccessControlRetrievalControllerIT {
         var error = respJson.get("error");
         assertEquals("Cannot retrieve staff roles for object " + pid.getId() + " of type "
                 + depositRecord.getClass().getName(), error.textValue());
+    }
+
+    @Test
+    public void testAllowedPrincipalsNoPermission() throws Exception {
+        mvc.perform(get("/acl/patron/allowedPrincipals"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testAllowedPrincipalsSuccess() throws Exception {
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        groups.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+        GroupsThreadStore.storeGroups(groups);
+        when(patronPrincipalProvider.getConfiguredPatronPrincipals()).thenReturn(List.of(config));
+        when(config.getName()).thenReturn(USERNAME);
+        when(config.getPrincipal()).thenReturn(ADMIN_GROUP);
+
+        MvcResult result = mvc.perform(get("/acl/patron/allowedPrincipals"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var body = respJson.get(0);
+        assertEquals(USERNAME, body.get("name").textValue());
+        assertEquals(ADMIN_GROUP, body.get("principal").textValue());
     }
 }

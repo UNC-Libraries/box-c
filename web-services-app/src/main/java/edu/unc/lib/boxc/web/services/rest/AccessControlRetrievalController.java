@@ -50,8 +50,6 @@ public class AccessControlRetrievalController {
     public static final String ASSIGNED_ROLES = "assigned";
     public static final String ALLOWED_PATRON_PRINCIPALS = "allowedPrincipals";
     public static final String ROLES_KEY = "roles";
-    public static final String EMBARGO_KEY = "embargo";
-    public static final String DELETED_KEY = "deleted";
 
     @Autowired
     private AccessControlService aclService;
