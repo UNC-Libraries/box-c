@@ -98,7 +98,7 @@
                         <div class="field">
                             <div class="control">
                                 <div class="select is-fullwidth">
-                                    <select name="wcag_compliance" aria-label="WCAG Compliance Level">
+                                    <select name="wcagCompliance" aria-label="WCAG Compliance Level">
                                         <option value="">WCAG Compliance Level</option>
                                         <template v-for="level in wcagComplianceLevels">
                                             <option :value="level">{{ level }}</option>
