@@ -238,6 +238,10 @@ public class SerializationUtil {
             result.put(SearchFieldKey.TRANSCRIPT.getUrlParam(), metadata.getTranscript());
         }
 
+        if (metadata.getWcagCompliance() != null) {
+            result.put(SearchFieldKey.WCAG_COMPLIANCE.getUrlParam(), metadata.getWcagCompliance());
+        }
+
         if (metadata.getDateAdded() != null) {
             String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
             result.put("added", dateAdded);
