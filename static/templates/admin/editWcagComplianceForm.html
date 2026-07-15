@@ -2,19 +2,19 @@
     <div class="form_field">
         <label for="edit_wcag_compliance"><span class="required">*</span> WCAG Compliance Level</label>
         <select id="edit_wcag_compliance" name="level">
-            <option value="" <%= (metadata.wcag_level === undefined || metadata.wcag_level === '') ? "selected='selected'" : "" %>>-- Set WCAG Compliance Level --</option>
-            <option value="WCAG 1.0 Level A" <%= "WCAG 1.0 Level A" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 1.0 Level A</option>
-            <option value="WCAG 1.0 Level AA" <%= "WCAG 1.0 Level AA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 1.0 Level AA</option>
-            <option value="WCAG 1.0 Level AAA" <%= "WCAG 1.0 Level AAA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 1.0 Level AAA</option>
-            <option value="WCAG 2.0 Level A" <%= "WCAG 2.0 Level A" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.0 Level A</option>
-            <option value="WCAG 2.0 Level AA" <%= "WCAG 2.0 Level AA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.0 Level AA</option>
-            <option value="WCAG 2.0 Level AAA" <%= "WCAG 2.0 Level AAA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.0 Level AAA</option>
-            <option value="WCAG 2.1 Level A" <%= "WCAG 2.1 Level A" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.1 Level A</option>
-            <option value="WCAG 2.1 Level AA" <%= "WCAG 2.1 Level AA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.1 Level AA</option>
-            <option value="WCAG 2.1 Level AAA" <%= "WCAG 2.1 Level AAA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.1 Level AAA</option>
-            <option value="WCAG 2.2 Level A" <%= "WCAG 2.2 Level A" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.2 Level A</option>
-            <option value="WCAG 2.2 Level AA" <%= "WCAG 2.2 Level AA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.2 Level AA</option>
-            <option value="WCAG 2.2 Level AAA" <%= "WCAG 2.2 Level AAA" == metadata.wcag_level ? "selected='selected'" : "" %>>WCAG 2.2 Level AAA</option>
+            <option value="" <%= (metadata.wcagCompliance === undefined || metadata.wcagCompliance === '') ? "selected='selected'" : "" %>>-- Set WCAG Compliance Level --</option>
+            <option value="WCAG 1.0 Level A" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 1.0 Level A") ? "selected='selected'" : "" %>>WCAG 1.0 Level A</option>
+            <option value="WCAG 1.0 Level AA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 1.0 Level AA") ? "selected='selected'" : "" %>>WCAG 1.0 Level AA</option>
+            <option value="WCAG 1.0 Level AAA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 1.0 Level AAA") ? "selected='selected'" : "" %>>WCAG 1.0 Level AAA</option>
+            <option value="WCAG 2.0 Level A" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.0 Level A") ? "selected='selected'" : "" %>>WCAG 2.0 Level A</option>
+            <option value="WCAG 2.0 Level AA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.0 Level AA") ? "selected='selected'" : "" %>>WCAG 2.0 Level AA</option>
+            <option value="WCAG 2.0 Level AAA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.0 Level AAA") ? "selected='selected'" : "" %>>WCAG 2.0 Level AAA</option>
+            <option value="WCAG 2.1 Level A" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.1 Level A") ? "selected='selected'" : "" %>>WCAG 2.1 Level A</option>
+            <option value="WCAG 2.1 Level AA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.1 Level AA") ? "selected='selected'" : "" %>>WCAG 2.1 Level AA</option>
+            <option value="WCAG 2.1 Level AAA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.1 Level AAA") ? "selected='selected'" : "" %>>WCAG 2.1 Level AAA</option>
+            <option value="WCAG 2.2 Level A" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.2 Level A") ? "selected='selected'" : "" %>>WCAG 2.2 Level A</option>
+            <option value="WCAG 2.2 Level AA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.2 Level AA") ? "selected='selected'" : "" %>>WCAG 2.2 Level AA</option>
+            <option value="WCAG 2.2 Level AAA" <%= options.complianceLevel(metadata.wcagCompliance, "WCAG 2.2 Level AAA") ? "selected='selected'" : "" %>>WCAG 2.2 Level AAA</option>
         </select>
     </div>
 

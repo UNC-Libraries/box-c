@@ -5,7 +5,11 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
         var defaultOptions = {
             title : 'Edit WCAG Compliance Level',
             createFormTemplate : editWcagComplianceForm,
-            submitMethod: 'POST'
+            submitMethod: 'POST',
+            complianceLevel: function(current_value, form_value) {
+                return current_value !== undefined && Array.isArray(current_value) &&
+                    current_value[0] === form_value;
+            }
         };
 
         function EditWcagComplianceForm(options) {
