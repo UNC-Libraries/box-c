@@ -156,7 +156,7 @@ public class AccessControlRetrievalController {
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
-            result.put("error", "Cannot retrieve staff roles for object " + id
+            result.put("error", "Cannot retrieve patron access for object " + id
                     + " of type " + repoObj.getClass().getName());
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
