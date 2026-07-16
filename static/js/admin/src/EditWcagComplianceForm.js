@@ -24,15 +24,6 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
             this.action_url = "/services/api/edit/wcagCompliance/" + pid;
         };
 
-        EditWcagComplianceForm.prototype.validationErrors = function() {
-            var errors = [];
-            var wcagComplianceLevel = $("#edit_wcag_compliance", this.$form).val();
-            // Validate input
-            if (wcagComplianceLevel === "")
-                errors.push("You must specify a WCAG compliance level.");
-            return errors;
-        };
-
         EditWcagComplianceForm.prototype.getSuccessMessage = function(data) {
             return "WCAG compliance level has been successfully edited.";
         };
