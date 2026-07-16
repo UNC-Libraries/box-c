@@ -35,7 +35,7 @@
                         <dd class="checksum">{{ getChecksum(this.recordData.briefObject.datastream) }}</dd>
                     </template>
                     <template v-if="fieldExists(this.recordData.briefObject.wcagCompliance)">
-                        <dt>{{ $t('full_record.wgac_compliance') }}</dt>
+                        <dt>{{ $t('full_record.wcag_compliance') }}</dt>
                         <dd>{{ this.recordData.briefObject.wcagCompliance.join(', ') }}</dd>
                     </template>
                     <template v-if="fieldExists(recordData.briefObject.filesize)">
