@@ -24,6 +24,11 @@ define('EditWcagComplianceForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
             this.action_url = "/services/api/edit/wcagCompliance/" + pid;
         };
 
+        // Method required by abstracForm.js, but An empty form unsets the current WCAG value to null.
+        EditWcagComplianceForm.prototype.validationErrors = function() {
+            return [];
+        };
+
         EditWcagComplianceForm.prototype.getSuccessMessage = function(data) {
             return "WCAG compliance level has been successfully edited.";
         };
