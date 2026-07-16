@@ -52,7 +52,7 @@ public class AggregatePdfService {
     private RepositoryObjectLoader repositoryObjectLoader;
 
     private Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-    public Path tmpFilesDir = tmpDir.resolve("pdf4u");
+    private String pdf4u;
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
@@ -63,13 +63,6 @@ public class AggregatePdfService {
             SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
-    public AggregatePdfService() {
-    }
-
-    public void init() throws IOException {
-        initializeTempImageFilesDir();
-    }
-
     public Path generateAggregatePdf(PdfRequest request) throws IOException {
         var workPid = request.getWorkPid();
         String inputFiles = createInputListFile(request).toString();
@@ -79,7 +72,7 @@ public class AggregatePdfService {
                 .collect(Collectors.joining(","));
 
         try {
-            String[] command = new String[]{"pdf4u", "multiple_images", "add_ocr", "-i", inputFiles,
+            String[] command = new String[]{"java", "-jar", pdf4u, "multiple_images", "add_ocr", "-i", inputFiles,
                     "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
             log.debug("Run pdf4u command {} for work {}", command, workPid);
             CLIMain.runCommand(command);
@@ -117,7 +110,7 @@ public class AggregatePdfService {
             for (var child : children) {
                 var filePid = child.getPid();
                 var originalFilePid = DatastreamPids.getOriginalFilePid(filePid);
-                var originalFilePath = repositoryObjectLoader.getBinaryObject(originalFilePid).getContentUri();
+                var originalFilePath = Path.of(repositoryObjectLoader.getBinaryObject(originalFilePid).getContentUri());
                 if (originalFilePath != null) {
                     writer.write(originalFilePath + System.lineSeparator());
                 }
@@ -246,16 +239,6 @@ public class AggregatePdfService {
     }
 
     /**
-     * Create tmp pdf4u files directory for temporary files
-     */
-    private void initializeTempImageFilesDir() throws IOException {
-        tmpFilesDir = tmpDir.resolve("pdf4u");
-        if (!Files.exists(tmpFilesDir)) {
-            Files.createDirectories(tmpFilesDir);
-        }
-    }
-
-    /**
      * Create temporary file path and delete temporary file if it already exists
      * @return tmpImageFilesDirectoryPath
      */
@@ -279,5 +262,9 @@ public class AggregatePdfService {
 
     public void setTmpDir(Path tmpDir) {
         this.tmpDir = tmpDir;
+    }
+
+    public void setPdf4u(String pdf4u) {
+        this.pdf4u = pdf4u;
     }
 }

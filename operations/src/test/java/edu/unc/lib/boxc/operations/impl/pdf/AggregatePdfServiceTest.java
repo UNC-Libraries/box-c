@@ -129,8 +129,8 @@ public class AggregatePdfServiceTest {
             var cmd = Arrays.stream(captor.getValue()).toList();
             assertNotNull(cmd);
             assertTrue(cmd.contains("pdf4u"));
-            assertTrue(FilenameUtils.getBaseName(cmd.get(4)).startsWith(PARENT_UUID));
-            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, cmd.get(10));
+            assertTrue(FilenameUtils.getBaseName(cmd.get(6)).startsWith(PARENT_UUID));
+            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, cmd.get(12));
         }
     }
 
