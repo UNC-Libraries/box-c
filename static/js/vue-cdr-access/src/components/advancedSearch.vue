@@ -101,7 +101,8 @@
                                     <select name="wcagCompliance" aria-label="WCAG Compliance Level">
                                         <option value="">WCAG Compliance Level</option>
                                         <template v-for="level in wcagComplianceLevels">
-                                            <option :value="level">{{ level }}</option>
+                                            <!-- value needs to be in encoded double quotes for solr to find it correctly -->
+                                            <option :value="`%22${encodeURIComponent(level)}%22`">{{ level }}</option>
                                         </template>
                                     </select>
                                 </div>
