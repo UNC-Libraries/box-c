@@ -91,7 +91,7 @@ export default {
             view_parent_work: "View Parent Work",
             view_title: "View {title}",
             view_file: "View file",
-            wgac_compliance: "WGAC compliance level",
+            wcag_compliance: "WGAC compliance level",
         },
         modal: {
             close: "Close",
