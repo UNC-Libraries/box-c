@@ -50,8 +50,6 @@ public class AccessControlRetrievalController {
     public static final String ASSIGNED_ROLES = "assigned";
     public static final String ALLOWED_PATRON_PRINCIPALS = "allowedPrincipals";
     public static final String ROLES_KEY = "roles";
-    public static final String EMBARGO_KEY = "embargo";
-    public static final String DELETED_KEY = "deleted";
 
     @Autowired
     private AccessControlService aclService;
@@ -158,7 +156,7 @@ public class AccessControlRetrievalController {
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
-            result.put("error", "Cannot retrieve staff roles for object " + id
+            result.put("error", "Cannot retrieve patron access for object " + id
                     + " of type " + repoObj.getClass().getName());
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
