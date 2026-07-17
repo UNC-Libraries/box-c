@@ -30,6 +30,7 @@ export default {
         display: {
             collection: "Collection",
             collection_id: "Archival Collection ID",
+            date_created: "Date Created",
             date_deposited: "Date Deposited",
             file_type: "File Type"
         },
