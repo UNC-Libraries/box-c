@@ -260,7 +260,7 @@ public class SerializationUtil {
         }
 
         if (metadata.getWcagCompliance() != null) {
-            result.put("wcagCompliance", metadata.getWcagCompliance());
+            result.put(SearchFieldKey.WCAG_COMPLIANCE.getUrlParam(), metadata.getWcagCompliance());
         }
 
         if (groups != null && metadata.getRoleGroup() != null) {
