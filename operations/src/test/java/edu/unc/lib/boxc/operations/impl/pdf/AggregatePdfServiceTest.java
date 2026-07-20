@@ -77,6 +77,7 @@ public class AggregatePdfServiceTest {
         pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
+        pdfService.setPdf4u("pdf4u");
     }
 
     @AfterEach
@@ -95,8 +96,8 @@ public class AggregatePdfServiceTest {
 
             mockParentResults(parentRec);
             mockChildrenResults(rec1, rec2);
-            mockOriginalFile(CHILD1_UUID, "file1.png");
-            mockOriginalFile(CHILD2_UUID, "file2.png");
+            mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
+            mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
             String defaultJson1 = loadDefaultJson();
             JsonNode defaultNode1 = MachineGeneratedContentService.MAPPER.readTree(defaultJson1);
@@ -144,8 +145,8 @@ public class AggregatePdfServiceTest {
 
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
-        mockOriginalFile(CHILD1_UUID, "file1.png");
-        mockOriginalFile(CHILD2_UUID, "file2.png");
+        mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
+        mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
         PdfRequest request = new PdfRequest();
         request.setWorkPid(PARENT_UUID);
@@ -155,8 +156,8 @@ public class AggregatePdfServiceTest {
         var inputFilePath = pdfService.createInputListFile(request);
         List<String> lines = Files.readAllLines(inputFilePath, StandardCharsets.UTF_8);
         assertEquals(2, lines.size());
-        assertEquals("file1.png", lines.get(0));
-        assertEquals("file2.png", lines.get(1));
+        assertEquals("/tmp/file1.png", lines.get(0));
+        assertEquals("/tmp/file2.png", lines.get(1));
     }
 
     @Test
