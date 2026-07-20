@@ -33,7 +33,7 @@ public class SearchEndpointIT extends EndpointIT {
     protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
     protected final static List<String> DEFAULT_FACETS = Arrays.asList("PARENT_UNIT", "PARENT_COLLECTION",
             "FILE_FORMAT_CATEGORY", "GENRE", "SUBJECT", "LANGUAGE", "LOCATION", "PUBLISHER",
-            "DATE_CREATED_YEAR", "CREATOR_CONTRIBUTOR");
+            "DATE_CREATED_YEAR", "CREATOR_CONTRIBUTOR", "WCAG_COMPLIANCE");
 
     @BeforeEach
     public void setup() throws Exception {
@@ -356,7 +356,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             assertEquals(1, metadata.size());
 
-            var workRecord = metadata.get(0);
+            var workRecord = metadata.getFirst();
             var thumbnailUrl = workRecord.get("thumbnail_url").asText();
             assertEquals("http://localhost:48080/services/api/thumb/" + firstFile.getPid().getId() + "/large",
                     thumbnailUrl);
@@ -389,7 +389,7 @@ public class SearchEndpointIT extends EndpointIT {
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
             var languageFields = new ArrayList<JsonNode>();
-            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+            facetFields.getFirst().get("values").elements().forEachRemaining(languageFields::add);
 
             assertSuccessfulResponse(resp);
             // should find all available languages: English, Cherokee
@@ -450,7 +450,7 @@ public class SearchEndpointIT extends EndpointIT {
             }
 
             assertSuccessfulResponse(resp);
-            assertEquals(10, facetFields.size());
+            assertEquals(11, facetFields.size());
             assertEquals(DEFAULT_FACETS, facetNames);
         }
     }
@@ -500,7 +500,7 @@ public class SearchEndpointIT extends EndpointIT {
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
             var languageFields = new ArrayList<JsonNode>();
-            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+            facetFields.getFirst().get("values").elements().forEachRemaining(languageFields::add);
 
             assertSuccessfulResponse(resp);
             assertEquals(2, languageFields.size());
@@ -520,7 +520,7 @@ public class SearchEndpointIT extends EndpointIT {
             var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
 
-            var workId = metadata.get(0).get("id").asText();
+            var workId = metadata.getFirst().get("id").asText();
 
             //work assertions
             assertValuePresent(metadata, 0, "title", "Work Record");
