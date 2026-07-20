@@ -65,7 +65,7 @@
         <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
         <spring.version>6.2.18</spring.version>
-        <spring.security.web.version>6.5.10</spring.security.web.version>
+        <spring.security.web.version>6.5.11</spring.security.web.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
@@ -75,9 +75,9 @@
         <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
-        <jackson.version>2.20.1</jackson.version>
-        <jackson.annotations.version>2.20</jackson.annotations.version>
-        <jackson.databind.version>2.20.1</jackson.databind.version>
+        <jackson.version>2.22.1</jackson.version>
+        <jackson.annotations.version>2.22</jackson.annotations.version>
+        <jackson.databind.version>2.22.1</jackson.databind.version>
 
         <joda-time.version>2.14.0</joda-time.version>
         <jmustache.version>1.16</jmustache.version>
@@ -97,7 +97,7 @@
         <commons-collections.version>4.5.0</commons-collections.version>
         <commons-exec.version>1.6.0</commons-exec.version>
 
-        <activemq.version>6.1.8</activemq.version>
+        <activemq.version>6.2.7</activemq.version>
 
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.25</logback.version>
