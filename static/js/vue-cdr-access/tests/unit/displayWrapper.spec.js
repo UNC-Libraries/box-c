@@ -390,7 +390,7 @@ describe('displayWrapper.vue', () => {
             path: '/test',
             query: {
                 browse_type: "gallery-display",
-                facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher",
+                facetSelect: "unit,collection,format,genre,language,subject,location,createdYear,creatorContributor,publisher,wcagCompliance",
                 rows: 20,
                 sort: "dateAdded,normal",
                 start: 0,

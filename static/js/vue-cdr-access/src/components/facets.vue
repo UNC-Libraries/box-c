@@ -351,12 +351,6 @@ Facet list component, used to display all the values of facets and provide links
                 return `${facet_type}${value.limitToValue}`;
             },
 
-            setWcagFacet(wcag_values) {
-                wcag_values.map((value) => {
-                    return `value.limitToValue`;
-                })
-            },
-
             setDateFacetUrl() {
                 let start = this.dates.selected_dates.start;
                 let end = this.dates.selected_dates.end;
