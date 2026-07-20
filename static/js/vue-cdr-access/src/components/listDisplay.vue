@@ -17,6 +17,10 @@ Renders search results in a list view display format
                         <dl class="property-grid">
                             <dt>{{ $t('display.date_deposited') }}</dt>
                             <dd>{{ formatDate(record.added) }}</dd>
+                            <template v-if="record.created">
+                                <dt>{{ $t('display.date_created') }}</dt>
+                                <dd>{{ formatDate(record.created) }}</dd>
+                            </template>
                             <template v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
                                 <dt>{{ $t('display.collection') }}</dt>
                                 <dd><router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link></dd>
