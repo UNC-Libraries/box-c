@@ -76,7 +76,7 @@
         <wiremock.version>2.35.2</wiremock.version>
         
         <jackson.version>2.22.1</jackson.version>
-        <jackson.annotations.version>2.22.1</jackson.annotations.version>
+        <jackson.annotations.version>2.22</jackson.annotations.version>
         <jackson.databind.version>2.22.1</jackson.databind.version>
 
         <joda-time.version>2.14.0</joda-time.version>
