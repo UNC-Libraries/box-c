@@ -241,7 +241,8 @@ Facet list component, used to display all the values of facets and provide links
                 updated_facets.forEach((facet) => {
                     let facet_pieces = facet.split('=');
                     if (facet_pieces[0] !== 'createdYear') {
-                        formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                        let encoded_value = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                        formatted_facets[facet_pieces[0]] = (facet_pieces[0] === 'wcagCompliance') ? `%22${encoded_value}%22` : encoded_value;
                     } else {
                         formatted_facets[facet_pieces[0]] = facet_pieces[1];
                     }
@@ -277,6 +278,8 @@ Facet list component, used to display all the values of facets and provide links
                         return 'Publisher';
                     case 'CREATOR_CONTRIBUTOR':
                         return 'Creator/Contributor';
+                    case 'WCAG_COMPLIANCE':
+                        return 'WCAG Compliance';
                     default:
                         return value;
                 }
@@ -316,6 +319,9 @@ Facet list component, used to display all the values of facets and provide links
                     case 'CREATOR_CONTRIBUTOR':
                         type = 'creatorContributor';
                         break;
+                    case 'WCAG_COMPLIANCE':
+                        type = 'wcagCompliance';
+                        break;
                     default:
                         break;
                 }
@@ -343,6 +349,12 @@ Facet list component, used to display all the values of facets and provide links
                 }
 
                 return `${facet_type}${value.limitToValue}`;
+            },
+
+            setWcagFacet(wcag_values) {
+                wcag_values.map((value) => {
+                    return `value.limitToValue`;
+                })
             },
 
             setDateFacetUrl() {
