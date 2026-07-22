@@ -38,7 +38,8 @@ const TYPES = {
     subjectIndex: 'Subject',
     titleIndex: 'Title',
     genre: 'Genre',
-    collectionId: 'Collection Number'
+    collectionId: 'Collection Number',
+    wcagCompliance: 'WCAG Compliance'
 }
 
 export default {

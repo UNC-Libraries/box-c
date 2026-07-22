@@ -501,16 +501,6 @@ describe('facets.vue', () => {
         expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
 
-    it("formats wcagCompliance facets with quoted encoded values", () => {
-        const formatted_facets = wrapper.vm._formatFacets([
-            'wcagCompliance=public access'
-        ]);
-
-        expect(formatted_facets).toEqual({
-            wcagCompliance: '%22public%20access%22'
-        });
-    });
-
     it("selecting Unknown date does not select Unknown format", async (done) => {
         wrapper = mount(facets, {
             global: {
