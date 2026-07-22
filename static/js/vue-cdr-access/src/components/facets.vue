@@ -39,11 +39,11 @@ Facet list component, used to display all the values of facets and provide links
 </template>
 
 <script>
-    import facetModal from "@/components/facetModal.vue";
-    import slider from "@/components/slider.vue";
-    import routeUtils from '../mixins/routeUtils';
+import facetModal from "@/components/facetModal.vue";
+import slider from "@/components/slider.vue";
+import routeUtils from '../mixins/routeUtils';
 
-    const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_YEAR = new Date().getFullYear();
     const FACET_RESULT_COUNT = 6;
 
     export default {
@@ -241,7 +241,7 @@ Facet list component, used to display all the values of facets and provide links
                 updated_facets.forEach((facet) => {
                     let facet_pieces = facet.split('=');
                     if (facet_pieces[0] !== 'createdYear') {
-                        formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                        formatted_facets[facet_pieces[0]] =  encodeURIComponent(decodeURIComponent(facet_pieces[1]));
                     } else {
                         formatted_facets[facet_pieces[0]] = facet_pieces[1];
                     }
@@ -277,6 +277,8 @@ Facet list component, used to display all the values of facets and provide links
                         return 'Publisher';
                     case 'CREATOR_CONTRIBUTOR':
                         return 'Creator/Contributor';
+                    case 'WCAG_COMPLIANCE':
+                        return 'WCAG Compliance';
                     default:
                         return value;
                 }
@@ -315,6 +317,9 @@ Facet list component, used to display all the values of facets and provide links
                         break;
                     case 'CREATOR_CONTRIBUTOR':
                         type = 'creatorContributor';
+                        break;
+                    case 'WCAG_COMPLIANCE':
+                        type = 'wcagCompliance';
                         break;
                     default:
                         break;

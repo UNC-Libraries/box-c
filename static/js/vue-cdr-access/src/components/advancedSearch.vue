@@ -102,7 +102,7 @@
                                         <option value="">WCAG Compliance Level</option>
                                         <template v-for="level in wcagComplianceLevels">
                                             <!-- value needs to be in encoded double quotes for solr to find it correctly -->
-                                            <option :value="`%22${encodeURIComponent(level)}%22`">{{ level }}</option>
+                                            <option :value="encodeURIComponent(level)">{{ level }}</option>
                                         </template>
                                     </select>
                                 </div>
