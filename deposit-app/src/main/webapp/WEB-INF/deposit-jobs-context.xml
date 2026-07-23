@@ -277,6 +277,7 @@
         <property name="httpClient" ref="fitsPooledHttpClient" />
         <property name="maxFileSizeForWebService" value="${fits.maxFileSizeForWebService:128000000}" />
         <property name="fitsHomePath" value="${fits.homePath}" />
+        <property name="fitsCliTimeoutSeconds" value="${fits.cli.timeoutSeconds:300}" />
         <property name="executorService" ref="extractTechnicalMetadataExecutor" />
         <property name="flushRate" value="${job.extractTechnicalMetadata.flushRate:2000}" />
         <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
