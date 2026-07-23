@@ -226,6 +226,14 @@ public class FSToFSTransferClientTest {
         assertEquals(FILE_CONTENT, FileUtils.readFileToString(newVersion.toFile(), "UTF-8"));
     }
 
+    @Test
+    public void transferVersionFileThatDoesNotExist() {
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            Path sourceFile = sourcePath.resolve("nofilehere.txt");
+            client.transferVersion(binPid, sourceFile.toUri());
+        });
+    }
+
     // Verify that file larger than file transfer buffer size is transferred
     @Test
     public void transferLargeFile() throws Exception {
