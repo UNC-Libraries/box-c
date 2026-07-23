@@ -148,9 +148,39 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         return digest;
     }
 
+    /**
+     * Similar to transfer, but keeps old versions of original_files (no cleanup)
+     * @param binPid
+     * @param sourceFileUri
+     */
+    public BinaryTransferOutcome transferAndKeep(PID binPid, URI sourceFileUri) {
+        String digest;
+        URI destUri = destination.getNewStorageUri(binPid);
+        Path destinationPath = Paths.get(destUri);
+        log.debug("Transferring {} to {}", sourceFileUri, destUri);
+
+        Path parentPath = destinationPath.getParent();
+        try {
+            // Fill in parent directories if they are not present
+            Files.createDirectories(parentPath);
+
+            Path sourcePath = Paths.get(sourceFileUri);
+
+            // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
+            digest = copyFile(sourcePath, destinationPath);
+        } catch (IOException e) {
+            throw new BinaryTransferException("Failed to transfer " + sourceFileUri
+                    + " to destination " + destination.getId(), e);
+        }
+
+        log.debug("Finished transferring {} to {}", sourceFileUri, destUri);
+
+        return new BinaryTransferOutcomeImpl(binPid, destUri, destination.getId(), digest);
+    }
+
     @Override
     public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
-        throw new NotImplementedException("Versioning not yet implemented");
+        return transferAndKeep(binPid, sourceFileUri);
     }
 
     @Override

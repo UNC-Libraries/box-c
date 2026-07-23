@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePi
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +21,6 @@ import java.time.Duration;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -207,10 +207,23 @@ public class FSToFSTransferClientTest {
 
     @Test
     public void transferVersion() throws Exception {
-        Assertions.assertThrows(NotImplementedException.class, () -> {
-            Path sourceFile = createSourceFile();
-            client.transferVersion(binPid, sourceFile.toUri());
-        });
+        Path originalVersion = Paths.get(storageLoc.getNewStorageUri(binPid));
+        Files.createDirectories(originalVersion.getParent());
+        createFile(originalVersion, "old content");
+
+        Path sourceFile = createSourceFile();
+
+        BinaryTransferOutcome outcome = client.transferVersion(binPid, sourceFile.toUri());
+        Path newVersion = Paths.get(outcome.getDestinationUri());
+
+        assertIsSourceFile(outcome);
+        assertOutcome(outcome, FILE_CONTENT_SHA1);
+
+        assertTrue(Files.exists(originalVersion), "Old version should still exist");
+        assertTrue(Files.exists(newVersion), "New version should exist");
+        assertNotEquals(originalVersion, newVersion, "New version should be stored separately");
+        assertEquals("old content", FileUtils.readFileToString(originalVersion.toFile(), "UTF-8"));
+        assertEquals(FILE_CONTENT, FileUtils.readFileToString(newVersion.toFile(), "UTF-8"));
     }
 
     // Verify that file larger than file transfer buffer size is transferred
