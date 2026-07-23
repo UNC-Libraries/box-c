@@ -43,6 +43,10 @@
                         <dt>{{ $t('full_record.date_created') }}</dt>
                         <dd>{{ formatDate(recordData.briefObject.created) }}</dd>
                     </template>
+                    <template v-if="fieldExists(recordData.briefObject.wcagCompliance)">
+                        <dt>{{ $t('full_record.wcag_compliance') }}</dt>
+                        <dd>{{ recordData.briefObject.wcagCompliance.join(', ') }}</dd>
+                    </template>
                     <template class="embargo" v-if="fieldExists(recordData.embargoDate)">
                         <dt>{{ $t('full_record.embargo_date') }}</dt>
                         <dd class="embargo">{{ recordData.embargoDate }}</dd>
