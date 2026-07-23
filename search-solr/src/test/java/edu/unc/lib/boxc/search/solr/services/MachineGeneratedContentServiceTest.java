@@ -202,6 +202,25 @@ public class MachineGeneratedContentServiceTest {
         assertNull(service.extractRiskScore(node));
     }
 
+    // ─── extractTextType ───────────────────────────────────────────────────
+
+    @Test
+    public void extractTextType_returnsValue() throws Exception {
+        JsonNode node = buildAllTagsJson();
+        assertEquals(RESULT_HANDWRITTEN_PRINT, service.extractTextType(node));
+    }
+
+    @Test
+    public void extractTextType_nullNode_returnsNull() {
+        assertEquals("no text", service.extractTextType(null));
+    }
+
+    @Test
+    public void extractTextType_missingField_returnsNull() throws Exception {
+        JsonNode node = buildNodeWithoutField(parseDefaultJson(), "text_type");
+        assertEquals("no text", service.extractTextType(node));
+    }
+
     // ─── extractContentTags – defaults (no tags) ─────────────────────────────
 
     @Test

@@ -288,8 +288,28 @@
     <bean id="videoAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.video.VideoDerivativeProcessor">
     </bean>
 
+    <bean id="pdfRequestSender" class="edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender">
+        <property name="jmsTemplate" ref="pdfRequestJmsTemplate" />
+    </bean>
+
+    <bean id="pdfRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
+        <property name="defaultDestinationName" value="${cdr.aggregate.pdf.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
+        <property name="derivativeDir" value="target/" />
+    </bean>
+
+    <bean id="machineGeneratedContentService" class="edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService">
+        <property name="derivativeService" ref="derivativeService"/>
+    </bean>
+
     <bean id="aggregatePdfService" class="edu.unc.lib.boxc.operations.impl.pdf.AggregatePdfService">
+        <property name="pdf4u" value="${pdf4u.jar}" />
         <property name="tmpDir" value="${services.tempDirectory}" />
+        <property name="machineGeneratedContentService" ref="machineGeneratedContentService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="solrSearchService" ref="queryLayer" />
     </bean>
