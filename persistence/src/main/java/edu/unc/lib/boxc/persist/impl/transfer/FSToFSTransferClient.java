@@ -45,6 +45,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
     private static final Logger log = LoggerFactory.getLogger(FSToFSTransferClient.class);
 
+    public enum TransferMode { REJECT_EXISTING, REPLACE_EXISTING, KEEP_EXISTING_VERSIONS }
+
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
         this.source = source;
         this.destination = destination;
@@ -52,21 +54,26 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
     @Override
     public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri) {
-        return transfer(binPid, sourceFileUri, false);
+        return transfer(binPid, sourceFileUri, TransferMode.REJECT_EXISTING);
     }
 
     @Override
     public BinaryTransferOutcome transferReplaceExisting(PID binPid, URI sourceFileUri) {
-        return transfer(binPid, sourceFileUri, true);
+        return transfer(binPid, sourceFileUri, TransferMode.REPLACE_EXISTING);
     }
 
-    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
+    @Override
+    public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
+        return transfer(binPid, sourceFileUri, TransferMode.KEEP_EXISTING_VERSIONS);
+    }
+
+    protected BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, TransferMode transferMode) {
         String digest;
         URI destUri = destination.getNewStorageUri(binPid);
         Path destinationPath = Paths.get(destUri);
         log.debug("Transferring {} to {}", sourceFileUri, destUri);
 
-        if (!allowOverwrite && FileSystemTransferHelpers.versionsExist(destinationPath)) {
+        if (transferMode == TransferMode.REJECT_EXISTING && FileSystemTransferHelpers.versionsExist(destinationPath)) {
             throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
                     + ", a binary already exists in " + destination.getId() + " at path " + destUri);
         }
@@ -75,7 +82,9 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
         Path parentPath = destinationPath.getParent();
         try {
-            cleanupThread = FileTransferHelpers.registerCleanup(destinationPath);
+            if (transferMode != TransferMode.KEEP_EXISTING_VERSIONS) {
+                cleanupThread = FileTransferHelpers.registerCleanup(destinationPath);
+            }
 
             // Fill in parent directories if they are not present
             Files.createDirectories(parentPath);
@@ -87,11 +96,17 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         } catch (IOException e) {
             log.debug("Attempting to cleanup failed transfer of {} to {}",
                     sourceFileUri, destinationPath);
-            FileTransferHelpers.cleanupFile(destinationPath);
+
+            if (transferMode != TransferMode.KEEP_EXISTING_VERSIONS) {
+                FileTransferHelpers.cleanupFile(destinationPath);
+            }
+
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
                     + " to destination " + destination.getId(), e);
         } finally {
-            FileTransferHelpers.clearCleanupHook(cleanupThread);
+            if (transferMode != TransferMode.KEEP_EXISTING_VERSIONS) {
+                FileTransferHelpers.clearCleanupHook(cleanupThread);
+            }
         }
 
         log.debug("Finished transferring {} to {}", sourceFileUri, destUri);
@@ -146,41 +161,6 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         Files.setLastModifiedTime(destPath, Files.getLastModifiedTime(srcPath));
 
         return digest;
-    }
-
-    /**
-     * Similar to transfer, but keeps old versions of original_files (no cleanup)
-     * @param binPid
-     * @param sourceFileUri
-     */
-    public BinaryTransferOutcome transferAndKeep(PID binPid, URI sourceFileUri) {
-        String digest;
-        URI destUri = destination.getNewStorageUri(binPid);
-        Path destinationPath = Paths.get(destUri);
-        log.debug("Transferring {} to {}", sourceFileUri, destUri);
-
-        Path parentPath = destinationPath.getParent();
-        try {
-            // Fill in parent directories if they are not present
-            Files.createDirectories(parentPath);
-
-            Path sourcePath = Paths.get(sourceFileUri);
-
-            // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
-            digest = copyFile(sourcePath, destinationPath);
-        } catch (IOException e) {
-            throw new BinaryTransferException("Failed to transfer " + sourceFileUri
-                    + " to destination " + destination.getId(), e);
-        }
-
-        log.debug("Finished transferring {} to {}", sourceFileUri, destUri);
-
-        return new BinaryTransferOutcomeImpl(binPid, destUri, destination.getId(), digest);
-    }
-
-    @Override
-    public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
-        return transferAndKeep(binPid, sourceFileUri);
     }
 
     @Override
