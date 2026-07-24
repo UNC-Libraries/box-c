@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -18,6 +19,7 @@ import org.fcrepo.client.FcrepoResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -42,15 +44,18 @@ public class FileVersionService {
         }
     }
 
-    private Map<PID, String> getMetadataFromResponse(Model model) {
-        var map = new HashMap<>();
+    private Map<PID, Map<String, String>> getMetadataFromResponse(Model model) {
+        Map<PID, Map<String, String>> map = new LinkedHashMap<>();
         var versions = model.listObjectsOfProperty(Ldp.contains);
         for (NodeIterator it = versions; it.hasNext(); ) {
             var version = it.next();
             var pid = PIDs.get(version.asNode().getURI());
             var object = repositoryObjectLoader.getRepositoryObject(pid);
-            object.
+            var filename = object.getResource().getProperty(CdrDeposit.label);
+            var storageUri = object.getResource().getURI();
+            Map<String, String> metadata = new HashMap<>();
         }
+        return map;
     }
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {
