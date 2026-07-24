@@ -204,6 +204,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editAltText"] = {name : 'Edit Alt Text'};
 			items["editWcagCompliance"] = {name : 'Edit WCAG compliance'};
+			items["fileVersioning"] = {name : 'File Versioning'};
 		}
 
 		if ((metadata.type === 'Folder' || metadata.type === 'Collection') && $.inArray('editDescription', metadata.permissions) != -1) {
@@ -549,6 +550,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							url: `altTextEditor/${resultObject.metadata.id}`,
 							newWindow: true
 						});
+						break;
+					case "fileVersioning":
+						file_versioning_store.setResultObject(resultObject);
+						file_versioning_store.setAlertHandler(self.options.alertHandler);
+						file_versioning_store.setActionHandler(self.actionHandler);
+						file_versioning_store.setShowFileVersioningModal(true);
 						break;
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');

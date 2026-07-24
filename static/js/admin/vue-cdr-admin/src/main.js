@@ -2,12 +2,14 @@ import { createApp, h } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import {useFileVersioningStore} from './stores/file-versioning';
 import {useFormsStore} from './stores/forms';
 import {usePermissionsStore} from './stores/permissions';
 import Vueform from '@vueform/vueform';
 import vueformConfig from './../vueform.config';
 import './assets/vueform.nodark.css';
-import './assets/common-styles.css'
+import './assets/common-styles.css';
+import 'bulma/css/versions/bulma-no-dark-mode.min.css';
 
 const pinia = createPinia();
 window.perms_editor = createApp({
@@ -27,3 +29,7 @@ window.perms_editor_store = usePermissionsStore();
  * Used by addMenu.js
  */
 window.forms_app_store = useFormsStore();
+/**
+ * Used by file versioning option in the gear menu
+ */
+window.file_versioning_store = useFileVersioningStore();

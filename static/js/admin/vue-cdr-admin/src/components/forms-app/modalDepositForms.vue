@@ -1,15 +1,14 @@
 <template>
-    <div id="dcr-forms-app" class="vf-boxc">
-        <link href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/versions/bulma-prefixed.min.css" rel="stylesheet">
-        <div class="bulma-columns bulma-is-centered">
-            <div class="bulma-column bulma-is-12">
-                <div class="bulma-modal" :class="{'bulma-is-active': showFormsModal}">
-                    <div @click="closeModal()" class="bulma-modal-background"></div>
-                    <div class="bulma-modal-content">
+    <div id="dcr-forms-app" class="vf-boxc vue-dcr-admin-wrapper">
+        <div class="columns is-centered">
+            <div class="column is-12">
+                <div class="modal" :class="{'is-active': showFormsModal}">
+                    <div @click="closeModal()" class="modal-background"></div>
+                    <div class="modal-content">
                         <div v-if="form === ''">
                             <h1 class="has-text-centered">Add a work to the current collection</h1>
-                            <div class="bulma-column has-text-centered">
-                                <div class="bulma-select">
+                            <div class="column has-text-centered">
+                                <div class="select">
                                     <select v-model="form" @change="getSchema()">
                                         <option value="">-- Please select a form --</option>
                                         <option value="generic_work">Generic Work</option>
@@ -23,7 +22,7 @@
                                  :endpoint="async (FormData, form$) => submitForm(FormData, form$)"
                                  @response="handleResponse"/>
                     </div>
-                    <button @click="closeModal()" class="bulma-modal-close bulma-is-large" aria-label="close"></button>
+                    <button @click="closeModal()" class="modal-close is-large" aria-label="close"></button>
                 </div>
             </div>
         </div>
@@ -128,11 +127,11 @@ export default {
 }
 </script>
 
-<style lang="scss">
-$forms-warning-color: #ef4444;
-$forms-warning-size: 1.5em;
-
+<style>
 #dcr-forms-app {
+    --forms-warning-color: #ef4444;
+    --forms-warning-size: 1.5em;
+
     h1 {
         font-size: 2rem;
         font-weight: bold;
@@ -148,17 +147,17 @@ $forms-warning-size: 1.5em;
         margin: auto;
     }
     .required-note {
-        color: $forms-warning-color;
-        font-size: $forms-warning-size;
+        color: var(--forms-warning-color);
+        font-size: var(--forms-warning-size);
     }
     .required {
         color: inherit;
 
         label {
             &:after {
-                color: $forms-warning-color;
+                color: var(--forms-warning-color);
                 content: " *";
-                font-size: $forms-warning-size;
+                font-size: var(--forms-warning-size);
             }
         }
     }
@@ -166,11 +165,11 @@ $forms-warning-size: 1.5em;
         font-weight: bold;
     }
 
-    .bulma-modal {
+    .modal {
         z-index: 99;
     }
 
-    .bulma-modal-content {
+    .modal-content {
         background: white;
         padding: 25px;
         min-height: 300px;

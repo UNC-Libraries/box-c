@@ -1,9 +1,32 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import prefixSelector from 'postcss-prefix-selector';
 
 export default defineConfig({
     plugins: [vue()],
+    css: {
+        postcss: {
+            plugins: [
+                prefixSelector({
+                    prefix: '.vue-dcr-admin-wrapper',
+                    transform(prefix, selector, prefixedSelector, filePath) {
+                        // Only scope Bulma no-dark-mode so existing project CSS behavior stays intact.
+                        if (!filePath || !filePath.includes('bulma-no-dark-mode.min.css')) {
+                            return selector;
+                        }
+
+                        // :root custom properties should stay at root scope to be inherited by all children
+                        if (selector === ':root') {
+                            return selector;
+                        }
+
+                        return prefixedSelector;
+                    }
+                })
+            ]
+        }
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src')

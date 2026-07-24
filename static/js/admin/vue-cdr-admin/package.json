@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@vueform/vueform": "^1.12.11",
+    "bulma": "^1.0.4",
     "datatables.mark.js": "^2.1.0",
     "datatables.net": "^2.3.0",
     "datatables.net-bm": "^2.3.0",
@@ -41,6 +42,7 @@
     "@vue/test-utils": "2.4.6",
     "caniuse-lite": "^1.0.30001793",
     "jsdom": "^26.1.0",
+    "postcss-prefix-selector": "^2.1.1",
     "vite": "8.0.16",
     "vitest": "^4.1.8",
     "vitest-fetch-mock": "^0.4.5",
