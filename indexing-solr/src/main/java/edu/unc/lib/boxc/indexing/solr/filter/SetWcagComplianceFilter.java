@@ -25,6 +25,7 @@ import java.util.List;
  *
  */
 public class SetWcagComplianceFilter implements IndexDocumentFilter {
+    private static final String NOT_PROVIDED = "Not provided";
     private static final Logger log = LoggerFactory.getLogger(SetWcagComplianceFilter.class);
     private SolrSearchService solrSearchService;
     private ContentPathFactory contentPathFactory;
@@ -47,7 +48,9 @@ public class SetWcagComplianceFilter implements IndexDocumentFilter {
         var result = solrSearchService.getSearchResults(new SearchRequest(searchState, null));
         var levels = new HashSet<String>();
         for (var child: result.getResultList()) {
-            if (child.getWcagCompliance() != null) {
+            if (child.getWcagCompliance() == null) {
+                levels.add(NOT_PROVIDED);
+            } else {
                 levels.addAll(child.getWcagCompliance());
             }
         }

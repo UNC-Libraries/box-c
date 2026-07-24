@@ -116,6 +116,21 @@ public class SetWcagComplianceFilterTest {
     }
 
     @Test
+    public void testGetWcagComplianceWorkObjectFileObjectNotSet() {
+        dip.setContentObject(workObj);
+
+        var fileRec1 = new ContentObjectSolrRecord();
+        fileRec1.setWcagCompliance(List.of("WCAG 1.0 Level A"));
+        var fileRec2 = new ContentObjectSolrRecord();
+        fileRec2.setWcagCompliance(List.of("WCAG 1.0 Level AA"));
+        var fileRec3 = new ContentObjectSolrRecord();
+        when(searchResultResponse.getResultList()).thenReturn(List.of(fileRec1, fileRec2, fileRec3));
+
+        filter.filter(dip);
+        assertHasLevels(idb, "WCAG 1.0 Level A", "WCAG 1.0 Level AA", "Not provided");
+    }
+
+    @Test
     public void testGetWcagComplianceNonFileOrWorkObject() {
         dip.setContentObject(folderObject);
 
