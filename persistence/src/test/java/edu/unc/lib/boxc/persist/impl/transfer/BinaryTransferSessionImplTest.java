@@ -183,16 +183,34 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     @Test
     public void transferVersionFSToFS() throws Exception {
-        Assertions.assertThrows(NotImplementedException.class, () -> {
-            when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
-            when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
+        when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
+        when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
-            Path sourceFile = createSourceFile();
+        Path version1Path = storagePath.resolve(binPid.getComponentId() + "_v1");
+        Path version2Path = storagePath.resolve(binPid.getComponentId() + "_v2");
 
-            try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
-                session.transferVersion(binPid, sourceFile.toUri());
-            }
-        });
+        when(storageLoc.getNewStorageUri(binPid)).thenReturn(version1Path.toUri(), version2Path.toUri());
+
+        Path sourceFile = createSourceFile();
+
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
+            // First transfer creates version 1
+            BinaryTransferOutcome outcome1 = session.transferVersion(binPid, sourceFile.toUri());
+            assertEquals(version1Path, Paths.get(outcome1.getDestinationUri()));
+            assertIsSourceFile(version1Path);
+
+            // Change source content for second version
+            createFile(sourceFile, "new content");
+
+            // Second transfer creates version 2
+            BinaryTransferOutcome outcome2 = session.transferVersion(binPid, sourceFile.toUri());
+            assertEquals(version2Path, Paths.get(outcome2.getDestinationUri()));
+            assertFileContent(version2Path, "new content");
+
+            // Old version should still be accessible and unchanged
+            assertTrue(Files.exists(version1Path), "Old version should still exist");
+            assertFileContent(version1Path, FILE_CONTENT);
+        }
     }
 
     @Test
