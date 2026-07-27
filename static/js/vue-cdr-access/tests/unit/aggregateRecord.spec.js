@@ -625,7 +625,7 @@ describe('aggregateRecord.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('.wcag').text()).toEqual('Various');
+        expect(wrapper.find('.wcag').text()).toEqual('Various, see file pages');
     });
 
     it("displays WCAG compliance if there are multiple items and only some have compliance levels", async () => {
@@ -634,7 +634,7 @@ describe('aggregateRecord.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('.wcag').text()).toEqual('Various');
+        expect(wrapper.find('.wcag').text()).toEqual('Various, see file pages');
     });
 
     it("displays an embargo date, if present", async () => {

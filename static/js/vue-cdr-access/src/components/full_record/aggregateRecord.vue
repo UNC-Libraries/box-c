@@ -115,7 +115,7 @@ export default {
 
         wcagCompliance() {
             if (this.recordData.briefObject.wcagCompliance.length > 1) {
-                return 'Various'
+                return 'Various, see file pages'
             }
             return this.recordData.briefObject.wcagCompliance[0];
         }
