@@ -84,7 +84,7 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
     private void deregisterFiles(List<String> messages, String deregList, int entryCount) {
         batchSizeHistogram.update(entryCount);
 
-        String requestUrl = URIUtil.join(longleafBaseUri, "api/deregister");
+        String requestUrl = URIUtil.join(longleafBaseUri, "deregister");
         Map<String, Object> bodyMap = Map.of(
                 "from_list", "@-",
                 "body", deregList);
