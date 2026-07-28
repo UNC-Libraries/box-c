@@ -11,11 +11,12 @@
     <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown download image-download-options">
         <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
-                <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images is-primary" aria-haspopup="true" aria-controls="dropdown-menu">
+                <button @click.stop="toggleDownloadOptions()" class="button download-images is-primary" :id="`dropdown-menu-button-${recordData.id}`"
+                        aria-haspopup="true" :aria-controls="`dropdown-menu-${recordData.id}`">
                     <span>{{ t('full_record.download') }}</span><span class="icon"><i class="fas fa-angle-down" aria-hidden="true"></i></span>
                 </button>
             </div>
-            <div class="dropdown-menu table-downloads" :class="{ 'show-list': download_options_open }" id="dropdown-menu" role="menu" :aria-hidden="!download_options_open">
+            <div class="dropdown-menu table-downloads" :class="{ 'show-list': download_options_open }" :id="`dropdown-menu-${recordData.id}`" role="menu" :aria-hidden="!download_options_open">
                 <div class="dropdown-content">
                     <a v-if="validSizeOption(recordData, 800)" :href="imgDownloadLink(recordData.id, '800')" class="dropdown-item">{{ t('full_record.small') }} JPG (800px)</a>
                     <a v-if="validSizeOption(recordData, 1600)" :href="imgDownloadLink(recordData.id, '1600')" class="dropdown-item">{{ t('full_record.medium') }} JPG (1600px)</a>
@@ -54,7 +55,7 @@
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import permissionUtils from "../../mixins/permissionUtils";
 import {mapState} from "pinia";
-import {useAccessStore} from "../../stores/access";
+import {useAccessStore} from "@/stores/access";
 
 export default {
     name: 'downloadOptions',
@@ -62,8 +63,8 @@ export default {
     mixins: [fullRecordUtils, permissionUtils],
 
     props: {
-        recordData: Object,
-        t: Function
+        recordData: { type: Object, required: true },
+        t: { type: Function, required: true }
     },
 
     data() {
@@ -71,6 +72,16 @@ export default {
             download_options_open: false,
             modal_open: false
 
+        }
+    },
+
+    watch: {
+        recordData: {
+            immediate: true,
+            handler() {
+                this.download_options_open = false;
+                this.modal_open = false;
+            }
         }
     },
 
@@ -195,7 +206,7 @@ export default {
          * Create a global listener to close the menu by clicking anywhere on the screen
          */
         closeDropdownLists(e) {
-            if (e.target.id !== 'dropdown-menu-button') {
+            if (this.$el && !this.$el.contains(e.target)) {
                 this.download_options_open = false;
             }
         }

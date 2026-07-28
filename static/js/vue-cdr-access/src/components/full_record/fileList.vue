@@ -24,6 +24,7 @@ force it to reload
             </thead>
             <template #downloads="props">
                 <download-options :t="$t"
+                                  :key="props.rowData.id"
                                   :record-data="props.rowData">
                 </download-options>
             </template>
