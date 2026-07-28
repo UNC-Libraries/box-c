@@ -1,11 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import {createTestingPinia} from '@pinia/testing';
+import { createTestingPinia } from '@pinia/testing';
+import { createPinia } from 'pinia';
+import { defineComponent, reactive, nextTick } from 'vue';
 import { useAccessStore } from '@/stores/access';
 import objectActions from '@/components/full_record/objectActions.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
-import {createI18n} from 'vue-i18n';
+import { createI18n } from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
 
@@ -290,3 +292,69 @@ describe('objectActions.vue', () => {
         store = useAccessStore();
     }
 });
+
+function buildNeighborRecord(id) {
+    return {
+        resourceType: 'File',
+        dataFileUrl: `/content/${id}`,
+        briefObject: {
+            id,
+            type: 'File',
+            title: `File ${id}`,
+            status: [],
+            format: ['Image'],
+            permissions: ['viewReducedResImages', 'viewOriginal'],
+            groupRoleMap: {
+                everyone: ['canViewOriginals']
+            },
+            datastream: [
+                `jp2|image/jp2|${id}.jp2|jp2|1|checksum|owner|2500x1600`,
+                `original_file|image/tiff|${id}.tif|tif|2|checksum|owner|5000x3000`
+            ]
+        }
+    };
+}
+
+describe('objectActions neighbor navigation', () => {
+    it('updates image download links when switching to a different neighbor record', async () => {
+        const Host = defineComponent({
+            components: { objectActions },
+            template: '<object-actions :record-data="state.recordData" />',
+            setup() {
+                const state = reactive({
+                    recordData: buildNeighborRecord('neighbor-1')
+                });
+                return { state };
+            }
+        });
+
+        const hostWrapper = mount(Host, {
+            global: {
+                plugins: [createPinia()],
+                mocks: {
+                    $t: (key) => key
+                }
+            }
+        });
+
+        await hostWrapper.find('button.download-images').trigger('click');
+        expect(hostWrapper.find('.table-downloads').classes()).toContain('show-list');
+        expect(hostWrapper.find('a.dropdown-item').attributes('href')).toContain('/services/api/downloadImage/neighbor-1/800');
+
+        hostWrapper.vm.state.recordData.briefObject.id = 'neighbor-2';
+        hostWrapper.vm.state.recordData.dataFileUrl = '/content/neighbor-2';
+        hostWrapper.vm.state.recordData.briefObject.datastream = [
+            'jp2|image/jp2|neighbor-2.jp2|jp2|1|checksum|owner|2500x1600',
+            'original_file|image/tiff|neighbor-2.tif|tif|2|checksum|owner|5000x3000'
+        ];
+
+        await nextTick();
+        await nextTick();
+
+        expect(hostWrapper.find('button.download-images').attributes('id')).toBe('dropdown-menu-button-neighbor-2');
+        expect(hostWrapper.find('a.dropdown-item').attributes('href')).toContain('/services/api/downloadImage/neighbor-2/800');
+        expect(hostWrapper.find('.table-downloads').classes()).not.toContain('show-list');
+    });
+});
+
+
