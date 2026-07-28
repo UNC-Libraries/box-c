@@ -366,7 +366,7 @@ describe('downloadOption.vue', () => {
         await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
         await wrapper.find('.download-images').trigger('click'); // Open
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(true);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(true);
     });
 
     it('hides the list of download options when any non dropdown page element is clicked', async () => {
@@ -374,7 +374,7 @@ describe('downloadOption.vue', () => {
 
         await wrapper.find('.download-images').trigger('click'); // Open
         await wrapper.trigger('click'); // Close
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
     });
 
     it('hides the list of download options when the "ESC" key is hit', async () => {
@@ -382,7 +382,7 @@ describe('downloadOption.vue', () => {
 
         await wrapper.find('.download-images').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
     });
 
     it('does not display a download button for collection', async () => {
