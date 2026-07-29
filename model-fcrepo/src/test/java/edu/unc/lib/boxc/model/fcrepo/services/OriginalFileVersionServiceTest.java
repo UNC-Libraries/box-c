@@ -16,7 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class FileVersionServiceTest {
+public class OriginalFileVersionServiceTest {
     private AutoCloseable closeable;
     @Mock
     private FcrepoClient fcrepoClient;
@@ -36,4 +36,6 @@ public class FileVersionServiceTest {
     void closeService() throws Exception {
         closeable.close();
     }
+
+
 }
