@@ -385,6 +385,34 @@ describe('downloadOption.vue', () => {
         expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
     });
 
+    it('resets download state and updates links when navigating to a different record', async () => {
+        const firstRecord = cloneDeep(record);
+        firstRecord.id = '146c6e0b-d700-4d03-9730-2ea0d2264c19';
+        firstRecord.dataFileUrl = `content/${firstRecord.id}`;
+        firstRecord.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
+
+        await wrapper.setProps({ recordData: firstRecord });
+        await wrapper.find('.download-images').trigger('click');
+
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(true);
+        expect(wrapper.findAll('.dropdown-item')[0].attributes('href')).toEqual(`/services/api/downloadImage/${firstRecord.id}/800`);
+
+        const secondRecord = cloneDeep(record);
+        secondRecord.id = 'f4c6fd03-8ea5-46d5-8b4f-55fbaf73ef3d';
+        secondRecord.dataFileUrl = `content/${secondRecord.id}`;
+        secondRecord.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
+
+        await wrapper.setProps({ recordData: secondRecord });
+
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
+        expect(wrapper.find('.download-images').attributes('id')).toEqual(`dropdown-menu-button-${secondRecord.id}`);
+
+        await wrapper.find('.download-images').trigger('click');
+        const updated_links = wrapper.findAll('.dropdown-item').map(item => item.attributes('href'));
+        expect(updated_links[0]).toEqual(`/services/api/downloadImage/${secondRecord.id}/800`);
+        expect(updated_links.every(link => !link.includes(firstRecord.id))).toBe(true);
+    });
+
     it('does not display a download button for collection', async () => {
         await wrapper.setProps({
             recordData: collectionRecord

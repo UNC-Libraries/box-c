@@ -58,7 +58,7 @@
         </div>
         <div class="has-background-white">
             <div class="container pb-5" v-if="recordData.viewerType">
-                <player :record-data="recordData" :key="recordData.briefObject.id"></player>
+                <player :record-data="recordData"></player>
             </div>
             <div class="container pb-6">
                 <metadata-display :uuid="recordData.briefObject.id"

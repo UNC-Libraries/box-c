@@ -58,7 +58,7 @@
         </div>
         <div class="full_record_bottom pb-6">
             <div class="container pb-5" v-if="recordData.viewerType">
-                <player :record-data="recordData" :key="recordData.briefObject.id"></player>
+                <player :record-data="recordData"></player>
             </div>
             <template v-if="childCount > 0">
                 <div class="file-list-header columns is-vcentered container">
@@ -71,7 +71,6 @@
                 </div>
                 <div class="container">
                     <file-list id="file-display"
-                               :key="recordData.briefObject.id"
                                :work-id="recordData.briefObject.id"
                                :download-access="hasDownloadAccess(recordData)"
                                :edit-access="hasPermission(recordData,'editDescription')">
