@@ -5,6 +5,7 @@ Loads associated files of an object as a DataTable.
     <div class="child-records table-container" id="data-display">
         <data-table id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
+                    :key="workId"
                     :columns="columns"
                     :options="tableOptions">
             <thead>
@@ -20,7 +21,6 @@ Loads associated files of an object as a DataTable.
             </thead>
             <template #downloads="props">
                 <download-options :t="$t"
-                                  :key="props.rowData.id"
                                   :record-data="props.rowData">
                 </download-options>
             </template>
