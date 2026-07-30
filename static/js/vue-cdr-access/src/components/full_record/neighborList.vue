@@ -3,7 +3,7 @@
         <div class="container relateditems">
             <h2 class="subtitle">{{ $t('full_record.neighbor_list') }}</h2>
             <div class="grid">
-                <template v-for="neighbor in neighbors">
+                <template v-for="neighbor in neighbors" :key="neighbor.id">
                     <div class="relateditem cell p-3" :class="{current_item: currentRecordId === neighbor.id}">
                         <div class="relatedthumb" :class="neighborIsDeleted(neighbor.status)">
                             <thumbnail :thumbnail-data="neighbor"

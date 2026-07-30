@@ -71,9 +71,9 @@
                 </div>
                 <div class="container">
                     <file-list id="file-display"
-                            :work-id="recordData.briefObject.id"
-                            :download-access="hasDownloadAccess(recordData)"
-                            :edit-access="hasPermission(recordData,'editDescription')">
+                               :work-id="recordData.briefObject.id"
+                               :download-access="hasDownloadAccess(recordData)"
+                               :edit-access="hasPermission(recordData,'editDescription')">
                     </file-list>
                 </div>
             </template>
