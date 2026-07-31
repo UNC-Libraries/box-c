@@ -62,7 +62,6 @@
 import {mapActions, mapState} from "pinia";
 import {useFileVersioningStore} from "@/stores/file-versioning";
 import fetchUtils from "@/mixins/fetchUtils";
-import isEmpty from "lodash.isempty";
 
 export default {
     name: 'modalFileVersioning',
@@ -193,6 +192,13 @@ export default {
 </script>
 
 <style>
+#file-versioning.modal .table {
+    --bulma-table-cell-border-color: dark-gray;
+    tr.is-light {
+        --bulma-table-cell-border-color: dark-gray;
+    }
+}
+
 #file-versioning.modal {
     .versions {
         font-size: .9rem;
