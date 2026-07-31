@@ -249,11 +249,14 @@ table.dataTable {
     }
 
     .modal-content, .modal-card {
-        background: white;
         padding: 25px;
         min-height: 300px;
         max-width: 1800px;
         width: 86%;
+    }
+
+    .modal-content {
+        background: white;
     }
 }
 
