@@ -231,3 +231,29 @@ table.dataTable {
     margin-top: 0 !important;
 }
 
+/* Shared by modalDepositForms and modalFileVersioning */
+
+.vue-dcr-admin-wrapper {
+    .select select:not([multiple]) {
+        padding-inline-end: 3.5em;
+    }
+}
+
+.vue-dcr-admin-wrapper.vue-dcr-modal {
+    font-size: initial;
+    line-height: initial;
+
+    .modal {
+        line-height: 1.5;
+        z-index: 99;
+    }
+
+    .modal-content, .modal-card {
+        background: white;
+        padding: 25px;
+        min-height: 300px;
+        max-width: 1800px;
+        width: 86%;
+    }
+}
+

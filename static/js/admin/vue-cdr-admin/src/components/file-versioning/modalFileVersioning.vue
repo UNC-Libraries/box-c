@@ -1,5 +1,5 @@
 <template>
-    <div class="vue-dcr-admin-wrapper">
+    <div class="vue-dcr-admin-wrapper vue-dcr-modal">
         <div id="file-versioning" class="modal" :class="{'is-active': showModal}">
             <div class="modal-background"></div>
             <div class="modal-card">
@@ -194,8 +194,6 @@ export default {
 
 <style>
 #file-versioning.modal {
-    z-index: 99;
-
     .versions {
         font-size: .9rem;
     }

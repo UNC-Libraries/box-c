@@ -1,5 +1,5 @@
 <template>
-    <div id="dcr-forms-app" class="vf-boxc vue-dcr-admin-wrapper">
+    <div id="dcr-forms-app" class="vf-boxc vue-dcr-admin-wrapper vue-dcr-modal">
         <div class="columns is-centered">
             <div class="column is-12">
                 <div class="modal" :class="{'is-active': showFormsModal}">
@@ -132,6 +132,7 @@ export default {
     --forms-warning-color: #ef4444;
     --forms-warning-size: 1.5em;
 
+
     h1 {
         font-size: 2rem;
         font-weight: bold;
@@ -139,6 +140,16 @@ export default {
     .vf-static-tag-h2 h2 {
         color: #005B90;
     }
+
+    /* Getting squashed by bulma's reset, so add it here */
+    button.vf-btn {
+        padding: .375rem .875rem !important;
+    }
+
+    .select:not(.is-multiple):not(.is-loading)::after{
+        margin-top: -.1em;
+    }
+
     h2 {
         color: #005B90;
     }
@@ -163,17 +174,6 @@ export default {
     }
     label span {
         font-weight: bold;
-    }
-
-    .modal {
-        z-index: 99;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 25px;
-        min-height: 300px;
-        width: 90%;
     }
 }
 </style>
