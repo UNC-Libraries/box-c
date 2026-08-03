@@ -116,7 +116,7 @@ export default {
             try {
                 this.files.push({
                     name: this.selected_file_name,
-                    mimetype: this.selected_file.file.type,
+                    mimetype: this.selected_file.type,
                     uploaded: Date.now(),
                     current_version: true
                 });
