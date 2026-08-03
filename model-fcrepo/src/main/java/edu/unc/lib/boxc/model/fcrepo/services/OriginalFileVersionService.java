@@ -42,7 +42,7 @@ public class OriginalFileVersionService {
         while (versions.hasNext()) {
             var version = versions.next();
             var versionPid = PIDs.get(version.asResource().getURI());
-            var uriString = URIUtil.join(versionPid.getRepositoryUri(), "fcr:metadata");
+            var uriString = URIUtil.join(versionPid.getRepositoryUri());
             var originalFileUri = URI.create(uriString);
 
             try (FcrepoResponse resp = fcrepoClient.get(originalFileUri).perform()) {
@@ -52,7 +52,7 @@ public class OriginalFileVersionService {
 
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("filename", resc.getProperty(Ebucore.filename).getString());
-                metadata.put("mimetype", resc.getProperty(hasMimeType).getObject().toString());
+                metadata.put("mimetype", resc.getProperty(hasMimeType).getString());
                 map.put(versionPid, metadata);
             } catch (IOException e) {
                 throw new FedoraException("Failed to get metadata for " + originalFileUri, e);
