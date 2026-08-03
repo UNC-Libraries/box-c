@@ -32,6 +32,7 @@
                             <thead>
                             <tr>
                                 <th>File name</th>
+                                <th>MIME type</th>
                                 <th>Date uploaded</th>
                                 <th><span class="is-sr-only">Download</span></th>
                                 <th><span class="is-sr-only">Restore</span></th>
@@ -40,6 +41,7 @@
                             <tbody>
                             <tr v-for="file in sortedByCurrentVersion" :class="{'is-light': file.current_version}">
                                 <td><span v-if="file.current_version" class="current">*</span> {{ file.name }}</td>
+                                <td>{{ file.mimetype }}</td>
                                 <td>{{ displayDate(file.uploaded) }}</td>
                                 <td><a class="button is-primary" href="#">Download</a></td>
                                 <td><button @click="setAsCurrentVersion(file.name)" class="button is-danger" :disabled="file.current_version">Restore</button></td>
@@ -74,9 +76,9 @@ export default {
             selected_file: null,
             selected_file_name: 'No file selected.',
             files: [
-                { name: 'image.jpg', uploaded: 1785161550842, current_version: false },
-                { name: 'image2.jpg', uploaded: 1785161591280, current_version: false },
-                { name: 'image3.jpg', uploaded: 1785161611920, current_version: true },
+                { name: 'image.jpg', mimetype: 'image/jpeg', uploaded: 1785161550842, current_version: false },
+                { name: 'image2.jpg', mimetype: 'image/jpeg', uploaded: 1785161591280, current_version: false },
+                { name: 'image3.jpg', mimetype: 'image/jpeg', uploaded: 1785161611920, current_version: true },
             ],
         }
     },
@@ -112,7 +114,7 @@ export default {
         uploadNewVersion() {
             if (!this.selected_file) return;
             try {
-                this.files.push({ name: this.selected_file_name, uploaded: Date.now(), current_version: true });
+                this.files.push({ name: this.selected_file_name, mimetype: 'image/jpeg', uploaded: Date.now(), current_version: true });
                 this.setAsCurrentVersion(this.selected_file_name);
                 this.alertHandler.alertHandler('success', 'File uploaded successfully.');
             } catch (error) {
