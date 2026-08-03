@@ -109,12 +109,17 @@ export default {
 
 
         /**
-         * Demo version that doesn't acutally upload anything
+         * Demo version that doesn't actually upload anything
          */
         uploadNewVersion() {
             if (!this.selected_file) return;
             try {
-                this.files.push({ name: this.selected_file_name, mimetype: 'image/jpeg', uploaded: Date.now(), current_version: true });
+                this.files.push({
+                    name: this.selected_file_name,
+                    mimetype: this.selected_file.file.type,
+                    uploaded: Date.now(),
+                    current_version: true
+                });
                 this.setAsCurrentVersion(this.selected_file_name);
                 this.alertHandler.alertHandler('success', 'File uploaded successfully.');
             } catch (error) {
