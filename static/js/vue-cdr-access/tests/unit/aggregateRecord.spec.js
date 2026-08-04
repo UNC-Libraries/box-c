@@ -606,8 +606,35 @@ describe('aggregateRecord.vue', () => {
         expect(wrapper.findComponent({ name: 'fileList' }).exists()).toBe(true);
     });
 
-    it("does not display an embargo date, if it's not present", async () => {
-        expect(wrapper.find('.embargo').exists()).toBe(false);
+    it("does not display WCAG compliance, if it's not present", async () => {
+        expect(wrapper.find('.wcag').exists()).toBe(false);
+    });
+
+    it("displays WCAG compliance if all items have the same compliance level", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.wcagCompliance = ['WCAG 1.0 Level AA']
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.wcag').text()).toEqual('WCAG 1.0 Level AA');
+    });
+
+    it("displays WCAG compliance if there are multiple items and they have different compliance levels", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.wcagCompliance = ['WCAG 1.0 Level AA', 'WCAG 2.0 Level AAA'];
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.wcag').text()).toEqual('Various, see file pages');
+    });
+
+    it("displays WCAG compliance if there are multiple items and only some have compliance levels", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.wcagCompliance = ['WCAG 1.0 Level AA', 'Not provided'];
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.wcag').text()).toEqual('Various, see file pages');
     });
 
     it("displays an embargo date, if present", async () => {

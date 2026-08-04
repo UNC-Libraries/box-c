@@ -43,7 +43,11 @@
                         <dt>{{ $t('full_record.date_created') }}</dt>
                         <dd>{{ formatDate(recordData.briefObject.created) }}</dd>
                     </template>
-                    <template class="embargo" v-if="fieldExists(recordData.embargoDate)">
+                    <template v-if="fieldExists(recordData.briefObject.wcagCompliance)">
+                        <dt>{{ $t('full_record.wcag_compliance') }}</dt>
+                        <dd class="wcag">{{ wcagCompliance }}</dd>
+                    </template>
+                    <template v-if="fieldExists(recordData.embargoDate)">
                         <dt>{{ $t('full_record.embargo_date') }}</dt>
                         <dd class="embargo">{{ recordData.embargoDate }}</dd>
                     </template>
@@ -67,9 +71,9 @@
                 </div>
                 <div class="container">
                     <file-list id="file-display"
-                            :work-id="recordData.briefObject.id"
-                            :download-access="hasDownloadAccess(recordData)"
-                            :edit-access="hasPermission(recordData,'editDescription')">
+                               :work-id="recordData.briefObject.id"
+                               :download-access="hasDownloadAccess(recordData)"
+                               :edit-access="hasPermission(recordData,'editDescription')">
                     </file-list>
                 </div>
             </template>
@@ -107,6 +111,13 @@ export default {
         filesLink() {
             const current_page = location.href;
             return /file-display$/.test(current_page) ? current_page : `${current_page}#file-display`;
+        },
+
+        wcagCompliance() {
+            if (this.recordData.briefObject.wcagCompliance.length > 1) {
+                return 'Various, see file pages'
+            }
+            return this.recordData.briefObject.wcagCompliance[0];
         }
     }
 }
