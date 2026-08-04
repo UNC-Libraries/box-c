@@ -34,7 +34,7 @@ public class OriginalFileVersionsController {
     public @ResponseBody
     ResponseEntity<Object> getVersion(@PathVariable("id") String id) {
         PID pid = PIDs.get(id);
-        
+
         // Check if the user is allowed to view this object's metadata
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         accessControlService.assertHasAccess("Insufficient permissions to get versions for " + id,

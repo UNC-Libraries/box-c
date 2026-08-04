@@ -42,7 +42,8 @@ public class OriginalFileVersionService {
         while (versions.hasNext()) {
             var version = versions.next();
             var versionPid = PIDs.get(version.asResource().getURI());
-            var uriString = URIUtil.join(versionPid.getRepositoryUri());
+            // get fedora metadata for each individual version
+            var uriString = URIUtil.join(versionPid.getRepositoryUri(), "fcr:metadata");
             var originalFileUri = URI.create(uriString);
 
             try (FcrepoResponse resp = fcrepoClient.get(originalFileUri).perform()) {

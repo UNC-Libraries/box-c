@@ -82,7 +82,7 @@ public class OriginalFileVersionServiceTest {
 
         Model objModel = ModelFactory.createDefaultModel();
         Resource objResc = objModel.getResource(originalFilePid.getRepositoryPath());
-        objResc.addProperty(RDF.type, Cdr.FileObject);
+        objResc.addProperty(RDF.type, Ldp.RdfSource);
         objResc.addProperty(Ldp.contains, objModel.createResource(version1UriString));
         objResc.addProperty(Ldp.contains, objModel.createResource(version2UriString));
 
@@ -112,10 +112,10 @@ public class OriginalFileVersionServiceTest {
             if (uriString.endsWith("/fcr:versions")) {
                 return getVersionsBuilder;
             }
-            if (uriString.endsWith(VERSION1_DATE)) {
+            if (uriString.contains(VERSION1_DATE)) {
                 return getVersion1Builder;
             }
-            if (uriString.endsWith(VERSION2_DATE)) {
+            if (uriString.contains(VERSION2_DATE)) {
                 return getVersion2Builder;
             }
 
