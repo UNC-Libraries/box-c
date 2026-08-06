@@ -89,8 +89,8 @@ public class CleanupDepositJob extends AbstractDepositJob {
             FileUtils.deleteDirectory(getDepositDirectory());
             LOG.info("Deleted deposit directory: {}", getDepositDirectory());
         } catch (IOException e) {
-            LOG.error("Cannot delete deposit directory: "
-                    + getDepositDirectory().getAbsolutePath(), e);
+            LOG.error("Cannot delete deposit directory: {}",
+                    getDepositDirectory().getAbsolutePath(), e);
         }
 
         // set this deposit's Redis keys to expire
