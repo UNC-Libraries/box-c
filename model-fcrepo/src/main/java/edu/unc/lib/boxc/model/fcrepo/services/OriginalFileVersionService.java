@@ -11,12 +11,17 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -48,8 +53,10 @@ public class OriginalFileVersionService {
 
             try (FcrepoResponse resp = fcrepoClient.get(originalFileUri).perform()) {
                 Model childModel = ModelFactory.createDefaultModel();
-                var readModel =  childModel.read(resp.getBody(), null);
+                var readModel =  childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
+
                 Resource resc = readModel.getResource(versionPid.getRepositoryPath());
+                var filename = readModel.getProperty(resc, Ebucore.filename);
 
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("filename", resc.getProperty(Ebucore.filename).getString());
@@ -75,7 +82,7 @@ public class OriginalFileVersionService {
         var objUri = URI.create(uriString);
         try (FcrepoResponse resp = fcrepoClient.get(objUri).perform()) {
             Model childModel = ModelFactory.createDefaultModel();
-            return childModel.read(resp.getBody(), null);
+            return childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
         } catch (IOException e) {
             throw new FedoraException("Failed to list versions for " + objUri, e);
         } catch (FcrepoOperationFailedException e) {
