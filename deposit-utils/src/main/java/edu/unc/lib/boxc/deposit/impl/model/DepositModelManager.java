@@ -124,19 +124,25 @@ public class DepositModelManager implements Closeable {
      */
     public synchronized void removeModel(PID depositPid) {
         String uri = depositPid.getRepositoryPath();
-        // Start a write transaction if one isn't already active
-        ReadWrite txType = dataset.transactionMode();
-        if (!ReadWrite.WRITE.equals(txType)) {
-            // End a read transaction if active
-            if (txType != null) {
+        log.info("Removing deposit model for {}", uri);
+        if (dataset.isInTransaction()) {
+            ReadWrite txType = dataset.transactionMode();
+            if (!ReadWrite.WRITE.equals(txType)) {
                 dataset.end();
+                dataset.begin(ReadWrite.WRITE);
             }
+        } else {
             dataset.begin(ReadWrite.WRITE);
         }
-        log.info("Removing deposit model for {}", uri);
-        dataset.removeNamedModel(uri);
-        dataset.commit();
-        dataset.end();
+        try {
+            dataset.removeNamedModel(uri);
+            dataset.commit();
+        } catch (Exception e) {
+            dataset.abort();
+            throw e;
+        } finally {
+            dataset.end();
+        }
     }
 
     /**

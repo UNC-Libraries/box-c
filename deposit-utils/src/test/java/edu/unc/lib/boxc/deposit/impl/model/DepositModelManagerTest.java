@@ -186,6 +186,34 @@ public class DepositModelManagerTest {
     }
 
     @Test
+    void testRemoveModel_AlreadyInWriteTransaction() {
+        Model model1 = manager.getWriteModel(depositPid);
+        addTriple(model1);
+        manager.commit();
+        // Start a write tx on the dataset
+        manager.getWriteModel(depositPid);
+        manager.removeModel(depositPid);
+
+        Model readModel = manager.getReadModel(depositPid);
+        assertFalse(containsTriple(readModel), "Model should be empty after removal");
+        manager.end();
+    }
+
+    @Test
+    void testRemoveModel_AlreadyInReadTransaction() {
+        Model model1 = manager.getWriteModel(depositPid);
+        addTriple(model1);
+        manager.commit();
+        // Start a read tx on the dataset
+        manager.getReadModel(depositPid);
+        manager.removeModel(depositPid);
+
+        Model readModel = manager.getReadModel(depositPid);
+        assertFalse(containsTriple(readModel), "Model should be empty after removal");
+        manager.end();
+    }
+
+    @Test
     void testLoadDataset_PersistsDataAcrossReload() {
         try (DepositModelManager diskManager = new DepositModelManager(tmpFolder)) {
             Model writeModel = diskManager.getWriteModel(depositPid);
