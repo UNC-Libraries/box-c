@@ -7,18 +7,10 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
-import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.model.api.rdf.Ldp;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.OriginalFileVersionService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -44,8 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class OriginalFileVersionControllerTest {
-    private static final String MIMETYPE = "text/plain";
-    private static final String VERSION1_DATE = "20250727195502";
+    private static final String VERSION1_DATE = "20260727195502";
     private static final String VERSION2_DATE = "20260727195530";
     private static final String OBJECT_ID = "e2847b41-e0ee-45bb-bdb3-a97a6241bee5";
     private static final PID OBJECT_PID = PIDs.get(OBJECT_ID);
@@ -67,10 +58,6 @@ public class OriginalFileVersionControllerTest {
     private FcrepoResponse version1Response;
     @Mock
     private FcrepoResponse version2Response;
-
-    private Resource version1Resource;
-
-    private Resource version2Resource;
 
     @BeforeEach
     public void setup() throws FcrepoOperationFailedException {
@@ -134,22 +121,7 @@ public class OriginalFileVersionControllerTest {
 
     @Test
     public void successTest() throws Exception {
-        PID originalFilePid = DatastreamPids.getOriginalFilePid(OBJECT_PID);
-
-        String versionsUriString = URIUtil.join(originalFilePid.getRepositoryUri(), "fcr:metadata", "fcr:versions");
-        String version1UriString = URIUtil.join(originalFilePid.getRepositoryUri(), "fcr:versions", VERSION1_DATE);
-        String version2UriString = URIUtil.join(originalFilePid.getRepositoryUri(),"fcr:versions", VERSION2_DATE);
-
-        Model objModel = ModelFactory.createDefaultModel();
-        version1Resource = objModel.getResource(version1UriString);
-        version1Resource.addProperty(Ebucore.filename, "00276_op0178_0001.tif");
-        version1Resource.addProperty(Ebucore.hasMimeType, MIMETYPE);
-        version2Resource = objModel.getResource(version2UriString);
-        version2Resource.addProperty(Ebucore.filename, "00276_op0178_0001_2.tif");
-        version2Resource.addProperty(Ebucore.hasMimeType, MIMETYPE);
-
-
-        var result = mockMvc.perform(get("/version/" + OBJECT_ID)
+        mockMvc.perform(get("/version/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();

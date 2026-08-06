@@ -8,11 +8,11 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -20,8 +20,6 @@ import org.fcrepo.client.FcrepoResponse;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,6 +30,8 @@ import static edu.unc.lib.boxc.model.api.rdf.Ebucore.hasMimeType;
  * Service which returns OriginalFile version information for file objects stored in Fedora
  */
 public class OriginalFileVersionService {
+    private final static String FCR_METADATA = "fcr:metadata";
+    private final static String FCR_VERSIONS = "fcr:versions";
     private FcrepoClient fcrepoClient;
 
     /**
@@ -48,22 +48,22 @@ public class OriginalFileVersionService {
             var version = versions.next();
             var versionPid = PIDs.get(version.asResource().getURI());
             // get fedora metadata for each individual version
-            var uriString = URIUtil.join(versionPid.getRepositoryUri(), "fcr:metadata");
-            var originalFileUri = URI.create(uriString);
+            var uriString = URIUtil.join(versionPid.getRepositoryUri(), FCR_METADATA);
+            var originalFileVersionUri = URI.create(uriString);
 
-            try (FcrepoResponse resp = fcrepoClient.get(originalFileUri).perform()) {
+            try (FcrepoResponse resp = fcrepoClient.get(originalFileVersionUri).perform()) {
                 Model childModel = ModelFactory.createDefaultModel();
                 var readModel =  childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
-
-                Resource resc = readModel.getResource(versionPid.getRepositoryPath());
-                var filename = readModel.getProperty(resc, Ebucore.filename);
+                // remove versions specification in path to match the right resource
+                var repositoryPath = StringUtils.substringBefore(versionPid.getRepositoryPath(), "/" + FCR_VERSIONS);
+                Resource resc = readModel.getResource(repositoryPath);
 
                 Map<String, String> metadata = new HashMap<>();
-                metadata.put("filename", resc.getProperty(Ebucore.filename).getString());
-                metadata.put("mimetype", resc.getProperty(hasMimeType).getString());
+                metadata.put("filename", getPropertyValue(resc, Ebucore.filename));
+                metadata.put("mimetype", getPropertyValue(resc, hasMimeType));
                 map.put(versionPid, metadata);
             } catch (IOException e) {
-                throw new FedoraException("Failed to get metadata for " + originalFileUri, e);
+                throw new FedoraException("Failed to get metadata for " + originalFileVersionUri, e);
             } catch (FcrepoOperationFailedException e) {
                 throw ClientFaultResolver.resolve(e);
             }
@@ -78,7 +78,7 @@ public class OriginalFileVersionService {
      */
     private Model getVersions(PID pid) {
         var originalFilePid = DatastreamPids.getOriginalFilePid(pid);
-        var uriString = URIUtil.join(originalFilePid.getRepositoryUri(), "fcr:metadata", "fcr:versions");
+        var uriString = URIUtil.join(originalFilePid.getRepositoryUri(), FCR_METADATA, FCR_VERSIONS);
         var objUri = URI.create(uriString);
         try (FcrepoResponse resp = fcrepoClient.get(objUri).perform()) {
             Model childModel = ModelFactory.createDefaultModel();
@@ -88,6 +88,14 @@ public class OriginalFileVersionService {
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+    }
+
+    private String getPropertyValue(Resource resc, Property property) {
+        var propertyValue = resc.getProperty(property);
+        if (propertyValue == null) {
+            return null;
+        }
+        return propertyValue.getString();
     }
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {

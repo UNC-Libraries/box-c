@@ -40,12 +40,11 @@ import org.mockito.Mock;
 
 public class OriginalFileVersionServiceTest {
     private static final String MIMETYPE = "text/plain";
-    private static final String VERSION1_DATE = "20250727195502";
-    private static final String VERSION2_DATE = "20260727195502";
+    private static final String VERSION1_DATE = "20260727195502";
+    private static final String VERSION2_DATE = "20260727195530";
     private OriginalFileVersionService originalFileVersionService;
     private AutoCloseable closeable;
     private PID fileObjectPid, version1Pid, version2Pid;
-    private File objModelFile, version1ModelFile, version2ModelFile;
     private GetBuilder getVersionsBuilder, getVersion1Builder, getVersion2Builder;
 
     @TempDir
@@ -80,29 +79,6 @@ public class OriginalFileVersionServiceTest {
         version1Pid = PIDs.get(version1UriString);
         version2Pid = PIDs.get(version2UriString);
 
-        Model objModel = ModelFactory.createDefaultModel();
-        Resource objResc = objModel.getResource(originalFilePid.getRepositoryPath());
-        objResc.addProperty(RDF.type, Ldp.RdfSource);
-        objResc.addProperty(Ldp.contains, objModel.createResource(version1UriString));
-        objResc.addProperty(Ldp.contains, objModel.createResource(version2UriString));
-
-        Model version1Model = ModelFactory.createDefaultModel();
-        Resource version1Resource = version1Model.getResource(version1UriString);
-        version1Resource.addProperty(Ebucore.filename, "filename1.txt");
-        version1Resource.addProperty(Ebucore.hasMimeType, MIMETYPE);
-
-        Model version2Model = ModelFactory.createDefaultModel();
-        Resource version2Resource = version2Model.getResource(version2UriString);
-        version2Resource.addProperty(Ebucore.filename, "filename2.txt");
-        version2Resource.addProperty(Ebucore.hasMimeType, MIMETYPE);
-
-        objModelFile = tmpFolder.resolve("objModel.rdf").toFile();
-        version1ModelFile = tmpFolder.resolve("version1Model.rdf").toFile();
-        version2ModelFile = tmpFolder.resolve("version2Model.rdf").toFile();
-
-        writeModelToFile(objModel, objModelFile);
-        writeModelToFile(version1Model, version1ModelFile);
-        writeModelToFile(version2Model, version2ModelFile);
 
         when(fcrepoClient.get(any(URI.class))).thenAnswer(inv -> {
             URI uri = inv.getArgument(0);
@@ -123,13 +99,16 @@ public class OriginalFileVersionServiceTest {
         });
 
         when(getVersionsBuilder.perform()).thenReturn(versionsResponse);
-        when(versionsResponse.getBody()).thenAnswer(inv -> new java.io.FileInputStream(objModelFile));
+        when(versionsResponse.getBody()).thenAnswer(
+                inv -> new java.io.FileInputStream("src/test/java/edu/unc/lib/boxc/model/fcrepo/resources/rdf/file-object-versions.rdf"));
 
         when(getVersion1Builder.perform()).thenReturn(version1Response);
-        when(version1Response.getBody()).thenAnswer(inv -> new java.io.FileInputStream(version1ModelFile));
+        when(version1Response.getBody()).thenAnswer(
+                inv -> new java.io.FileInputStream("src/test/edu/unc/lib/boxc/model/fcrepo/resources/rdf/version1.rdf"));
 
         when(getVersion2Builder.perform()).thenReturn(version2Response);
-        when(version2Response.getBody()).thenAnswer(inv -> new java.io.FileInputStream(version2ModelFile));
+        when(version2Response.getBody()).thenAnswer(
+                inv -> new java.io.FileInputStream("src/test/edu/unc/lib/boxc/model/fcrepo/resources/rdf/version2.rdf"));
     }
 
     @AfterEach
