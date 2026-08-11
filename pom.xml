@@ -64,7 +64,7 @@
         <mp44u.version>1.0-SNAPSHOT</mp44u.version>
         <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
-        <spring.version>6.2.18</spring.version>
+        <spring.version>6.2.19</spring.version>
         <spring.security.web.version>6.5.11</spring.security.web.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
@@ -122,7 +122,7 @@
         <jedis.version>5.1.5</jedis.version>
         <solr.version>9.8.1</solr.version>
         <metrics.version>5.0.5</metrics.version>
-        <jena.version>5.5.0</jena.version>
+        <jena.version>6.1.0</jena.version>
 
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
         <camel.version>4.16.0</camel.version>
