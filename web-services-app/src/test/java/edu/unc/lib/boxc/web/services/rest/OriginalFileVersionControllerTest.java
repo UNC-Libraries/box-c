@@ -8,6 +8,9 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.OriginalFileVersionService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -24,8 +27,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.FileInputStream;
 import java.net.URI;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -53,11 +58,17 @@ public class OriginalFileVersionControllerTest {
     @Mock
     private FcrepoClient fcrepoClient;
     @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
     private FcrepoResponse versionsResponse;
     @Mock
     private FcrepoResponse version1Response;
     @Mock
     private FcrepoResponse version2Response;
+    @Mock
+    private FileObject fileObject;
+    @Mock
+    private FolderObject folderObject;
 
     @BeforeEach
     public void setup() throws FcrepoOperationFailedException {
@@ -73,7 +84,6 @@ public class OriginalFileVersionControllerTest {
         when(fcrepoClient.get(any(URI.class))).thenAnswer(inv -> {
             URI uri = inv.getArgument(0);
             String uriString = uri.toString();
-            System.out.println("fcrepoClient.get called with: " + uriString);
 
             if (uriString.endsWith("/fcr:versions")) {
                 return getVersionsBuilder;
@@ -89,13 +99,13 @@ public class OriginalFileVersionControllerTest {
         });
 
         when(getVersionsBuilder.perform()).thenReturn(versionsResponse);
-        when(versionsResponse.getBody()).thenAnswer(inv -> new java.io.FileInputStream("src/test/resources/rdf/file-object-versions.rdf"));
+        when(versionsResponse.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/file-object-versions.rdf"));
 
         when(getVersion1Builder.perform()).thenReturn(version1Response);
-        when(version1Response.getBody()).thenAnswer(inv -> new java.io.FileInputStream("src/test/resources/rdf/version1.rdf"));
+        when(version1Response.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/version1.rdf"));
 
         when(getVersion2Builder.perform()).thenReturn(version2Response);
-        when(version2Response.getBody()).thenAnswer(inv -> new java.io.FileInputStream("src/test/resources/rdf/version2.rdf"));
+        when(version2Response.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/version2.rdf"));
 
         mockMvc = MockMvcBuilders.standaloneSetup(versionsController)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
@@ -120,10 +130,24 @@ public class OriginalFileVersionControllerTest {
     }
 
     @Test
-    public void successTest() throws Exception {
+    public void notAFileObjectTest() throws Exception {
+        when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(folderObject);
         mockMvc.perform(get("/version/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    public void successTest() throws Exception {
+        when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(fileObject);
+        var result = mockMvc.perform(get("/version/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        assertFalse(respJson.get(VERSION1_DATE).isEmpty());
+        assertFalse(respJson.get(VERSION2_DATE).isEmpty());
     }
 }

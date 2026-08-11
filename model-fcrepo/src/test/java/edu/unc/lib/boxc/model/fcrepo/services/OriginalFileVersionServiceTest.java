@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import java.io.FileInputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
@@ -58,7 +59,6 @@ public class OriginalFileVersionServiceTest {
         when(fcrepoClient.get(any(URI.class))).thenAnswer(inv -> {
             URI uri = inv.getArgument(0);
             String uriString = uri.toString();
-            System.out.println("fcrepoClient.get called with: " + uriString);
 
             if (uriString.endsWith("/fcr:versions")) {
                 return getVersionsBuilder;
@@ -75,15 +75,15 @@ public class OriginalFileVersionServiceTest {
 
         when(getVersionsBuilder.perform()).thenReturn(versionsResponse);
         when(versionsResponse.getBody()).thenAnswer(
-                inv -> new java.io.FileInputStream("src/test/resources/rdf/file-object-versions.rdf"));
+                inv -> new FileInputStream("src/test/resources/rdf/file-object-versions.rdf"));
 
         when(getVersion1Builder.perform()).thenReturn(version1Response);
         when(version1Response.getBody()).thenAnswer(
-                inv -> new java.io.FileInputStream("src/test/resources/rdf/version1.rdf"));
+                inv -> new FileInputStream("src/test/resources/rdf/version1.rdf"));
 
         when(getVersion2Builder.perform()).thenReturn(version2Response);
         when(version2Response.getBody()).thenAnswer(
-                inv -> new java.io.FileInputStream("src/test/resources/rdf/version2.rdf"));
+                inv -> new FileInputStream("src/test/resources/rdf/version2.rdf"));
     }
 
     @AfterEach

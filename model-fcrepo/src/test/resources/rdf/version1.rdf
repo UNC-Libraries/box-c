@@ -19,4 +19,4 @@ PREFIX ldp: <http://www.w3.org/ns/ldp#>
         rdf:type               ldp:Resource;
         rdf:type               fedora:Resource;
         rdf:type               fedora:Binary;
-        fedora:hasParent       <http://localhost:8185/fcrepo/rest/> .
+        fedora:hasParent       <http://example.com/rest/> .

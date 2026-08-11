@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -52,7 +53,7 @@ public class OriginalFileVersionService {
 
             try (FcrepoResponse resp = fcrepoClient.get(originalFileVersionUri).perform()) {
                 Model childModel = ModelFactory.createDefaultModel();
-                var readModel =  childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
+                var readModel = childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
                 Resource resc = readModel.getResource(pid.getRepositoryPath());
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("filename", getPropertyValue(resc, Ebucore.filename));
@@ -76,7 +77,7 @@ public class OriginalFileVersionService {
         var originalFilePid = DatastreamPids.getOriginalFilePid(pid);
         var uriString = URIUtil.join(originalFilePid.getRepositoryUri(), FCR_METADATA, FCR_VERSIONS);
         var objUri = URI.create(uriString);
-        try (FcrepoResponse resp = fcrepoClient.get(objUri).perform()) {
+        try (FcrepoResponse resp = fcrepoClient.get(objUri).accept("text/turtle").perform()) {
             Model childModel = ModelFactory.createDefaultModel();
             return childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
         } catch (IOException e) {
