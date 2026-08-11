@@ -35,8 +35,8 @@ public class OriginalFileVersionService {
     /**
      * Contacts Fedora API to get a list of original file versions and then again for metadata for each version
      * @param pid FileObject PID
-     * @return a map where the key is the OriginalFile version date value (i.e. "20260807161806")
-     * the value is a map of filenames and mimetypes for that version
+     * @return a map where the key is the OriginalFile version date value (i.e. "20260807161806") and
+     * the value is a map of the filename and mimetype for that version
      */
     public Map<String, Map<String, String>> getVersionMetadata(PID pid) {
         var model = getVersions(pid);
