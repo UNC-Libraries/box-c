@@ -120,15 +120,16 @@ public class OriginalFileVersionServiceTest {
         assertFalse(metadataMap.isEmpty());
         assertEquals(2, metadataMap.size());
 
-        assertVersionMetadata(metadataMap, VERSION1_DATE, "00276_op0178_0001.tif");
-        assertVersionMetadata(metadataMap, VERSION2_DATE, "00276_op0178_0001_2.tif");
+        assertVersionMetadata(metadataMap, VERSION1_DATE, "00276_op0178_0001.tif", "image/tiff");
+        assertVersionMetadata(metadataMap, VERSION2_DATE, "00276_op0178_0001_2.tif", null);
     }
 
-    private void assertVersionMetadata(Map<String, Map<String, String>> metadataMap, String date, String expectedFilename) {
+    private void assertVersionMetadata(Map<String, Map<String, String>> metadataMap, String date,
+                                       String expectedFilename, String expectedMimetype) {
         assertTrue(metadataMap.containsKey(date));
 
         Map<String, String> metadata = metadataMap.get(date);
         assertEquals(expectedFilename, metadata.get("filename"));
-        assertEquals(MIMETYPE, metadata.get("mimetype"));
+        assertEquals(expectedMimetype, metadata.get("mimetype"));
     }
 }

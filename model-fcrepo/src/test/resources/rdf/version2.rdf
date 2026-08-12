@@ -10,7 +10,6 @@ PREFIX ldp: <http://www.w3.org/ns/ldp#>
         rdf:type               premis3:File;
         premis3:size           "42267434"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;
         ebucore:filename       "00276_op0178_0001_2.tif";
-        ebucore:hasMimeType    "image/tiff";
         fedora:created         "2026-08-07T16:16:37.424888639Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
         fedora:lastModified    "2026-08-07T16:16:37.424888639Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
         fedora:createdBy       "fedora_admin";
