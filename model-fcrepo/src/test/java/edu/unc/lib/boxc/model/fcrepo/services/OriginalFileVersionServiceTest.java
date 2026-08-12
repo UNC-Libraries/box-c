@@ -104,10 +104,20 @@ public class OriginalFileVersionServiceTest {
     }
 
     @Test
-    public void fedoraApiErrorTest() {
+    public void fedoraVersionsApiErrorTest() {
         Assertions.assertThrows(FedoraException.class, () -> {
             doThrow(new FcrepoOperationFailedException(OBJECT_PID.getRepositoryUri(), 404, "Not found"))
                     .when(getVersionsBuilder).perform();
+
+            originalFileVersionService.getVersionMetadata(OBJECT_PID);
+        });
+    }
+
+    @Test
+    public void fedoraIndividualVersionApiErrorTest() {
+        Assertions.assertThrows(FedoraException.class, () -> {
+            doThrow(new FcrepoOperationFailedException(OBJECT_PID.getRepositoryUri(), 404, "Not found"))
+                    .when(getVersion1Builder).perform();
 
             originalFileVersionService.getVersionMetadata(OBJECT_PID);
         });
