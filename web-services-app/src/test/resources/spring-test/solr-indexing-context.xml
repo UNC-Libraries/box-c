@@ -166,7 +166,6 @@
         <property name="searchSettings" ref="searchSettings" />
         <property name="solrSettings" ref="solrSettings" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
-        <property name="solrClient" ref="solrClient" />
     </bean>
 
     <bean id="technicalMetadataService" class="edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService"
