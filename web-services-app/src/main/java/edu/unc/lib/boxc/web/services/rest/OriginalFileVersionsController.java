@@ -38,9 +38,9 @@ public class OriginalFileVersionsController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @RequestMapping(value = "/version/{id}", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/versions/{id}", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
-    ResponseEntity<Object> getVersion(@PathVariable("id") String id) {
+    ResponseEntity<Object> getVersions(@PathVariable("id") String id) {
         PID pid = PIDs.get(id);
 
         // Check if the user is allowed to view this object's metadata

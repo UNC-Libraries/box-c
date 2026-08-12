@@ -124,7 +124,7 @@ public class OriginalFileVersionControllerTest {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(any(), eq(OBJECT_PID), any(), eq(Permission.viewMetadata));
 
-        mockMvc.perform(get("/version/" + OBJECT_ID)
+        mockMvc.perform(get("/versions/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
@@ -132,7 +132,7 @@ public class OriginalFileVersionControllerTest {
     @Test
     public void notAFileObjectTest() throws Exception {
         when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(folderObject);
-        mockMvc.perform(get("/version/" + OBJECT_ID)
+        mockMvc.perform(get("/versions/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -141,7 +141,7 @@ public class OriginalFileVersionControllerTest {
     @Test
     public void successTest() throws Exception {
         when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(fileObject);
-        var result = mockMvc.perform(get("/version/" + OBJECT_ID)
+        var result = mockMvc.perform(get("/versions/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
