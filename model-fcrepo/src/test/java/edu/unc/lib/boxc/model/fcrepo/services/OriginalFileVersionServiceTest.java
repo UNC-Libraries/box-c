@@ -2,24 +2,32 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.GetBuilder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,7 +41,9 @@ public class OriginalFileVersionServiceTest {
     private static final PID OBJECT_PID = PIDs.get(OBJECT_ID);
     private OriginalFileVersionService originalFileVersionService;
     private AutoCloseable closeable;
-    private GetBuilder getVersionsBuilder, getVersion1Builder, getVersion2Builder;
+    private GetBuilder getVersionsBuilder;
+    private GetBuilder getVersion1Builder;
+    private GetBuilder getVersion2Builder;
     @TempDir
     public Path tmpFolder;
     @Mock
@@ -91,6 +101,16 @@ public class OriginalFileVersionServiceTest {
         if (closeable != null) {
             closeable.close();
         }
+    }
+
+    @Test
+    public void fedoraApiErrorTest() {
+        Assertions.assertThrows(FedoraException.class, () -> {
+            doThrow(new FcrepoOperationFailedException(OBJECT_PID.getRepositoryUri(), 404, "Not found"))
+                    .when(getVersionsBuilder).perform();
+
+            originalFileVersionService.getVersionMetadata(OBJECT_PID);
+        });
     }
 
     @Test

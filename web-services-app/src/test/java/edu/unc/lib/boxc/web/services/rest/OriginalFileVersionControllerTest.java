@@ -47,7 +47,6 @@ public class OriginalFileVersionControllerTest {
     private static final PID OBJECT_PID = PIDs.get(OBJECT_ID);
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
-    private OriginalFileVersionService service;
     private MockMvc mockMvc;
     private AutoCloseable closeable;
     private GetBuilder getVersionsBuilder, getVersion1Builder, getVersion2Builder;
@@ -73,7 +72,7 @@ public class OriginalFileVersionControllerTest {
     @BeforeEach
     public void setup() throws FcrepoOperationFailedException {
         closeable = openMocks(this);
-        service = new OriginalFileVersionService();
+        var service = new OriginalFileVersionService();
         service.setFcrepoClient(fcrepoClient);
         versionsController.setAccessControlService(accessControlService);
         versionsController.setService(service);
