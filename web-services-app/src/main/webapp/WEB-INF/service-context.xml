@@ -619,6 +619,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
+
+    <bean id="originalFileVersionService" class="edu.unc.lib.boxc.model.fcrepo.services.OriginalFileVersionService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>

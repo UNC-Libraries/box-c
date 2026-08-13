@@ -214,16 +214,16 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 repoObj.getPid().getRepositoryPath());
 
         long endTime = System.currentTimeMillis() + waitMs;
-        try (QueryExecution qExecution = sparqlQueryService.executeQuery(query)) {
-            while (System.currentTimeMillis() < endTime) {
+        while (System.currentTimeMillis() < endTime) {
+            try (QueryExecution qExecution = sparqlQueryService.executeQuery(query)) {
                 ResultSet resultSet = qExecution.execSelect();
                 if (resultSet.hasNext()) {
                     return;
                 }
-                Thread.sleep(100L);
             }
-
-            fail("Object " + repoObj.getPid() + " was not indexed");
+            Thread.sleep(100L);
         }
+
+        fail("Object " + repoObj.getPid() + " was not indexed");
     }
 }

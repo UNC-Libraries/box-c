@@ -1,0 +1,21 @@
+PREFIX premis: <http://www.loc.gov/premis/rdf/v1#>
+PREFIX premis3: <http://www.loc.gov/premis/rdf/v3/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX fedora: <http://fedora.info/definitions/v4/repository#>
+PREFIX ebucore: <http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#>
+PREFIX ldp: <http://www.w3.org/ns/ldp#>
+
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>
+        premis:hasSize         "42267434"^^<http://www.w3.org/2001/XMLSchema#long>;
+        rdf:type               premis3:File;
+        premis3:size           "42267434"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;
+        ebucore:filename       "00276_op0178_0001_2.tif";
+        fedora:created         "2026-08-07T16:16:37.424888639Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
+        fedora:lastModified    "2026-08-07T16:16:37.424888639Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
+        fedora:createdBy       "fedora_admin";
+        fedora:lastModifiedBy  "fedora_admin";
+        rdf:type               ldp:NonRDFSource;
+        rdf:type               ldp:Resource;
+        rdf:type               fedora:Resource;
+        rdf:type               fedora:Binary;
+        fedora:hasParent       <http://example.com/rest/> .

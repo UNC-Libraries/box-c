@@ -1,0 +1,17 @@
+@prefix memento: <http://mementoweb.org/ns#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix fedora: <http://fedora.info/definitions/v4/repository#> .
+@prefix ldp:   <http://www.w3.org/ns/ldp#> .
+
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/fcr:versions>
+        rdf:type               fedora:TimeMap ;
+        rdf:type               fedora:Resource ;
+        rdf:type               memento:TimeMap ;
+        fedora:lastModifiedBy  "bypassAdmin" ;
+        fedora:createdBy       "bypassAdmin" ;
+        fedora:created         "2021-10-29T18:49:30.569Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+        fedora:lastModified    "2026-07-27T19:55:31.019Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+        memento:original       <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> ;
+        rdf:type               ldp:RDFSource ;
+        ldp:contains           <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/fcr:versions/20260727195502> ;
+        ldp:contains           <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/fcr:versions/20260727195530> ;
