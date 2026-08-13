@@ -79,8 +79,8 @@ public class AccessSurrogateController {
         // uploaded file must be an image
         var mimeType = surrogateFile.getContentType();
         if (!Strings.CI.contains(mimeType, "image")) {
-            log.warn("Uploaded file for collection {} is not an image file", pidString);
-            throw new IllegalArgumentException("Uploaded file is not an image");
+            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimeType, pidString);
+            throw new IllegalArgumentException("Mimetype: " + mimeType + " of uploaded file is not an image");
         }
         request.setMimetype(mimeType);
 
