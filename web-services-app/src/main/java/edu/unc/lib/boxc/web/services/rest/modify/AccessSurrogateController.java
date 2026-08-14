@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSender;
 import org.apache.commons.lang3.Strings;
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class AccessSurrogateController {
     @PostMapping(value = "/edit/accessSurrogate/{id}")
     @ResponseBody
     public ResponseEntity<Object> setAccessSurrogate(@PathVariable("id") String pidString,
-                                                        @RequestParam("file") MultipartFile surrogateFile) {
+                                                        @RequestParam("file") MultipartFile surrogateFile) throws IOException {
         Map<String, Object> result = new HashMap<>();
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -79,9 +80,9 @@ public class AccessSurrogateController {
 
         // uploaded file must be an image
         var browserMimetype = surrogateFile.getContentType();
-        var fileMimetype = URLConnection.guessContentTypeFromName(surrogateFile.getOriginalFilename());
+        var tikaMimetype = getMimetype(surrogateFile.getInputStream());
         log.error("browser mimetype: {}", browserMimetype);
-        log.error("file mimetype: {}", fileMimetype);
+        log.error("tika mimetype: {}", tikaMimetype);
 //        var mimetype = isImage(browserMimetype) ? browserMimetype : fileMimetype;
 //        if (!isImage(mimetype)) {
 //            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
@@ -161,6 +162,15 @@ public class AccessSurrogateController {
 
     private boolean isImage(String mimetype) {
         return Strings.CI.contains(mimetype, "image");
+    }
+
+    private String getMimetype(InputStream inputStream) {
+        Tika tika = new Tika();
+        try {
+            return tika.detect(inputStream);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
 
