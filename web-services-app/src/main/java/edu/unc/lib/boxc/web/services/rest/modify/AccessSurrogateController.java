@@ -28,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +39,6 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 /**
  * Controller for handling access surrogate requests. This may include things like
@@ -62,7 +60,7 @@ public class AccessSurrogateController {
     @PostMapping(value = "/edit/accessSurrogate/{id}")
     @ResponseBody
     public ResponseEntity<Object> setAccessSurrogate(@PathVariable("id") String pidString,
-                                                        @RequestParam("file") MultipartFile surrogateFile) throws IOException {
+                                                        @RequestParam("file") MultipartFile surrogateFile) {
         Map<String, Object> result = new HashMap<>();
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -78,15 +76,15 @@ public class AccessSurrogateController {
 
         var request = buildRequest(SET, pidString);
 
-        // uploaded file must be an image
-        var mimetype = getMimetype(surrogateFile.getInputStream());
-        if (!Strings.CI.contains(mimetype, "image")) {
-            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
-            throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
-        }
-        request.setMimetype(mimetype);
-
         try (InputStream inputStream = surrogateFile.getInputStream()) {
+            // uploaded file must be an image
+            var mimetype = getMimetype(inputStream);
+            if (!Strings.CI.contains(mimetype, "image")) {
+                log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
+                throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
+            }
+            request.setMimetype(mimetype);
+
             var path = copyFileToPath(pidString, inputStream);
             request.setFilePath(path);
         } catch (IOException e) {
