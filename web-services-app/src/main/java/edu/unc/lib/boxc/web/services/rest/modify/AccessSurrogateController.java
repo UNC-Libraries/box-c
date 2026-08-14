@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,12 +78,21 @@ public class AccessSurrogateController {
         var request = buildRequest(SET, pidString);
 
         // uploaded file must be an image
-        var mimeType = surrogateFile.getContentType();
-        if (!Strings.CI.contains(mimeType, "image")) {
-            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimeType, pidString);
-            throw new IllegalArgumentException("Mimetype: " + mimeType + " of uploaded file is not an image");
+        var browserMimetype = surrogateFile.getContentType();
+        var fileMimetype = URLConnection.guessContentTypeFromName(surrogateFile.getOriginalFilename());
+        log.error("browser mimetype: {}", browserMimetype);
+        log.error("file mimetype: {}", fileMimetype);
+//        var mimetype = isImage(browserMimetype) ? browserMimetype : fileMimetype;
+//        if (!isImage(mimetype)) {
+//            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
+//            throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
+//        }
+
+        if (!isImage(browserMimetype)) {
+            log.warn("Uploaded file mimetype {} for collection {} is not an image file", browserMimetype, pidString);
+            throw new IllegalArgumentException("Mimetype: " + browserMimetype + " of uploaded file is not an image");
         }
-        request.setMimetype(mimeType);
+        request.setMimetype(browserMimetype);
 
         try (InputStream inputStream = surrogateFile.getInputStream()) {
             var path = copyFileToPath(pidString, inputStream);
@@ -148,6 +158,11 @@ public class AccessSurrogateController {
         request.setPidString(pidString);
         return request;
     }
+
+    private boolean isImage(String mimetype) {
+        return Strings.CI.contains(mimetype, "image");
+    }
+
 
     public void setAccessSurrogateTempPath(Path accessSurrogateTempPath) {
         this.accessSurrogateTempPath = accessSurrogateTempPath;
