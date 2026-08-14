@@ -80,7 +80,7 @@ public class AccessSurrogateController {
 
         // uploaded file must be an image
         var mimetype = getMimetype(surrogateFile.getInputStream());
-        if (Strings.CI.contains(mimetype, "image")) {
+        if (!Strings.CI.contains(mimetype, "image")) {
             log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
             throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
         }
@@ -160,7 +160,6 @@ public class AccessSurrogateController {
             return null;
         }
     }
-
 
     public void setAccessSurrogateTempPath(Path accessSurrogateTempPath) {
         this.accessSurrogateTempPath = accessSurrogateTempPath;
