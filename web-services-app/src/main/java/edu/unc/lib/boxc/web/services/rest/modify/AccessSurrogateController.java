@@ -79,21 +79,12 @@ public class AccessSurrogateController {
         var request = buildRequest(SET, pidString);
 
         // uploaded file must be an image
-        var browserMimetype = surrogateFile.getContentType();
-        var tikaMimetype = getMimetype(surrogateFile.getInputStream());
-        log.error("browser mimetype: {}", browserMimetype);
-        log.error("tika mimetype: {}", tikaMimetype);
-//        var mimetype = isImage(browserMimetype) ? browserMimetype : fileMimetype;
-//        if (!isImage(mimetype)) {
-//            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
-//            throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
-//        }
-
-        if (!isImage(browserMimetype)) {
-            log.warn("Uploaded file mimetype {} for collection {} is not an image file", browserMimetype, pidString);
-            throw new IllegalArgumentException("Mimetype: " + browserMimetype + " of uploaded file is not an image");
+        var mimetype = getMimetype(surrogateFile.getInputStream());
+        if (Strings.CI.contains(mimetype, "image")) {
+            log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
+            throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
         }
-        request.setMimetype(browserMimetype);
+        request.setMimetype(mimetype);
 
         try (InputStream inputStream = surrogateFile.getInputStream()) {
             var path = copyFileToPath(pidString, inputStream);
@@ -160,15 +151,12 @@ public class AccessSurrogateController {
         return request;
     }
 
-    private boolean isImage(String mimetype) {
-        return Strings.CI.contains(mimetype, "image");
-    }
-
     private String getMimetype(InputStream inputStream) {
         Tika tika = new Tika();
         try {
             return tika.detect(inputStream);
         } catch (IOException e) {
+            log.warn("Failed to detect mimetype for uploaded access surrogate file");
             return null;
         }
     }
