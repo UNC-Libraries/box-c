@@ -149,14 +149,9 @@ public class AccessSurrogateController {
         return request;
     }
 
-    private String getMimetype(InputStream inputStream) {
+    private String getMimetype(InputStream inputStream) throws IOException {
         Tika tika = new Tika();
-        try {
-            return tika.detect(inputStream);
-        } catch (IOException e) {
-            log.warn("Failed to detect mimetype for uploaded access surrogate file");
-            return null;
-        }
+        return tika.detect(inputStream);
     }
 
     public void setAccessSurrogateTempPath(Path accessSurrogateTempPath) {
