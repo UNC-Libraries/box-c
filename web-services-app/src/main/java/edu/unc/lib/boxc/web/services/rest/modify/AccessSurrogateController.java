@@ -77,16 +77,15 @@ public class AccessSurrogateController {
         var request = buildRequest(SET, pidString);
 
         try (InputStream inputStream = surrogateFile.getInputStream()) {
+            var path = copyFileToPath(pidString, inputStream);
+            request.setFilePath(path);
             // uploaded file must be an image
-            var mimetype = getMimetype(inputStream);
+            var mimetype = getMimetype(path);
             if (!Strings.CI.contains(mimetype, "image")) {
                 log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
                 throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
             }
             request.setMimetype(mimetype);
-
-            var path = copyFileToPath(pidString, inputStream);
-            request.setFilePath(path);
         } catch (IOException e) {
             log.error("Failed to get submitted file", e);
             result.put("error", e.getMessage());
@@ -149,9 +148,9 @@ public class AccessSurrogateController {
         return request;
     }
 
-    private String getMimetype(InputStream inputStream) throws IOException {
+    private String getMimetype(Path filepath) throws IOException {
         Tika tika = new Tika();
-        return tika.detect(inputStream);
+        return tika.detect(filepath);
     }
 
     public void setAccessSurrogateTempPath(Path accessSurrogateTempPath) {
