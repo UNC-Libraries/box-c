@@ -6,7 +6,10 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +22,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static java.util.Arrays.asList;
 
 /**
  * Controller for handling requests about premis events
@@ -29,6 +37,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 @Controller
 public class PremisEventController {
     private static final Logger log = LoggerFactory.getLogger(PremisEventController.class);
+    private static final Set<Resource> PUBLIC_EVENTS = new HashSet<>(
+            asList(Premis.FilenameChange, Premis.MetadataModification, Premis.Ingestion));
     @Autowired
     private AccessControlService aclService;
     @Autowired
@@ -51,7 +61,19 @@ public class PremisEventController {
         }
         var logModel = object.getPremisLog().getEventsModel();
         var publicEvents = new ArrayList<>();
+        for (Resource resource : PUBLIC_EVENTS) {
+            var formattedEvents = formatEvents(logModel.getResource(resource.getURI()));
+            publicEvents.add(formattedEvents);
+        }
         return new ResponseEntity<>(publicEvents, HttpStatus.OK);
+    }
+
+    private Map<String, String> formatEvents(Resource eventResource) {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("username", eventResource.getProperty(Premis.hasEventRelatedAgentAuthorizor).getString());
+        metadata.put("timestamp", eventResource.getProperty(DC.date).getString());
+        metadata.put("note", eventResource.getProperty(Premis.note).getString());
+        return metadata;
     }
 
     public void setAclService(AccessControlService aclService) {
