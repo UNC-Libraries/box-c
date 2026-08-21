@@ -61,7 +61,7 @@ public class TransactionalFcrepoClientTest {
     public void setup() throws Exception {
         closeable = openMocks(this);
         URI uri = URI.create(TX_URI);
-        FcrepoClientBuilder builder = TransactionalFcrepoClient.client(BASE_URI);
+        FcrepoClientBuilder builder = TransactionalFcrepoClient.client();
         txClient = (TransactionalFcrepoClient) builder.build();
         txManager= new TransactionManager();
         txManager.setClient(txClient);

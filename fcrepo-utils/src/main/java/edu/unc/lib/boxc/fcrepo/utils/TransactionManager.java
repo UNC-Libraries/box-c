@@ -22,8 +22,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 public class TransactionManager {
 
     private static final String CREATE_TX = "fcr:tx";
-    private static final String COMMIT_TX = "fcr:tx/fcr:commit";
-    private static final String ROLLBACK_TX = "fcr:tx/fcr:rollback";
     private FcrepoClient client;
     private BinaryTransferService binaryTransferService;
 
@@ -48,9 +46,8 @@ public class TransactionManager {
     }
 
     protected void commitTransaction(URI txUri) {
-        URI commitTxUri = URI.create(URIUtil.join(txUri, COMMIT_TX));
         // attempts to commit/save a transaction by making request to Fedora
-        try (FcrepoResponse response = getClient().post(commitTxUri).perform()) {
+        try (FcrepoResponse response = getClient().post(txUri).perform()) {
             // gets the full transaction uri from response header
             int statusCode = response.getStatusCode();
             if (statusCode != HttpStatus.SC_NO_CONTENT) {
@@ -65,10 +62,10 @@ public class TransactionManager {
     }
 
     protected void keepTransactionAlive(URI txUri) {
-        URI txUriAlive = URI.create(URIUtil.join(txUri, CREATE_TX));
         // attempts to commit/save a transaction by making request to Fedora
-        try (FcrepoResponse response = getClient().post(txUriAlive).perform()) {
+        try (FcrepoResponse response = getClient().post(txUri).perform()) {
             int statusCode = response.getStatusCode();
+
             if (statusCode != HttpStatus.SC_NO_CONTENT) {
                 throw new FcrepoOperationFailedException(txUri, statusCode,
                         response.getHeaderValues("Status").toString());
@@ -79,9 +76,8 @@ public class TransactionManager {
     }
 
     protected void cancelTransaction(URI txUri) {
-        URI txUriCancel = URI.create(URIUtil.join(txUri, ROLLBACK_TX));
         // attempts to commit/save a transaction by making request to Fedora
-        try (FcrepoResponse response = getClient().post(txUriCancel).perform()) {
+        try (FcrepoResponse response = getClient().post(txUri).perform()) {
             int statusCode = response.getStatusCode();
             if (statusCode != HttpStatus.SC_NO_CONTENT) {
                 throw new FcrepoOperationFailedException(txUri, statusCode,
