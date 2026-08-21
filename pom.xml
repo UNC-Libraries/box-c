@@ -66,7 +66,7 @@
         
         <spring.version>6.2.19</spring.version>
         <spring.security.web.version>6.5.11</spring.security.web.version>
-        <spring.ws.version>4.1.2</spring.ws.version>
+        <spring.ws.version>4.1.4</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
         <mockito.version>5.20.0</mockito.version>
