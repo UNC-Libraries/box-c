@@ -1,46 +1,22 @@
-<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677>
-        a                             <http://id.loc.gov/vocabulary/preservation/eventType/mes>;
-        <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe>
-                <http://dcr-test-bes.libint.unc.edu:8181/fcrepo/rest/agents/software/bxc-deposit-5.0>;
-        <http://purl.org/dc/terms/date>
-                "2021-10-29T18:48:24.498Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
-        <http://w3.org/ns/prov#used>  <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>;
-        <http://www.loc.gov/premis/rdf/v3/note>
-                "SHA1 checksum calculated: e89e3dcad0d3ae19601514cec0c2ee0e85fa7f3f" .
-
-<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>
-        a       <http://www.loc.gov/premis/rdf/v1#Representation> .
-
-<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906>
-        a                             <http://id.loc.gov/vocabulary/preservation/eventType/vir>;
-        <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe>
-                <http://dcr-test-bes.libint.unc.edu:8181/fcrepo/rest/agents/software/clamav-0.99>;
-        <http://purl.org/dc/terms/date>
-                "2021-10-29T18:47:28.570Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
-        <http://w3.org/ns/prov#used>  <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>;
-        <http://www.loc.gov/premis/rdf/v3/note>
-                "File passed pre-ingest scan for viruses";
-        <http://www.loc.gov/premis/rdf/v3/outcome>
-                <http://id.loc.gov/vocabulary/preservation/eventOutcome/suc> .
-
-<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012>
-        a                             <http://id.loc.gov/vocabulary/preservation/eventType/vir>;
-        <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe>
-                <http://example.com/rest/agents/software/clamav-0.99>;
-        <http://purl.org/dc/terms/date>
-                "2021-10-29T18:48:02.292Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
-        <http://w3.org/ns/prov#used>  <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>;
-        <http://www.loc.gov/premis/rdf/v3/note>
-                "File passed pre-ingest scan for viruses";
-        <http://www.loc.gov/premis/rdf/v3/outcome>
-                <http://id.loc.gov/vocabulary/preservation/eventOutcome/suc> .
-
-<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645>
-        a                             <http://id.loc.gov/vocabulary/preservation/eventType/poa>;
-        <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/imp>
-                <http://example.com/rest/agents/person/onyen/snluonguncedu>;
-        <http://purl.org/dc/terms/date>
-                "2026-08-17T17:15:06.119Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
-        <http://w3.org/ns/prov#used>  <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5>;
-        <http://www.loc.gov/premis/rdf/v3/note>
-                "Patron roles for item changed from:\nNo roles assigned\nTo new roles:\nauthenticated: http://cdr.unc.edu/definitions/acl#none\neveryone: http://cdr.unc.edu/definitions/acl#none" .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677> <http://w3.org/ns/prov#generated> <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.loc.gov/vocabulary/preservation/eventType/mes> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677> <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe> <http://example.com/rest/agents/software/bxc-deposit-5.0> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677> <http://purl.org/dc/terms/date> "2021-10-29T18:48:24.498Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533304498105362680874677> <http://www.loc.gov/premis/rdf/v3/note> "SHA1 checksum calculated: e89e3dcad0d3ae19601514cec0c2ee0e85fa7f3f" .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.loc.gov/premis/rdf/v1#Representation> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906> <http://w3.org/ns/prov#used> <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.loc.gov/vocabulary/preservation/eventType/vir> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906> <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe> <http://example.com/rest/agents/software/clamav-0.99> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906> <http://purl.org/dc/terms/date> "2021-10-29T18:47:28.570Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533248570105306752538906> <http://www.loc.gov/premis/rdf/v3/note> "File passed pre-ingest scan for viruses" .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://w3.org/ns/prov#used> <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.loc.gov/vocabulary/preservation/eventType/vir> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe> <http://example.com/rest/agents/software/clamav-0.99> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://purl.org/dc/terms/date> "2021-10-29T18:48:02.292Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://www.loc.gov/premis/rdf/v3/note> "File passed pre-ingest scan for viruses" .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event1635533282292105340474837012> <http://www.loc.gov/premis/rdf/v3/outcome> <http://id.loc.gov/vocabulary/preservation/eventOutcome/suc> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645> <http://w3.org/ns/prov#used> <http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://id.loc.gov/vocabulary/preservation/eventType/poa> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645> <http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/imp> <http://example.com/rest/agents/person/onyen/snluonguncedu> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645> <http://purl.org/dc/terms/date> "2026-08-17T17:15:06.119Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.com/rest/content/e2/84/7b/41/e2847b41-e0ee-45bb-bdb3-a97a6241bee5/event17869869061141058738513932645> <http://www.loc.gov/premis/rdf/v3/note> "Patron roles for item changed from:\nNo roles assigned\nTo new roles:\nauthenticated: http://cdr.unc.edu/definitions/acl#none\neveryone: http://cdr.unc.edu/definitions/acl#none" .

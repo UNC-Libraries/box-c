@@ -9,7 +9,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +41,7 @@ import static java.util.Arrays.asList;
 public class PremisEventController {
     private static final Logger log = LoggerFactory.getLogger(PremisEventController.class);
     private static final Set<Resource> PUBLIC_EVENTS = new HashSet<>(
-            asList(Premis.FilenameChange, Premis.MetadataModification, Premis.Ingestion));
+            asList(Premis.FilenameChange, Premis.Modification, Premis.Ingestion));
     @Autowired
     private AccessControlService aclService;
     @Autowired
@@ -60,20 +63,39 @@ public class PremisEventController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         var logModel = object.getPremisLog().getEventsModel();
-        var publicEvents = new ArrayList<>();
-        for (Resource resource : PUBLIC_EVENTS) {
-            var formattedEvents = formatEvents(logModel.getResource(resource.getURI()));
-            publicEvents.add(formattedEvents);
+        List<Map<String, String>> publicEvents = new ArrayList<>();
+        for (Resource eventType : PUBLIC_EVENTS) {
+            var events = logModel.listResourcesWithProperty(RDF.type, eventType);
+            while (events.hasNext()) {
+                var formattedEvent = formatEvent(events.next());
+                publicEvents.add(formattedEvent);
+            }
         }
+        // sort in chronological order by timestamp
+        publicEvents.sort(Comparator.comparing(m -> m.get("timestamp")));
+
         return new ResponseEntity<>(publicEvents, HttpStatus.OK);
     }
 
-    private Map<String, String> formatEvents(Resource eventResource) {
+    private Map<String, String> formatEvent(Resource eventResource) {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("username", eventResource.getProperty(Premis.hasEventRelatedAgentAuthorizor).getString());
-        metadata.put("timestamp", eventResource.getProperty(DC.date).getString());
+        metadata.put("username", getUsername(eventResource));
+        metadata.put("timestamp", eventResource.getProperty(DCTerms.date).getLiteral().getValue().toString());
         metadata.put("note", eventResource.getProperty(Premis.note).getString());
         return metadata;
+    }
+
+    private String getUsername(Resource eventResource) {
+        var authorizer = eventResource.getProperty(Premis.hasEventRelatedAgentAuthorizor);
+        if (authorizer != null) {
+            return authorizer.getObject().toString();
+        }
+
+        var implementor = eventResource.getProperty(Premis.hasEventRelatedAgentImplementor);
+        if (implementor != null) {
+            return implementor.getObject().toString();
+        }
+        return null;
     }
 
     public void setAclService(AccessControlService aclService) {

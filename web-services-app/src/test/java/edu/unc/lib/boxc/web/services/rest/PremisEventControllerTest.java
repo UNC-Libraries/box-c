@@ -12,7 +12,9 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +23,11 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import picocli.CommandLine;
 
 import java.io.FileInputStream;
-import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -48,6 +50,8 @@ public class PremisEventControllerTest {
     private PremisLog premisLog;
     @Mock
     private Model eventsModel;
+    @Mock
+    private Resource resource;
     @InjectMocks
     private PremisEventController controller;
     private MockMvc mockMvc;
@@ -62,6 +66,7 @@ public class PremisEventControllerTest {
 
         when(fileObject.getPremisLog()).thenReturn(premisLog);
         when(premisLog.getEventsModel()).thenReturn(eventsModel);
+        when(eventsModel.getResource(any(String.class))).thenReturn(resource);
     }
 
     @AfterEach
@@ -95,22 +100,42 @@ public class PremisEventControllerTest {
         when(repositoryObjectLoader.getRepositoryObject(eq(OBJECT_PID))).thenReturn(fileObject);
         var inputStream = new FileInputStream("src/test/resources/rdf/premis-events-non-public.rdf");
         var model = ModelFactory.createDefaultModel();
-        eventsModel = model.read(inputStream, null, Lang.NTRIPLES.getName());
+        var readModel = model.read(inputStream, null, Lang.NTRIPLES.getName());
+        when(premisLog.getEventsModel()).thenReturn(readModel);
 
         var result = mockMvc.perform(get("/premisEvents/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        assertTrue(respJson.isEmpty());
     }
 
     @Test
     public void getPremisEventsSuccessTest() throws Exception {
         when(repositoryObjectLoader.getRepositoryObject(eq(OBJECT_PID))).thenReturn(fileObject);
+        var inputStream = new FileInputStream("src/test/resources/rdf/premis-events.rdf");
+        var model = ModelFactory.createDefaultModel();
+        var readModel = model.read(inputStream, null, Lang.NTRIPLES.getName());
+        when(premisLog.getEventsModel()).thenReturn(readModel);
+
         var result = mockMvc.perform(get("/premisEvents/" + OBJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var firstNode = respJson.get(0);
+        var lastNode = respJson.get(4);
+
+        assertEquals(5, respJson.size());
+        assertTrue(getDateTime(firstNode.get("timestamp").textValue())
+                .isBefore(getDateTime(lastNode.get("timestamp").textValue())));
+        assertEquals("Object migrated as a part of the CONTENTdm to Box-c 5 migration", firstNode.get("note").textValue());
+        assertEquals("http://example.com/rest/agents/person/onyen/bbpennel", firstNode.get("username").textValue());
+        assertEquals("original_file restored to previous version dated 2026-08-19T20:46:47.006Z", lastNode.get("note").textValue());
+    }
+
+    private DateTime getDateTime(String dateString) {
+        return DateTime.parse(dateString);
     }
 }
