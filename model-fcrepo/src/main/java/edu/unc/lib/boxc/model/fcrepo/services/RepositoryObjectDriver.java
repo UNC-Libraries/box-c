@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.NTRIPLES_MIMETYPE;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.IOException;
@@ -10,8 +11,8 @@ import java.util.List;
 
 import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
-import edu.unc.lib.boxc.model.fcrepo.sparql.SparqlListingHelper;
 import org.apache.http.HttpStatus;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -19,6 +20,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.system.StreamRDFBase;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -39,7 +42,6 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
@@ -59,7 +61,14 @@ public class RepositoryObjectDriver {
 
     private FcrepoClient client;
 
-    private SparqlQueryService sparqlQueryService;
+    /**
+     * URI of the fcrepo Prefer header value indicating that inbound references to the requested
+     * resource should be included in the response.
+     */
+    private static final URI PREFER_INBOUND_REFERENCES = URI.create(
+            "http://fedora.info/definitions/fcrepo#PreferInboundReferences");
+    private static final URI PREFER_SERVER_MANAGED = URI.create(
+            "http://fedora.info/definitions/fcrepo#ServerManaged");
 
     protected PIDMinter pidMinter;
 
@@ -196,9 +205,49 @@ public class RepositoryObjectDriver {
      */
     public List<PID> listRelated(RepositoryObject obj, Property relation) {
         PID pid = obj.getPid();
-        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                relation, pid.getRepositoryPath());
-        return SparqlListingHelper.listPids(sparqlQueryService, queryString);
+        URI metadataUri = obj.getMetadataUri();
+        String selfUri = pid.getRepositoryUri().toString();
+
+        // Ask fedora to include triples from other resources which reference this resource,
+        // in addition to this resource's own properties.
+        try (FcrepoResponse response = getClient().get(metadataUri)
+                .accept(NTRIPLES_MIMETYPE)
+                .preferRepresentation(List.of(PREFER_INBOUND_REFERENCES), List.of(PREFER_SERVER_MANAGED))
+                .perform()) {
+            return extractRelatedPids(response.getBody(), relation, selfUri);
+        } catch (IOException e) {
+            throw new FedoraException("Failed to list objects related to " + pid + " by " + relation, e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
+
+    /**
+     * Streams the n-triples response body, extracting the PIDs of subjects for any triples
+     * which have the given predicate and whose object is the resource identified by selfUri.
+     * The response is parsed as a stream rather than loaded into a Model, since it may include
+     * a large number of inbound triples.
+     */
+    private List<PID> extractRelatedPids(InputStream bodyStream, Property relation, String selfUri) {
+        List<PID> relatedPids = new ArrayList<>();
+        String relationUri = relation.getURI();
+
+        RDFParser.source(bodyStream)
+                .lang(Lang.NTRIPLES)
+                .parse(new StreamRDFBase() {
+                    @Override
+                    public void triple(Triple triple) {
+                        if (!triple.getObject().isURI() || !triple.getSubject().isURI()) {
+                            return;
+                        }
+                        if (relationUri.equals(triple.getPredicate().getURI())
+                                && selfUri.equals(triple.getObject().getURI())) {
+                            relatedPids.add(PIDs.get(triple.getSubject().getURI()));
+                        }
+                    }
+                });
+
+        return relatedPids;
     }
 
     /**
@@ -289,14 +338,6 @@ public class RepositoryObjectDriver {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repositoryObjectLoader = repoObjLoader;
-    }
-
-    public SparqlQueryService getSparqlQueryService() {
-        return sparqlQueryService;
-    }
-
-    public void setSparqlQueryService(SparqlQueryService SparqlQueryService) {
-        this.sparqlQueryService = SparqlQueryService;
     }
 
     /**
