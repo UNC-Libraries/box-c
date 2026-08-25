@@ -8,9 +8,11 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +69,7 @@ public class PremisEventController {
         for (Resource eventType : PUBLIC_EVENTS) {
             var events = logModel.listResourcesWithProperty(RDF.type, eventType);
             while (events.hasNext()) {
-                var formattedEvent = formatEvent(events.next());
+                var formattedEvent = formatEvent(events.next(), logModel);
                 publicEvents.add(formattedEvent);
             }
         }
@@ -77,25 +79,42 @@ public class PremisEventController {
         return new ResponseEntity<>(publicEvents, HttpStatus.OK);
     }
 
-    private Map<String, String> formatEvent(Resource eventResource) {
+    private Map<String, String> formatEvent(Resource eventResource, Model model) {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("username", getUsername(eventResource));
+        metadata.put("username", getUsername(eventResource, model));
         metadata.put("timestamp", eventResource.getProperty(DCTerms.date).getLiteral().getValue().toString());
         metadata.put("note", eventResource.getProperty(Premis.note).getString());
         return metadata;
     }
 
-    private String getUsername(Resource eventResource) {
+    private String getUsername(Resource eventResource, Model model) {
+        String unformattedUsername = null;
+        String formattedUsername;
         var authorizer = eventResource.getProperty(Premis.hasEventRelatedAgentAuthorizor);
         if (authorizer != null) {
-            return authorizer.getObject().toString();
+            unformattedUsername = authorizer.getObject().toString();
+        } else {
+            var implementor = eventResource.getProperty(Premis.hasEventRelatedAgentImplementor);
+            if (implementor != null) {
+                unformattedUsername = implementor.getObject().toString();
+            }
         }
 
-        var implementor = eventResource.getProperty(Premis.hasEventRelatedAgentImplementor);
-        if (implementor != null) {
-            return implementor.getObject().toString();
+        if (unformattedUsername == null) {
+            return null;
         }
-        return null;
+
+        // if it contains a # it is a reference to a person resource
+        // http://example.com/rest/content/path/event1635532842876104774973909727#authorizingAgent-bbpennel
+        if (unformattedUsername.contains("#")) {
+            var resource = model.getResource(unformattedUsername);
+            formattedUsername = resource.getProperty(FOAF.name).getString();
+        } else {
+            // username looks like http://example.com/rest/agents/person/onyen/bbpennel
+            var stringArray = unformattedUsername.split("/");
+            formattedUsername = stringArray[stringArray.length - 1];
+        }
+        return formattedUsername;
     }
 
     public void setAclService(AccessControlService aclService) {

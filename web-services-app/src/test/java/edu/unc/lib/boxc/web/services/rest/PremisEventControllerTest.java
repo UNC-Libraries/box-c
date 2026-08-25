@@ -131,8 +131,27 @@ public class PremisEventControllerTest {
         assertTrue(getDateTime(firstNode.get("timestamp").textValue())
                 .isBefore(getDateTime(lastNode.get("timestamp").textValue())));
         assertEquals("Object migrated as a part of the CONTENTdm to Box-c 5 migration", firstNode.get("note").textValue());
-        assertEquals("http://example.com/rest/agents/person/onyen/bbpennel", firstNode.get("username").textValue());
+        assertEquals("bbpennel", firstNode.get("username").textValue());
         assertEquals("original_file restored to previous version dated 2026-08-19T20:46:47.006Z", lastNode.get("note").textValue());
+    }
+
+    @Test
+    public void getPremisEventsAuthorizingAgentTest() throws Exception {
+        when(repositoryObjectLoader.getRepositoryObject(eq(OBJECT_PID))).thenReturn(fileObject);
+        var inputStream = new FileInputStream("src/test/resources/rdf/premis-events-auth-agent.rdf");
+        var model = ModelFactory.createDefaultModel();
+        var readModel = model.read(inputStream, null, Lang.NTRIPLES.getName());
+        when(premisLog.getEventsModel()).thenReturn(readModel);
+
+        var result = mockMvc.perform(get("/premisEvents/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var firstNode = respJson.get(0);
+
+        assertEquals(1, respJson.size());
+        assertEquals("bbpennel", firstNode.get("username").textValue());
     }
 
     private DateTime getDateTime(String dateString) {
