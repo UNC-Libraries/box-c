@@ -34,10 +34,9 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 public class TransactionalFcrepoClientTest {
 
     private static final String BASE_URI = "http://localhost:48085/rest/";
-    private static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
+    private static final String TX_URI = "http://localhost:48085/rest/fcr:tx/99b58d30-06f5-477b-a44c-d614a9049d38";
     private static final String RESC_URI = "http://localhost:48085/rest/some/resource/id";
-    private static final String REQUEST_URI =
-            "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38/some/resource/id";
+    private static final String REQUEST_URI = "http://localhost:48085/rest/fcr:tx";
 
     private TransactionalFcrepoClient txClient;
     private FedoraTransaction tx;
@@ -88,7 +87,7 @@ public class TransactionalFcrepoClientTest {
     @Test
     public void executeRequestWithTxTest() throws Exception {
         URI  rescUri = URI.create(RESC_URI);
-        assertFalse(rescUri.toString().contains("tx:"));
+        assertFalse(rescUri.toString().contains("fcr:tx"));
         assertNotEquals(rescUri.toString(), REQUEST_URI);
 
         try (FcrepoResponse response = txClient.executeRequest(rescUri, request)) {
@@ -97,7 +96,7 @@ public class TransactionalFcrepoClientTest {
             tx.close();
         }
 
-        assertTrue(rescUri.toString().contains("tx:"));
+        assertTrue(rescUri.toString().contains("fcr:tx"));
         assertEquals(rescUri.toString(), REQUEST_URI);
     }
 

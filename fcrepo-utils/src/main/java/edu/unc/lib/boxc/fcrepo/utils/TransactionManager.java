@@ -47,7 +47,7 @@ public class TransactionManager {
 
     protected void commitTransaction(URI txUri) {
         // attempts to commit/save a transaction by making request to Fedora
-        try (FcrepoResponse response = getClient().post(txUri).perform()) {
+        try (FcrepoResponse response = getClient().put(txUri).perform()) {
             // gets the full transaction uri from response header
             int statusCode = response.getStatusCode();
             if (statusCode != HttpStatus.SC_NO_CONTENT) {
@@ -77,7 +77,7 @@ public class TransactionManager {
 
     protected void cancelTransaction(URI txUri) {
         // attempts to commit/save a transaction by making request to Fedora
-        try (FcrepoResponse response = getClient().post(txUri).perform()) {
+        try (FcrepoResponse response = getClient().delete(txUri).perform()) {
             int statusCode = response.getStatusCode();
             if (statusCode != HttpStatus.SC_NO_CONTENT) {
                 throw new FcrepoOperationFailedException(txUri, statusCode,

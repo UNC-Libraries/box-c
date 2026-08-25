@@ -120,10 +120,10 @@ public class ContentPathFactoryImpl implements ContentPathFactory {
         @Override
         public PID load(PID pid) {
             try (FcrepoResponse resp = fcrepoClient.get(pid.getRepositoryUri())
-                    .preferMinimal()
+                    .accept("text/turtle")
                     .perform()) {
                 Model model = RDFModelUtil.createModel(resp.getBody());
-                Resource resc = model.getResource(pid.getRepositoryPath());
+                Resource resc = model.getResource(pid.getRepositoryUri().toString());
                 Statement memberStmt = resc.getProperty(PcdmModels.memberOf);
                 if (memberStmt == null) {
                     throw new OrphanedObjectException("Object " + pid + " is not the member of any object");

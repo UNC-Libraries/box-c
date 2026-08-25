@@ -12,7 +12,7 @@
     </parent>
     
     <name>Fedora Clients</name>
-    <description>This project contains a Spring web services implementation of the Fedora Commons 3.0 API-M and API-A</description>
+    <description>This project contains a Spring web services implementation of the Fedora Commons 6.0 API-M and API-A</description>
     
     <build>
         <testResources>

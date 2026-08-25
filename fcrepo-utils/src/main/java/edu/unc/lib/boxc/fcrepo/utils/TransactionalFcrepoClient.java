@@ -39,12 +39,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     @Override
     public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
             throws FcrepoOperationFailedException {
-        if (hasTxId()) {
+        if (hasTxId() && !uri.toString().contains("/fcr:tx")) {
             URI txUri = FedoraTransaction.txUriThread.get();
-
-            if (txUri != null) {
-                request.setHeader("Atomic-ID", txUri.toString());
-            }
+            request.setHeader("Atomic-ID", txUri.toString());
         }
 
         return super.executeRequest(uri, request);
