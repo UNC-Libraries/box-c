@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.*;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -226,7 +227,8 @@ public class CorrectMimetypesServiceIT {
     }
 
     private void assertOriginalFileMimetype(FileObject fileObject, String expectedMimetype) {
-        BinaryObject originalFile = fileObject.getOriginalFile();
+        PID originalPid = DatastreamPids.getOriginalFilePid(fileObject.getPid());
+        BinaryObject originalFile = repoObjLoader.getBinaryObject(originalPid);
         assertEquals(expectedMimetype, originalFile.getMimetype());
     }
 }
