@@ -49,7 +49,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">

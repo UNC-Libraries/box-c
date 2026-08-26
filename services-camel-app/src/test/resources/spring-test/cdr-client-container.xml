@@ -71,7 +71,6 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
     
@@ -80,6 +79,10 @@
     
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl">
         <constructor-arg ref="queryModel" />
+    </bean>
+    
+    <bean id="pcdmMembershipService" class="edu.unc.lib.boxc.model.fcrepo.services.PcdmMembershipService">
+        <property name="client" ref="fcrepoClient" />
     </bean>
     
     <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">

@@ -14,8 +14,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,14 +21,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.indexing.solr.test.MockFedoraMembershipHelper;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
-import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 
 /**
@@ -55,9 +51,8 @@ public class RecursiveTreeIndexerTest {
     @Captor
     protected ArgumentCaptor<PID> pidCaptor;
 
-    protected Model sparqlModel;
+    protected MockFedoraMembershipHelper membershipHelper;
     protected RecursiveTreeIndexer treeIndexer;
-    protected SparqlQueryService sparqlQueryService;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -65,14 +60,13 @@ public class RecursiveTreeIndexerTest {
 
         containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
-        sparqlModel = ModelFactory.createDefaultModel();
-        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
-
-        indexTriples(containerObj);
+        membershipHelper = new MockFedoraMembershipHelper();
+        membershipHelper.addObjects(containerObj);
 
         indexer = new RecursiveTreeIndexer();
         indexer.setIndexingMessageSender(messageSender);
-        indexer.setSparqlQueryService(sparqlQueryService);
+        indexer.setMembershipService(membershipHelper.mockMembershipService());
+        indexer.setClient(membershipHelper.mockFcrepoClient());
     }
 
     @AfterEach
@@ -114,7 +108,7 @@ public class RecursiveTreeIndexerTest {
         addMembers(containerObj, child1Obj, child2Obj);
         addMembers(child1Obj, fileObj);
 
-        indexTriples(containerObj, child1Obj, fileObj, child2Obj);
+        membershipHelper.addObjects(containerObj, child1Obj, fileObj, child2Obj);
 
         indexer.index(containerObj, ADD, USER);
 
@@ -126,11 +120,5 @@ public class RecursiveTreeIndexerTest {
         assertTrue(pids.contains(child1Obj.getPid()));
         assertTrue(pids.contains(fileObj.getPid()));
         assertTrue(pids.contains(child2Obj.getPid()));
-    }
-
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
-            sparqlModel.add(obj.getResource().getModel());
-        }
     }
 }
