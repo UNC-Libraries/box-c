@@ -15,14 +15,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
