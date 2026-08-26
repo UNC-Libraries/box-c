@@ -10,7 +10,6 @@ import java.util.List;
 
 import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
-import edu.unc.lib.boxc.model.fcrepo.sparql.SparqlListingHelper;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -39,7 +38,6 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
@@ -58,8 +56,6 @@ public class RepositoryObjectDriver {
     private RepositoryObjectLoader repositoryObjectLoader;
 
     private FcrepoClient client;
-
-    private SparqlQueryService sparqlQueryService;
 
     protected PIDMinter pidMinter;
 
@@ -196,9 +192,8 @@ public class RepositoryObjectDriver {
      */
     public List<PID> listRelated(RepositoryObject obj, Property relation) {
         PID pid = obj.getPid();
-        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                relation, pid.getRepositoryPath());
-        return SparqlListingHelper.listPids(sparqlQueryService, queryString);
+        return FedoraRelationListingHelper.listSubjectsOfInboundRelations(
+                getClient(), obj.getMetadataUri(), pid.getRepositoryUri(), relation);
     }
 
     /**
@@ -289,14 +284,6 @@ public class RepositoryObjectDriver {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repositoryObjectLoader = repoObjLoader;
-    }
-
-    public SparqlQueryService getSparqlQueryService() {
-        return sparqlQueryService;
-    }
-
-    public void setSparqlQueryService(SparqlQueryService SparqlQueryService) {
-        this.sparqlQueryService = SparqlQueryService;
     }
 
     /**

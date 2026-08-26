@@ -17,16 +17,16 @@ import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -43,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -67,8 +68,6 @@ public class RepositoryObjectDriverTest {
     private PIDMinter pidMinter;
     private PID pid;
     private PID parentPid;
-    protected Model sparqlModel;
-    protected SparqlQueryService sparqlQueryService;
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
@@ -82,13 +81,10 @@ public class RepositoryObjectDriverTest {
         pidMinter = new RepositoryPIDMinter();
         pid = pidMinter.mintContentPid();
         parentPid = pidMinter.mintContentPid();
-        sparqlModel = ModelFactory.createDefaultModel();
-        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
         repositoryObjectDriver = new RepositoryObjectDriver();
         repositoryObjectDriver.setClient(fcrepoClient);
         repositoryObjectDriver.setPidMinter(pidMinter);
         repositoryObjectDriver.setRepositoryObjectLoader(repoObjLoader);
-        repositoryObjectDriver.setSparqlQueryService(sparqlQueryService);
     }
 
     @AfterEach
@@ -405,35 +401,60 @@ public class RepositoryObjectDriverTest {
     }
 
     @Test
-    public void listRelatedTest() {
+    public void listRelatedTest() throws Exception {
         var object = mock(ContentObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
+        var uri = URI.create("good/metadata");
         when(object.getPid()).thenReturn(pid);
-        when(object.getResource()).thenReturn(resource);
+        when(object.getMetadataUri()).thenReturn(uri);
 
         var relatedObjectPid = pidMinter.mintContentPid();
-        var relatedResource = sparqlModel.getResource(relatedObjectPid.getRepositoryPath());
-
         var relation = PcdmModels.hasRelatedObject;
-        relatedResource.addProperty(relation, resource);
+
+        var model = ModelFactory.createDefaultModel();
+        var relatedResource = model.getResource(relatedObjectPid.getRepositoryPath());
+        var selfResource = model.getResource(pid.getRepositoryPath());
+        relatedResource.addProperty(relation, selfResource);
+        // Add a triple with a non-matching predicate, to ensure it is filtered out
+        relatedResource.addProperty(PcdmModels.memberOf, selfResource);
+
+        mockNTriplesResponse(uri, model);
 
         assertEquals(List.of(relatedObjectPid), repositoryObjectDriver.listRelated(object, relation));
     }
 
     @Test
-    public void listMembersTest() {
+    public void listMembersTest() throws Exception {
         var object = mock(ContentObject.class);
-        var resource = sparqlModel.getResource(pid.getRepositoryPath());
+        var uri = URI.create("good/metadata");
         when(object.getPid()).thenReturn(pid);
-        when(object.getResource()).thenReturn(resource);
+        when(object.getMetadataUri()).thenReturn(uri);
 
         var memberObjectPid = pidMinter.mintContentPid();
-        var memberResource = sparqlModel.getResource(memberObjectPid.getRepositoryPath());
-
         var relation = PcdmModels.memberOf;
-        memberResource.addProperty(relation, resource);
+
+        var model = ModelFactory.createDefaultModel();
+        var memberResource = model.getResource(memberObjectPid.getRepositoryPath());
+        var selfResource = model.getResource(pid.getRepositoryPath());
+        memberResource.addProperty(relation, selfResource);
+
+        mockNTriplesResponse(uri, model);
 
         assertEquals(List.of(memberObjectPid), repositoryObjectDriver.listMembers(object));
+    }
+
+    private void mockNTriplesResponse(URI uri, Model model) throws Exception {
+        var response = mock(FcrepoResponse.class);
+        var get = mock(GetBuilder.class);
+
+        var out = new java.io.ByteArrayOutputStream();
+        RDFDataMgr.write(out, model, Lang.NTRIPLES);
+        var inputStream = new ByteArrayInputStream(out.toByteArray());
+
+        when(fcrepoClient.get(eq(uri))).thenReturn(get);
+        when(get.accept(any())).thenReturn(get);
+        when(get.preferRepresentation(any(), any())).thenReturn(get);
+        when(get.perform()).thenReturn(response);
+        when(response.getBody()).thenReturn(inputStream);
     }
 }
 

@@ -7,12 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +18,8 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.api.services.MembershipService;
+import edu.unc.lib.boxc.model.fcrepo.services.FedoraRelationListingHelper;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 
@@ -37,7 +34,9 @@ public class RecursiveTreeIndexer {
 
     private IndexingMessageSender messageSender;
 
-    private SparqlQueryService queryService;
+    private MembershipService membershipService;
+
+    private FcrepoClient client;
 
     private Set<String> CONTAINER_TYPES = new HashSet<>(Arrays.asList(Cdr.AdminUnit.getURI(),
             Cdr.Collection.getURI(),
@@ -91,52 +90,29 @@ public class RecursiveTreeIndexer {
      */
     public void indexChildren(PID parentPid, IndexingActionType actionType, String userid)
             throws IndexingException {
-        Map<String, Set<String>> childToTypes = getMembers(parentPid);
+        Map<PID, Set<String>> childToTypes = getMembers(parentPid);
 
         if (childToTypes.size() == 0) {
             return;
         }
         log.debug("Queuing {} children of {} for indexing", childToTypes.size(), parentPid);
         childToTypes.forEach((childPid, types) -> {
-            index(PIDs.get(childPid), types, actionType, userid);
+            index(childPid, types, actionType, userid);
         });
     }
 
-    private final static String CHILDREN_QUERY =
-            "select ?pid ?rdfType"
-            + " where {"
-                + " ?pid <%1$s> <%2$s> ."
-                + " ?pid <%3$s> ?rdfType . }";
+    /**
+     * Retrieves the PIDs of the direct members of parentPid, along with the rdf:type(s) of each
+     * member. Types are retrieved via a lightweight HEAD request per member, rather than loading
+     * the full RepositoryObject/model for each child.
+     */
+    private Map<PID, Set<String>> getMembers(PID parentPid) {
+        var childPids = membershipService.listMembers(parentPid);
 
-    private Map<String, Set<String>> getMembers(PID parentPid) {
-        String queryString = String.format(CHILDREN_QUERY,
-                PcdmModels.memberOf, parentPid.getRepositoryPath(), RDF.type, Cdr.NS);
-
-        log.debug("Performing member query:\n{}", queryString);
-
-        Map<String, Set<String>> childToTypes = new HashMap<>();
-
-        try (QueryExecution qexec = queryService.executeQuery(queryString)) {
-            ResultSet results = qexec.execSelect();
-
-            while (results.hasNext()) {
-                QuerySolution soln = results.nextSolution();
-                Resource pidResc = soln.getResource("pid");
-                Resource type = soln.getResource("rdfType");
-
-                if (pidResc == null || type == null) {
-                    continue;
-                }
-
-                String pid = pidResc.getURI();
-
-                Set<String> types = childToTypes.get(pid);
-                if (types == null) {
-                    types = new HashSet<>();
-                    childToTypes.put(pid, types);
-                }
-                types.add(type.getURI());
-            }
+        Map<PID, Set<String>> childToTypes = new HashMap<>();
+        for (PID childPid : childPids) {
+            Set<String> types = FedoraRelationListingHelper.listTypes(client, childPid.getRepositoryUri());
+            childToTypes.put(childPid, types);
         }
 
         return childToTypes;
@@ -149,7 +125,11 @@ public class RecursiveTreeIndexer {
         this.messageSender = messageSender;
     }
 
-    public void setSparqlQueryService(SparqlQueryService queryService) {
-        this.queryService = queryService;
+    public void setMembershipService(MembershipService membershipService) {
+        this.membershipService = membershipService;
+    }
+
+    public void setClient(FcrepoClient client) {
+        this.client = client;
     }
 }

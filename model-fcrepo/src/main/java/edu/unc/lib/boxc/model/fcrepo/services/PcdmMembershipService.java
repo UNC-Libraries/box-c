@@ -3,9 +3,9 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
-import edu.unc.lib.boxc.model.fcrepo.sparql.SparqlListingHelper;
+import org.fcrepo.client.FcrepoClient;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -14,16 +14,15 @@ import java.util.List;
  * @author bbpennel
  */
 public class PcdmMembershipService implements MembershipService {
-    private SparqlQueryService sparqlQueryService;
+    private FcrepoClient client;
 
     @Override
     public List<PID> listMembers(PID parentPid) {
-        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                PcdmModels.memberOf.getURI(), parentPid.getRepositoryPath());
-        return SparqlListingHelper.listPids(sparqlQueryService, queryString);
+        URI parentUri = parentPid.getRepositoryUri();
+        return FedoraRelationListingHelper.listSubjectsOfInboundRelations(client, parentUri, parentUri, PcdmModels.memberOf);
     }
 
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
+    public void setClient(FcrepoClient client) {
+        this.client = client;
     }
 }

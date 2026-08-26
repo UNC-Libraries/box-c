@@ -69,7 +69,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">

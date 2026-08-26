@@ -74,7 +74,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
@@ -565,7 +564,7 @@
     </bean>
 
     <bean id="pcdmMembershipService" class="edu.unc.lib.boxc.model.fcrepo.services.PcdmMembershipService">
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="client" ref="fcrepoClient" />
     </bean>
 
     <bean id="orderValidatorFactory" class="edu.unc.lib.boxc.operations.impl.order.OrderValidatorFactory">
