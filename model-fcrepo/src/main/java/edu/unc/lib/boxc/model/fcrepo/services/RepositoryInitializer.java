@@ -4,6 +4,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ConflictException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -57,7 +58,12 @@ public class RepositoryInitializer {
         Resource resc = model.createResource(containerString);
         resc.addProperty(DC.title, title);
 
-        objFactory.createOrTransformObject(containerUri, model);
+        try {
+            objFactory.createOrTransformObject(containerUri, model);
+        } catch (ConflictException e) {
+            // Fedora 6 may return 409 if another test/init already created it
+            log.debug("Container already exists: {}", containerUri);
+        }
 
         return containerUri;
     }
