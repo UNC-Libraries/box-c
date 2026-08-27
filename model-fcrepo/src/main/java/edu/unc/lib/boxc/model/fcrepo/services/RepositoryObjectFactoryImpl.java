@@ -624,7 +624,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      */
     @Override
     public void createRelationship(RepositoryObject subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryUri().toString(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
         subject.shouldRefresh();
