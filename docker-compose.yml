@@ -9,7 +9,7 @@ services:
     environment:
       ANONYMOUS_LOGIN: true
   fedora:
-    image: fcrepo/fcrepo:6.0.0-SNAPSHOT
+    image: fcrepo/fcrepo:7.0-tomcat10
     ports:
       - "48085:8080"
     volumes:
