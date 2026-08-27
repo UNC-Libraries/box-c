@@ -132,7 +132,7 @@ public class FullDescriptionUpdateServiceTest {
         assertEquals(FULL_DESCRIPTION_TEXT, IOUtils.toString(capturedVersion.getContentStream(), StandardCharsets.UTF_8));
 
         // Verify relationship creation
-        var expectedRelationObj = createResource(fullDescPid.getRepositoryPath());
+        var expectedRelationObj = createResource(fullDescPid.getRepositoryUri().toString());
         verify(repositoryObjectFactory).createRelationship(eq(fileObject), eq(Cdr.hasFullDescription), eq(expectedRelationObj));
 
         // Verify operation message

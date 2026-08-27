@@ -119,7 +119,7 @@ public class PatronAccessAssignmentService {
             }
 
             // Validate that the access control assignments are allowed
-            accessValidator.validate(updated.getResource(repoObj.getPid().getRepositoryPath()));
+            accessValidator.validate(updated.getResource(repoObj.getPid().getRepositoryUri().toString()));
 
             repositoryObjectFactory.createOrTransformObject(repoObj.getUri(), updated);
 
@@ -153,7 +153,7 @@ public class PatronAccessAssignmentService {
         AgentPrincipals agent = request.getAgent();
 
         // Update a copy of the model for this object
-        Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
+        Resource resc = model.getResource(repoObj.getPid().getRepositoryUri().toString());
 
         // Do not proceed if there are no changes to role assignments
         if (!hasRoleChanges(resc, assignments)) {
@@ -232,7 +232,7 @@ public class PatronAccessAssignmentService {
                     + repoObj.getPid().getId());
         }
 
-        Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
+        Resource resc = model.getResource(repoObj.getPid().getRepositoryUri().toString());
 
         String existingEmbargo = null;
         // Remove any existing embargoes
@@ -408,7 +408,7 @@ public class PatronAccessAssignmentService {
         }
 
         public String getTarget() {
-            return target.getRepositoryPath();
+            return target.getRepositoryUri().toString();
         }
 
         public void setTargetPid(PID target) {

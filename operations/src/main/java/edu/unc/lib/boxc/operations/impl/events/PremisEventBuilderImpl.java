@@ -48,7 +48,7 @@ public class PremisEventBuilderImpl implements PremisEventBuilder {
         Resource premisObjResc = getResource();
 
         Model logModel = getModel();
-        Resource eventSubjectResc = logModel.getResource(eventSubject.getRepositoryPath());
+        Resource eventSubjectResc = logModel.getResource(eventSubject.getRepositoryUri().toString());
         if (Premis.Ingestion.equals(eventType)
                 || Premis.Creation.equals(eventType)) {
             premisObjResc.addProperty(Prov.generated, eventSubjectResc);
@@ -107,7 +107,7 @@ public class PremisEventBuilderImpl implements PremisEventBuilder {
     @Override
     public PremisEventBuilderImpl addSoftwareAgent(PID agentPid) {
         Resource premisObjResc = getResource();
-        Resource agentResc = model.createResource(agentPid.getRepositoryPath());
+        Resource agentResc = model.createResource(agentPid.getRepositoryUri().toString());
         premisObjResc.addProperty(Premis.hasEventRelatedAgentExecutor, agentResc);
 
         return this;
@@ -122,7 +122,7 @@ public class PremisEventBuilderImpl implements PremisEventBuilder {
     @Override
     public PremisEventBuilder addAuthorizingAgent(PID agentPid) {
         Resource premisObjResc = getResource();
-        Resource agentResc = model.createResource(agentPid.getRepositoryPath());
+        Resource agentResc = model.createResource(agentPid.getRepositoryUri().toString());
         premisObjResc.addProperty(Premis.hasEventRelatedAgentAuthorizor, agentResc);
 
         return this;
@@ -137,7 +137,7 @@ public class PremisEventBuilderImpl implements PremisEventBuilder {
     @Override
     public PremisEventBuilder addImplementorAgent(PID agentPid) {
         Resource premisObjResc = getResource();
-        Resource agentResc = model.createResource(agentPid.getRepositoryPath());
+        Resource agentResc = model.createResource(agentPid.getRepositoryUri().toString());
         premisObjResc.addProperty(Premis.hasEventRelatedAgentImplementor, agentResc);
 
         return this;
@@ -184,7 +184,7 @@ public class PremisEventBuilderImpl implements PremisEventBuilder {
         }
 
         model = getModel();
-        premisObjResc = model.createResource(eventPid.getRepositoryPath());
+        premisObjResc = model.createResource(eventPid.getRepositoryUri().toString());
 
         return premisObjResc;
     }

@@ -521,7 +521,7 @@ public class DestroyObjectsJobIT {
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
         for (PID pid : objsToDestroy) {
-            String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion,
+            String updateString = createSparqlReplace(pid.getRepositoryUri().toString(), markedForDeletion,
                     true);
             sparqlUpdateService.executeUpdate(pid.getRepositoryUri().toString(), updateString);
         }

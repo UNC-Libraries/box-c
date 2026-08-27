@@ -879,7 +879,7 @@ public class PatronAccessAssignmentServiceIT {
         List<String> details = new ArrayList<>();
 
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
-        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
+        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryUri().toString());
         StmtIterator it = eventsModel.listStatements(null, Prov.used, objResc);
         while (it.hasNext()) {
             Statement stmt = it.next();
@@ -887,7 +887,7 @@ public class PatronAccessAssignmentServiceIT {
 
             assertTrue(eventResc.hasProperty(RDF.type, Premis.PolicyAssignment), "Event type was not set");
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-            assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
+            assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryUri().toString(), agentResc.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }
 

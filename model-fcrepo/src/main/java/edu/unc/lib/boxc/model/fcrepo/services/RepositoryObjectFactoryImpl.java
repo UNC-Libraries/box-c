@@ -424,7 +424,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
     *        Filename of the binary content. Optional.
     * @param mimetype
     *        Mimetype of the content. Optional.
-    * @param checksum
+    * @param sha1Checksum
     *        SHA-1 digest of the content. Optional.
     * @param model
     *        Model containing additional triples to add to the new binary's metadata. Optional

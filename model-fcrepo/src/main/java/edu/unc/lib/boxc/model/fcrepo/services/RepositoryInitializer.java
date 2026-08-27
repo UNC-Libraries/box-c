@@ -5,10 +5,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.net.URI;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.ConflictException;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
@@ -81,11 +83,13 @@ public class RepositoryInitializer {
         log.warn("Initializing content root object {}", contentRootUri);
 
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(contentRootString);
-        resc.addProperty(DC.title, "Content Collections Root");
+        model.createResource(contentRootString)
+                .addProperty(DC.title, "Content Collections Root")
+                .addProperty(RDF.type, Cdr.ContentRoot);
 
-
-        objFactory.createContentRootObject(contentRootUri, model);
+        if (!objFactory.objectExists(contentRootUri)) {
+            objFactory.createContentRootObject(contentRootUri, model); // PUT to exact URI
+        }
 
         return contentRootUri;
     }

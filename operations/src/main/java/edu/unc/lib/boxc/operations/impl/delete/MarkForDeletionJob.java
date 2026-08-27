@@ -70,7 +70,7 @@ public class MarkForDeletionJob implements Runnable {
                         + " for deletion, objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
 
-            String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion, true);
+            String updateString = createSparqlReplace(pid.getRepositoryUri().toString(), markedForDeletion, true);
 
             sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 

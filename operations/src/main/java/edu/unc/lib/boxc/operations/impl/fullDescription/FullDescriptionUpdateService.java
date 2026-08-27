@@ -52,7 +52,8 @@ public class FullDescriptionUpdateService {
         if (resource != null && resource.hasProperty(Cdr.hasFullDescription)) {
             log.debug("Successfully updated full description for {}", fileObj.getPid());
         } else {
-            repositoryObjectFactory.createRelationship(fileObj, Cdr.hasFullDescription, createResource(fullDescPid.getRepositoryPath()));
+            repositoryObjectFactory.createRelationship(fileObj, Cdr.hasFullDescription,
+                    createResource(fullDescPid.getRepositoryUri().toString()));
             log.debug("Successfully add new full description for {}", fileObj.getPid());
         }
 

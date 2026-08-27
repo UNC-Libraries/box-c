@@ -96,7 +96,7 @@ public class RepositoryPremisLogger extends RepositoryPremisLog implements Premi
 
             // For new logs, add in representation statement
             if (isNewLog) {
-                Resource repoObjResc = logModel.getResource(objPid.getRepositoryPath());
+                Resource repoObjResc = logModel.getResource(objPid.getRepositoryUri().toString());
                 repoObjResc.addProperty(RDF.type, Premis.Representation);
             }
 

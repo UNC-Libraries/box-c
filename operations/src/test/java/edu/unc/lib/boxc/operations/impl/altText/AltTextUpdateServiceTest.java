@@ -120,7 +120,7 @@ public class AltTextUpdateServiceTest {
         assertEquals(altTextContent, IOUtils.toString(capturedVersion.getContentStream(), StandardCharsets.UTF_8));
 
         // Verify relationship creation
-        var expectedRelationObj = createResource(altTextPid.getRepositoryPath());
+        var expectedRelationObj = createResource(altTextPid.getRepositoryUri().toString());
         verify(repositoryObjectFactory).createRelationship(eq(fileObject), eq(Cdr.hasAltText), eq(expectedRelationObj));
 
         // Verify operation message
