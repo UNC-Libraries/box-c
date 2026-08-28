@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder />
+
+    <bean id="baseAddress" class="java.lang.String">
+        <constructor-arg
+                value="http://localhost:48087/fcrepo/rest/" />
+    </bean>
+
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
+        <constructor-arg ref="baseAddress" />
+        <constructor-arg value="localhost" />
+        <constructor-arg value="fedoraAdmin" />
+        <constructor-arg value="fedoraAdmin" />
+    </bean>
+
+    <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+          factory-bean="fcrepoClientFactory" factory-method="makeClient">
+    </bean>
+
+    <bean id="ldpContainerFactory" class="edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory">
+        <property name="client" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl">
+        <property name="client" ref="fcrepoClient" />
+        <property name="ldpFactory" ref="ldpContainerFactory" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
+    </bean>
+
+    <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer">
+        <property name="objFactory" ref="repositoryObjectFactory" />
+    </bean>
+
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createLocationManagerWithBasicConfig">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
+
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+
+    <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
+
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="cacheTimeToLive" class="java.lang.Long">
+        <constructor-arg value="0" />
+    </bean>
+
+    <bean id="cacheMaxSize" class="java.lang.Long">
+        <constructor-arg value="0" />
+    </bean>
+
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" ref="cacheTimeToLive" />
+        <property name="cacheMaxSize" ref="cacheMaxSize" />
+    </bean>
+
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+    </bean>
+
+    <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
+    </bean>
+
+    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl">
+        <constructor-arg ref="queryModel" />
+    </bean>
+
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
+        <property name="client" ref="fcrepoClient" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+
+    <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">
+        <constructor-arg ref="queryModel" />
+        <constructor-arg ref="fcrepoClient" />
+    </bean>
+</beans>
