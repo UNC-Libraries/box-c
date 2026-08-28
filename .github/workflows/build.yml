@@ -28,7 +28,7 @@ jobs:
         env:
           CATALINA_OPTS: "-XX:-UseContainerSupport -Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
       fedora7:
-        image: fcrepo/fcrepo:7.0.0
+        image: fcrepo/fcrepo:7.0-tomcat10
         ports:
           - 48087:8080
         volumes:
