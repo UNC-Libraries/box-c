@@ -19,7 +19,7 @@ jobs:
         ports:
           - 46380:6379
       fedora:
-        image: fcrepo/fcrepo:7.0-tomcat10
+        image: fcrepo/fcrepo:5.1.1-multiplatform
         ports:
           - 48085:8080
         volumes:
@@ -27,6 +27,15 @@ jobs:
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
           CATALINA_OPTS: "-XX:-UseContainerSupport -Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      fedora7:
+        image: fcrepo/fcrepo:7.0.0
+        ports:
+          - 48087:8080
+        volumes:
+          - ${{ github.workspace }}/it_config:/config
+          - /tmp/boxc_test_storage:/tmp/boxc_test_storage
+        env:
+          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
       activemq:
         image: apache/activemq-artemis:latest-alpine
         ports:
@@ -48,10 +57,30 @@ jobs:
     - name: Get Container ID of fedora service
       id: get_container_id
       run: |
-        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:7.0-tomcat10")
+        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1-multiplatform")
         echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
     - name: Restart fedora now that the repository has been checked out so config files are available
       run: docker restart ${{ env.CONTAINER_ID }}
+
+    - name: Get Container ID of fedora7 service
+      id: get_fedora7_container_id
+      run: |
+        FEDORA7_CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:7.0-tomcat10")
+        echo "FEDORA7_CONTAINER_ID=$FEDORA7_CONTAINER_ID" >> $GITHUB_ENV
+    - name: Restart fedora7 now that config files are available
+      run: docker restart ${{ env.FEDORA7_CONTAINER_ID }}
+    - name: Verify Fedora 7 responds
+      run: |
+        for i in {1..60}; do
+          if curl -fsS http://localhost:48087/fcrepo/rest/ > /dev/null; then
+            echo "Fedora 7 is responding"
+            exit 0
+          fi
+          sleep 2
+        done
+        
+        docker logs ${{ env.FEDORA7_CONTAINER_ID }}
+        exit 1
 
     - name: Run Fuseki container as command to pass in extra dataset name argument
       run: |
@@ -282,3 +311,7 @@ jobs:
       run: |
         docker logs ${{ env.CONTAINER_ID }}
 
+    - name: View fedora7 service logs
+      if: always()
+      run: |
+        docker logs ${{ env.FEDORA7_CONTAINER_ID }}
