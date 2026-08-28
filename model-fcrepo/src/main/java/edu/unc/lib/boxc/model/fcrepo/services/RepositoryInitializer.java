@@ -83,9 +83,8 @@ public class RepositoryInitializer {
         log.warn("Initializing content root object {}", contentRootUri);
 
         Model model = ModelFactory.createDefaultModel();
-        model.createResource(contentRootString)
-                .addProperty(DC.title, "Content Collections Root")
-                .addProperty(RDF.type, Cdr.ContentRoot);
+        Resource resc = model.createResource(contentRootString);
+        resc.addProperty(DC.title, "Content Collections Root");
 
         if (!objFactory.objectExists(contentRootUri)) {
             objFactory.createContentRootObject(contentRootUri, model); // PUT to exact URI

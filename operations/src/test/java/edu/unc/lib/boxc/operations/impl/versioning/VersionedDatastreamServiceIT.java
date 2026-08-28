@@ -228,6 +228,9 @@ public class VersionedDatastreamServiceIT {
         Document headDoc = inputStreamToDocument(dsObjFinal.getBinaryStream());
         assertHasModsTitle("lets leave it here", headDoc);
 
+        assertNotEquals(version2Date, dsObjFinal.getLastModified(),
+                "Second version timestamp should not match head version");
+
         // check historic versions
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
