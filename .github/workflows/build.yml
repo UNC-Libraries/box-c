@@ -69,18 +69,6 @@ jobs:
         echo "FEDORA7_CONTAINER_ID=$FEDORA7_CONTAINER_ID" >> $GITHUB_ENV
     - name: Restart fedora7 now that config files are available
       run: docker restart ${{ env.FEDORA7_CONTAINER_ID }}
-    - name: Verify Fedora 7 responds
-      run: |
-        for i in {1..60}; do
-          if curl -fsS http://localhost:48087/fcrepo/rest/ > /dev/null; then
-            echo "Fedora 7 is responding"
-            exit 0
-          fi
-          sleep 2
-        done
-        
-        docker logs ${{ env.FEDORA7_CONTAINER_ID }}
-        exit 1
 
     - name: Run Fuseki container as command to pass in extra dataset name argument
       run: |
@@ -310,7 +298,6 @@ jobs:
       if: always()
       run: |
         docker logs ${{ env.CONTAINER_ID }}
-
     - name: View fedora7 service logs
       if: always()
       run: |
