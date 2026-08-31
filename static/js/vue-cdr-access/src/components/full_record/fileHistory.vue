@@ -3,13 +3,8 @@
     <div class="card">
         <header class="card-header">
             <p class="card-header-title">View File History</p>
-            <button class="card-header-icon" aria-label="display file events" @click="toggleFileHistory">
-              <span class="icon">
-                <i class="fas" :class="toggleArrow" aria-hidden="true"></i>
-              </span>
-            </button>
         </header>
-        <div class="card-content" :class="{'is-hidden': !showFilHistory}">
+        <div class="card-content">
             <div class="content">
                 <table class="table is-bordered is-striped is-fullwidth">
                     <thead>
@@ -47,14 +42,7 @@ export default {
 
     data() {
         return {
-            showFilHistory: false,
             fileEvents: []
-        }
-    },
-
-    computed: {
-        toggleArrow() {
-            return this.showFilHistory ? 'fa-angle-down' : 'fa-angle-right'
         }
     },
     
@@ -65,10 +53,6 @@ export default {
             } catch (error) {
                 console.log(error);
             }
-        },
-
-        toggleFileHistory() {
-            this.showFilHistory = !this.showFilHistory;
         },
 
         formatDate(date_string) {

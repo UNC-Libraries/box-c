@@ -61,12 +61,4 @@ describe('fileHistory.vue', () => {
         const date = '2026-07-19T19:56:45.367Z';
         expect(wrapper.vm.formatDate(date)).toEqual('July 19, 2026 at 03:56:45 PM');
     });
-
-    it('toggles the file history', async () => {
-        expect(wrapper.find('.card-content').classes()).toContain('is-hidden');
-        expect(wrapper.vm.toggleArrow).toEqual('fa-angle-right');
-        await wrapper.find('button').trigger('click');
-        expect(wrapper.find('.card-content').classes()).not.toContain('is-hidden');
-        expect(wrapper.vm.toggleArrow).toEqual('fa-angle-down');
-    });
 });
