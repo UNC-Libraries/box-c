@@ -266,9 +266,9 @@ public class DestroyObjectsCompletelyJobIT {
         AdminUnit unit2 = repoObjFactory.createAdminUnit(null);
 
         // Force the admin unit as a member of the folder
-        String updateString = createSparqlReplace(unit2.getPid().getRepositoryUri().toString(),
+        String updateString = createSparqlReplace(unit2.getPid().getRepositoryPath(),
                 PcdmModels.memberOf, folder.getResource());
-        sparqlUpdateService.executeUpdate(unit2.getPid().getRepositoryUri().toString(), updateString);
+        sparqlUpdateService.executeUpdate(unit2.getPid().getRepositoryPath(), updateString);
 
         treeIndexer.indexAll(baseAddress);
 

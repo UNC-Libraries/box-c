@@ -54,7 +54,7 @@ public class AltTextUpdateService {
             log.debug("Successfully updated alt text for {}", fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasAltText,
-                    createResource(altTextPid.getRepositoryUri().toString()));
+                    createResource(altTextPid.getRepositoryPath()));
             log.debug("Successfully add new alt text for {}", fileObj.getPid());
         }
 

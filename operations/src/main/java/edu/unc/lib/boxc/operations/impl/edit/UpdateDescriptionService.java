@@ -118,7 +118,7 @@ public class UpdateDescriptionService {
                 descBinary = versioningService.addVersion(newVersion);
 
                 repoObjFactory.createRelationship(obj, Cdr.hasMods,
-                        createResource(modsDsPid.getRepositoryUri().toString()));
+                        createResource(modsDsPid.getRepositoryPath()));
                 log.debug("Successfully set new description for {}", obj.getPid());
             }
 

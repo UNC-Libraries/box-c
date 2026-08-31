@@ -83,7 +83,7 @@ public class FilePremisLogger implements PremisLogger {
             Model logModel = getModel();
             // For new logs, add in representation statement
             if (!premisFile.exists()) {
-                Resource repoObjResc = logModel.getResource(objectPid.getRepositoryUri().toString());
+                Resource repoObjResc = logModel.getResource(objectPid.getRepositoryPath());
                 repoObjResc.addProperty(RDF.type, Premis.Representation);
             }
 

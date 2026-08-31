@@ -93,7 +93,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
 
         sendBinariesDestroyedMsg(rootOfTree, binaryUris);
 
-        purgeObject(rootOfTree.getPid().getRepositoryUri().toString());
+        purgeObject(rootOfTree.getPid().getRepositoryPath());
     }
 
     private void addBinariesForCleanup(Model model, List<URI> uris) {

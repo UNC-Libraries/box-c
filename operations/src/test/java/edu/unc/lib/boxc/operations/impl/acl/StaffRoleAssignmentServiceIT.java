@@ -513,13 +513,13 @@ public class StaffRoleAssignmentServiceIT {
 
     private String assertEventCreatedAndGetDetail(ContentObject repoObj) {
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
-        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryUri().toString());
+        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
         List<Resource> eventRescs = eventsModel.listResourcesWithProperty(Prov.used, objResc).toList();
         Resource eventResc = eventRescs.get(0);
         assertTrue(eventResc.hasProperty(RDF.type, Premis.PolicyAssignment),
                 "Event type was not set");
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-        assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryUri().toString(), agentResc.getURI());
+        assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
         String eventDetail = eventResc.getProperty(Premis.note).getString();
         assertTrue(eventDetail.contains("Staff roles for item set to:"));
         return eventDetail;

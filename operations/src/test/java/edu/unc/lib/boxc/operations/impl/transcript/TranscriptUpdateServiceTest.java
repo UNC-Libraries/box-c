@@ -135,7 +135,7 @@ public class TranscriptUpdateServiceTest {
         assertEquals(TRANSCRIPT_TEXT, IOUtils.toString(capturedVersion.getContentStream(), StandardCharsets.UTF_8));
 
         // Verify relationship creation
-        var expectedRelationObj = createResource(transcriptPid.getRepositoryUri().toString());
+        var expectedRelationObj = createResource(transcriptPid.getRepositoryPath());
         verify(repositoryObjectFactory).createRelationship(eq(fileObject), eq(Cdr.hasTranscript), eq(expectedRelationObj));
 
         // Verify operation message

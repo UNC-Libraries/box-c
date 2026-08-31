@@ -123,7 +123,7 @@ public class ContentPathFactoryImpl implements ContentPathFactory {
                     .accept("text/turtle")
                     .perform()) {
                 Model model = RDFModelUtil.createModel(resp.getBody());
-                Resource resc = model.getResource(pid.getRepositoryUri().toString());
+                Resource resc = model.getResource(pid.getRepositoryPath());
                 Statement memberStmt = resc.getProperty(PcdmModels.memberOf);
                 if (memberStmt == null) {
                     throw new OrphanedObjectException("Object " + pid + " is not the member of any object");

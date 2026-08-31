@@ -93,14 +93,14 @@ public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
                 "Virus check property message not written to file");
         assertEquals(Premis.Success, resource.getProperty(Premis.outcome).getResource(),
                 "Virus check did not have success outcome");
-        assertEquals(softwarePid.getRepositoryUri().toString(),
+        assertEquals(softwarePid.getRepositoryPath(),
                 resource.getProperty(Premis.hasEventRelatedAgentExecutor).getResource().getURI(),
                 "Virus check property depositing agent not written to file");
-        assertEquals(authPid.getRepositoryUri().toString(),
+        assertEquals(authPid.getRepositoryPath(),
                 resource.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource().getURI(),
                 "Virus check property authorizing agent not written to file");
 
-        Resource objResc = model.getResource(pid.getRepositoryUri().toString());
+        Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(resource.hasProperty(Prov.used, objResc));
     }
@@ -131,7 +131,7 @@ public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
                 "Normalization type not written to file");
         assertEquals("Event 1", resc1.getProperty(Premis.note).getObject().toString(),
                 "Event detail not written to file");
-        assertEquals(agentPid1.getRepositoryUri().toString(),
+        assertEquals(agentPid1.getRepositoryPath(),
                 resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource().getURI(),
                 "Authorizing agent not written to file");
 
@@ -139,11 +139,11 @@ public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
                 "VirusCheck type not written to file");
         assertEquals("Event 2", resc2.getProperty(Premis.note).getObject().toString(),
                 "Event detail not written to file");
-        assertEquals(agentPid2.getRepositoryUri().toString(),
+        assertEquals(agentPid2.getRepositoryPath(),
                 resc2.getProperty(Premis.hasEventRelatedAgentExecutor).getResource().getURI(),
                 "Related agent not written to file");
 
-        Resource objResc = model.getResource(pid.getRepositoryUri().toString());
+        Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(resc1.hasProperty(Prov.used, objResc));
         assertTrue(resc2.hasProperty(Prov.used, objResc));
@@ -171,16 +171,16 @@ public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
         assertEquals("Event 1", logEvent1Resc.getProperty(Premis.note).getString(),
                 "Event detail not written to file");
         Resource event1AgentExecutor = logEvent1Resc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-        assertEquals(agentPid1.getRepositoryUri().toString(), event1AgentExecutor.getURI());
+        assertEquals(agentPid1.getRepositoryPath(), event1AgentExecutor.getURI());
 
         assertEquals(Premis.VirusCheck, logEvent2Resc.getProperty(RDF.type).getObject(),
                 "VirusCheck type not written to file");
         assertEquals("Event 2", logEvent2Resc.getProperty(Premis.note).getString(),
                 "Event detail not written to file");
         Resource event2AgentAuth = logEvent2Resc.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource();
-        assertEquals(agentPid2.getRepositoryUri().toString(), event2AgentAuth.getURI());
+        assertEquals(agentPid2.getRepositoryPath(), event2AgentAuth.getURI());
 
-        Resource objResc = logModel.getResource(pid.getRepositoryUri().toString());
+        Resource objResc = logModel.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(logEvent1Resc.hasProperty(Prov.used, objResc));
         assertTrue(logEvent2Resc.hasProperty(Prov.used, objResc));

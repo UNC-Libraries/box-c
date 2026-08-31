@@ -62,7 +62,7 @@ public class RestoreDeletedJob implements Runnable {
                     + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
         }
 
-        String updateString = createSparqlDelete(pid.getRepositoryUri().toString(), markedForDeletion, null);
+        String updateString = createSparqlDelete(pid.getRepositoryPath(), markedForDeletion, null);
 
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 

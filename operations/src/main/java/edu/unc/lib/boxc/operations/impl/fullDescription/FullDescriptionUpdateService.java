@@ -53,7 +53,7 @@ public class FullDescriptionUpdateService {
             log.debug("Successfully updated full description for {}", fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasFullDescription,
-                    createResource(fullDescPid.getRepositoryUri().toString()));
+                    createResource(fullDescPid.getRepositoryPath()));
             log.debug("Successfully add new full description for {}", fileObj.getPid());
         }
 

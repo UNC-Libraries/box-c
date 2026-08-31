@@ -280,7 +280,7 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
         List<String> details = new ArrayList<>();
 
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
-        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryUri().toString());
+        Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
         StmtIterator it = eventsModel.listStatements(null, Prov.used, objResc);
         while (it.hasNext()) {
             Statement stmt = it.next();
@@ -288,7 +288,7 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
 
             assertTrue(eventResc.hasProperty(RDF.type, Premis.Dissemination), "Event type was not set");
             Resource execAgent = eventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-            assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryUri().toString(),
+            assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
                     execAgent.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }

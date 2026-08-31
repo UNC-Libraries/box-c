@@ -53,7 +53,7 @@ public class TranscriptUpdateService {
             log.debug("Successfully updated transcript for {}", fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasTranscript,
-                    createResource(transcriptPid.getRepositoryUri().toString()));
+                    createResource(transcriptPid.getRepositoryPath()));
             log.debug("Successfully add new transcript for {}", fileObj.getPid());
         }
 

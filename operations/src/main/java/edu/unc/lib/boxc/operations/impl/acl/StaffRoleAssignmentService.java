@@ -123,7 +123,7 @@ public class StaffRoleAssignmentService {
     private void replaceStaffRoles(RepositoryObject repoObj, Collection<RoleAssignment> assignments) {
         // Update a copy of the model for this object
         Model model = ModelFactory.createDefaultModel().add(repoObj.getModel(true));
-        Resource resc = model.getResource(repoObj.getPid().getRepositoryUri().toString());
+        Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
 
         // Clear out all the existing staff roles
         for (UserRole role: UserRole.getStaffRoles()) {

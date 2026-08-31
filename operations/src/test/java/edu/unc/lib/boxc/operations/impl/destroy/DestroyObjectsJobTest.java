@@ -138,7 +138,7 @@ public class DestroyObjectsJobTest {
         when(folder.getParent()).thenReturn(parentFolder);
         when(folder.getUri()).thenReturn(folderPid.getRepositoryUri());
         when(repoObjLoader.getRepositoryObject(folderPid)).thenReturn(folder);
-        var folderResc = model.getResource(folderPid.getRepositoryUri().toString());
+        var folderResc = model.getResource(folderPid.getRepositoryPath());
         folderResc.addProperty(RDF.type, Cdr.Folder);
         when(folder.getResource(true)).thenReturn(folderResc);
         when(folder.getTypes()).thenReturn(List.of(Cdr.Folder.getURI()));
@@ -185,7 +185,7 @@ public class DestroyObjectsJobTest {
         when(folder.getParent()).thenReturn(parentFolder);
         when(folder.getUri()).thenReturn(folderPid.getRepositoryUri());
         when(repoObjLoader.getRepositoryObject(folderPid)).thenReturn(folder);
-        var folderResc = model.getResource(folderPid.getRepositoryUri().toString());
+        var folderResc = model.getResource(folderPid.getRepositoryPath());
         folderResc.addProperty(RDF.type, Cdr.Folder);
         when(folder.getResource(true)).thenReturn(folderResc);
         when(folder.getTypes()).thenReturn(List.of(Cdr.Folder.getURI()));

@@ -355,7 +355,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         log.debug("Updating binary {} with fields:\n    uri = '{}'\n    mimetype = '{}', " +
-                "filename = '{}'\n    sha1 = '{}', m5 = '{}'", pid.getRepositoryUri().toString(),
+                "filename = '{}'\n    sha1 = '{}', m5 = '{}'", pid.getRepositoryPath(),
                 storageUri, mimetype, filename, sha1Checksum, md5Checksum);
         try (FcrepoResponse response = getClient().put(pid.getRepositoryUri())
                 .externalContent(storageUri, formatMimetype(mimetype), PROXY)
@@ -374,7 +374,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
                 throw new ChecksumMismatchException(String.format("Failed to create binary for %s"
                     + " from URI '%s', checksum(s) did not match the submitted"
                     + " content according to the repository: md5=%s sha1=%s",
-                    pid.getRepositoryUri().toString(), storageUri, md5Checksum, sha1Checksum));
+                    pid.getRepositoryPath(), storageUri, md5Checksum, sha1Checksum));
             }
             throw ClientFaultResolver.resolve(e);
         }
@@ -573,7 +573,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      */
     @Override
     public void createProperty(RepositoryObject subject, Property property, String object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryUri().toString(),
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
         subject.shouldRefresh();
@@ -596,8 +596,8 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
             }
         }
         PID subject = repoObj.getPid();
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryUri().toString(), property,
-                object, previousValues);
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
+                previousValues);
         persistTripleToFedora(repoObj.getMetadataUri(), sparqlUpdate);
         repoObj.shouldRefresh();
     }
@@ -611,7 +611,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
     public void deleteProperty(RepositoryObject repoObj, Property property) {
         PID subject = repoObj.getPid();
         String sparqlUpdate = SparqlUpdateHelper.createSparqlDelete(
-                subject.getRepositoryUri().toString(), property, null);
+                subject.getRepositoryPath(), property, null);
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), sparqlUpdate);
         repoObj.shouldRefresh();
     }
@@ -624,7 +624,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      */
     @Override
     public void createRelationship(RepositoryObject subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryUri().toString(),
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
         subject.shouldRefresh();
