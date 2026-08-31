@@ -2,7 +2,7 @@
 <div id="file-history">
     <div class="card">
         <header class="card-header">
-            <p class="card-header-title">View File History</p>
+            <p class="card-header-title">File History</p>
         </header>
         <div class="card-content">
             <div class="content">
