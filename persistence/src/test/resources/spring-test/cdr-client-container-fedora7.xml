@@ -30,7 +30,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectLoaderFactory" ref="repositoryObjectLoaderFactory" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
 
@@ -59,6 +59,11 @@
 
     <bean id="cacheMaxSize" class="java.lang.Long">
         <constructor-arg value="0" />
+    </bean>
+
+    <bean id="repositoryObjectLoaderFactory"
+          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+        <property name="targetBeanName" value="repositoryObjectLoader" />
     </bean>
 
     <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">

@@ -24,7 +24,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -57,6 +56,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.springframework.beans.factory.ObjectFactory;
 
 /**
  * Creates objects in the repository matching specific object profile types.
@@ -72,7 +72,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
 
     private FcrepoClient client;
 
-    private RepositoryObjectLoader repoObjLoader;
+    private ObjectFactory<RepositoryObjectLoader> repoObjLoaderFactory;
 
     private PIDMinter pidMinter;
 
@@ -124,7 +124,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         }
 
         log.debug("Retrieving created deposit record object {}", pid.getId());
-        return repoObjLoader.getDepositRecord(pid);
+        return repoObjLoader().getDepositRecord(pid);
     }
 
     /**
@@ -158,7 +158,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return repoObjLoader.getAdminUnit(pid);
+        return repoObjLoader().getAdminUnit(pid);
     }
 
     /**
@@ -210,7 +210,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return repoObjLoader.getCollectionObject(pid);
+        return repoObjLoader().getCollectionObject(pid);
     }
 
     /**
@@ -244,7 +244,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return repoObjLoader.getFolderObject(pid);
+        return repoObjLoader().getFolderObject(pid);
     }
 
     /**
@@ -278,7 +278,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return repoObjLoader.getWorkObject(pid);
+        return repoObjLoader().getWorkObject(pid);
     }
 
     /**
@@ -330,7 +330,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        return repoObjLoader.getFileObject(pid);
+        return repoObjLoader().getFileObject(pid);
     }
 
     /**
@@ -389,8 +389,8 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         }
 
         PID binPid = PIDs.get(resultUriString);
-        repoObjLoader.invalidate(binPid);
-        return repoObjLoader.getBinaryObject(binPid);
+        repoObjLoader().invalidate(binPid);
+        return repoObjLoader().getBinaryObject(binPid);
     }
 
     private void updateBinaryDescription(PID binPid, URI describedBy, Model model) {
@@ -477,7 +477,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
                 throw ClientFaultResolver.resolve(e);
             }
         }
-        return repoObjLoader.getBinaryObject(PIDs.get(resultUri));
+        return repoObjLoader().getBinaryObject(PIDs.get(resultUri));
     }
 
     /**
@@ -550,8 +550,8 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
              }
          }
          PID binPid = PIDs.get(updatePath);
-         repoObjLoader.invalidate(binPid);
-         return repoObjLoader.getBinaryObject(binPid);
+         repoObjLoader().invalidate(binPid);
+         return repoObjLoader().getBinaryObject(binPid);
      }
 
     /**
@@ -711,8 +711,8 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         this.ldpFactory = ldpFactory;
     }
 
-    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
+    public void setRepositoryObjectLoaderFactory(ObjectFactory<RepositoryObjectLoader> repoObjLoaderFactory) {
+        this.repoObjLoaderFactory = repoObjLoaderFactory;
     }
 
     public void setPidMinter(PIDMinter pidMinter) {
@@ -770,4 +770,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         return model;
     }
 
+    private RepositoryObjectLoader repoObjLoader() {
+        return repoObjLoaderFactory.getObject();
+    }
 }
