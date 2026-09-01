@@ -86,10 +86,16 @@
         <constructor-arg ref="queryModel" />
     </bean>
 
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader"
+          class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectDriverFactory" ref="repositoryObjectDriverFactory" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
+    <bean id="repositoryObjectDriverFactory"
+          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+        <property name="targetBeanName" value="repositoryObjectDriver" />
     </bean>
 
     <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
