@@ -81,12 +81,12 @@ import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import objectActions from '@/components/full_record/objectActions.vue';
-import FileHistory from "@/components/full_record/fileHistory.vue";
+import fileHistory from "@/components/full_record/fileHistory.vue";
 
 export default {
     name: 'fileRecord',
 
-    components: {FileHistory, abstract, metadataDisplay, neighborList, objectActions, player },
+    components: { abstract, fileHistory, metadataDisplay, neighborList, objectActions, player },
 
     mixins: [fileUtils, fullRecordUtils],
 
