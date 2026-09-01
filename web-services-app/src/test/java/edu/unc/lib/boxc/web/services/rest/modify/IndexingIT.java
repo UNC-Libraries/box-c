@@ -116,40 +116,4 @@ public class IndexingIT extends AbstractAPIIT {
 
         verify(mockJmsTemplate).send(any(MessageCreator.class));
     }
-
-    @Test
-    public void testReindexTriples() throws Exception {
-        PID parentPid = makePid();
-
-        MvcResult result = mvc.perform(post("/edit/triples/reindex/" + parentPid.getUUID(), false))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
-
-        // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals(parentPid.getUUID(), respMap.get("pid"));
-        assertEquals("reindexTriples", respMap.get("action"));
-        assertFalse(respMap.containsKey("error"));
-
-        verify(mockJmsTemplate).send(any(MessageCreator.class));
-    }
-
-    @Test
-    public void testReindexTriplesAuthorizationFailure() throws Exception {
-        PID parentPid = makePid();
-        doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSetImpl.class), eq(reindex));
-
-        MvcResult result = mvc.perform(post("/edit/triples/reindex/" + parentPid.getUUID(), false))
-                .andExpect(status().isForbidden())
-                .andReturn();
-
-        // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals(parentPid.getUUID(), respMap.get("pid"));
-        assertEquals("reindexTriples", respMap.get("action"));
-        assertTrue(respMap.containsKey("error"));
-
-        verify(mockJmsTemplate, never()).send(any(MessageCreator.class));
-    }
 }

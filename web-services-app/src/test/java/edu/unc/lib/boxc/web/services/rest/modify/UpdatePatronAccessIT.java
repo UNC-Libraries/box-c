@@ -100,8 +100,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         // Construct unit without any staff permissions granted
         createCollectionInUnit(null, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals));
@@ -122,8 +120,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         // Create pid for non-existent object
         PID pid = pidMinter.mintContentPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals));
@@ -141,8 +137,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void invalidAssignment() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         // Request to grant staff permission
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -163,8 +157,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     public void missingRole() throws Exception {
         createCollectionInUnit(null);
 
-        treeIndexer.indexAll(baseAddress);
-
         // Request to grant staff permission
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
@@ -184,8 +176,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     public void invalidBodyJson() throws Exception {
         createCollectionInUnit(null);
 
-        treeIndexer.indexAll(baseAddress);
-
         mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{ Not valid }"))
@@ -198,8 +188,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void assignEmbargoAndRoles() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1);
 
@@ -244,8 +232,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .addCanViewMetadata(AUTHENTICATED_PRINC)
                 .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         // Request to grant staff permission
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
@@ -263,8 +249,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void bulkUpdateOneObject() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
@@ -290,8 +274,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     public void bulkUpdateNoIds() throws Exception {
         createCollectionInUnit(null);
 
-        treeIndexer.indexAll(baseAddress);
-
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
@@ -313,8 +295,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     public void bulkUpdateNoDetails() throws Exception {
         createCollectionInUnit(null);
 
-        treeIndexer.indexAll(baseAddress);
-
         BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
         bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
 
@@ -334,8 +314,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         FolderObject folder2 = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder1);
         collObj.addMember(folder2);
-
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
@@ -363,8 +341,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         // Construct unit without any staff permissions granted
         createCollectionInUnit(null, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals));
@@ -385,8 +361,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void bulkUpdateWithRolesAndEmbargo() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1);
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -416,8 +390,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void bulkUpdateSkipEmbargo() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         List<RoleAssignment> assignments = asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));

@@ -68,8 +68,6 @@ public class DestroyObjectsIT extends AbstractAPIIT {
                     .addUnitOwner(USER_GROUPS)
                     .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult result = mvc.perform(post("/edit/destroy/" + collObj.getPid().getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -85,8 +83,6 @@ public class DestroyObjectsIT extends AbstractAPIIT {
                 .addCanManage(USER_GROUPS)
                 .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         mvc.perform(post(URI.create("/edit/destroy/" + adminUnit.getPid().getId())))
                 .andExpect(status().isForbidden())
                 .andReturn();
@@ -100,8 +96,6 @@ public class DestroyObjectsIT extends AbstractAPIIT {
         GroupsThreadStore.storeGroups(testPrincipals);
 
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         mvc.perform(post(URI.create("/edit/destroy/" + adminUnit.getPid().getId())))
                 .andExpect(status().is2xxSuccessful())
@@ -117,8 +111,6 @@ public class DestroyObjectsIT extends AbstractAPIIT {
                 .model);
         CollectionObject collObj2 = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj2);
-
-        treeIndexer.indexAll(baseAddress);
 
         String ids = collObj.getPid().getId() + "\n" + collObj2.getPid().getId();
 
@@ -137,8 +129,6 @@ public class DestroyObjectsIT extends AbstractAPIIT {
         createCollectionInUnit(null);
         CollectionObject collObj2 = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj2);
-
-        treeIndexer.indexAll(baseAddress);
 
         String ids = collObj.getPid().getId() + "\n" + collObj2.getPid().getId();
 

@@ -31,8 +31,6 @@ public class CollectionObjectIT extends AbstractFedoraIT {
         collObj.addMember(folder);
         collObj.addMember(work);
 
-        treeIndexer.indexAll(baseAddress);
-
         List<ContentObject> members = collObj.getMembers();
         assertEquals(2, members.size(), "Incorrect number of members");
 

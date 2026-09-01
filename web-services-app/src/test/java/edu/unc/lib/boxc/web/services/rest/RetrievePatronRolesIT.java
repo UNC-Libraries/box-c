@@ -88,8 +88,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
 
-        treeIndexer.indexAll(baseAddress);
-
         mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().isForbidden())
                 .andReturn();
@@ -98,8 +96,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     @Test
     public void objectNotFound() throws Exception {
         PID pid = pidMinter.mintContentPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().isNotFound())
@@ -110,8 +106,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     public void getFromUnit() throws Exception {
         createCollectionInUnit(null);
 
-        treeIndexer.indexAll(baseAddress);
-
         mvc.perform(get("/acl/patron/" + adminUnit.getPid().getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -120,8 +114,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     @Test
     public void getFromCollectionWithNoPatrons() throws Exception {
         createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + collObj.getPid().getId()))
                 .andExpect(status().isOk())
@@ -140,8 +132,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewMetadata(PUBLIC_PRINC)
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + collObj.getPid().getId()))
                 .andExpect(status().isOk())
@@ -168,8 +158,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     public void getAllowedPrincpals() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(PUBLIC_PRINC, AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/allowedPrincipals"))
                 .andExpect(status().isOk())
@@ -205,8 +193,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .markForDeletion()
                     .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + collObj.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -234,8 +220,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .markForDeletion()
                 .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + collObj.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -260,8 +244,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addEmbargoUntil(embargoUntil)
                 .model);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + collObj.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -283,8 +265,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         FolderObject folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -303,8 +283,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .addCanViewOriginals(AUTHENTICATED_PRINC)
                     .model);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -329,8 +307,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .model);
         FolderObject folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -358,8 +334,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .addCanViewMetadata(AUTHENTICATED_PRINC)
                     .model);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -391,8 +365,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .model);
         collObj.addMember(folder);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -415,8 +387,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .model);
         FolderObject folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -441,8 +411,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .model);
         FolderObject folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -472,8 +440,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .markForDeletion()
                     .model);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -507,8 +473,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .addEmbargoUntil(embargoUntil)
                     .model);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -547,8 +511,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .model);
         collObj.addMember(work);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + work.getPid().getId()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -581,8 +543,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .addCanViewOriginals(customGroup)
                     .model);
         collObj.addMember(folder);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
                 .andExpect(status().isOk())
@@ -620,8 +580,6 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Work")
                     .addNoneRole(PUBLIC_PRINC)
                     .model);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult mvcResult = mvc.perform(get("/acl/patron/" + fileObj.getPid().getId()))
                 .andExpect(status().isOk())

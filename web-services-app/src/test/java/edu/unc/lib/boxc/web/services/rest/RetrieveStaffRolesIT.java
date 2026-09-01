@@ -79,7 +79,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         // Creating admin unit with no permissions granted
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid, null);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         mvc.perform(get("/acl/staff/" + unitPid.getId()))
                 .andExpect(status().isForbidden())
@@ -94,7 +93,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         PID pid = pidMinter.mintContentPid();
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid, null);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -109,7 +107,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     @Test
     public void testObjectNotFound() throws Exception {
         PID pid = pidMinter.mintContentPid();
-        treeIndexer.indexAll(baseAddress);
 
         mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().isNotFound())
@@ -120,7 +117,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     public void testAdminUnitWithManager() throws Exception {
         AdminUnit unit = setupAdminUnitWithGroup();
         PID pid = unit.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -141,7 +137,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .addUnitOwner(USER_NS_PRINC)
                 .model);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + unitPid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -161,7 +156,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
 
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -183,8 +177,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .model);
         unit.addMember(coll);
 
-        treeIndexer.indexAll(baseAddress);
-
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -204,8 +196,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .addCanViewOriginals(USER_NS_PRINC)
                 .model);
         unit.addMember(coll);
-
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -228,7 +218,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         PID pid = pidMinter.mintContentPid();
         FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
         coll.addMember(folder);
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -260,7 +249,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         PID pid = pidMinter.mintContentPid();
         FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
         coll.addMember(folder);
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -278,7 +266,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = setupAdminUnitWithGroup();
         WorkObject work = setupWorkStructure(unit);
         PID pid = work.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -298,7 +285,6 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Path contentPath = createBinaryContent(origBodyString, "test", ".txt");
         FileObject fileObj = work.addDataFile(contentPath.toUri(), origFilename, origMimetype, null, null);
         PID pid = fileObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
                 .andExpect(status().is2xxSuccessful())

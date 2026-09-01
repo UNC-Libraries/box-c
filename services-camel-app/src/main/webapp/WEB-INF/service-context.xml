@@ -326,9 +326,6 @@
         <constructor-arg value="${cdr.enhancement.path.video}" />
     </bean>
     
-    <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
-    </bean>
-
     <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
         <property name="defaultDestinationName" value="${cdr.ordermembers.stream}" />
@@ -663,8 +660,6 @@
     <!-- Camel contexts -->
 
     <camel:camelContext id="boxcCamelContext">
-        <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
-        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.longleaf</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>

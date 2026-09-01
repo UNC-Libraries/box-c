@@ -25,7 +25,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 /**
  * Test helper which simulates fedora's inbound-references membership listing and rdf:type HEAD
  * lookups against an in-memory aggregate model of registered objects, for use in place of an
- * actual triplestore or fedora instance in unit tests.
+ * actual fedora instance in unit tests.
  *
  * @author bbpennel
  */

@@ -83,8 +83,6 @@ public class FolderObjectIT extends AbstractFedoraIT {
         WorkObject child1 = obj.addWork();
         FolderObject child2 = obj.addFolder();
 
-        treeIndexer.indexAll(baseAddress);
-
         List<ContentObject> members = obj.getMembers();
         assertEquals(2, members.size(), "Incorrect number of members");
 
@@ -104,8 +102,6 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
         // Add the child to the second folder, effectively moving it
         folder2.addMember(child);
-
-        treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> members1 = folder1.getMembers();
         assertEquals(0, members1.size(), "Incorrect number of members");

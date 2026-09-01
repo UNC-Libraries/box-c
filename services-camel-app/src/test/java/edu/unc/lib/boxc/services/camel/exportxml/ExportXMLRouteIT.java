@@ -590,7 +590,6 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
     }
 
     private void indexAll() throws Exception{
-        treeIndexer.indexAll(rootObj.getPid().getRepositoryPath());
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj1.getPid(), collObj2.getPid(),
                 workObj1.getPid(), workObj2.getPid(), fileObj1.getPid());
     }

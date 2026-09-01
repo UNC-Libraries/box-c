@@ -136,7 +136,6 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportCollectionCsv() throws Exception {
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), collObj2.getPid(), folderObj.getPid());
 
         String id = collObj.getPid().getId();
@@ -163,7 +162,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
@@ -188,7 +186,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
@@ -226,7 +223,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         updateDescService.updateDescription(new UpdateDescriptionRequest(
                 getAgentPrincipals(), workPid, Files.newInputStream(MODS_PATH_2)));
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
@@ -269,7 +265,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         new MarkForDeletionJob(folderPid, "", getAgentPrincipals(), repositoryObjectLoader,
                 sparqlUpdateService, aclService, premisLoggerFactory).run();
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         String id = folderPid.getId();
@@ -307,7 +302,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID filePid = pidList.get("filePid");
         String id = filePid.getId();
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
@@ -332,7 +326,6 @@ public class ExportCsvIT extends AbstractAPIIT {
     public void exportOneResult() throws Exception {
         PID folderPid = folderObj.getPid();
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
@@ -362,7 +355,6 @@ public class ExportCsvIT extends AbstractAPIIT {
                         .addEmbargoUntil(embargoDate).model);
         collObj.addMember(folder2Obj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
@@ -388,7 +380,6 @@ public class ExportCsvIT extends AbstractAPIIT {
                         .addCanViewOriginals(PUBLIC_PRINC).model);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
@@ -415,7 +406,6 @@ public class ExportCsvIT extends AbstractAPIIT {
                         .addNoneRole(PUBLIC_PRINC).model);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
@@ -442,7 +432,6 @@ public class ExportCsvIT extends AbstractAPIIT {
                         .addNoneRole(PUBLIC_PRINC).model);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
@@ -473,7 +462,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         collObj.addMember(folder);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
@@ -506,7 +494,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         collObj.addMember(folder);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
@@ -535,7 +522,6 @@ public class ExportCsvIT extends AbstractAPIIT {
                         .addNoneRole(PUBLIC_PRINC).model);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
@@ -592,7 +578,6 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String id = unitObj.getPid().getId();
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);;
 
@@ -633,7 +618,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         var paged = ViewSettingRequest.ViewBehavior.PAGED.getString();
         repositoryObjectFactory.createExclusiveRelationship(work, CdrView.viewBehavior, paged);
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
@@ -672,7 +656,6 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID workPid2 = pidList2.get("workPid");
         PID filePid2 = pidList2.get("filePid");
 
-        treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid1,
                 workPid1, filePid1, folderPid2, workPid2, filePid2);
 
