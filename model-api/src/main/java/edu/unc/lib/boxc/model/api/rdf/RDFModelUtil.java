@@ -29,6 +29,8 @@ public class RDFModelUtil {
 
     public final static String TURTLE_MIMETYPE = "text/turtle";
 
+    public final static String NTRIPLES_MIMETYPE = "application/n-triples";
+
     private RDFModelUtil() {
     }
 

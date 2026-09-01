@@ -23,7 +23,8 @@
     
     <bean id="recursiveTreeIndexer" class="edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="membershipService" ref="pcdmMembershipService" />
+        <property name="client" ref="fcrepoClient" />
     </bean>
     
     <bean id="updateTreeAction"

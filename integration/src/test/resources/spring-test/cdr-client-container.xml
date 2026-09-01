@@ -67,7 +67,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">

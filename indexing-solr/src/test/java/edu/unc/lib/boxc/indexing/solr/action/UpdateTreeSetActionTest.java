@@ -12,8 +12,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +23,12 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.test.MockFedoraMembershipHelper;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
-import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
 
 /**
  *
@@ -57,19 +53,18 @@ public class UpdateTreeSetActionTest {
 
     private RecursiveTreeIndexer treeIndexer;
 
-    protected Model sparqlModel;
-    protected SparqlQueryService sparqlQueryService;
+    protected MockFedoraMembershipHelper membershipHelper;
 
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
 
-        sparqlModel = ModelFactory.createDefaultModel();
-        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
+        membershipHelper = new MockFedoraMembershipHelper();
 
         treeIndexer = new RecursiveTreeIndexer();
         treeIndexer.setIndexingMessageSender(messageSender);
-        treeIndexer.setSparqlQueryService(sparqlQueryService);
+        treeIndexer.setMembershipService(membershipHelper.mockMembershipService());
+        treeIndexer.setClient(membershipHelper.mockFcrepoClient());
 
         action = new UpdateTreeSetAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -87,7 +82,7 @@ public class UpdateTreeSetActionTest {
         ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
 
-        indexTriples(containerObj);
+        membershipHelper.addObjects(containerObj);
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -110,7 +105,7 @@ public class UpdateTreeSetActionTest {
         ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
-        indexTriples(container1Obj, container2Obj);
+        membershipHelper.addObjects(container1Obj, container2Obj);
 
         request = new ChildSetRequest(container1Pid.getRepositoryPath(),
                 asList(container1Pid.getRepositoryPath(), container2Pid.getRepositoryPath()),
@@ -134,7 +129,7 @@ public class UpdateTreeSetActionTest {
         PID containerPid = containerObj.getPid();
         ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
 
-        indexTriples(containerObj, childObj);
+        membershipHelper.addObjects(containerObj, childObj);
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -165,11 +160,5 @@ public class UpdateTreeSetActionTest {
 
             action.performAction(request);
         });
-    }
-
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
-            sparqlModel.add(obj.getResource().getModel());
-        }
     }
 }

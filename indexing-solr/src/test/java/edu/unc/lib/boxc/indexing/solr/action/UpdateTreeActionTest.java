@@ -25,11 +25,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
+import edu.unc.lib.boxc.indexing.solr.test.MockFedoraMembershipHelper;
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
-import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
@@ -52,7 +51,7 @@ public class UpdateTreeActionTest {
 
     protected UpdateTreeAction action;
 
-    protected Model sparqlModel;
+    protected MockFedoraMembershipHelper membershipHelper;
     protected RecursiveTreeIndexer treeIndexer;
 
     @Mock
@@ -60,8 +59,6 @@ public class UpdateTreeActionTest {
 
     @Captor
     protected ArgumentCaptor<PID> pidCaptor;
-
-    protected SparqlQueryService sparqlQueryService;
 
     @BeforeEach
     public void setupTreeAction() throws Exception {
@@ -76,14 +73,13 @@ public class UpdateTreeActionTest {
         FileObject file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
         FileObject file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
 
-        sparqlModel = ModelFactory.createDefaultModel();
-        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
-
-        indexTriples(obj1, obj2, file1, file2, file3);
+        membershipHelper = new MockFedoraMembershipHelper();
+        membershipHelper.addObjects(obj1, obj2, file1, file2, file3);
 
         treeIndexer = new RecursiveTreeIndexer();
         treeIndexer.setIndexingMessageSender(messageSender);
-        treeIndexer.setSparqlQueryService(sparqlQueryService);
+        treeIndexer.setMembershipService(membershipHelper.mockMembershipService());
+        treeIndexer.setClient(membershipHelper.mockFcrepoClient());
 
         action = getAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -144,11 +140,5 @@ public class UpdateTreeActionTest {
         assertFalse(pids.contains(corpus.pid2));
         assertTrue(pids.contains(corpus.pid4));
         assertTrue(pids.contains(corpus.pid6));
-    }
-
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
-            sparqlModel.add(obj.getResource().getModel());
-        }
     }
 }
