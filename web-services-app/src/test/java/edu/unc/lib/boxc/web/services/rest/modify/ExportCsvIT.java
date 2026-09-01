@@ -33,7 +33,6 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
@@ -99,8 +98,6 @@ public class ExportCsvIT extends AbstractAPIIT {
     protected RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     protected PIDMinter pidMinter;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private RepositoryObjectSolrIndexer solrIndexer;
     @Autowired

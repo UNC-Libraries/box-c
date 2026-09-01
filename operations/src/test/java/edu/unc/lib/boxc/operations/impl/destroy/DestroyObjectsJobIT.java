@@ -29,7 +29,6 @@ import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
@@ -128,8 +127,6 @@ public class DestroyObjectsJobIT {
     @Autowired
     private SparqlUpdateService sparqlUpdateService;
     @Autowired
-    private Model queryModel;
-    @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
     private AccessControlService aclService;
@@ -155,8 +152,6 @@ public class DestroyObjectsJobIT {
 
     private AgentPrincipals agent;
 
-    private RepositoryObjectTreeIndexer treeIndexer;
-
     private List<PID> objsToDestroy = new ArrayList<>();
 
     private DestroyObjectsJob job;
@@ -173,8 +168,6 @@ public class DestroyObjectsJobIT {
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
         agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
-
-        treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
 
         objsToDestroy = createContentTree();
 
@@ -238,7 +231,6 @@ public class DestroyObjectsJobIT {
         workObj.setPrimaryObject(fileObjPid);
         // Add a second file
         var fileObj2 = addFileToWork(workObj);
-        treeIndexer.indexAll(baseAddress);
 
         initializeJob(asList(fileObjPid));
 
@@ -450,8 +442,6 @@ public class DestroyObjectsJobIT {
         WorkObject work = repoObjFactory.createWorkObject(null);
         folder.addMember(work);
         var file = addFileToWork(work);
-
-        treeIndexer.indexAll(baseAddress);
 
         objsToDestroy.add(folder.getPid());
         objsToDestroy.add(work.getPid());

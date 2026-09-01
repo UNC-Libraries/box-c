@@ -14,7 +14,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
@@ -54,13 +53,11 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
     protected SolrUpdateDriver driver;
     protected SolrSearchService solrSearchService;
     protected AccessGroupSet accessGroups;
-    protected Model queryModel;
     protected RepositoryObjectLoader repositoryObjectLoader;
     protected RepositoryObjectFactory repositoryObjectFactory;
     protected DocumentIndexingPackageFactory dipFactory;
     protected PIDMinter pidMinter;
     private RepositoryInitializer repoInitializer;
-    protected RepositoryObjectTreeIndexer treeIndexer;
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
     protected StorageLocationManager locManager;
     protected StorageLocationTestHelper storageLocationTestHelper;
@@ -83,13 +80,11 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
         driver = applicationContext.getBean(SolrUpdateDriver.class);
         solrSearchService = applicationContext.getBean(SolrSearchService.class);
         accessGroups = applicationContext.getBean("accessGroups", AccessGroupSet.class);
-        queryModel = applicationContext.getBean("queryModel", Model.class);
         repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
         repositoryObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
         dipFactory = applicationContext.getBean(DocumentIndexingPackageFactory.class);
         pidMinter = applicationContext.getBean(PIDMinter.class);
         repoInitializer = applicationContext.getBean(RepositoryInitializer.class);
-        treeIndexer = applicationContext.getBean(RepositoryObjectTreeIndexer.class);
         repositoryObjectSolrIndexer = applicationContext.getBean(RepositoryObjectSolrIndexer.class);
         locManager = applicationContext.getBean(StorageLocationManager.class);
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
@@ -120,10 +115,6 @@ public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
     protected void setMessageTarget(RepositoryObject obj) {
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn(obj.getPid().getRepositoryPath());
-    }
-
-    protected void indexObjectsInTripleStore() throws Exception {
-        treeIndexer.indexAll(baseAddress);
     }
 
     protected URI makeContentUri(String content) throws Exception {

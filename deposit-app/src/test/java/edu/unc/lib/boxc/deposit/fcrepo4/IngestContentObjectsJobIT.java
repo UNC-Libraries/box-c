@@ -35,7 +35,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.events.FilePremisLogger;
 import org.apache.commons.codec.binary.Hex;
@@ -125,8 +124,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
-    @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
     @Autowired
     private UpdateDescriptionService updateDescService;
@@ -189,8 +186,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         unitObj.addMember(collObj);
         collObj.addMember(destFolder);
 
-        treeIndexer.indexAll(baseAddress);
-
         destinationPid = destFolder.getPid();
 
         Map<String, String> status = new HashMap<>();
@@ -222,8 +217,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Execute the ingest job
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         // Verify that the destination has the folder added to it
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
@@ -286,8 +279,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
@@ -354,8 +345,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject parentFolder = repoObjLoader.getFolderObject(destinationPid);
         parentFolder.addMember(destWork);
 
-        treeIndexer.indexTree(destWork.getModel());
-
         depositStatusFactory.set(depositUUID, DepositField.containerId, destWork.getPid().getRepositoryPath());
 
         // Construct the deposit model with work object
@@ -367,8 +356,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         // Make sure that the work is present and is actually a work
         WorkObject mWork = repoObjLoader.getWorkObject(destWork.getPid());
@@ -419,8 +406,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        treeIndexer.indexAll(baseAddress);
-
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         assertEquals(1, destMembers.size(), "Incorrect number of children at destination");
@@ -469,8 +454,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             job.closeModel();
             job.run();
         } catch (Exception e) {
-            treeIndexer.indexAll(baseAddress);
-
             ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
             List<ContentObject> destMembers = destObj.getMembers();
             assertEquals(1, destMembers.size(), "Incorrect number of children at destination");
@@ -511,8 +494,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
@@ -564,8 +545,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
@@ -645,8 +624,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         ingestWorkObjectTest();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
@@ -739,8 +716,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             // expected, lets continue
         }
 
-        treeIndexer.indexAll(baseAddress);
-
         // Check that the folder and first child successfully made it in
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
@@ -770,8 +745,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Second run of job
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals(1, destMembers.size(), "Incorrect number of children at destination");
@@ -830,8 +803,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        treeIndexer.indexAll(baseAddress);
-
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
         List<RepositoryObject> deposited = new ArrayList<>();
@@ -883,8 +854,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        treeIndexer.indexAll(baseAddress);
-
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
@@ -915,8 +884,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
@@ -963,8 +930,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
 
@@ -1037,8 +1002,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         }
 
         job.run();
-        treeIndexer.indexAll(baseAddress);
-
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
@@ -1077,8 +1040,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
 
@@ -1123,8 +1084,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         // Verify that the correct original deposit ids are assigned to each folder
         FolderObject folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
@@ -1198,8 +1157,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-
-        treeIndexer.indexAll(baseAddress);
 
         AdminUnit unitObj = repoObjLoader.getAdminUnit(unitPid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, unitObj);

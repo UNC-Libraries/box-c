@@ -106,8 +106,6 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testReindexAcls() throws Exception {
-        indexObjectsInTripleStore();
-
         repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
 
         makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);

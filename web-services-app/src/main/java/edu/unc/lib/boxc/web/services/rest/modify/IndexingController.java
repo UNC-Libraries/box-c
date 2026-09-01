@@ -35,9 +35,6 @@ public class IndexingController {
     @Autowired
     private IndexingService solrIndexingService;
 
-    @Autowired
-    private IndexingService triplesIndexingService;
-
     /**
      * Perform a deep reindexing operation in solr on the object with the
      * specified id and all of its children.
@@ -62,18 +59,6 @@ public class IndexingController {
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindex(@PathVariable("id") String id) {
         return indexObject(id, solrIndexingService, "updateSolr");
-    }
-
-    /**
-     * Perform a deep reindexing operation in the triple store on the object
-     * with the specified id.
-     *
-     * @param id the identifier of the object to be reindexed
-     * @return
-     */
-    @RequestMapping(value = "edit/triples/reindex/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Object> reindexTriples(@PathVariable("id") String id) {
-        return indexObjectAndChildren(id, false, triplesIndexingService, "reindexTriples");
     }
 
     private ResponseEntity<Object> indexObject(String id, IndexingService indexingService, String action) {

@@ -18,7 +18,6 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
@@ -35,7 +34,6 @@ import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +73,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
     private TransactionManager txManager;
     private ObjectPathFactory pathFactory;
     private FcrepoClient fcrepoClient;
-    private Model queryModel;
     private StorageLocationManagerImpl locationManager;
     private BinaryTransferService transferService;
     private AccessControlService aclService;
@@ -109,8 +106,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
     private AgentPrincipals agent;
 
-    private RepositoryObjectTreeIndexer treeIndexer;
-
     private AdminUnit adminUnit;
 
     private CollectionObject collection;
@@ -137,7 +132,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         txManager = applicationContext.getBean(TransactionManager.class);
         pathFactory = applicationContext.getBean(ObjectPathFactory.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
-        queryModel = applicationContext.getBean(Model.class);
         locationManager = applicationContext.getBean(StorageLocationManagerImpl.class);
         transferService = applicationContext.getBean(BinaryTransferService.class);
         aclService = applicationContext.getBean(AccessControlService.class);
@@ -172,7 +166,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         contentRoot.addMember(adminUnit);
         adminUnit.addMember(collection);
 
-        treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
         premisLoggerFactory.setBinaryTransferService(transferService);
 
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
@@ -192,8 +185,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         FileObject fileObj = addFileToWork(work, "image/png");
         work.addMember(fileObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         markForDeletion(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
@@ -208,8 +199,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
     public void destroyCollectionImageTest() throws Exception {
         CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
-
-        treeIndexer.indexAll(baseAddress);
 
         // Create collection thumbnail jp2
         PID collPid = collectionWithImg.getPid();
@@ -236,8 +225,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
 
-        treeIndexer.indexAll(baseAddress);
-
         markForDeletion(collectionWithImg.getPid());
         initializeDestroyJob(Collections.singletonList(collectionWithImg.getPid()));
         destroyJob.run();
@@ -255,8 +242,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         FileObject fileObj = addFileToWork(work, mimetype);
         work.addMember(fileObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         markForDeletion(work.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
@@ -272,8 +257,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         WorkObject work = repoObjectFactory.createWorkObject(null);
         FileObject fileObj = addFileToWork(work, "application/octet-stream");
         work.addMember(fileObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         markForDeletion(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
@@ -291,8 +274,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         FileObject fileObj = addFileToWork(work, "audio/wav");
         work.addMember(fileObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         markForDeletion(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
@@ -308,8 +289,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         WorkObject work = repoObjectFactory.createWorkObject(null);
         FileObject fileObj = addFileToWork(work, "video/mp4");
         work.addMember(fileObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         markForDeletion(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));

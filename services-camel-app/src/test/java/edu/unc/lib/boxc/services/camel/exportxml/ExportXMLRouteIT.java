@@ -40,7 +40,6 @@ import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
@@ -108,7 +107,6 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
     private String baseAddress;
     private CamelContext cdrExportXML;
-    private RepositoryObjectTreeIndexer treeIndexer;
     private RepositoryObjectSolrIndexer solrIndexer;
     private RepositoryInitializer repoInitializer;
     protected RepositoryObjectLoader repositoryObjectLoader;
@@ -150,7 +148,6 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         closeable = openMocks(this);
         baseAddress = applicationContext.getBean("baseAddress", String.class);
         cdrExportXML = applicationContext.getBean("cdrExportXML", CamelContext.class);
-        treeIndexer = applicationContext.getBean(RepositoryObjectTreeIndexer.class);
         solrIndexer = applicationContext.getBean(RepositoryObjectSolrIndexer.class);
         repoInitializer = applicationContext.getBean(RepositoryInitializer.class);
         repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);

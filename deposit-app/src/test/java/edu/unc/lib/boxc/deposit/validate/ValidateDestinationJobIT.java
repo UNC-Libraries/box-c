@@ -32,7 +32,6 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -57,8 +56,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private AccessControlService aclService;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
 
     private ValidateDestinationJob job;
 
@@ -86,8 +83,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void rootObject_AddAdminUnit() throws Exception {
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(rootObj.getPid(), DEPOSITOR_NAME, ADMIN_PRINC);
 
         addChildContainer(depBag, Cdr.AdminUnit, "Boxc Unit");
@@ -99,8 +94,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void rootObject_AddInvalidTypes() throws Exception {
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(rootObj.getPid(), DEPOSITOR_NAME, ADMIN_PRINC);
 
         Resource child1 = addChildContainer(depBag, Cdr.ContentRoot, "Extra Content Root");
@@ -136,8 +129,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     @Test
     public void rootObject_AddAdminUnit_InsufficientPermissions() throws Exception {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
-            treeIndexer.indexAll(baseAddress);
-
             setDestinationAndPermissions(rootObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
             addChildContainer(depBag, Cdr.AdminUnit, "Boxc Unit");
@@ -153,8 +144,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, ADMIN_PRINC);
 
         addChildContainer(depBag, Cdr.Collection, "New Collection");
@@ -168,8 +157,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     public void unit_AddInvalidTypes() throws Exception {
         AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, ADMIN_PRINC);
 
@@ -196,8 +183,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
             AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
             rootObj.addMember(unitObj);
 
-            treeIndexer.indexAll(baseAddress);
-
             setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
             addChildContainer(depBag, Cdr.Collection, "New Collection");
@@ -215,8 +200,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         CollectionObject collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(collObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
         addChildContainer(depBag, Cdr.Folder, "New Folder");
@@ -233,8 +216,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         rootObj.addMember(unitObj);
         CollectionObject collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         setDestinationAndPermissions(collObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
@@ -262,8 +243,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
             CollectionObject collObj = repoObjFactory.createCollectionObject(null);
             unitObj.addMember(collObj);
 
-            treeIndexer.indexAll(baseAddress);
-
             setDestinationAndPermissions(collObj.getPid(), DEPOSITOR_NAME, "some_group");
 
             addChildContainer(depBag, Cdr.Folder, "New Folder");
@@ -283,8 +262,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(folderObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
         addChildContainer(depBag, Cdr.Folder, "New Folder");
@@ -303,8 +280,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         unitObj.addMember(collObj);
         FolderObject folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         setDestinationAndPermissions(folderObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
@@ -334,8 +309,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
             FolderObject folderObj = repoObjFactory.createFolderObject(null);
             collObj.addMember(folderObj);
 
-            treeIndexer.indexAll(baseAddress);
-
             setDestinationAndPermissions(folderObj.getPid(), DEPOSITOR_NAME, "some_group");
 
             addChildContainer(depBag, Cdr.Folder, "New Folder");
@@ -357,8 +330,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         WorkObject workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(workObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
         addChildFile(depBag, "File1", true);
@@ -379,8 +350,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         collObj.addMember(folderObj);
         WorkObject workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         setDestinationAndPermissions(workObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
@@ -412,8 +381,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
             WorkObject workObj = repoObjFactory.createWorkObject(null);
             folderObj.addMember(workObj);
 
-            treeIndexer.indexAll(baseAddress);
-
             setDestinationAndPermissions(workObj.getPid(), DEPOSITOR_NAME, "no_one_important");
 
             addChildFile(depBag, "File1", true);
@@ -440,8 +407,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         FileUtils.writeStringToFile(new File(storageUri), "content", UTF_8);
         FileObject fileObj = workObj.addDataFile(filePid, storageUri, "file.txt", "text/plain", null, null, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         setDestinationAndPermissions(fileObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
         addChildFile(depBag, "File1", true);
@@ -461,8 +426,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     public void unit_AddNestedChildren() throws Exception {
         AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, ADMIN_PRINC);
 

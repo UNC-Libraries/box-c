@@ -101,10 +101,6 @@
         <property name="defaultMaxPerRoute" value="5"/>
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
-        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
-    </bean>
-    
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />

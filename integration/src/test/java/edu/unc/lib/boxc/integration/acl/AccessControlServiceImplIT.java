@@ -213,8 +213,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         collObj3 = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Unit Staff Only Collection").model);
         adminUnit2.addMember(collObj3);
-
-        treeIndexer.indexAll(baseAddress);
     }
 
     @AfterEach
@@ -444,8 +442,10 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     }
 
     private List<PID> getAllContentObjects() {
-        return queryModel.listResourcesWithProperty(RDF.type, PcdmModels.Object).toList().stream()
-                .map(p -> PIDs.get(p.getURI()))
-                .collect(Collectors.toList());
+        return List.of(adminUnit1.getPid(), adminUnit2.getPid(), collObj1.getPid(),
+                collObj2.getPid(), collObj3.getPid(), collObj1Folder1.getPid(), collObj1Folder1Work1.getPid(),
+                collObj1Folder2.getPid(), collObj1Folder2Work1.getPid(), collObj1Folder2Work2.getPid(),
+                collObj1Folder2Work3.getPid(), collObj1Work2.getPid(), collObj2Folder1.getPid(),
+                collObj2Folder1Work1.getPid(), collObj2Work2.getPid());
     }
 }

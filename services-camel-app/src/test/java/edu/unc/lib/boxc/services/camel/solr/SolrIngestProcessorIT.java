@@ -153,8 +153,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workObj.getPid(), modsStream));
 
-        indexObjectsInTripleStore();
-
         setMessageTarget(fileObj);
         when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.FileObject.getURI());
         processor.process(exchange);
@@ -191,7 +189,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexCollection() throws Exception {
-        indexObjectsInTripleStore();
         repositoryObjectSolrIndexer.index(unitObj.getPid());
 
         setMessageTarget(collObj);
@@ -236,8 +233,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         Path derivPath = derivativeService.getDerivativePath(fileObj.getPid(), DatastreamType.FULLTEXT_EXTRACTION);
         FileUtils.writeStringToFile(derivPath.toFile(), TEXT_EXTRACT, UTF_8);
-
-        indexObjectsInTripleStore();
 
         setMessageTarget(fileObj);
         processor.process(exchange);
@@ -285,8 +280,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         BinaryObject binObj = fileObj.getOriginalFile();
 
-        indexObjectsInTripleStore();
-
         setMessageTarget(binObj);
         when(message.getHeader(RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
         processor.process(exchange);
@@ -332,8 +325,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
 
-        indexObjectsInTripleStore();
-
         setMessageTarget(fileObj);
         when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.FileObject.getURI());
         processor.process(exchange);
@@ -345,8 +336,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         // Replace primary object with tombstone
         deleteAndDestroyObject(fileObj);
-
-        indexObjectsInTripleStore();
 
         setMessageTarget(workObj);
         processor.process(exchange);
