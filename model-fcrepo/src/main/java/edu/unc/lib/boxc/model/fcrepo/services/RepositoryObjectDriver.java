@@ -295,8 +295,8 @@ public class RepositoryObjectDriver {
         return sparqlQueryService;
     }
 
-    public void setSparqlQueryService(SparqlQueryService SparqlQueryService) {
-        this.sparqlQueryService = SparqlQueryService;
+    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
+        this.sparqlQueryService = sparqlQueryService;
     }
 
     /**
