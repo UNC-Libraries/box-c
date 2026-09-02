@@ -66,7 +66,7 @@ import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/cdr-client-container.xml")
+        @ContextConfiguration("/spring-test/cdr-client-container-fedora7.xml")
 })
 public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     private AutoCloseable closeable;

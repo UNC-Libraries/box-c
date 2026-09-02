@@ -85,7 +85,7 @@ import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
  */
 @ExtendWith({SpringExtension.class})
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container-fedora7.xml"),
     @ContextConfiguration("/spring-test/staff-role-service-container.xml"),
 })
 public class StaffRoleAssignmentServiceIT {
