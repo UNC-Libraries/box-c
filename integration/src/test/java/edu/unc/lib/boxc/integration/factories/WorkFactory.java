@@ -35,7 +35,6 @@ public class WorkFactory extends ContentObjectFactory {
         if (options.containsKey(PRIMARY_OBJECT_KEY) && "true".equals(options.get(PRIMARY_OBJECT_KEY))) {
             work.setPrimaryObject(file.getPid());
             // need to reindex in triple store if adding primary object
-            indexTripleStore(work);
         }
         // need to reindex in solr after adding file object
         indexSolr(work);

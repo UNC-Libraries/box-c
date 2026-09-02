@@ -76,8 +76,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(assignStaffRoles));
 
@@ -98,8 +96,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = coll.getPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, unitOwner));
@@ -139,8 +135,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .model);
         contentRoot.addMember(unit);
 
-        treeIndexer.indexAll(baseAddress);
-
         List<RoleAssignment> assignments = Collections.emptyList();
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -164,8 +158,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         String assignments = "[ { \"no\" : \"thanks\" } ]";
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -181,8 +173,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -194,8 +184,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment("", canManage));
@@ -213,8 +201,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         String assignments = "[ { \"principal\" : \"user\", \"role\" : \"dunno\" } ]";
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -229,8 +215,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canManage, pid));
@@ -255,8 +239,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
-        treeIndexer.indexAll(baseAddress);
-
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_GROUPS, canManage));
 
@@ -279,8 +261,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canManage),

@@ -69,7 +69,6 @@ import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.EditTitleService;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
@@ -130,10 +129,6 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Autowired
     private SparqlUpdateService sparqlUpdateService;
-    @Autowired
-    private Model queryModel;
-    private RepositoryObjectTreeIndexer treeIndexer;
-
     private ContentRootObject contentRoot;
     private AdminUnit adminUnit;
     private CollectionObject collection;
@@ -149,8 +144,6 @@ public class DestroyObjectsCompletelyJobIT {
         agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
 
         createContentTree();
-
-        treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
     }
 
     @AfterEach
@@ -193,8 +186,6 @@ public class DestroyObjectsCompletelyJobIT {
 
         FileObject file = addFileToWork(work);
 
-        treeIndexer.indexAll(baseAddress);
-
         PID originalPid = file.getOriginalFile().getPid();
         File originalFile = new File(file.getOriginalFile().getContentUri());
 
@@ -225,8 +216,6 @@ public class DestroyObjectsCompletelyJobIT {
         FileObject file = addFileToWork(work);
         BinaryObject originalObj = file.getOriginalFile();
         File originalFile = new File(originalObj.getContentUri());
-
-        treeIndexer.indexAll(baseAddress);
 
         PID modsPid = DatastreamPids.getMdDescriptivePid(work.getPid());
         File modsFile = new File(repoObjLoader.getBinaryObject(modsPid).getContentUri());
@@ -270,8 +259,6 @@ public class DestroyObjectsCompletelyJobIT {
                 PcdmModels.memberOf, folder.getResource());
         sparqlUpdateService.executeUpdate(unit2.getPid().getRepositoryPath(), updateString);
 
-        treeIndexer.indexAll(baseAddress);
-
         initializeJob(folder.getPid());
 
         try {
@@ -290,8 +277,6 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Test
     public void destroyContentRoot() throws Exception {
-        treeIndexer.indexAll(baseAddress);
-
         initializeJob(contentRoot.getPid());
 
         try {
@@ -321,8 +306,6 @@ public class DestroyObjectsCompletelyJobIT {
         FileObject file = addFileToWork(work);
         BinaryObject originalObj = file.getOriginalFile();
         File originalFile = new File(originalObj.getContentUri());
-
-        treeIndexer.indexAll(baseAddress);
 
         assertTrue(repoObjFactory.objectExists(folder.getUri()));
         assertTrue(repoObjFactory.objectExists(folder2.getUri()));
@@ -357,8 +340,6 @@ public class DestroyObjectsCompletelyJobIT {
 
         WorkObject work = repoObjFactory.createWorkObject(null);
         collection.addMember(work);
-
-        treeIndexer.indexAll(baseAddress);
 
         initializeJob(work.getPid());
 

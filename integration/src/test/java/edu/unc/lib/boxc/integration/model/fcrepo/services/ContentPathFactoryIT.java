@@ -94,8 +94,6 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void testGetCachedAncestorPidsTest() throws Exception {
-        treeIndexer.indexAll(baseAddress);
-
         List<PID> ancestors = pathFactory.getAncestorPids(collObj.getPid());
 
         assertEquals(2, ancestors.size(), "Incorrect number of ancestors");

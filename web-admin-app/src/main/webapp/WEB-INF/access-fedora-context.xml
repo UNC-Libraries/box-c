@@ -32,10 +32,6 @@
         </property>
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
-        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
-    </bean>
-    
     <!-- Initialize access control dependencies -->
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">

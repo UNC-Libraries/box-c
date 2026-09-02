@@ -61,11 +61,6 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
 
-    <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">
-        <constructor-arg ref="queryModel" />
-        <constructor-arg ref="fcrepoClient" />
-    </bean>
-
     <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
     </bean>

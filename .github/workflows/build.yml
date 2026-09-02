@@ -53,10 +53,6 @@ jobs:
     - name: Restart fedora now that the repository has been checked out so config files are available
       run: docker restart ${{ env.CONTAINER_ID }}
 
-    - name: Run Fuseki container as command to pass in extra dataset name argument
-      run: |
-        docker run -d --rm -p 43030:3030 atomgraph/fuseki --mem /test
-
     - name: Make directory for solr config
       run: mkdir -p /tmp/solr-config
 

@@ -68,15 +68,12 @@ public class AddContainerIT extends AbstractAPIIT {
 
         AdminUnit parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
         contentRoot.addMember(parent);
-        treeIndexer.indexAll(baseAddress);
 
         String label = "collection_label";
         MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getId())
                 .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(parent, label, CollectionObject.class);
 
@@ -95,8 +92,6 @@ public class AddContainerIT extends AbstractAPIIT {
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         assertChildContainerAdded(contentRoot, label, AdminUnit.class);
 
         // Verify response from api
@@ -113,8 +108,6 @@ public class AddContainerIT extends AbstractAPIIT {
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "folder_label";
         String staffOnly = "true";
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
@@ -122,8 +115,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", staffOnly))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
@@ -146,8 +137,6 @@ public class AddContainerIT extends AbstractAPIIT {
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "folder_label";
         String staffOnly = "false";
         mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
@@ -165,8 +154,6 @@ public class AddContainerIT extends AbstractAPIIT {
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         String label = "folder_label";
         String staffOnly = "true";
@@ -187,8 +174,6 @@ public class AddContainerIT extends AbstractAPIIT {
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "folder_label";
         String staffOnly = "false";
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
@@ -196,8 +181,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", staffOnly))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
@@ -219,8 +202,6 @@ public class AddContainerIT extends AbstractAPIIT {
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "folder_label";
         String staffOnly = "true";
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
@@ -228,8 +209,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", staffOnly))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
@@ -250,15 +229,11 @@ public class AddContainerIT extends AbstractAPIIT {
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "work_label";
         MvcResult result = mvc.perform(post("/edit/create/work/" + collObj.getPid().getId())
                 .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(collObj, label, WorkObject.class);
 
@@ -274,8 +249,6 @@ public class AddContainerIT extends AbstractAPIIT {
         PID parentPid = makePid();
 
         CollectionObject parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
-
         assertChildContainerNotAdded(parent);
 
         String label = "admin_unit";
@@ -284,8 +257,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("patronOnly", (String) null))
             .andExpect(status().isInternalServerError())
             .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerNotAdded(parent);
 
@@ -301,8 +272,6 @@ public class AddContainerIT extends AbstractAPIIT {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "collection";
         String adminId = adminUnit.getPid().getId();
         MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
@@ -310,8 +279,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", "false"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
@@ -329,8 +296,6 @@ public class AddContainerIT extends AbstractAPIIT {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "staff only collection";
         String adminId = adminUnit.getPid().getId();
         MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
@@ -338,8 +303,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", "true"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
@@ -359,8 +322,6 @@ public class AddContainerIT extends AbstractAPIIT {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
-        treeIndexer.indexAll(baseAddress);
-
         String label = "collection with number";
         String collNum = "12345678";
         String adminId = adminUnit.getPid().getId();
@@ -369,8 +330,6 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("collectionNumber", collNum))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
@@ -393,7 +352,6 @@ public class AddContainerIT extends AbstractAPIIT {
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
-        treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
                 .param("label", "folder11"))

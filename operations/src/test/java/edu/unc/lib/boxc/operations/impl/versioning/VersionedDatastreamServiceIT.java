@@ -46,7 +46,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.DatastreamVersion;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
@@ -79,8 +78,6 @@ public class VersionedDatastreamServiceIT {
     private BinaryTransferServiceImpl transferService;
     @Autowired
     private PIDMinter pidMinter;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private TransactionManager transactionManager;
 
@@ -121,7 +118,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_NewDatastream_StreamContent() throws Exception {
         repoObjFactory.createFolderObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         DatastreamVersion newV = new DatastreamVersion(dsPid);
         newV.setContentStream(getModsDocumentStream(TEST_TITLE));
@@ -136,7 +132,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_NewDatastream_UriContent() throws Exception {
         repoObjFactory.createFolderObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         Path srcFile = sourcePath.resolve("src_mods.xml");
         DatastreamVersion newV = new DatastreamVersion(dsPid);
@@ -154,7 +149,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_ExistingDatastream() throws Exception {
         repoObjFactory.createFolderObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         DatastreamVersion newV1 = new DatastreamVersion(dsPid);
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
@@ -193,7 +187,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_DatastreamWithHistory() throws Exception {
         repoObjFactory.createFolderObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         DatastreamVersion newV1 = new DatastreamVersion(dsPid);
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
@@ -252,7 +245,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_NewDatastream_ProvidedTransferSession() throws Exception {
         WorkObject work = repoObjFactory.createWorkObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         try (BinaryTransferSession session = transferService.getSession(work)) {
             DatastreamVersion newV = new DatastreamVersion(dsPid);
@@ -272,7 +264,6 @@ public class VersionedDatastreamServiceIT {
     public void addVersion_NonDatastreamObject() throws Exception {
         Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
             repoObjFactory.createWorkObject(parentPid, null);
-            treeIndexer.indexAll(baseAddress);
 
             DatastreamVersion newV = new DatastreamVersion(parentPid);
             newV.setContentStream(getModsDocumentStream(TEST_TITLE));
@@ -296,7 +287,6 @@ public class VersionedDatastreamServiceIT {
     @Test
     public void addVersion_DatastreamWithSameContentSkipUnmodified() throws Exception {
         repoObjFactory.createFolderObject(parentPid, null);
-        treeIndexer.indexAll(baseAddress);
 
         DatastreamVersion newV1 = new DatastreamVersion(dsPid);
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
