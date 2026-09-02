@@ -24,12 +24,7 @@ define('EditTranscriptForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteState
         };
 
         EditTranscriptForm.prototype.validationErrors = function() {
-            var errors = [];
-            var transcript = $("input[name='transcript']", this.$form).val();
-            // Validate input
-            if (!transcript)
-                errors.push("You must specify a transcript.");
-            return errors;
+            return [];
         };
 
         EditTranscriptForm.prototype.getSuccessMessage = function(data) {
