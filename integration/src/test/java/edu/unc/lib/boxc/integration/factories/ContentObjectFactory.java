@@ -10,7 +10,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,6 @@ import java.util.Map;
  */
 public class ContentObjectFactory {
     protected RepositoryObjectFactory repositoryObjectFactory;
-    protected RepositoryObjectTreeIndexer repositoryObjectTreeIndexer;
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
     protected RepositoryObjectLoader repositoryObjectLoader;
     protected ModsFactory modsFactory;
@@ -40,14 +38,8 @@ public class ContentObjectFactory {
             var request = new UpdateDescriptionService.UpdateDescriptionRequest(agent, object.getPid(), modsDocument);
             updateDescriptionService.updateDescription(request);
         }
-        // index folder in triple store
-        indexTripleStore(object);
         // index into solr
         indexSolr(object);
-    }
-
-    public void indexTripleStore(ContentObject object) throws Exception {
-        repositoryObjectTreeIndexer.indexAll(object.getUri().toString());
     }
 
     public void indexSolr(ContentObject object) {
@@ -88,10 +80,6 @@ public class ContentObjectFactory {
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
         this.repositoryObjectFactory = repositoryObjectFactory;
-    }
-
-    public void setRepositoryObjectTreeIndexer(RepositoryObjectTreeIndexer repositoryObjectTreeIndexer) {
-        this.repositoryObjectTreeIndexer = repositoryObjectTreeIndexer;
     }
 
     public void setRepositoryObjectSolrIndexer(RepositoryObjectSolrIndexer repositoryObjectSolrIndexer) {

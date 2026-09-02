@@ -55,8 +55,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         assertPrimaryObjectSet(parent, fileObj);
 
         // Verify response from api
@@ -78,8 +76,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
             .andExpect(status().isForbidden())
             .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
@@ -99,8 +95,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + folderObjPid.getUUID()))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertPrimaryObjectNotSet(parent);
 
@@ -133,8 +127,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
@@ -155,8 +147,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         MvcResult result = mvc.perform(put("/edit/clearPrimaryObject/" + fileObjPid.getUUID()))
             .andExpect(status().isForbidden())
             .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         assertPrimaryObjectSet(parent, fileObj);
 

@@ -49,8 +49,6 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
         obj.addMember(collectionObj);
 
-        treeIndexer.indexAll(baseAddress);
-
         List<ContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
         assertEquals(collectionObj.getPid(), members.get(0).getPid(),

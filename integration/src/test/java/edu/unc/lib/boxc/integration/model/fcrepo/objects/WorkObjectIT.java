@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -71,14 +72,12 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
         obj.addDataFile(filePid, fileUri, filename, mimetype, null, null, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         List<ContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
 
-        assertTrue(members.get(0) instanceof FileObject);
+        assertInstanceOf(FileObject.class, members.getFirst());
 
-        FileObject dataObj = (FileObject) members.get(0);
+        FileObject dataObj = (FileObject) members.getFirst();
         BinaryObject bObj = dataObj.getOriginalFile();
 
         assertEquals(filename, bObj.getFilename());
@@ -110,8 +109,6 @@ public class WorkObjectIT extends AbstractFedoraIT {
         String filenameS = "s1.txt";
         FileUtils.writeStringToFile(new File(fileUri2), bodyStringS, "UTF-8");
         FileObject supp = obj.addDataFile(filePid2, fileUri2, filenameS, null, null, null, null);
-
-        treeIndexer.indexAll(baseAddress);
 
         // Retrieve the primary object and verify it
         FileObject primaryResult = obj.getPrimaryObject();

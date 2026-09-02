@@ -140,8 +140,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
         WorkObject work = repoObjFactory.createWorkObject(modelWithOriginalDeposit(record));
         coll.addMember(work);
 
-        treeIndexer.indexAll(baseAddress);
-
         // Collection and work should have been part of this deposit
         List<PID> depositedObjects = record.listDepositedObjects();
         assertEquals(2, depositedObjects.size());

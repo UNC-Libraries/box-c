@@ -78,7 +78,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
@@ -109,8 +108,6 @@ public class PatronAccessAssignmentServiceIT {
     private RepositoryObjectLoader repoObjLoader;
     @Mock
     private OperationsMessageSender operationsMessageSender;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private TransactionManager txManager;
     @Autowired
@@ -159,7 +156,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             doThrow(new AccessRestrictionException()).when(aclService)
                     .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.changePatronAccess));
@@ -177,7 +173,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             doThrow(new AccessRestrictionException()).when(aclService)
                     .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
@@ -196,7 +191,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(ServiceException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -218,7 +212,6 @@ public class PatronAccessAssignmentServiceIT {
             BinaryObject binObj = fileObj.getOriginalFile();
 
             PID pid = binObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -233,7 +226,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(InvalidAssignmentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = adminUnit.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -247,7 +239,6 @@ public class PatronAccessAssignmentServiceIT {
     public void assignNewRoles() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -279,7 +270,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -293,7 +283,6 @@ public class PatronAccessAssignmentServiceIT {
     public void missingTarget() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -308,7 +297,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null));
         });
@@ -319,7 +307,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -334,7 +321,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -349,7 +335,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
@@ -365,7 +350,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanViewOriginals(PUBLIC_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -395,7 +379,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -426,7 +409,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanViewOriginals(PUBLIC_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
@@ -451,7 +433,6 @@ public class PatronAccessAssignmentServiceIT {
     public void addNewEmbargo() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1).getTime();
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -477,7 +458,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(InvalidAssignmentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
 
             Date embargoUntil = new Date(0);
             PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -494,7 +474,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addEmbargoUntil(originalEmbargo)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(2).getTime();
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -524,7 +503,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addEmbargoUntil(originalEmbargo)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
@@ -549,7 +527,6 @@ public class PatronAccessAssignmentServiceIT {
     public void addNewEmbargoAndRole() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1).getTime();
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -577,7 +554,6 @@ public class PatronAccessAssignmentServiceIT {
     public void skipAddEmbargo() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1).getTime();
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -605,7 +581,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addEmbargoUntil(originalEmbargo)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
@@ -628,7 +603,6 @@ public class PatronAccessAssignmentServiceIT {
         createCollectionInUnit(new AclModelBuilder("Collection")
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
@@ -658,7 +632,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
@@ -682,7 +655,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         Date embargoUntil = getYearsInTheFuture(1).getTime();
         PatronAccessDetails accessDetails = new PatronAccessDetails();
@@ -710,7 +682,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addEmbargoUntil(originalEmbargo)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
@@ -732,7 +703,6 @@ public class PatronAccessAssignmentServiceIT {
     public void makeNoChangesToObjectWithNoPatronAccess() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
@@ -759,7 +729,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addEmbargoUntil(originalEmbargo)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(originalEmbargo.getTime());
@@ -787,7 +756,6 @@ public class PatronAccessAssignmentServiceIT {
                 .addCanManage(GRP_PRINC)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -817,8 +785,6 @@ public class PatronAccessAssignmentServiceIT {
         Assertions.assertThrows(InvalidAssignmentException.class, () -> {
             createCollectionInUnit(null);
             PID pid = collObj.getPid();
-            treeIndexer.indexAll(baseAddress);
-
             PatronAccessDetails accessDetails = new PatronAccessDetails();
             accessDetails.setRoles(asList(
                     new RoleAssignment(GRP_PRINC, canViewMetadata)));

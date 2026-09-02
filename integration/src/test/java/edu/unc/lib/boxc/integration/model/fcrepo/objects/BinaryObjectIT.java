@@ -84,8 +84,6 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
         BinaryObject binObj = fileObj.addOriginalFile(makeContentUri(fileObj.getPid(), BODY_STRING), FILENAME, MIMETYPE, null, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         RepositoryObject parent = binObj.getParent();
         assertEquals(parent.getPid(), fileObj.getPid(),
                 "Parent of the binary must match the file object which created it");

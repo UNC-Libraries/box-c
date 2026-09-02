@@ -24,7 +24,7 @@ public class IndexingService {
      * or a clean reindexing, as indicated by the request
      *
      * @param agent security principals of the agent making request
-     * @param objPid the PID where reindexing should begin in the tree
+     * @param objectPid the PID where reindexing should begin in the tree
      * @param inplace whether in-place reindexing has been requested
      */
     public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, Boolean inplace) {

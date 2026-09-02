@@ -54,7 +54,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
@@ -82,8 +81,6 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     private SolrSearchService searchService;
     @Autowired
     private TransactionManager txManager;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private RepositoryInitializer repoInitializer;
     @Autowired
@@ -140,7 +137,6 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         var doc = makeContainerDocument(pid, List.of(FacetConstants.EMBARGOED));
         server.add(doc);
@@ -172,7 +168,6 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid2 = collObj2.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         var doc1 = makeContainerDocument(pid1, List.of(FacetConstants.EMBARGOED));
         var doc2 = makeContainerDocument(pid2, List.of(FacetConstants.EMBARGOED));
@@ -205,7 +200,6 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     public void expireNoEmbargoesTest() throws Exception {
         CollectionObject collObj = createCollectionInUnit(null);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         var doc = makeContainerDocument(pid, Collections.emptyList());
         server.add(doc);
@@ -232,7 +226,6 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
 
         var doc = makeContainerDocument(pid, List.of(FacetConstants.EMBARGOED));
 

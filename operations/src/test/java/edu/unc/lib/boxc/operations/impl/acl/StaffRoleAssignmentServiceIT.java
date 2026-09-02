@@ -72,7 +72,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
@@ -110,8 +109,6 @@ public class StaffRoleAssignmentServiceIT {
     private PIDMinter pidMinter;
     @Mock
     private OperationsMessageSender operationsMessageSender;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private TransactionManager txManager;
     @Autowired
@@ -176,7 +173,6 @@ public class StaffRoleAssignmentServiceIT {
             PID pid = pidMinter.mintContentPid();
             AdminUnit unit = repoObjFactory.createAdminUnit(pid, null);
             contentRoot.addMember(unit);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(USER_PRINC, canAccess)));
@@ -190,7 +186,6 @@ public class StaffRoleAssignmentServiceIT {
         PID pid = pidMinter.mintContentPid();
         AdminUnit unit = repoObjFactory.createAdminUnit(pid, null);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>();
 
@@ -217,7 +212,6 @@ public class StaffRoleAssignmentServiceIT {
                 .addEmbargoUntil(TOMORROW)
                 .model);
         unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>();
 
@@ -240,7 +234,6 @@ public class StaffRoleAssignmentServiceIT {
         PID pid = pidMinter.mintContentPid();
         AdminUnit unit = repoObjFactory.createAdminUnit(pid, null);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(USER_PRINC, unitOwner)));
@@ -265,7 +258,6 @@ public class StaffRoleAssignmentServiceIT {
             contentRoot.addMember(unit);
             CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
             unit.addMember(coll);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(USER_PRINC, unitOwner)));
@@ -284,7 +276,6 @@ public class StaffRoleAssignmentServiceIT {
             unit.addMember(coll);
             FolderObject folder = repoObjFactory.createFolderObject(pid, null);
             coll.addMember(folder);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(USER_PRINC, canManage)));
@@ -303,7 +294,6 @@ public class StaffRoleAssignmentServiceIT {
             unit.addMember(coll);
             WorkObject work = repoObjFactory.createWorkObject(pid, null);
             coll.addMember(work);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(USER_PRINC, canManage)));
@@ -320,7 +310,6 @@ public class StaffRoleAssignmentServiceIT {
                 .addCanManage(GRP_PRINC)
                 .model);
         contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(USER_PRINC, canManage)));
@@ -346,7 +335,6 @@ public class StaffRoleAssignmentServiceIT {
             contentRoot.addMember(unit);
             CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
             unit.addMember(coll);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(USER_PRINC, canManage),
@@ -363,7 +351,6 @@ public class StaffRoleAssignmentServiceIT {
         contentRoot.addMember(unit);
         CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(USER_PRINC, canManage),
@@ -393,7 +380,6 @@ public class StaffRoleAssignmentServiceIT {
         contentRoot.addMember(unit);
         CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(GRP_PRINC, canManage)));
@@ -424,7 +410,6 @@ public class StaffRoleAssignmentServiceIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
         unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(GRP_PRINC, canManage)));
@@ -453,7 +438,6 @@ public class StaffRoleAssignmentServiceIT {
             contentRoot.addMember(unit);
             CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
             unit.addMember(coll);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(PUBLIC_PRINC, canManage)));
@@ -470,7 +454,6 @@ public class StaffRoleAssignmentServiceIT {
             contentRoot.addMember(unit);
             CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
             unit.addMember(coll);
-            treeIndexer.indexAll(baseAddress);
 
             Set<RoleAssignment> assignments = new HashSet<>(asList(
                     new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));

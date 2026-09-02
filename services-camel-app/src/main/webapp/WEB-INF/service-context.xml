@@ -101,10 +101,6 @@
         <property name="defaultMaxPerRoute" value="5"/>
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
-        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
-    </bean>
-    
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
@@ -330,9 +326,6 @@
         <constructor-arg value="${cdr.enhancement.path.video}" />
     </bean>
     
-    <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
-    </bean>
-
     <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
         <property name="defaultDestinationName" value="${cdr.ordermembers.stream}" />
@@ -667,8 +660,6 @@
     <!-- Camel contexts -->
 
     <camel:camelContext id="boxcCamelContext">
-        <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
-        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.longleaf</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>

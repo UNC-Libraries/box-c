@@ -146,8 +146,6 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = work.addDataFile(filePid, origUri, origFilename, origMimetype, origSha1Checksum,
                     origMd5Checksum, null);
 
-        treeIndexer.indexAll(baseAddress);
-
         RepositoryObject parent = fileObj.getParent();
         assertEquals(parent.getPid(), work.getPid(), "Parent of the file must match the work it was created in");
     }

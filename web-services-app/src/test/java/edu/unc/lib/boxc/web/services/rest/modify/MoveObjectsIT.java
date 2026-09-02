@@ -78,8 +78,6 @@ public class MoveObjectsIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
@@ -101,8 +99,6 @@ public class MoveObjectsIT extends AbstractAPIIT {
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
@@ -129,8 +125,6 @@ public class MoveObjectsIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        treeIndexer.indexAll(baseAddress);
-
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
@@ -156,8 +150,6 @@ public class MoveObjectsIT extends AbstractAPIIT {
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
-
-        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));

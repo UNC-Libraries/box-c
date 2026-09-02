@@ -29,7 +29,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 /**
@@ -62,10 +61,6 @@ public abstract class AbstractFedoraIT {
     @Autowired
     protected FcrepoClient fcrepoClient;
 
-    @Autowired
-    protected Model queryModel;
-    @Autowired
-    protected RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     protected RepositoryInitializer repoInitializer;
 
