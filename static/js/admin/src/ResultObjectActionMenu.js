@@ -1,9 +1,9 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
 		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'CollectionDisplaySettingsForm', 'EditStreamingPropertiesForm',
-		'EditAltTextForm', 'EditWcagComplianceForm', 'contextMenu'],
+		'EditAltTextForm', 'EditWcagComplianceForm', 'contextMenu', "EditTranscriptForm"],
 		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, CollectionDisplaySettingsForm, EditStreamingPropertiesForm, EditAltTextForm,
-				 EditWcagComplianceForm) {
+				 EditWcagComplianceForm, mod1, EditTranscriptForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -204,7 +204,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editAltText"] = {name : 'Edit Alt Text'};
 			items["editWcagCompliance"] = {name : 'Edit WCAG compliance'};
-			items["editWcagCompliance"] = {name : 'Edit Transcript'};
+			items["editTranscript"] = {name : 'Edit Transcript'};
 		}
 
 		if ((metadata.type === 'Folder' || metadata.type === 'Collection') && $.inArray('editDescription', metadata.permissions) != -1) {
@@ -403,6 +403,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "editWcagCompliance" :
 						self.editWcagCompliance(resultObject);
+						break;
+					case "editTranscript" :
+						self.editTranscript(resultObject);
 						break;
 					case "editType" :
 						self.actionHandler.addEvent({
@@ -669,6 +672,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			actionHandler : this.actionHandler
 		});
 		editWcagComplianceForm.open(resultObject);
+	};
+
+	ResultObjectActionMenu.prototype.editTranscript = function(resultObject) {
+		var editTranscriptForm = new EditTranscriptForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editTranscriptForm.open(resultObject);
 	};
 
 	ResultObjectActionMenu.prototype.editThumbnail = function(resultObject) {

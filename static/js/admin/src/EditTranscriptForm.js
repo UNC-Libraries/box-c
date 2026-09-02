@@ -15,6 +15,10 @@ define('EditTranscriptForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteState
         EditTranscriptForm.prototype.constructor = EditTranscriptForm;
         EditTranscriptForm.prototype = Object.create(AbstractForm.prototype);
 
+        EditTranscriptForm.prototype.open = function(resultObject) {
+            AbstractForm.prototype.open.call(this, resultObject);
+        };
+
         EditTranscriptForm.prototype.preprocessForm = function(resultObject) {
             this.action_url = `/services/api/edit/transcript/${resultObject.metadata.id}`;
         };
