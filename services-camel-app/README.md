@@ -20,7 +20,7 @@ The script determines an appropriate message body based on action, as register a
 expect different message bodies. The input file should contain absolute file paths to the files
 to register or deregister.
 
-```
+```bash
 mvn -pl services-camel-app exec:java \
   -Dexec.mainClass="edu.unc.lib.boxc.services.camel.cli.LongleafResubmissionUtil" \
   -Dexec.classpathScope=test \

@@ -40,6 +40,8 @@ public class LongleafResubmissionUtil {
 
     private static final String REGISTER_DESTINATION = "activemq:queue:longleaf.register.batch";
     private static final String DEREGISTER_DESTINATION = "activemq:queue:longleaf.deregister.batch";
+    private static final String REGISTER_ACTION = "register";
+    private static final String DEREGISTER_ACTION = "deregister";
 
     // Matches a UUID path segment, used to locate the start of the PID identifier
     // within a hashed storage path such as .../2e/4a/84/18/{uuid}/datafs/original_file
@@ -82,12 +84,13 @@ public class LongleafResubmissionUtil {
         if (inputPath == null) {
             throw new IllegalArgumentException("--input is required");
         }
-        if (!"register".equals(action) && !"deregister".equals(action)) {
-            throw new IllegalArgumentException("--action is required and must be either 'register' or 'deregister'");
+        if (!REGISTER_ACTION.equals(action) && !DEREGISTER_ACTION.equals(action)) {
+            throw new IllegalArgumentException("--action is required and must be either '"
+                    + REGISTER_ACTION + "' or '" + DEREGISTER_ACTION + "'");
         }
 
-        String destination = "register".equals(action) ? REGISTER_DESTINATION : DEREGISTER_DESTINATION;
-        boolean register = "register".equals(action);
+        String destination = REGISTER_ACTION.equals(action) ? REGISTER_DESTINATION : DEREGISTER_DESTINATION;
+        boolean register = REGISTER_ACTION.equals(action);
 
         List<String> paths = Files.readAllLines(Paths.get(inputPath));
         System.out.println("Preparing to send " + paths.size() + " files with action " + action + " to " + destination);
