@@ -48,7 +48,7 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container-fedora7.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/import-job-it.xml")
 })
 public class UpdateDescriptionServiceIT {

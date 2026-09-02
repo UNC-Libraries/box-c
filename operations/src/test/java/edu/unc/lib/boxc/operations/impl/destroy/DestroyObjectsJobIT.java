@@ -99,7 +99,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container-fedora7.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml")
 })
 public class DestroyObjectsJobIT {
