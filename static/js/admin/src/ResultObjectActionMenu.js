@@ -204,6 +204,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editAltText"] = {name : 'Edit Alt Text'};
 			items["editWcagCompliance"] = {name : 'Edit WCAG compliance'};
+			items["editWcagCompliance"] = {name : 'Edit Transcript'};
 		}
 
 		if ((metadata.type === 'Folder' || metadata.type === 'Collection') && $.inArray('editDescription', metadata.permissions) != -1) {
