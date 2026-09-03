@@ -84,7 +84,7 @@ public class DownloadBulkControllerIT {
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
         workPid = PIDs.get(WORK_ID);
         filePid = PIDs.get(FILE_ID);
         GroupsThreadStore.storeUsername(USERNAME);

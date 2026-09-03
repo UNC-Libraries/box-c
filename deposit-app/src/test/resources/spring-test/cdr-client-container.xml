@@ -30,7 +30,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="repositoryObjectLoaderFactory" ref="repositoryObjectLoaderFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
@@ -69,11 +69,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="pidMinter" />
-    </bean>
-
-    <bean id="repositoryObjectDriverFactory"
-          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
-        <property name="targetBeanName" value="repositoryObjectDriver" />
     </bean>
     
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
@@ -116,18 +111,13 @@
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="repositoryObjectDriverFactory" ref="repositoryObjectDriverFactory" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="cacheTimeToLive" value="10000" />
         <property name="cacheMaxSize" value="500" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-    </bean>
-
-    <bean id="repositoryObjectLoaderFactory"
-          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
-        <property name="targetBeanName" value="repositoryObjectLoader" />
     </bean>
     
     <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >

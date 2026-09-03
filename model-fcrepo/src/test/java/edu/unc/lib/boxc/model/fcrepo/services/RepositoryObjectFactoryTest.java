@@ -49,7 +49,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-
 /**
  *
  * @author bbpennel
@@ -89,8 +88,7 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
         repoObjFactory.setSparqlUpdateService(sparqlUpdateService);
-        // New ObjectFactory-based injection
-        repoObjFactory.setRepositoryObjectLoaderFactory(() -> repoObjLoader);
+        repoObjFactory.setRepositoryObjectLoader(repoObjLoader);
         pidMinter = new RepositoryPIDMinter();
         repoObjFactory.setPidMinter(pidMinter);
         linkHeaders = new ArrayList<>();
@@ -105,6 +103,7 @@ public class RepositoryObjectFactoryTest {
         when(fcrepoClient.post(any(URI.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.perform()).thenReturn(mockResponse);
         when(mockResponse.getLinkHeaders(any(String.class))).thenReturn(linkHeaders);
+
     }
 
     @AfterEach

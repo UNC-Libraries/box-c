@@ -29,7 +29,6 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import org.springframework.beans.factory.ObjectFactory;
 
 /**
  * Loader for cache of repository objects
@@ -44,7 +43,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     private static final URI BINARY_TYPE_URI = URI.create(Ldp.NonRdfSource.getURI());
 
     private FcrepoClient client;
-    private ObjectFactory<RepositoryObjectDriver> repositoryObjectDriverFactory;
+    private RepositoryObjectDriver repositoryObjectDriver;
     private RepositoryObjectFactory repoObjFactory;
 
     public RepositoryObjectCacheLoader() {
@@ -115,13 +114,11 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     }
 
     /**
-     * @param repositoryObjectDriverFactory the repository object data loader to set
+     * @param repositoryObjectDriver the repository object data loader to set
      */
-    public void setRepositoryObjectDriverFactory(
-            ObjectFactory<RepositoryObjectDriver> repositoryObjectDriverFactory) {
-        this.repositoryObjectDriverFactory = repositoryObjectDriverFactory;
+    public void setRepositoryObjectDriver(RepositoryObjectDriver repositoryObjectDriver) {
+        this.repositoryObjectDriver = repositoryObjectDriver;
     }
-
 
     /**
      * @param repoObjFactory the repository object data loader to set
@@ -131,7 +128,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     }
 
     private BinaryObjectImpl instantiateBinaryObject(PID pid, URI contentUri, String etag) {
-        BinaryObjectImpl obj = new BinaryObjectImpl(pid, contentUri, repositoryObjectDriver(), repoObjFactory);
+        BinaryObjectImpl obj = new BinaryObjectImpl(pid, contentUri, repositoryObjectDriver, repoObjFactory);
         obj.setEtag(etag);
         return obj;
     }
@@ -143,27 +140,27 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
         if (isContentPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.Tombstone)) {
-                obj = new TombstoneImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new TombstoneImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Work)) {
-                obj = new WorkObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new WorkObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
-                obj = new FileObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new FileObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Ldp.NonRdfSource)) {
-                obj = new BinaryObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new BinaryObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Folder)) {
-                obj = new FolderObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new FolderObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Collection)) {
-                obj = new CollectionObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new CollectionObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
-                obj = new ContentRootObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new ContentRootObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
-                obj = new AdminUnitImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new AdminUnitImpl(pid, repositoryObjectDriver, repoObjFactory);
             }
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
-                obj = new DepositRecordImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new DepositRecordImpl(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Ldp.NonRdfSource)) {
-                obj = new BinaryObjectImpl(pid, repositoryObjectDriver(), repoObjFactory);
+                obj = new BinaryObjectImpl(pid, repositoryObjectDriver, repoObjFactory);
             }
         }
 
@@ -189,10 +186,6 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
     private boolean isDepositPID(PID pid) {
         return pid.getQualifier().equals(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
-    }
-
-    private RepositoryObjectDriver repositoryObjectDriver() {
-        return repositoryObjectDriverFactory.getObject();
     }
 
     /**

@@ -74,7 +74,7 @@ public class DownloadImageControllerIT {
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
 
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
     }
 
     @AfterEach
