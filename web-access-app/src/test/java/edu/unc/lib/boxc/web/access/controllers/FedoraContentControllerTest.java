@@ -45,7 +45,7 @@ public class FedoraContentControllerTest {
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
 
         controller = new FedoraContentController();
         controller.setFedoraContentService(fedoraContentService);

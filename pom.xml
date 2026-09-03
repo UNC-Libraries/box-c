@@ -71,7 +71,7 @@
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
         <mockito.version>5.20.0</mockito.version>
         <mockito.junit.version>5.20.0</mockito.junit.version>
-        <fcrepo.client.version>5.0.0</fcrepo.client.version>
+        <fcrepo.client.version>6.2.0</fcrepo.client.version>
         <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
@@ -264,7 +264,7 @@
                     <!--Singleton ServletContainerAuthenticationProvider -->
                     <reuseForks>false</reuseForks>
                     <systemPropertyVariables>
-                        <fcrepo.baseUri>http://localhost:48085/rest</fcrepo.baseUri>
+                        <fcrepo.baseUri>http://localhost:48087/rest</fcrepo.baseUri>
                         <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
                     </systemPropertyVariables>
                 </configuration>

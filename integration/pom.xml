@@ -12,7 +12,7 @@
     <name>Box-c Integration tests</name>
     <properties>
         <jetty.version>12.0.36</jetty.version>
-        <fcrepo.dynamic.test.port>48085</fcrepo.dynamic.test.port>
+        <fcrepo.dynamic.test.port>48087</fcrepo.dynamic.test.port>
     </properties>
 
     <build>
@@ -61,7 +61,7 @@
                     <systemProperties>
                         <server.properties.uri>file:${project.build.directory}/test-classes/access-app.properties</server.properties.uri>
                         <acl.properties.uri>file:${project.build.directory}/test-classes/patronPrincipalConfig.json</acl.properties.uri>
-                        <fcrepo.baseUri>http://localhost:48085/fcrepo/rest</fcrepo.baseUri>
+                        <fcrepo.baseUri>http://localhost:48087/fcrepo/rest</fcrepo.baseUri>
                     </systemProperties>
                     <webApp>
                         <contextPath>/access</contextPath>

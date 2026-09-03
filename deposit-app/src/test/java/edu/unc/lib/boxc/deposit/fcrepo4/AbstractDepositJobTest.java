@@ -49,8 +49,8 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
  */
 public class AbstractDepositJobTest {
 
-    protected static final String FEDORA_BASE = "http://localhost:48085/rest/";
-    protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
+    protected static final String FEDORA_BASE = "http://localhost:48087/rest/";
+    protected static final String TX_URI = "http://localhost:48087/rest/fcr:tx/99b58d30-06f5-477b-a44c-d614a9049d38";
 
     private AutoCloseable closeable;
 

@@ -96,7 +96,7 @@ public class MachineGeneratedSearchControllerTest {
         searchState = new SearchState();
         searchState.setFacetsToRetrieve(Collections.emptyList());
 
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
 
         when(searchStateFactory.createSearchState(any())).thenReturn(searchState);
     }

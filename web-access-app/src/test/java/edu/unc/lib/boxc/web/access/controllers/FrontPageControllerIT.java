@@ -40,7 +40,7 @@ public class FrontPageControllerIT {
         closeable = openMocks(this);
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
 
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
 
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
