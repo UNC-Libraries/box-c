@@ -264,7 +264,7 @@
                     <!--Singleton ServletContainerAuthenticationProvider -->
                     <reuseForks>false</reuseForks>
                     <systemPropertyVariables>
-                        <fcrepo.baseUri>http://localhost:48085/rest</fcrepo.baseUri>
+                        <fcrepo.baseUri>http://localhost:48087/rest</fcrepo.baseUri>
                         <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
                     </systemPropertyVariables>
                 </configuration>

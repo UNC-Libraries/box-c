@@ -66,26 +66,16 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="pidMinter" />
     </bean>
-
-    <bean id="repositoryObjectDriverFactory"
-          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
-        <property name="targetBeanName" value="repositoryObjectDriver" />
-    </bean>
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
-        <property name="repositoryObjectDriverFactory" ref="repositoryObjectDriverFactory" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-    </bean>
-
-    <bean id="repositoryObjectLoaderFactory"
-          class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
-        <property name="targetBeanName" value="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator">

@@ -79,8 +79,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         objectCacheLoader = new RepositoryObjectCacheLoader();
         objectCacheLoader.setClient(client);
-        // New ObjectFactory-based injection
-        objectCacheLoader.setRepositoryObjectDriverFactory(() -> driver);
+        objectCacheLoader.setRepositoryObjectDriver(driver);
 
         pid = PIDs.get(UUID.randomUUID().toString());
     }

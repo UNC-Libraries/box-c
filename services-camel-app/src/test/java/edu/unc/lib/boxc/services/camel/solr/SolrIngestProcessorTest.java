@@ -44,9 +44,9 @@ import java.util.UUID;
  */
 public class SolrIngestProcessorTest {
 
-    private static final String CONTENT_BASE_URI = "http://localhost:48085/rest";
+    private static final String CONTENT_BASE_URI = "http://localhost:48087/rest";
     private static final String TEST_URI =
-            "http://localhost:48085/rest/content/7c/73/29/6f/7c73296f-54ae-438e-b8d5-1890eba41676";
+            "http://localhost:48087/rest/content/7c/73/29/6f/7c73296f-54ae-438e-b8d5-1890eba41676";
 
     private SolrIngestProcessor processor;
     private AutoCloseable closeable;
