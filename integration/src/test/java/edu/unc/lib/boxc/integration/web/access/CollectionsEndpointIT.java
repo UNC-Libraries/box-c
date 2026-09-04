@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.integration.web.access;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,8 @@ public class CollectionsEndpointIT extends EndpointIT {
 
     @BeforeEach
     public void setup() throws Exception {
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+
         TestHelper.setContentBase(baseAddress);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
@@ -30,6 +33,7 @@ public class CollectionsEndpointIT extends EndpointIT {
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
         getMethod = new HttpGet( ACCESS_URL + "/collectionsJson");
+        contentRootObjectFactory.setRepositoryInitializer(repoInitializer);
         contentRootObjectFactory.initializeRepository();
     }
 
