@@ -65,9 +65,11 @@ public abstract class AbstractFedoraIT {
     protected RepositoryInitializer repoInitializer;
 
     @BeforeEach
-    public void init_() {
+    public void init_() throws Exception {
         // Override base uri for IT tests
         TestHelper.setContentBase(baseAddress);
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+
     }
 
     @AfterEach

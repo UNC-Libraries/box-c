@@ -27,7 +27,7 @@ services:
       - /tmp/boxc_test_storage:/tmp/boxc_test_storage
       - ./it_config:/config
     environment:
-      CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt -Dlogback.configurationFile=/config/fcrepo_logback.xml"
     stdin_open: true
     tty: true
   redis:
