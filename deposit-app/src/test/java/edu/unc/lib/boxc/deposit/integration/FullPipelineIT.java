@@ -161,7 +161,7 @@ public class FullPipelineIT {
         }
         System.setProperty("deposit.properties.uri", testPropsFile.toAbsolutePath().toUri().toString());
         System.setProperty("acl.properties.uri", aclProperties.toAbsolutePath().toUri().toString());
-        System.setProperty("fcrepo.baseUri", "http://localhost:48085/fcrepo/rest");
+        System.setProperty("fcrepo.baseUri", "http://localhost:48087/fcrepo/rest");
     }
 
     @BeforeEach

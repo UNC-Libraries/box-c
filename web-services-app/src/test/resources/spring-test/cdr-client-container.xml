@@ -9,7 +9,7 @@
     
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-            value="http://localhost:48085/fcrepo/rest/" />
+            value="http://localhost:48087/fcrepo/rest/" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">

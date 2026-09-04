@@ -4,10 +4,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ConflictException;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
@@ -57,7 +60,12 @@ public class RepositoryInitializer {
         Resource resc = model.createResource(containerString);
         resc.addProperty(DC.title, title);
 
-        objFactory.createOrTransformObject(containerUri, model);
+        try {
+            objFactory.createOrTransformObject(containerUri, model);
+        } catch (ConflictException e) {
+            // Fedora 6 may return 409 if another test/init already created it
+            log.debug("Container already exists: {}", containerUri);
+        }
 
         return containerUri;
     }
@@ -78,8 +86,9 @@ public class RepositoryInitializer {
         Resource resc = model.createResource(contentRootString);
         resc.addProperty(DC.title, "Content Collections Root");
 
-
-        objFactory.createContentRootObject(contentRootUri, model);
+        if (!objFactory.objectExists(contentRootUri)) {
+            objFactory.createContentRootObject(contentRootUri, model); // PUT to exact URI
+        }
 
         return contentRootUri;
     }

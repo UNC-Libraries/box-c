@@ -114,7 +114,7 @@ public class FullRecordControllerTest {
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase("http://localhost:48087/rest");
 
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
 

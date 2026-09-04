@@ -21,6 +21,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -39,10 +40,13 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
  *
  */
 public class DepositRecordIT extends AbstractFedoraIT {
+    @BeforeEach
+    public void init() throws Exception {
+        repoInitializer.initializeRepository();
+    }
 
     @Test
     public void createDepositRecordTest() throws Exception {
-
         Model model = getDepositRecordModel();
 
         DepositRecord record = repoObjFactory.createDepositRecord(model);
@@ -130,7 +134,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
         Model model = getDepositRecordModel();
         DepositRecord record = repoObjFactory.createDepositRecord(model);
 
-        repoInitializer.initializeRepository();
         ContentRootObject rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
         AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(adminUnit);

@@ -33,7 +33,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     private RepositoryInitializer repoInitializer;
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception {
         repoInitializer = new RepositoryInitializer();
         repoInitializer.setObjFactory(repoObjFactory);
     }

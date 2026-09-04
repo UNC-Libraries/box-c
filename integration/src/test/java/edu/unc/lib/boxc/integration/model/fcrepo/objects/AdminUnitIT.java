@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -26,6 +27,10 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
  *
  */
 public class AdminUnitIT extends AbstractFedoraIT {
+    @BeforeEach
+    public void init() throws Exception {
+        repoInitializer.initializeRepository();
+    }
 
     @Test
     public void testCreateAdminUnit() {
@@ -57,8 +62,6 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
     @Test
     public void testGetParent() throws Exception {
-        repoInitializer.initializeRepository();
-
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());
 
