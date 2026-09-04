@@ -96,7 +96,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     private AccessControlServiceImpl aclService;
-    private static FcrepoClient staticFcrepoClient;
 
     @BeforeEach
     public void init() throws Exception {
@@ -118,16 +117,10 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         aclService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         aclService.setPermissionEvaluator(permissionEvaluator);
 
-        staticFcrepoClient = fcrepoClient;
-
         initStructure();
     }
 
     private void initStructure() throws Exception {
-        // Only create once
-        if (contentRoot != null) {
-            return;
-        }
 
         repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
@@ -213,16 +206,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         collObj3 = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Unit Staff Only Collection").model);
         adminUnit2.addMember(collObj3);
-    }
-
-    @AfterEach
-    public void cleanup() throws Exception {
-        // Preventing cleanup of repo until all tests complete
-    }
-
-    @AfterAll
-    public static void cleanupAll() throws Exception {
-        TestRepositoryDeinitializer.cleanup(staticFcrepoClient);
     }
 
     @Test
