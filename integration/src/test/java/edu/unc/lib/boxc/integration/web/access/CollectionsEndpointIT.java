@@ -24,9 +24,8 @@ public class CollectionsEndpointIT extends EndpointIT {
 
     @BeforeEach
     public void setup() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
-
         TestHelper.setContentBase(baseAddress);
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
         // reset solr before every test

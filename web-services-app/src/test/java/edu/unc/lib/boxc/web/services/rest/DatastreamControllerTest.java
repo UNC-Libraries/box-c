@@ -52,7 +52,7 @@ public class DatastreamControllerTest {
         closeable = openMocks(this);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
-        TestHelper.setContentBase("http://localhost:48087/rest");
+        TestHelper.setContentBase("http://localhost:48087/fcrepo/rest");
     }
 
     @AfterEach
