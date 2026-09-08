@@ -52,7 +52,7 @@ public class AggregatePdfService {
     private RepositoryObjectLoader repositoryObjectLoader;
 
     private Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-    private String pdf4u;
+    private String pdf4uJar;
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
@@ -63,6 +63,10 @@ public class AggregatePdfService {
             SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
+    public AggregatePdfService(String pdf4uJar) {
+        this.pdf4uJar = pdf4uJar;
+    }
+
     public Path generateAggregatePdf(PdfRequest request) throws IOException {
         var workPid = request.getWorkPid();
         String inputFiles = createInputListFile(request).toString();
@@ -72,7 +76,7 @@ public class AggregatePdfService {
                 .collect(Collectors.joining(","));
 
         try {
-            String[] command = new String[]{"java", "-jar", pdf4u, "multiple_images", "add_ocr", "-i", inputFiles,
+            String[] command = new String[]{"java", "-jar", pdf4uJar, "multiple_images", "add_ocr", "-i", inputFiles,
                     "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
             log.debug("Run pdf4u command {} for work {}", command, workPid);
             CLIMain.runCommand(command);
@@ -262,9 +266,5 @@ public class AggregatePdfService {
 
     public void setTmpDir(Path tmpDir) {
         this.tmpDir = tmpDir;
-    }
-
-    public void setPdf4u(String pdf4u) {
-        this.pdf4u = pdf4u;
     }
 }

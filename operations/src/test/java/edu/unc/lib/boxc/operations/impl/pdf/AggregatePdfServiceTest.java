@@ -53,6 +53,7 @@ public class AggregatePdfServiceTest {
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
+    private final String pdf4uJar = "pdf4u.jar";
 
     @Captor
     private ArgumentCaptor<String[]> captor;
@@ -73,11 +74,10 @@ public class AggregatePdfServiceTest {
 
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
-        pdfService = new AggregatePdfService();
+        pdfService = new AggregatePdfService(pdf4uJar);
         pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
-        pdfService.setPdf4u("pdf4u");
     }
 
     @AfterEach
@@ -129,7 +129,7 @@ public class AggregatePdfServiceTest {
             mockedStatic.verify(() -> CLIMain.runCommand(captor.capture()), times(1));
             var cmd = Arrays.stream(captor.getValue()).toList();
             assertNotNull(cmd);
-            assertTrue(cmd.contains("pdf4u"));
+            assertEquals("pdf4u.jar", cmd.get(2));
             assertTrue(FilenameUtils.getBaseName(cmd.get(6)).startsWith(PARENT_UUID));
             assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, cmd.get(12));
         }
