@@ -96,7 +96,7 @@ public class TestRepositoryDeinitializer {
         URI resourceUri = URI.create(resourceUriString);
 
         try (var result = fcrepoClient.delete(resourceUri).perform()) {
-            if (result.getStatusCode() != 204) {
+            if (result.getStatusCode() != 204 && result.getStatusCode() != 404) {
                 throw new RuntimeException("Failed to delete " + resourceUriString);
             }
         }
