@@ -37,7 +37,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
 
     // Fedora's OCFL-backed storage can briefly return 404 for a resource that was just
     // created, particularly under CI load. Poll for a short window before failing.
-    private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(1);
+    private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration AWAIT_POLL_INTERVAL = Duration.ofMillis(200);
 
     private RepositoryInitializer repoInitializer;
