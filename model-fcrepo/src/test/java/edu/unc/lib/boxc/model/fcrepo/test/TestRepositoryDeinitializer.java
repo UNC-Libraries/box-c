@@ -96,9 +96,13 @@ public class TestRepositoryDeinitializer {
         URI resourceUri = URI.create(resourceUriString);
 
         try (var result = fcrepoClient.delete(resourceUri).perform()) {
-            if (result.getStatusCode() != 204 && result.getStatusCode() != 404) {
+            if (result.getStatusCode() != 204) {
                 throw new RuntimeException("Failed to delete " + resourceUriString);
             }
+        }
+        // If the resource itself was a tombstone, then we are already done.
+        if (resourceUriString.contains(RepositoryPathConstants.FCR_TOMBSTONE)) {
+            return;
         }
         String tombstoneString = URIUtil.join(resourceUriString, RepositoryPathConstants.FCR_TOMBSTONE);
         try (var result = fcrepoClient.delete(URI.create(tombstoneString)).perform()) {
