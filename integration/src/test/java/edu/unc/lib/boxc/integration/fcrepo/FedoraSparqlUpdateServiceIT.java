@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,16 +38,25 @@ public class FedoraSparqlUpdateServiceIT {
 
     @Autowired
     protected FcrepoClient client;
+    @Autowired
+    protected RepositoryInitializer repoInitializer;
 
     private FedoraSparqlUpdateService updateService;
 
     @BeforeEach
-    public void init_() {
+    public void init_() throws Exception {
         TestHelper.setContentBase(baseAddress);
         baseUri = URI.create(baseAddress);
+        TestRepositoryDeinitializer.cleanup(client);
+        repoInitializer.initializeRepository();
 
         updateService = new FedoraSparqlUpdateService();
         updateService.setFcrepoClient(client);
+    }
+
+    @AfterEach
+    public void cleanup() throws Exception {
+        TestRepositoryDeinitializer.cleanup(client);
     }
 
     @Test

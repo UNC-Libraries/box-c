@@ -58,8 +58,6 @@ public abstract class AbstractFedoraIT {
     protected RepositoryObjectDriver driver;
     @Autowired
     protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    protected FcrepoClient fcrepoClient;
 
     @Autowired
     protected RepositoryInitializer repoInitializer;
@@ -68,12 +66,13 @@ public abstract class AbstractFedoraIT {
     public void init_() throws Exception {
         // Override base uri for IT tests
         TestHelper.setContentBase(baseAddress);
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        TestRepositoryDeinitializer.cleanup(client);
+        repoInitializer.initializeRepository();
     }
 
     @AfterEach
     public void cleanup() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        TestRepositoryDeinitializer.cleanup(client);
         storageLocationTestHelper.cleanupStorageLocations();
     }
 

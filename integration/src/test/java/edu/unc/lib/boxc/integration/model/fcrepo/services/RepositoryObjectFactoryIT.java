@@ -19,6 +19,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
@@ -47,6 +48,10 @@ import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
  *
  */
 public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
+    @BeforeEach
+    public void init() throws Exception {
+        repoInitializer.initializeRepository();
+    }
 
     @Test
     public void createDepositRecordTest() throws Exception {

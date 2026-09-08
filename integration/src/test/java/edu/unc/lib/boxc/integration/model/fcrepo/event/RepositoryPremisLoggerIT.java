@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.operations.impl.events.RepositoryPremisLogger;
@@ -66,6 +67,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
     @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
+        TestRepositoryDeinitializer.cleanup(client);
+        repoInitializer.initializeRepository();
 
         lockManager = PidLockManager.getDefaultPidLockManager();
         premisLoggerFactory.setBinaryTransferService(transferService);

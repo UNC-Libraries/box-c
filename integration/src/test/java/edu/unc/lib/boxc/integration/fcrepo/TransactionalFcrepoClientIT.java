@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -19,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
     public void setup() {
         baseUri = URI.create(baseAddress);
         TestHelper.setContentBase(baseAddress);
+
+        repoInitializer.initializeRepository();
     }
 
     @Test
