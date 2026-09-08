@@ -148,6 +148,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				if (/alt_text_history/ig.test(datastreams)) {
 					items['metadata']['items']["viewAltTextHistory"] = {name: "View Alt Text History"};
 				}
+
+				if (/transcript_history/ig.test(datastreams)) {
+					items['metadata']['items']["viewTranscriptHistory"] = {name: "View Transcript History"};
+				}
 			}
 
 			items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
@@ -354,6 +358,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action: "ChangeLocation",
 							url: "api/file/" + metadata.id + "/alt_text_history",
+							newWindow: true,
+							application: "services"
+						});
+						break;
+					case "viewTranscriptHistory":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/transcript_history",
 							newWindow: true,
 							application: "services"
 						});
