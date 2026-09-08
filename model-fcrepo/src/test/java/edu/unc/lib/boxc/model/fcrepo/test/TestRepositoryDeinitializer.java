@@ -99,6 +99,11 @@ public class TestRepositoryDeinitializer {
             if (result.getStatusCode() != 204) {
                 throw new RuntimeException("Failed to delete " + resourceUriString);
             }
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() == 404 || e.getStatusCode() == 410) {
+                return;
+            }
+            throw e;
         }
         // If the resource itself was a tombstone, then we are already done.
         if (resourceUriString.contains(RepositoryPathConstants.FCR_TOMBSTONE)) {
@@ -106,8 +111,12 @@ public class TestRepositoryDeinitializer {
         }
         String tombstoneString = URIUtil.join(resourceUriString, RepositoryPathConstants.FCR_TOMBSTONE);
         try (var result = fcrepoClient.delete(URI.create(tombstoneString)).perform()) {
-            if (result.getStatusCode() != 204 && result.getStatusCode() != 404) {
+            if (result.getStatusCode() != 204) {
                 throw new RuntimeException("Failed to delete " + resourceUriString + " tombstone");
+            }
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != 404) {
+                throw e;
             }
         }
     }
