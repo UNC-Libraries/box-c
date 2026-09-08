@@ -70,24 +70,6 @@ jobs:
     - name: Restart fedora7 now that config files are available
       run: docker restart ${{ env.FEDORA7_CONTAINER_ID }}
 
-    - name: Verify fedora7 repository status
-      run: |
-        echo "Container ID: ${{ env.FEDORA7_CONTAINER_ID }}"
-    
-        echo "Docker image:"
-        docker inspect "${{ env.FEDORA7_CONTAINER_ID }}" \
-          --format '{{.Config.Image}}'
-    
-        echo "Published ports:"
-        docker port "${{ env.FEDORA7_CONTAINER_ID }}"
-    
-        echo "Fedora repository endpoint:"
-        curl -i --fail http://localhost:48087/fcrepo/rest
-    
-        echo "Container environment:"
-        docker inspect "${{ env.FEDORA7_CONTAINER_ID }}" \
-          --format '{{range .Config.Env}}{{println .}}{{end}}'
-
     - name: Make directory for solr config
       run: mkdir -p /tmp/solr-config
 
