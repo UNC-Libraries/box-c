@@ -24,11 +24,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,6 +117,8 @@ public class StaffRoleAssignmentServiceIT {
     private RepositoryInitializer repoInitializer;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    protected FcrepoClient fcrepoClient;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -150,6 +154,7 @@ public class StaffRoleAssignmentServiceIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test
