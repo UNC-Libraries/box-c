@@ -142,10 +142,14 @@ public class TestRepositoryDeinitializer {
                 throw new RuntimeException("Failed to delete " + resourceUriString);
             }
         } catch (FcrepoOperationFailedException e) {
-            if (e.getStatusCode() == 404 || e.getStatusCode() == 410) {
+            if (e.getStatusCode() == 404) {
+                // Resource doesn't exist at all (not even as a tombstone), nothing left to purge.
                 return;
             }
-            throw e;
+            // Continue to purging the tombstone if a resource is already soft deleted
+            if (e.getStatusCode() != 410) {
+                throw e;
+            }
         }
         // If the resource itself was a tombstone, then we are already done.
         if (resourceUriString.contains(RepositoryPathConstants.FCR_TOMBSTONE)) {
