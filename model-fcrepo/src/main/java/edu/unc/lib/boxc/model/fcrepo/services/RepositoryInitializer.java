@@ -64,7 +64,7 @@ public class RepositoryInitializer {
             objFactory.createOrTransformObject(containerUri, model);
         } catch (ConflictException e) {
             // Fedora 6 may return 409 if another test/init already created it
-            log.debug("Container already exists: {}", containerUri);
+            log.error("Container already exists: {}", containerUri);
         }
 
         return containerUri;

@@ -38,8 +38,12 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     private Model model;
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception{
+        System.out.println("### Resource IDs before init4: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         repoInitializer.initializeRepository();
+        System.out.println("### Resource IDs after init4: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
 
         model = ModelFactory.createDefaultModel();
         Resource resc = model.createResource("");

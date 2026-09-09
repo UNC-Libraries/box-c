@@ -4,14 +4,20 @@ import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
+import org.awaitility.Awaitility;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +36,11 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
  */
 public class RepositoryInitializerIT extends AbstractFedoraIT {
 
+    // Fedora's OCFL-backed storage can briefly return 404 for a resource that was just
+    // created, particularly under CI load. Poll for a short window before failing.
+    private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration AWAIT_POLL_INTERVAL = Duration.ofMillis(200);
+
     private RepositoryInitializer repoInitializer;
 
     @BeforeEach
@@ -45,8 +56,12 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
      */
     @Test
     public void fullInitializationTest() throws Exception {
+        System.out.println("### Resource IDs before init1: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         repoInitializer.initializeRepository();
 
+        System.out.println("### Resource IDs after init1: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
         assertObjectExists(contentContainerUri);
 
@@ -78,7 +93,11 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
      */
     @Test
     public void multipleInitializeTest() throws Exception {
+        System.out.println("### Resource IDs before init2: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         repoInitializer.initializeRepository();
+        System.out.println("### Resource IDs after init2: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
 
         URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
         String contentContainerEtag = getEtag(contentContainerUri);
@@ -102,12 +121,33 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     }
 
     private String getEtag(URI uri) throws Exception {
-        try (FcrepoResponse response = client.head(uri).perform()) {
-            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        AtomicReference<String> etagRef = new AtomicReference<>();
+        Awaitility.await().atMost(AWAIT_TIMEOUT).pollInterval(AWAIT_POLL_INTERVAL)
+                .ignoreExceptions()
+                .until(() -> {
+                    try (FcrepoResponse response = client.head(uri).perform()) {
+                        assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+                        String etag = response.getHeaderValue("ETag");
+                        etagRef.set(etag.substring(1, etag.length() - 1));
+                        return true;
+                    }
+                });
+        return etagRef.get();
+    }
 
-            String etag = response.getHeaderValue("ETag");
-            return etag.substring(1, etag.length() - 1);
-        }
+    /**
+     * Overridden to poll for a short window on 404, since Fedora may briefly report a
+     * just-created resource as not found under load before it becomes consistently readable.
+     */
+    @Override
+    protected void assertObjectExists(URI uri) throws IOException, FcrepoOperationFailedException {
+        Awaitility.await().atMost(AWAIT_TIMEOUT).pollInterval(AWAIT_POLL_INTERVAL)
+                .ignoreExceptions()
+                .until(() -> {
+                    try (FcrepoResponse response = client.head(uri).perform()) {
+                        return response.getStatusCode() == HttpStatus.SC_OK;
+                    }
+                });
     }
 
     private URI getContainerUri(String id) {
