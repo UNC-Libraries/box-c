@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Properties;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,7 +118,11 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private void initStructure() throws Exception {
 
         repoInitializer.initializeRepository();
+        System.out.println("### Resource IDs before init3: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
+        System.out.println("### Resource IDs after init3: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
 
         adminUnit1 = repoObjFactory.createAdminUnit(
                 new AclModelBuilder("Admin Unit 1")
