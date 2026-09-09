@@ -92,6 +92,48 @@ public class TestRepositoryDeinitializer {
         return fedoraIds;
     }
 
+    public static List<String> listAllResourceIds(FcrepoClient fcrepoClient) throws Exception {
+        var mapper = new ObjectMapper();
+        var searchBaseUri = URIUtil.join(FcrepoPaths.getBaseUri(), "fcr:search");
+
+        List<String> fedoraIds = new ArrayList<>();
+        int offset = 0;
+        while (true) {
+            String queryUri = searchBaseUri
+                    + "?condition=" + URLEncoder.encode("fedora_id=*", StandardCharsets.UTF_8)
+                    + "&fields=fedora_id"
+                    + "&order_by=fedora_id"
+                    + "&order=desc"
+                    + "&max_results=" + MAX_RESULTS
+                    + "&offset=" + offset;
+
+            JsonNode root;
+            try (FcrepoResponse response = fcrepoClient.get(URI.create(queryUri))
+                    .accept("application/json").perform()) {
+                if (response.getStatusCode() != 200) {
+                    throw new RuntimeException("Failed to query simple search endpoint, received status "
+                            + response.getStatusCode());
+                }
+                root = mapper.readTree(response.getBody());
+            }
+
+            JsonNode results = root.get("items");
+            if (results == null || results.isEmpty()) {
+                break;
+            }
+            for (JsonNode result : results) {
+                String fedoraId = result.get("fedora_id").asText();
+                fedoraIds.add(fedoraId);
+            }
+
+            if (results.size() < MAX_RESULTS) {
+                break;
+            }
+            offset += MAX_RESULTS;
+        }
+        return fedoraIds;
+    }
+
     private static void deleteResource(FcrepoClient fcrepoClient, String resourceUriString) throws Exception {
         URI resourceUri = URI.create(resourceUriString);
 

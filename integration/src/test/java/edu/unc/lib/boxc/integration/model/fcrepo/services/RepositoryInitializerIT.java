@@ -9,6 +9,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -55,8 +56,12 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
      */
     @Test
     public void fullInitializationTest() throws Exception {
+        System.out.println("### Resource IDs before init1: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         repoInitializer.initializeRepository();
 
+        System.out.println("### Resource IDs after init1: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
         assertObjectExists(contentContainerUri);
 
@@ -88,7 +93,11 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
      */
     @Test
     public void multipleInitializeTest() throws Exception {
+        System.out.println("### Resource IDs before init2: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         repoInitializer.initializeRepository();
+        System.out.println("### Resource IDs after init2: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
 
         URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
         String contentContainerEtag = getEtag(contentContainerUri);
