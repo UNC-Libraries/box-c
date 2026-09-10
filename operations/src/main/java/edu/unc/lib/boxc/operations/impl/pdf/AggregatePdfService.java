@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
-import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_CURSIVE;
 
 /**
  * Service for generating an aggregate PDF with OCR
@@ -51,7 +49,7 @@ public class AggregatePdfService {
     private SolrSearchService solrSearchService;
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    private Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+    private String tmpDir;
     private String pdf4uJar;
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
@@ -63,7 +61,8 @@ public class AggregatePdfService {
             SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
-    public AggregatePdfService(String pdf4uJar) {
+    public AggregatePdfService(String tmpDir, String pdf4uJar) {
+        this.tmpDir = tmpDir;
         this.pdf4uJar = pdf4uJar;
     }
 
@@ -78,8 +77,13 @@ public class AggregatePdfService {
         try {
             String[] command = new String[]{"java", "-jar", pdf4uJar, "multiple_images", "add_ocr", "-i", inputFiles,
                     "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
-            log.debug("Run pdf4u command {} for work {}", command, workPid);
-            CLIMain.runCommand(command);
+            log.info("Run pdf4u command {} for work {}", command, workPid);
+            int exitCode = CLIMain.runCommand(command);
+
+            if (exitCode != 0) {
+                throw new RuntimeException("pdf4u command " + Arrays.toString(command)
+                        + " failed to execute for " + workPid);
+            }
 
             return tempPath;
         } catch (Exception e) {
@@ -197,8 +201,11 @@ public class AggregatePdfService {
             }
 
             var textType = machineGeneratedContentService.extractTextType(mgdNode);
+            // if no textType retrieved, set to 'no text'
             if (textType != null) {
                 textTypeList.add(textType);
+            } else {
+                textTypeList.add("no text");
             }
         }
 
@@ -247,9 +254,17 @@ public class AggregatePdfService {
      * @return tmpImageFilesDirectoryPath
      */
     private Path prepareTempPath(String fileName, String extension) {
+        Path pdfTmpDir = Path.of(tmpDir + "/pdf");
+        if (Files.notExists(pdfTmpDir)) {
+            try {
+                Files.createDirectories(pdfTmpDir);
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot create temp directory: " + pdfTmpDir, e);
+            }
+        }
+
         String baseName = FilenameUtils.getBaseName(fileName);
-        String uniqueName = baseName + "_" + UUID.randomUUID() + extension;
-        return Path.of(System.getProperty("java.io.tmpdir"), uniqueName);
+        return pdfTmpDir.resolve(baseName + "_" + UUID.randomUUID() + extension);
     }
 
     public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
@@ -262,9 +277,5 @@ public class AggregatePdfService {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
-    }
-
-    public void setTmpDir(Path tmpDir) {
-        this.tmpDir = tmpDir;
     }
 }

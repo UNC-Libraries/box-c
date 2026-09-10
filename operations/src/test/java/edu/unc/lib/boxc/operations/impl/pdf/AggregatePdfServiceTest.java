@@ -22,6 +22,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -63,6 +64,8 @@ public class AggregatePdfServiceTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private SolrSearchService solrSearchService;
+    @TempDir
+    public Path tmpDir;
 
     private AgentPrincipals agent;
     private AutoCloseable closeable;
@@ -74,7 +77,7 @@ public class AggregatePdfServiceTest {
 
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
-        pdfService = new AggregatePdfService(pdf4uJar);
+        pdfService = new AggregatePdfService(pdf4uJar, tmpDir.toString());
         pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
