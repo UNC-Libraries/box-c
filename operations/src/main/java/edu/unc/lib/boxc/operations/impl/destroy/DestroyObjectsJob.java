@@ -66,7 +66,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
-    private List<String> deletedObjIds = new ArrayList<>();
+    private final List<String> deletedObjIds = new ArrayList<>();
 
     private ObjectPathFactory pathFactory;
     private InheritedAclFactory inheritedAclFactory;
@@ -78,10 +78,11 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
     @Override
     public void run() {
-        FedoraTransaction tx = txManager.startTransaction();
-        FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
+        // TODO Reenable transactions once https://fedora-repository.atlassian.net/browse/FCREPO-4106 is resolved
+//        FedoraTransaction tx = txManager.startTransaction();
+//        FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
         try (Timer.Context ignored = timer.time()) {
-            txRefresher.start();
+//            txRefresher.start();
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
                 try {
@@ -103,14 +104,14 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
             }
-            txRefresher.stop();
+//            txRefresher.stop();
         } catch (Exception e) {
             log.error("Failed to destroy objects", e);
-            txRefresher.interrupt();
-            tx.cancelAndIgnore();
+//            txRefresher.interrupt();
+//            tx.cancelAndIgnore();
             throw new ServiceException("Destroy operation failed", e);
-        } finally {
-            tx.close();
+//        } finally {
+//            tx.close();
         }
         // Defer binary cleanup until after fedora destroy transaction completes
         destroyBinaries();
