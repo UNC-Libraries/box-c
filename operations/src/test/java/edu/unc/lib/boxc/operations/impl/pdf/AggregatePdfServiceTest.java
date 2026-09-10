@@ -77,7 +77,7 @@ public class AggregatePdfServiceTest {
 
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
-        pdfService = new AggregatePdfService(pdf4uJar, tmpDir.toString());
+        pdfService = new AggregatePdfService(tmpDir.toString(), pdf4uJar);
         pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);

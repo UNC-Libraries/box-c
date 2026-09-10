@@ -18,11 +18,11 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pdf4u.CLIMain;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
@@ -50,6 +49,7 @@ public class AggregatePdfService {
     private RepositoryObjectLoader repositoryObjectLoader;
 
     private String tmpDir;
+    public Path tmpFilesDir;
     private String pdf4uJar;
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
@@ -64,6 +64,13 @@ public class AggregatePdfService {
     public AggregatePdfService(String tmpDir, String pdf4uJar) {
         this.tmpDir = tmpDir;
         this.pdf4uJar = pdf4uJar;
+        this.tmpFilesDir = Path.of(tmpDir, "pdf");
+
+        try {
+            Files.createDirectories(tmpFilesDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot create " + tmpFilesDir, e);
+        }
     }
 
     public Path generateAggregatePdf(PdfRequest request) throws IOException {
@@ -77,7 +84,7 @@ public class AggregatePdfService {
         try {
             String[] command = new String[]{"java", "-jar", pdf4uJar, "multiple_images", "add_ocr", "-i", inputFiles,
                     "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
-            log.info("Run pdf4u command {} for work {}", command, workPid);
+            log.debug("Run pdf4u command {} for work {}", command, workPid);
             int exitCode = CLIMain.runCommand(command);
 
             if (exitCode != 0) {
@@ -254,17 +261,7 @@ public class AggregatePdfService {
      * @return tmpImageFilesDirectoryPath
      */
     private Path prepareTempPath(String fileName, String extension) {
-        Path pdfTmpDir = Path.of(tmpDir + "/pdf");
-        if (Files.notExists(pdfTmpDir)) {
-            try {
-                Files.createDirectories(pdfTmpDir);
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot create temp directory: " + pdfTmpDir, e);
-            }
-        }
-
-        String baseName = FilenameUtils.getBaseName(fileName);
-        return pdfTmpDir.resolve(baseName + "_" + UUID.randomUUID() + extension);
+        return tmpFilesDir.resolve(fileName + extension);
     }
 
     public void setMachineGeneratedContentService(MachineGeneratedContentService machineGeneratedContentService) {
