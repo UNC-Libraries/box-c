@@ -169,6 +169,29 @@ public class MachineGeneratedContentService {
     }
 
     /**
+     * Extracts the text type from the machine generated description JSON, if it exists.
+     * @param mgdNode the machine generated description JSON root node
+     * @return text type if it exists, otherwise no text
+     */
+    public String extractTextType(JsonNode mgdNode) {
+        if (mgdNode == null) {
+            return "no text";
+        }
+
+        JsonNode textTypeNode = extractSafetyAssessment(mgdNode).path("text_characteristics")
+                .path("text_type");
+
+        if (!textTypeNode.isMissingNode()) {
+            String textType = textTypeNode.asText();
+            if (!textType.equalsIgnoreCase("N/A")) {
+                return textType;
+            }
+        }
+
+        return "no text";
+    }
+
+    /**
      * Extracts content tags based on the machine generated description JSON. Tags are generated based review
      * and safety assessments in the JSON. Examples include: "people_visible", "minors_present_unknown",
      * "model_biased_language", etc.

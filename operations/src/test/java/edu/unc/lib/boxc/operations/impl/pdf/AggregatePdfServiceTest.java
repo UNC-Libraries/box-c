@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.pdf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
@@ -7,7 +8,6 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
@@ -15,30 +15,37 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import pdf4u.CLIMain;
 
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
+
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+
+import static edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService.RESULT_HANDWRITTEN_PRINT;
 
 public class AggregatePdfServiceTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
@@ -46,20 +53,29 @@ public class AggregatePdfServiceTest {
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String COLLECTION_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
+    private final String pdf4uJar = "pdf4u.jar";
 
+    @Mock
+    private MachineGeneratedContentService mgContentService;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private SolrSearchService solrSearchService;
+    @TempDir
+    public Path tmpDir;
 
-    private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+    private AgentPrincipals agent;
     private AutoCloseable closeable;
     private AggregatePdfService pdfService;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
-        pdfService = new AggregatePdfService();
+
+        agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+
+        pdfService = new AggregatePdfService(tmpDir.toString(), pdf4uJar);
+        pdfService.setMachineGeneratedContentService(mgContentService);
         pdfService.setRepositoryObjectLoader(repositoryObjectLoader);
         pdfService.setSolrSearchService(solrSearchService);
     }
@@ -71,44 +87,66 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void generateAggregatePdfTest() throws Exception {
-        try (MockedStatic<CLIMain> mockedStatic = Mockito.mockStatic(CLIMain.class)) {
-            var parentRec = makeWorkRecord(PARENT_UUID, "Work");
-            var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                    "file1.png", "image/png");
-            var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                    "file2.png", "image/png");
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png");
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
+                "file2.png", "image/png");
 
-            mockParentResults(parentRec);
-            mockChildrenResults(rec1, rec2);
-            mockOriginalFile(CHILD1_UUID, "file1.png");
-            mockOriginalFile(CHILD2_UUID, "file2.png");
+        mockParentResults(parentRec);
+        mockChildrenResults(rec1, rec2);
+        mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
+        mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
-            var workObject = mock(WorkObject.class);
-            when(repositoryObjectLoader.getWorkObject(PIDs.get(PARENT_UUID))).thenReturn(workObject);
+        String json1 = loadDefaultJson();
+        JsonNode node1 = MachineGeneratedContentService.MAPPER.readTree(json1);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(json1);
+        when(mgContentService.deserializeMachineGeneratedDescription(json1)).thenReturn(node1);
+        when(mgContentService.extractTextType(node1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-            PdfRequest request = new PdfRequest();
-            request.setWorkPid(PARENT_UUID);
-            request.setMimetype("image/png");
-            request.setAgent(agent);
+        String json2 = loadDefaultJson();
+        JsonNode node2 = MachineGeneratedContentService.MAPPER.readTree(json2);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(json2);
+        when(mgContentService.deserializeMachineGeneratedDescription(json2)).thenReturn(node2);
+        when(mgContentService.extractTextType(node2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-            mockedStatic.when(() -> CLIMain.runCommand(any(String[].class))).thenReturn(0);
+        PdfRequest request = new PdfRequest();
+        request.setWorkPid(PARENT_UUID);
+        request.setMimetype("image/png");
+        request.setAgent(agent);
 
+        Process process = mock(Process.class);
+        when(process.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        when(process.waitFor()).thenReturn(0);
+
+        AtomicReference<String[]> commandRef = new AtomicReference<>();
+
+        try (MockedConstruction<ProcessBuilder> mocked =
+                 Mockito.mockConstruction(ProcessBuilder.class, (builder, context) -> {
+                     commandRef.set((String[]) context.arguments().get(0));
+                     when(builder.redirectErrorStream(true)).thenReturn(builder);
+                     when(builder.start()).thenReturn(process);
+                 })) {
             Path result = pdfService.generateAggregatePdf(request);
 
             assertNotNull(result);
             assertTrue(result.toString().endsWith(".pdf"));
 
-            mockedStatic.verify(() -> CLIMain.runCommand(argThat(command ->
-                    command != null
-                            && command.length == 10
-                            && "pdf4u".equals(command[0])
-                            && "add_ocr".equals(command[1])
-                            && "-i".equals(command[2])
-                            && "-o".equals(command[4])
-                            && "-t".equals(command[6])
-                            && "-tt".equals(command[8])
-                            && "HANDWRITTEN-PRINT".equals(command[9])
-            )));
+            assertEquals(1, mocked.constructed().size());
+
+            ProcessBuilder builder = mocked.constructed().get(0);
+            String[] command = commandRef.get();
+
+            verify(builder).redirectErrorStream(true);
+            verify(builder).start();
+
+            assertEquals("java", command[0]);
+            assertEquals("-jar", command[1]);
+            assertEquals(pdf4uJar, command[2]);
+            assertEquals("multiple_images", command[3]);
+            assertEquals("add_ocr", command[4]);
+            assertTrue(FilenameUtils.getBaseName(command[6]).startsWith(PARENT_UUID));
+            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, command[12]);
         }
     }
 
@@ -122,8 +160,8 @@ public class AggregatePdfServiceTest {
 
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
-        mockOriginalFile(CHILD1_UUID, "file1.png");
-        mockOriginalFile(CHILD2_UUID, "file2.png");
+        mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
+        mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
         PdfRequest request = new PdfRequest();
         request.setWorkPid(PARENT_UUID);
@@ -133,8 +171,8 @@ public class AggregatePdfServiceTest {
         var inputFilePath = pdfService.createInputListFile(request);
         List<String> lines = Files.readAllLines(inputFilePath, StandardCharsets.UTF_8);
         assertEquals(2, lines.size());
-        assertEquals("file1.png", lines.get(0));
-        assertEquals("file2.png", lines.get(1));
+        assertEquals("/tmp/file1.png", lines.get(0));
+        assertEquals("/tmp/file2.png", lines.get(1));
     }
 
     @Test
@@ -164,7 +202,36 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void getTextTypeTest() throws Exception {
-        // todo
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png");
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
+                "file2.png", "image/png");
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec1, rec2);
+        mockOriginalFile(CHILD1_UUID, "photo.jpg");
+        mockOriginalFile(CHILD2_UUID, "file2.png");
+
+        String defaultJson1 = loadDefaultJson();
+        JsonNode defaultNode1 = MachineGeneratedContentService.MAPPER.readTree(defaultJson1);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson1);
+        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson1)).thenReturn(defaultNode1);
+        when(mgContentService.extractTextType(defaultNode1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+
+        String defaultJson2 = loadDefaultJson();
+        JsonNode defaultNode2 = MachineGeneratedContentService.MAPPER.readTree(defaultJson2);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(defaultJson2);
+        when(mgContentService.deserializeMachineGeneratedDescription(defaultJson2)).thenReturn(defaultNode2);
+        when(mgContentService.extractTextType(defaultNode2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+
+        PdfRequest request = new PdfRequest();
+        request.setWorkPid(PARENT_UUID);
+        request.setMimetype("image/png");
+        request.setAgent(agent);
+
+        var textType = pdfService.createTextTypeList(request);
+        assertEquals(List.of(RESULT_HANDWRITTEN_PRINT, RESULT_HANDWRITTEN_PRINT), textType);
     }
 
     public static SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
@@ -224,5 +291,10 @@ public class AggregatePdfServiceTest {
         when(binaryObject.getContentUri()).thenReturn(URI.create(contentUri));
 
         when(repositoryObjectLoader.getBinaryObject(originalFilePid)).thenReturn(binaryObject);
+    }
+
+    private String loadDefaultJson() throws Exception {
+        return Files.readString(
+                Path.of("src/test/resources/machineGeneratedDescriptionDefaults.json"));
     }
 }

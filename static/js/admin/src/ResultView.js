@@ -51,6 +51,12 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 							],
 							hideInTableMenu : true
 						},
+						{
+							actions : [
+								{action : 'AggregatePdfBatch', label : 'Generate Aggregate PDFs', joiner : ' for'}
+							],
+							hideInTableMenu : true
+						},
 					]
 		},
 		
