@@ -54,6 +54,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.TIMESTAMP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TRANSCRIPT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.VERSION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.WCAG_COMPLIANCE;
 
 
 import java.text.ParseException;
@@ -646,6 +647,15 @@ public class IndexDocumentBean {
     @Field
     public void setHookId(String hookId) {
         fields.put(HOOK_ID.getSolrField(), hookId);
+    }
+
+    public List<String> getWcagCompliance() {
+        return (List<String>) fields.get(WCAG_COMPLIANCE.getSolrField());
+    }
+
+    @Field
+    public void setWcagCompliance(List<String> wcagCompliance) {
+        fields.put(WCAG_COMPLIANCE.getSolrField(), wcagCompliance);
     }
 
     /**

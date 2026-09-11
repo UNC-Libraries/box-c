@@ -262,22 +262,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals("2006", idb.getDateCreatedYear());
     }
 
-    /*
-     * Covers case when there is only a dateCaptured field
-     */
-    @Test
-    public void testDateCapturedPreference() throws Exception {
-        SAXBuilder builder = new SAXBuilder();
-        Document modsDoc = builder.build(new FileInputStream(new File(
-                "src/test/resources/datastream/dateCaptured.xml")));
-        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
-
-        filter.filter(dip);
-
-        assertEquals("2006-03-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
-        assertNull(idb.getDateCreatedYear());
-    }
-
     @Test
     public void testNamePartConcatenation() throws Exception {
         SAXBuilder builder = new SAXBuilder();

@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,19 +125,45 @@ public class DepositModelManager implements Closeable {
      */
     public synchronized void removeModel(PID depositPid) {
         String uri = depositPid.getRepositoryPath();
-        // Start a write transaction if one isn't already active
-        ReadWrite txType = dataset.transactionMode();
-        if (!ReadWrite.WRITE.equals(txType)) {
-            // End a read transaction if active
-            if (txType != null) {
+        log.info("Removing deposit model for {}", uri);
+        if (dataset.isInTransaction()) {
+            ReadWrite txType = dataset.transactionMode();
+            if (!ReadWrite.WRITE.equals(txType)) {
                 dataset.end();
+                dataset.begin(ReadWrite.WRITE);
             }
+        } else {
             dataset.begin(ReadWrite.WRITE);
         }
-        log.info("Removing deposit model for {}", uri);
-        dataset.removeNamedModel(uri);
-        dataset.commit();
-        dataset.end();
+        try {
+            dataset.removeNamedModel(uri);
+            dataset.commit();
+        } catch (Exception e) {
+            dataset.abort();
+            throw e;
+        } finally {
+            dataset.end();
+        }
+    }
+
+    /**
+     * Compacts the TDB2 dataset, reclaiming space used by old versions of the data.
+     * Old index files from before the compaction are deleted once the new files are in place.
+     */
+    public synchronized void compactDataset() {
+        log.info("Compacting deposit dataset at {}", tdbBasePath);
+        long start = System.currentTimeMillis();
+        if (dataset.isInTransaction()) {
+            dataset.end();
+        }
+        try {
+            // Passing true deletes the old database files once compaction completes successfully
+            DatabaseMgr.compact(dataset.asDatasetGraph(), true);
+            log.info("Finished compacting deposit dataset at {} in {}ms",
+                    tdbBasePath, (System.currentTimeMillis() - start));
+        } catch (Exception e) {
+            throw new RepositoryException("Failed to compact deposit dataset at " + tdbBasePath, e);
+        }
     }
 
     /**

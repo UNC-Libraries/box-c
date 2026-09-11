@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @WireMockTest
 public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String FILTER_DEREGISTER_ENDPOINT = "direct:filter.longleaf.deregister";
-    private static final String DEREGISTER_PATH = "/api/deregister";
+    private static final String DEREGISTER_PATH = "/deregister";
 
     @EndpointInject("mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;

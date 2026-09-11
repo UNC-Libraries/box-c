@@ -1,0 +1,152 @@
+package edu.unc.lib.boxc.web.services.rest;
+
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.OriginalFileVersionService;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
+import org.fcrepo.client.GetBuilder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.io.FileInputStream;
+import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+public class OriginalFileVersionControllerTest {
+    private static final String VERSION1_DATE = "20260727195502";
+    private static final String VERSION2_DATE = "20260727195530";
+    private static final String OBJECT_ID = "e2847b41-e0ee-45bb-bdb3-a97a6241bee5";
+    private static final PID OBJECT_PID = PIDs.get(OBJECT_ID);
+    private final static String USERNAME = "test_user";
+    private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
+    private MockMvc mockMvc;
+    private AutoCloseable closeable;
+    private GetBuilder getVersionsBuilder, getVersion1Builder, getVersion2Builder;
+    @InjectMocks
+    private OriginalFileVersionsController versionsController;
+    @Mock
+    private AccessControlService accessControlService;
+    @Mock
+    private FcrepoClient fcrepoClient;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
+    private FcrepoResponse versionsResponse;
+    @Mock
+    private FcrepoResponse version1Response;
+    @Mock
+    private FcrepoResponse version2Response;
+    @Mock
+    private FileObject fileObject;
+    @Mock
+    private FolderObject folderObject;
+
+    @BeforeEach
+    public void setup() throws FcrepoOperationFailedException {
+        closeable = openMocks(this);
+        var service = new OriginalFileVersionService();
+        service.setFcrepoClient(fcrepoClient);
+        versionsController.setAccessControlService(accessControlService);
+        versionsController.setService(service);
+        getVersionsBuilder = mock(GetBuilder.class, new SelfReturningAnswer());
+        getVersion1Builder = mock(GetBuilder.class, new SelfReturningAnswer());
+        getVersion2Builder = mock(GetBuilder.class, new SelfReturningAnswer());
+
+        when(fcrepoClient.get(any(URI.class))).thenAnswer(inv -> {
+            URI uri = inv.getArgument(0);
+            String uriString = uri.toString();
+
+            if (uriString.endsWith("/fcr:versions")) {
+                return getVersionsBuilder;
+            }
+            if (uriString.contains(VERSION1_DATE)) {
+                return getVersion1Builder;
+            }
+            if (uriString.contains(VERSION2_DATE)) {
+                return getVersion2Builder;
+            }
+
+            throw new AssertionError("Unexpected URI passed to fcrepoClient.get(): " + uriString);
+        });
+
+        when(getVersionsBuilder.perform()).thenReturn(versionsResponse);
+        when(versionsResponse.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/file-object-versions.rdf"));
+
+        when(getVersion1Builder.perform()).thenReturn(version1Response);
+        when(version1Response.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/version1.rdf"));
+
+        when(getVersion2Builder.perform()).thenReturn(version2Response);
+        when(version2Response.getBody()).thenAnswer(inv -> new FileInputStream("src/test/resources/rdf/version2.rdf"));
+
+        mockMvc = MockMvcBuilders.standaloneSetup(versionsController)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
+        GroupsThreadStore.storeUsername(USERNAME);
+        GroupsThreadStore.storeGroups(GROUPS);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+    }
+
+    @Test
+    public void noPermissionTest() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(any(), eq(OBJECT_PID), any(), eq(Permission.viewMetadata));
+
+        mockMvc.perform(get("/versions/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void notAFileObjectTest() throws Exception {
+        when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(folderObject);
+        mockMvc.perform(get("/versions/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    public void successTest() throws Exception {
+        when(repositoryObjectLoader.getRepositoryObject(any())).thenReturn(fileObject);
+        var result = mockMvc.perform(get("/versions/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        assertFalse(respJson.get(VERSION1_DATE).isEmpty());
+        assertFalse(respJson.get(VERSION2_DATE).isEmpty());
+    }
+}

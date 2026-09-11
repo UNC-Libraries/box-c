@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'format', 'genre', 'language', 'subject', 'location',
-    'createdYear', 'creatorContributor', 'publisher'];
+    'createdYear', 'creatorContributor', 'publisher', 'wcagCompliance'];
 
 export const useAccessStore = defineStore({
     id: 'access',

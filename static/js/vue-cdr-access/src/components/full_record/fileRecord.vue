@@ -34,6 +34,10 @@
                         <dt>{{ $t('full_record.checksum') }}</dt>
                         <dd class="checksum">{{ getChecksum(this.recordData.briefObject.datastream) }}</dd>
                     </template>
+                    <template v-if="fieldExists(this.recordData.briefObject.wcagCompliance)">
+                        <dt>{{ $t('full_record.wcag_compliance') }}</dt>
+                        <dd>{{ this.recordData.briefObject.wcagCompliance.join(', ') }}</dd>
+                    </template>
                     <template v-if="fieldExists(recordData.briefObject.filesize)">
                         <dt>{{ $t('full_record.filesize') }}</dt>
                         <dd>{{ formatFilesize(recordData.briefObject.filesize) }}</dd>
@@ -56,10 +60,13 @@
             <div class="container pb-5" v-if="recordData.viewerType">
                 <player :record-data="recordData"></player>
             </div>
-            <div class="container pb-6">
+            <div class="container pb-5">
                 <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
                 </metadata-display>
+            </div>
+            <div class="container pb-6">
+                <file-history :uuid="recordData.briefObject.id"></file-history>
             </div>
             <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
         </div>
@@ -74,11 +81,12 @@ import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import objectActions from '@/components/full_record/objectActions.vue';
+import fileHistory from "@/components/full_record/fileHistory.vue";
 
 export default {
     name: 'fileRecord',
 
-    components: {abstract, metadataDisplay, neighborList, objectActions, player },
+    components: { abstract, fileHistory, metadataDisplay, neighborList, objectActions, player },
 
     mixins: [fileUtils, fullRecordUtils],
 

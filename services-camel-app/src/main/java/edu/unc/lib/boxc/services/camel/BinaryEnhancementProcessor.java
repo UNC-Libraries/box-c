@@ -2,6 +2,10 @@ package edu.unc.lib.boxc.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.DEFAULT_ENHANCEMENTS_STRING;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.ENHANCEMENT_LIST;
+import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.MACHINE_GEN_DESCRIPTION;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
@@ -20,6 +24,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 
+import java.util.Objects;
+
 /**
  * Sets headers related to identifying binary objects to run enhancement operations on
  *
@@ -27,13 +33,13 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-
     private RepositoryObjectLoader repoObjLoader;
 
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         String fcrepoBinaryUri = MessageUtil.getFcrepoUri(in);
+        String enhancementsList = null;
 
         if (fcrepoBinaryUri == null) {
             Document msgBody = MessageUtil.getDocumentBody(in);
@@ -51,7 +57,7 @@ public class BinaryEnhancementProcessor implements Processor {
                 try {
                     RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
 
-                    log.info("Adding enhancement headers for " + pidValue);
+                    log.info("Adding enhancement headers for {}", pidValue);
                     in.setHeader(FCREPO_URI, pidValue);
                     in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
@@ -61,10 +67,18 @@ public class BinaryEnhancementProcessor implements Processor {
                     } else {
                         in.setHeader("force", "false");
                     }
+
+                    enhancementsList = enhancementsEl.getChildTextTrim(ENHANCEMENT_LIST, CDR_MESSAGE_NS);
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getRepositoryPath());
                 }
             }
+        }
+
+        if (enhancementsList == null || enhancementsList.isBlank()) {
+            in.setHeader(CdrEnhancementSet, DEFAULT_ENHANCEMENTS_STRING);
+        } else {
+            in.setHeader(CdrEnhancementSet, enhancementsList);
         }
     }
 

@@ -16,10 +16,6 @@ build-admin-concat:
 	rm -rf static/build/admin/*
 	rm -f static/assets/admin/cdr-admin.*
 
-	cat static/js/admin/lib/jquery.min.js > static/build/admin/cdr-admin.js
-	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/build/admin/cdr-admin.js
-	cat static/js/admin/lib/jquery-ui.min.js >> static/build/admin/cdr-admin.js
-	echo "});" >> static/build/admin/cdr-admin.js
 	awk 'FNR==1 && NR!=1 {print ""} {print}' \
 		static/js/admin/lib/jquery.detachplus.js \
 		static/js/admin/lib/moment.min.js \

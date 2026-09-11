@@ -259,6 +259,10 @@ public class SerializationUtil {
             result.put("viewBehavior", metadata.getViewBehavior());
         }
 
+        if (metadata.getWcagCompliance() != null) {
+            result.put(SearchFieldKey.WCAG_COMPLIANCE.getUrlParam(), metadata.getWcagCompliance());
+        }
+
         if (groups != null && metadata.getRoleGroup() != null) {
             result.put("permissions", getPermissionsByGroups(metadata, groups));
         }

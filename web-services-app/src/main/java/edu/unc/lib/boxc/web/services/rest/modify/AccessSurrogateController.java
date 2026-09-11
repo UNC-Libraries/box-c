@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSender;
 import org.apache.commons.lang3.Strings;
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,6 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 /**
  * Controller for handling access surrogate requests. This may include things like
@@ -76,17 +76,16 @@ public class AccessSurrogateController {
 
         var request = buildRequest(SET, pidString);
 
-        // uploaded file must be an image
-        var mimeType = surrogateFile.getContentType();
-        if (!Strings.CI.contains(mimeType, "image")) {
-            log.warn("Uploaded file for collection {} is not an image file", pidString);
-            throw new IllegalArgumentException("Uploaded file is not an image");
-        }
-        request.setMimetype(mimeType);
-
         try (InputStream inputStream = surrogateFile.getInputStream()) {
             var path = copyFileToPath(pidString, inputStream);
             request.setFilePath(path);
+            // uploaded file must be an image
+            var mimetype = getMimetype(path);
+            if (!Strings.CI.contains(mimetype, "image")) {
+                log.warn("Uploaded file mimetype {} for collection {} is not an image file", mimetype, pidString);
+                throw new IllegalArgumentException("Mimetype: " + mimetype + " of uploaded file is not an image");
+            }
+            request.setMimetype(mimetype);
         } catch (IOException e) {
             log.error("Failed to get submitted file", e);
             result.put("error", e.getMessage());
@@ -147,6 +146,11 @@ public class AccessSurrogateController {
         request.setAgent(getAgentPrincipals());
         request.setPidString(pidString);
         return request;
+    }
+
+    private String getMimetype(Path filepath) throws IOException {
+        Tika tika = new Tika();
+        return tika.detect(filepath);
     }
 
     public void setAccessSurrogateTempPath(Path accessSurrogateTempPath) {

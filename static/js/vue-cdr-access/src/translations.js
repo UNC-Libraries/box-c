@@ -30,6 +30,7 @@ export default {
         display: {
             collection: "Collection",
             collection_id: "Archival Collection ID",
+            date_created: "Date Created",
             date_deposited: "Date Deposited",
             file_type: "File Type"
         },
@@ -90,7 +91,8 @@ export default {
             view_details: "View details for {title}",
             view_parent_work: "View Parent Work",
             view_title: "View {title}",
-            view_file: "View file"
+            view_file: "View file",
+            wcag_compliance: "WCAG compliance level",
         },
         modal: {
             close: "Close",

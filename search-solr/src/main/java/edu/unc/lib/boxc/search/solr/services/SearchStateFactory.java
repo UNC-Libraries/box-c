@@ -344,7 +344,7 @@ public class SearchStateFactory {
         } else {
             String resourceArray[] = parameter.split(",");
             for (String resourceType: resourceArray) {
-                if (resourceType != null && resourceType.trim().length() > 0) {
+                if (resourceType != null && !resourceType.trim().isEmpty()) {
                     resourceTypes.add(resourceType);
                 }
             }
@@ -420,50 +420,55 @@ public class SearchStateFactory {
      */
     private void populateSearchStateAdvancedSearch(SearchState searchState, Map<String,String[]> request) {
         String parameter = getParameter(request, SearchFieldKey.DEFAULT_INDEX.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.getSearchFields().put(SearchFieldKey.DEFAULT_INDEX.name(), parameter);
         }
 
         parameter = getParameter(request, SearchFieldKey.SUBJECT_INDEX.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.getSearchFields().put(SearchFieldKey.SUBJECT_INDEX.name(), parameter);
         }
 
         parameter = getParameter(request, SearchFieldKey.CONTRIBUTOR_INDEX.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
         }
 
         parameter = getParameter(request, SearchFieldKey.TITLE_INDEX.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.getSearchFields().put(SearchFieldKey.TITLE_INDEX.name(), parameter);
         }
 
+        parameter = getParameter(request, SearchFieldKey.WCAG_COMPLIANCE.getUrlParam());
+        if (parameter != null && !parameter.isEmpty()) {
+            searchState.getSearchFields().put(SearchFieldKey.WCAG_COMPLIANCE.name(), parameter);
+        }
+
         parameter = getParameter(request, SearchFieldKey.PARENT_COLLECTION.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.setFacet(new GenericFacet(SearchFieldKey.PARENT_COLLECTION, parameter));
         }
 
         parameter = getParameter(request, SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             var fileFormatCat = new GenericFacet(SearchFieldKey.FILE_FORMAT_CATEGORY.name(), parameter);
             searchState.addFacet(fileFormatCat);
         }
 
         parameter = getParameter(request, SearchFieldKey.COLLECTION_ID.getUrlParam());
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             searchState.getSearchFields().put(SearchFieldKey.COLLECTION_ID.name(), parameter);
         }
 
         //Store date added.
         RangePair dateAdded = new RangePair();
         parameter = getParameter(request, SearchFieldKey.DATE_ADDED.getUrlParam() + "Start");
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             dateAdded.setLeftHand(parameter);
         }
 
         parameter = getParameter(request, SearchFieldKey.DATE_ADDED.getUrlParam() + "End");
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             dateAdded.setRightHand(parameter);
         }
 
@@ -474,12 +479,12 @@ public class SearchStateFactory {
         //Store date added.
         RangePair dateCreated = new RangePair();
         parameter = getParameter(request, SearchFieldKey.DATE_CREATED_YEAR.getUrlParam() + "Start");
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             dateCreated.setLeftHand(parameter);
         }
 
         parameter = getParameter(request, SearchFieldKey.DATE_CREATED_YEAR.getUrlParam() + "End");
-        if (parameter != null && parameter.length() > 0) {
+        if (parameter != null && !parameter.isEmpty()) {
             dateCreated.setRightHand(parameter);
         }
 

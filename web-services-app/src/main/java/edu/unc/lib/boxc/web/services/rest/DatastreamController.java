@@ -153,9 +153,11 @@ public class DatastreamController {
             throw new ResourceNotFoundException("The requested object either does not exist or is not accessible");
         }
 
+        var thumbObjRecord = objRecord;
         if (ResourceType.Work.name().equals(objRecord.getResourceType())) {
             var thumbRec = accessCopiesService.getThumbnailRecord(objRecord, principals, true);
             if (thumbRec != null) {
+                thumbObjRecord = thumbRec;
                 pid = thumbRec.getPid();
                 // check permissions for thumbnail file
                 accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
@@ -164,8 +166,6 @@ public class DatastreamController {
             }
         }
 
-        var thumbObjRequest = new SimpleIdRequest(pid, THUMB_QUERY_FIELDS, principals);
-        var thumbObjRecord = solrQueryLayerService.getObjectById(thumbObjRequest);
         var pixelSize = THUMB_SIZE_MAP.get(size).toString();
 
         try {

@@ -2,23 +2,32 @@ require.config({
 	urlArgs: "v=5.0-SNAPSHOT",
 	baseUrl: "/static/",
 	paths: {
-		"jquery" : "assets/admin/cdr-admin",
-		"jquery-ui" : "assets/admin/cdr-admin",
-		"text" : "js/admin/lib/text",
-		"dompurify" : "js/admin/lib/dompurify.min",
-		"underscore" : "js/admin/lib/underscore",
-		"tpl" : "js/admin/lib/tpl",
-		"autosize" : "js/xmleditor/lib/jquery.autosize-min",
-		"json2" : "js/xmleditor/lib/json2",
-		"cycle" : "js/xmleditor/lib/cycle",
-		"ace" : "js/xmleditor/lib/ace/src-min/ace",
-		"vkbeautify" : "js/xmleditor/lib/vkbeautify",
-		"xmleditor" : "js/xmleditor/jquery.xmleditor"
+		"jquery-legacy": "js/admin/lib/jquery.min",
+		"jquery-ui": "js/admin/lib/jquery-ui.min",
+		"text": "js/admin/lib/text",
+		"dompurify": "js/admin/lib/dompurify.min",
+		"underscore": "js/admin/lib/underscore",
+		"tpl": "js/admin/lib/tpl",
+		"autosize": "js/xmleditor/lib/jquery.autosize-min",
+		"json2": "js/xmleditor/lib/json2",
+		"cycle": "js/xmleditor/lib/cycle",
+		"ace": "js/xmleditor/lib/ace/src-min/ace",
+		"vkbeautify": "js/xmleditor/lib/vkbeautify",
+		"xmleditor": "js/xmleditor/jquery.xmleditor"
+	},
+	map: {
+		"*": {
+			"jquery": "jquery-legacy"
+		}
 	},
 	shim: {
-		"ace" : ["jquery"],
-		"autosize" : ["jquery"],
-		"xmleditor" : ["jquery-ui", "text", "autosize", "json2", "cycle", "ace", "vkbeautify"],
+		"jquery-legacy": {
+			exports: "$"
+		},
+		"jquery-ui": ["jquery"],
+		"ace": ["jquery"],
+		"autosize": ["jquery"],
+		"xmleditor": ["jquery-ui", "text", "autosize", "json2", "cycle", "ace", "vkbeautify"],
 		"underscore": {
 			exports: "_"
 		}

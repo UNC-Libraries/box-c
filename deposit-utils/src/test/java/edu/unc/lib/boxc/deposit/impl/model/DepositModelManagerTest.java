@@ -186,6 +186,34 @@ public class DepositModelManagerTest {
     }
 
     @Test
+    void testRemoveModel_AlreadyInWriteTransaction() {
+        Model model1 = manager.getWriteModel(depositPid);
+        addTriple(model1);
+        manager.commit();
+        // Start a write tx on the dataset
+        manager.getWriteModel(depositPid);
+        manager.removeModel(depositPid);
+
+        Model readModel = manager.getReadModel(depositPid);
+        assertFalse(containsTriple(readModel), "Model should be empty after removal");
+        manager.end();
+    }
+
+    @Test
+    void testRemoveModel_AlreadyInReadTransaction() {
+        Model model1 = manager.getWriteModel(depositPid);
+        addTriple(model1);
+        manager.commit();
+        // Start a read tx on the dataset
+        manager.getReadModel(depositPid);
+        manager.removeModel(depositPid);
+
+        Model readModel = manager.getReadModel(depositPid);
+        assertFalse(containsTriple(readModel), "Model should be empty after removal");
+        manager.end();
+    }
+
+    @Test
     void testLoadDataset_PersistsDataAcrossReload() {
         try (DepositModelManager diskManager = new DepositModelManager(tmpFolder)) {
             Model writeModel = diskManager.getWriteModel(depositPid);
@@ -208,6 +236,55 @@ public class DepositModelManagerTest {
         try (DepositModelManager diskManager = new DepositModelManager(newDir)) {
             assertTrue(newDir.toFile().exists(), "Dataset directory should be created by loadDataset");
         }
+    }
+
+    @Test
+    void testCompactDataset_DataPersistsAndOldFilesDeleted() throws Exception {
+        try (DepositModelManager diskManager = new DepositModelManager(tmpFolder)) {
+            Model writeModel = diskManager.getWriteModel(depositPid);
+            addTriple(writeModel);
+            diskManager.commit();
+
+            java.io.File[] beforeDataDirs = listDataDirs(tmpFolder);
+            assertTrue(beforeDataDirs.length > 0, "Expected at least one Data-* directory before compaction");
+
+            diskManager.compactDataset();
+
+            java.io.File[] afterDataDirs = listDataDirs(tmpFolder);
+            assertTrue(afterDataDirs.length > 0, "Expected at least one Data-* directory after compaction");
+            for (java.io.File beforeDir : beforeDataDirs) {
+                assertFalse(java.util.Arrays.asList(afterDataDirs).contains(beforeDir),
+                        "Old data directory " + beforeDir + " should have been deleted after compaction");
+            }
+
+            Model readModel = diskManager.getReadModel(depositPid);
+            assertTrue(containsTriple(readModel), "Data should still be present after compaction");
+            diskManager.end();
+        }
+    }
+
+    @Test
+    void testCompactDataset_AlreadyInTransaction() throws Exception {
+        try (DepositModelManager diskManager = new DepositModelManager(tmpFolder)) {
+            Model writeModel = diskManager.getWriteModel(depositPid);
+            addTriple(writeModel);
+            diskManager.commit();
+
+            // Start a transaction and leave it open before compacting
+            diskManager.getReadModel(depositPid);
+
+            assertDoesNotThrow(diskManager::compactDataset,
+                    "compactDataset should handle an already open transaction");
+
+            Model readModel = diskManager.getReadModel(depositPid);
+            assertTrue(containsTriple(readModel), "Data should still be present after compaction");
+            diskManager.end();
+        }
+    }
+
+    private java.io.File[] listDataDirs(Path basePath) {
+        java.io.File[] files = basePath.toFile().listFiles((dir, name) -> name.startsWith("Data-"));
+        return files == null ? new java.io.File[0] : files;
     }
 
     private void addTriple(Model model) {

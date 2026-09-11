@@ -79,7 +79,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
     private static final String FITS_EXAMINE_PATH = "examine";
     private static final String MIMETYPE_ATTR = "mimetype";
-    private static final long FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
+    private static final long DEFAULT_FITS_CLI_TIMEOUT_SECONDS = 60 * 5;
 
     private CloseableHttpClient httpClient;
 
@@ -89,6 +89,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private URI fitsExamineUri;
     private String fitsHomePath;
     private Path fitsCommandPath;
+    private long fitsCliTimeoutSeconds = DEFAULT_FITS_CLI_TIMEOUT_SECONDS;
     private int maxFileSizeForWebService;
     private Set<String> FILE_EXTS_FOR_CLI = new HashSet<>(Arrays.asList("mov"));
 
@@ -449,7 +450,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         try {
             var joinedCommand = String.join(" ", command);
             log.debug("FITS CLI command: {}", joinedCommand);
-            var outcome = CLIUtil.executeCommand(List.of(command), FITS_CLI_TIMEOUT_SECONDS);
+            var outcome = CLIUtil.executeCommand(List.of(command), fitsCliTimeoutSeconds);
             stdout = outcome.get(0);
             stderr = outcome.get(1);
             if (!StringUtils.isBlank(stderr)) {
@@ -650,6 +651,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     public void setFitsHomePath(String fitsHomePath) {
         this.fitsHomePath = fitsHomePath;
+    }
+
+    public void setFitsCliTimeoutSeconds(long fitsCliTimeoutSeconds) {
+        this.fitsCliTimeoutSeconds = fitsCliTimeoutSeconds;
     }
 
     public void setMaxFileSizeForWebService(int maxFileSizeForWebService) {

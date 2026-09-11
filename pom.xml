@@ -64,8 +64,8 @@
         <mp44u.version>1.0-SNAPSHOT</mp44u.version>
         <pdf4u.version>1.0-SNAPSHOT</pdf4u.version>
         
-        <spring.version>6.2.17</spring.version>
-        <spring.security.web.version>6.5.10</spring.security.web.version>
+        <spring.version>6.2.19</spring.version>
+        <spring.security.web.version>6.5.11</spring.security.web.version>
         <spring.ws.version>4.1.2</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
@@ -75,13 +75,14 @@
         <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
-        <jackson.version>2.20.1</jackson.version>
-        <jackson.annotations.version>2.20</jackson.annotations.version>
-        <jackson.databind.version>2.20.1</jackson.databind.version>
+        <jackson.version>2.22.1</jackson.version>
+        <jackson.annotations.version>2.22</jackson.annotations.version>
+        <jackson.databind.version>2.22.1</jackson.databind.version>
 
         <joda-time.version>2.14.0</joda-time.version>
         <jmustache.version>1.16</jmustache.version>
-        <mail.version>2.0.2</mail.version>
+        <jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
+        <mail.version>2.0.5</mail.version>
         <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
         <guava.version>32.1.3-jre</guava.version>
@@ -96,10 +97,10 @@
         <commons-collections.version>4.5.0</commons-collections.version>
         <commons-exec.version>1.6.0</commons-exec.version>
 
-        <activemq.version>6.1.8</activemq.version>
+        <activemq.version>6.2.7</activemq.version>
 
         <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.25</logback.version>
+        <logback.version>1.5.34</logback.version>
 
         <iiif-apis.version>0.3.11</iiif-apis.version>
 
@@ -121,11 +122,11 @@
         <jedis.version>5.1.5</jedis.version>
         <solr.version>9.8.1</solr.version>
         <metrics.version>5.0.5</metrics.version>
-        <jena.version>5.5.0</jena.version>
+        <jena.version>6.1.0</jena.version>
 
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
         <camel.version>4.16.0</camel.version>
-        <tika.version>3.2.3</tika.version>
+        <tika.version>3.3.2</tika.version>
         <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
         
         <maven.failsafe.version>3.2.5</maven.failsafe.version>
@@ -568,6 +569,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-core</artifactId>
+                <version>${tika.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.jms</groupId>
                 <artifactId>jakarta.jms-api</artifactId>
                 <version>${jakarta.jms-api.version}</version>
@@ -741,7 +754,6 @@
                 <artifactId>xml-apis</artifactId>
                 <version>${xml-apis.version}</version>
             </dependency>
-            
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
@@ -763,9 +775,15 @@
                 <version>${jmustache.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${jakarta.mail-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
                 <version>${mail.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>gov.loc</groupId>

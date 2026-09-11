@@ -58,6 +58,10 @@
         <constructor-arg value="${deposits.tdb.dir}" />
     </bean>
 
+    <bean id="compactTdbService" class="edu.unc.lib.boxc.deposit.tdb.CompactTdbService">
+        <property name="depositModelManager" ref="depositModelManager" />
+    </bean>
+
     <bean id="pipelineJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="pubSubDomain" value="false" />

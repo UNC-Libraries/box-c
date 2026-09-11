@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util
+        https://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+    <mvc:annotation-driven/>
+
+    <context:component-scan resource-pattern="**/DepositController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
+
+    <bean id="aclGlobalProperties"
+          class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:acl-config.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler"/>
+
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl">
+        <constructor-arg ref="aclGlobalProperties" />
+    </bean>
+
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+
+    <bean id="batchIngestFolder" class="java.io.File" init-method="mkdirs">
+        <constructor-arg value="src/test/resources/temp"/>
+    </bean>
+
+    <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.springframework.jms.core.JmsTemplate" />
+    </bean>
+
+    <bean id="depositOperationMessageService" class="edu.unc.lib.boxc.deposit.impl.jms.DepositOperationMessageService">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+        <property name="destinationName" value="pipelineQueue" />
+    </bean>
+</beans>

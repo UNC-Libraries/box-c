@@ -1,0 +1,47 @@
+define('CorrectMimetypesForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!templates/admin/correctMimetypesForm',
+        'ModalLoadingOverlay', 'AbstractFileUploadForm'],
+    function($, ui, _, importTemplate, ModalLoadingOverlay, AbstractFileUploadForm) {
+
+        var defaultOptions = {
+            title : 'Correct Mimetypes',
+            createFormTemplate : importTemplate
+        };
+
+        function CorrectMimetypesForm(options) {
+            this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+        }
+
+        CorrectMimetypesForm.prototype.constructor = CorrectMimetypesForm;
+        CorrectMimetypesForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+
+        CorrectMimetypesForm.prototype.preprocessForm = function() {
+            var label = $("input[name='name']", this.$form).val();
+            if (!label && this.ingestFile) {
+                $("input[name='name']", this.$form).val(this.ingestFile.name);
+            }
+        };
+
+        // Validate the form and retrieve any errors
+        CorrectMimetypesForm.prototype.validationErrors = function() {
+            var errors = [];
+            var dataFile = $("input[type='file']", this.$form).val();
+            if (!dataFile)
+                errors.push("You must select a file to import");
+            return errors;
+        };
+
+        CorrectMimetypesForm.prototype.getSuccessMessage = function(data) {
+            return this.ingestFile.name + " has been successfully uploaded for updating.";
+        };
+
+        CorrectMimetypesForm.prototype.getErrorMessage = function(data) {
+            var message = "Failed to import file " + this.ingestFile.name + ".";
+            if (data && data.errorStack && !this.closed) {
+                message += "  See errors below.";
+                this.setError(data.errorStack);
+            }
+            return message;
+        };
+
+        return CorrectMimetypesForm;
+    });

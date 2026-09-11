@@ -1,4 +1,5 @@
-import {mount, RouterLinkStub} from "@vue/test-utils";
+import {mount, flushPromises, RouterLinkStub} from "@vue/test-utils";
+import {createRouter, createMemoryHistory} from 'vue-router';
 import {createTestingPinia} from "@pinia/testing";
 import {useAccessStore} from '@/stores/access';
 import {createI18n} from 'vue-i18n';
@@ -366,7 +367,7 @@ describe('downloadOption.vue', () => {
         await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
         await wrapper.find('.download-images').trigger('click'); // Open
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(true);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(true);
     });
 
     it('hides the list of download options when any non dropdown page element is clicked', async () => {
@@ -374,7 +375,7 @@ describe('downloadOption.vue', () => {
 
         await wrapper.find('.download-images').trigger('click'); // Open
         await wrapper.trigger('click'); // Close
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
     });
 
     it('hides the list of download options when the "ESC" key is hit', async () => {
@@ -382,7 +383,81 @@ describe('downloadOption.vue', () => {
 
         await wrapper.find('.download-images').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
-        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+        expect(wrapper.find('.table-downloads').classes('show-list')).toBe(false);
+    });
+
+    it('resets download state and updates links when navigating to a different record', async () => {
+        const firstId = '146c6e0b-d700-4d03-9730-2ea0d2264c19';
+        const secondId = 'f4c6fd03-8ea5-46d5-8b4f-55fbaf73ef3d';
+
+        const recordsByUuid = {
+            [firstId]: { ...cloneDeep(record), id: firstId, permissions: ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'] },
+            [secondId]: { ...cloneDeep(record), id: secondId, permissions: ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'] }
+        };
+
+        const testRouter = createRouter({
+            history: createMemoryHistory(),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    component: {
+                        components: { downloadOptions },
+                        template: `
+                        <download-options
+                            :record-data="currentRecord"
+                            :t="() => ''"
+                        />
+                    `,
+                        computed: {
+                            currentRecord() {
+                                return recordsByUuid[this.$route.params.uuid];
+                            }
+                        }
+                    }
+                }
+            ]
+        });
+
+        await testRouter.push(`/record/${firstId}`);
+
+        const localWrapper = mount({
+            template: '<router-view />'
+        }, {
+            attachTo: '#document',
+            global: {
+                plugins: [
+                    i18n,
+                    testRouter,
+                    createTestingPinia({
+                        stubActions: false,
+                        initialState: {
+                            access: { isLoggedIn: true, username: 'test_user' }
+                        }
+                    })
+                ],
+                stubs: { RouterLink: RouterLinkStub }
+            }
+        });
+
+        await testRouter.isReady();
+        await flushPromises();
+
+        await localWrapper.find('.download-images').trigger('click');
+        expect(localWrapper.find('.table-downloads').classes('show-list')).toBe(true);
+        expect(localWrapper.findAll('.dropdown-item')[0].attributes('href')).toEqual(`/services/api/downloadImage/${firstId}/800`);
+
+        await testRouter.push(`/record/${secondId}`);
+        await flushPromises();
+
+        expect(localWrapper.find('.table-downloads').classes('show-list')).toBe(false);
+        expect(localWrapper.find('.download-images').attributes('id')).toEqual(`dropdown-menu-button-${secondId}`);
+
+        await localWrapper.find('.download-images').trigger('click');
+        const updated_links = localWrapper.findAll('.dropdown-item').map(item => item.attributes('href'));
+        expect(updated_links[0]).toEqual(`/services/api/downloadImage/${secondId}/800`);
+        expect(updated_links.every(link => !link.includes(firstId))).toBe(true);
+
+        localWrapper.unmount();
     });
 
     it('does not display a download button for collection', async () => {

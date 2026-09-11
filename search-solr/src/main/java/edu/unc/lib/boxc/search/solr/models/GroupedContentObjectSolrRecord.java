@@ -461,4 +461,14 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     public void setTranscript(String transcript) {
         representative.setTranscript(transcript);
     }
+
+    @Override
+    public List<String> getWcagCompliance() {
+        return representative.getWcagCompliance();
+    }
+
+    @Override
+    public void setWcagCompliance(List<String> wcagCompliance) {
+        representative.setWcagCompliance(wcagCompliance);
+    }
 }

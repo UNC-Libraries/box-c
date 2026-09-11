@@ -242,6 +242,13 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
         <property name="sendsMessages" value="true" />
     </bean>
+
+    <bean id="editWcagComplianceService" class="edu.unc.lib.boxc.operations.impl.wcagCompliance.WcagComplianceService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="indexingMessageSender" ref="solrIndexingMessageSender" />
+    </bean>
     
     <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
         <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
@@ -579,6 +586,7 @@
         <property name="dominoUsername" value="${domino.server.username}" />
         <property name="dominoPassword" value="${domino.server.password}" />
         <property name="runConfigPath" value="${domino.runConfig.path}" />
+        <property name="selectionDelayMinutes" value="${domino.selectionDelayMinutes:0}" />
         <property name="exportDominoMetadataService" ref="exportDominoMetadataService" />
         <property name="accessGroups" ref="accessGroups" />
     </bean>
@@ -611,6 +619,19 @@
     <bean id="bulkRefIdCsvExporter" class="edu.unc.lib.boxc.web.services.processing.BulkRefIdCsvExporter">
         <property name="aclService" ref="aclService" />
         <property name="solrSearchService" ref="queryLayer" />
+    </bean>
+
+    <bean id="correctMimetypesService" class="edu.unc.lib.boxc.operations.impl.mimetype.CorrectMimetypesService">
+        <property name="aclService" ref="aclService" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+
+    <bean id="originalFileVersionService" class="edu.unc.lib.boxc.model.fcrepo.services.OriginalFileVersionService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

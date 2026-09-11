@@ -31,6 +31,7 @@
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setWcagComplianceFilter" />
             </list>
         </property>
     </bean>
@@ -165,6 +166,7 @@
         <property name="searchSettings" ref="searchSettings" />
         <property name="solrSettings" ref="solrSettings" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="solrClient" ref="solrClient" />
     </bean>
 
     <bean id="technicalMetadataService" class="edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService"
@@ -254,6 +256,11 @@
 
     <bean id="setViewBehaviorFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetViewBehaviorFilter">
+    </bean>
+
+    <bean id="setWcagComplianceFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetWcagComplianceFilter">
+        <property name="solrSearchService" ref="queryLayer" />
+        <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
 
     <bean id="dipDataLoader"

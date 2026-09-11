@@ -59,8 +59,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     public SetDescriptiveMetadataFilter() throws IOException {
         languageCodeMap = new Properties();
-        languageCodeMap.load(new InputStreamReader(getClass().getResourceAsStream(
-                    "/iso639LangMappings.txt")));
+        languageCodeMap.load(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/iso639LangMappings.txt"))));
 
 
         // URIS aren't great for property keys
@@ -221,17 +221,17 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
 
-        if (contributors.size() > 0) {
+        if (!contributors.isEmpty()) {
             idb.setContributor(contributors);
         } else {
             idb.setContributor(null);
         }
-        if (creators.size() > 0) {
+        if (!creators.isEmpty()) {
             idb.setCreator(creators);
         } else {
             idb.setCreator(null);
         }
-        if (creatorsContributors.size() > 0) {
+        if (!creatorsContributors.isEmpty()) {
             idb.setCreatorContributor(creatorsContributors);
         } else {
             idb.setCreatorContributor(null);
@@ -274,7 +274,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractSubjects(Element mods, IndexDocumentBean idb) {
         List<Element> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> subjects = new ArrayList<>();
-        if (subjectEls.size() > 0) {
+        if (!subjectEls.isEmpty()) {
             for (Element subjectObj : subjectEls) {
                 List<Element> subjectParts = subjectObj.getChildren();
                 for (Element subjectEl : subjectParts) {
@@ -290,7 +290,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
             }
         }
-        if (subjects.size() > 0) {
+        if (!subjects.isEmpty()) {
             idb.setSubject(subjects);
         } else {
             idb.setSubject(null);
@@ -302,7 +302,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> otherSubjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> otherSubjects = new ArrayList<>();
         extractNestedSubjects(otherSubjectEls, otherSubjects);
-        if (otherSubjects.size() > 0) {
+        if (!otherSubjects.isEmpty()) {
             idb.setOtherSubject(otherSubjects);
         } else {
             idb.setOtherSubject(null);
@@ -374,7 +374,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractLanguages(Element mods, IndexDocumentBean idb) {
         List<Element> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> languages = new ArrayList<>();
-        if (languageEls.size() > 0) {
+        if (!languageEls.isEmpty()) {
             String languageTerm = null;
             for (Element languageObj : languageEls) {
                 // Our schema only allows for iso639-2b languages at this point.
@@ -387,7 +387,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
             }
         }
-        if (languages.size() > 0) {
+        if (!languages.isEmpty()) {
             idb.setLanguage(languages);
         } else {
             idb.setLanguage(null);
@@ -409,7 +409,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
 
-        if (publishers.size() > 0) {
+        if (!publishers.isEmpty()) {
             idb.setPublisher(publishers);
         } else {
             idb.setPublisher(null);
@@ -428,8 +428,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
         Date dateCreated = null;
         Date dateIssued = null;
-        Date dateCaptured = null;
-        if (originInfoEls.size() > 0) {
+        if (!originInfoEls.isEmpty()) {
             for (Element originInfoEl : originInfoEls) {
                 dateCreated = JDOMQueryUtil
                         .parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
@@ -441,11 +440,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     dateIssued = JDOMQueryUtil
                             .parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
                 }
-
-                if (dateCaptured == null) {
-                    dateCaptured = JDOMQueryUtil
-                            .parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
-                }
             }
 
             if (dateCreated != null) {
@@ -454,8 +448,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             } else if (dateIssued != null) {
                 idb.setDateCreated(dateIssued);
                 idb.setDateCreatedYear(extractDateYear(dateIssued));
-            } else if (dateCaptured != null) {
-                idb.setDateCreated(dateCaptured);
             }
         }
     }
@@ -675,9 +667,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
         List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
         if (nameParts.size() == 1) {
-            String nameTypeValue = nameParts.get(0).getAttributeValue("type");
+            String nameTypeValue = nameParts.getFirst().getAttributeValue("type");
             if (nameTypeValue == null || (nameTypeValue.equals("family") || nameTypeValue.equals("given"))) {
-                nameValue = nameParts.get(0).getTextTrim();
+                nameValue = nameParts.getFirst().getTextTrim();
             }
         } else if (nameParts.size() > 1) {
             Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
@@ -711,7 +703,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
             }
 
-            if (nameBuilder.length() > 0) {
+            if (!nameBuilder.isEmpty()) {
                 nameValue = nameBuilder.toString();
             }
         }

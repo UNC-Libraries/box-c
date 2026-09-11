@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.utils.FedoraPropertiesUtil;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSender;
 import org.apache.jena.rdf.model.Property;
@@ -69,7 +70,7 @@ public class ViewSettingController {
                     repositoryObject.getClass().getName() + ", as only WorkObjects have View Settings");
         }
 
-        var behavior = getValue(repositoryObject.getResource(), CdrView.viewBehavior);
+        var behavior = FedoraPropertiesUtil.getValue(repositoryObject, CdrView.viewBehavior);
         Map<String, String> result = new HashMap<>();
         result.put("id", id);
         result.put("viewBehavior", behavior);
@@ -122,11 +123,6 @@ public class ViewSettingController {
         result.put("status", "Submitted view setting updates for " + ids.length + " object(s)");
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
-    private String getValue(Resource resource, Property property) {
-        var propValue = resource.getProperty(property);
-        return propValue == null ? null : propValue.getString();
     }
 
     private ViewSettingRequest buildRequest(String id,

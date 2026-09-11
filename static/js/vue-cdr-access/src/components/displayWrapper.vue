@@ -2,53 +2,55 @@
 Top level component for full record pages with searching/browsing, including AdminUnits, Collections, and Folders.
 -->
 <template>
-    <header-small/>
-    <div v-if="is_page_loading" class="loading-icon">
-        <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
-    </div>
-    <div v-if="displayRecord" class="browse-header">
-        <div class="crumbs columns container">
-            <div class="column">
-                <bread-crumbs :object-path="container_info.briefObject.objectPath">
-                </bread-crumbs>
+    <div :key="$route.fullPath">
+        <header-small/>
+        <div v-if="is_page_loading" class="loading-icon">
+            <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
+        </div>
+        <div v-if="displayRecord" class="browse-header">
+            <div class="crumbs columns container">
+                <div class="column">
+                    <bread-crumbs :object-path="container_info.briefObject.objectPath">
+                    </bread-crumbs>
+                </div>
+            </div>
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
+            <collection-record v-if="container_info.resourceType === 'Collection'" :record-data="container_info"></collection-record>
+            <folder-record v-if="container_info.resourceType === 'Folder'" :record-data="container_info"></folder-record>
+            <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
+            <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
+
+            <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="has-background-white pt-5">
+                <div class="container">
+                    <div class="field is-horizontal is-tablet">
+                        <div class="field-body">
+                            <browse-search :object-type="container_metadata.type"></browse-search>
+                            <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
+                            <works-only v-if="showWidget"></works-only>
+                            <view-type v-if="showWidget"></view-type>
+                        </div>
+                    </div>
+                    <div class="">
+                        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
+                    </div>
+
+                    <div v-if="showWidget" class="columns">
+                        <div class="facet-list column is-one-quarter">
+                            <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
+                        </div>
+                        <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
+                            <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
+                            <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
+                        </div>
+                    </div>
+                    <p v-else class="spacing">{{ $t('search.no_results') }}</p>
+                    <pagination browse-type="display" :number-of-records="record_count"></pagination>
+                </div>
             </div>
         </div>
-        <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
-        <collection-record v-if="container_info.resourceType === 'Collection'" :record-data="container_info"></collection-record>
-        <folder-record v-if="container_info.resourceType === 'Folder'" :record-data="container_info"></folder-record>
-        <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
-        <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
-
-        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="has-background-white pt-5">
-            <div class="container">
-                <div class="field is-horizontal is-tablet">
-                    <div class="field-body">
-                        <browse-search :object-type="container_metadata.type"></browse-search>
-                        <browse-sort v-if="showWidget" browse-type="display"></browse-sort>
-                        <works-only v-if="showWidget"></works-only>
-                        <view-type v-if="showWidget"></view-type>
-                    </div>
-                </div>
-                <div class="">
-                    <clear-filters :filter-parameters="filter_parameters"></clear-filters>
-                </div>
-
-                <div v-if="showWidget" class="columns">
-                    <div class="facet-list column is-one-quarter">
-                        <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
-                    </div>
-                    <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
-                        <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
-                        <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
-                    </div>
-                </div>
-                <p v-else class="spacing">{{ $t('search.no_results') }}</p>
-                <pagination browse-type="display" :number-of-records="record_count"></pagination>
-            </div>
-        </div>
+        <not-found v-if="show_404" :display-header="false" />
+        <not-available v-if="show_503" :display-header="false" />
     </div>
-    <not-found v-if="show_404" :display-header="false" />
-    <not-available v-if="show_503" :display-header="false" />
 </template>
 
 <script>

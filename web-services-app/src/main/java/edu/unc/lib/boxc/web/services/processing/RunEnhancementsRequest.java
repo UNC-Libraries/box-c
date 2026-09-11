@@ -12,6 +12,7 @@ public class RunEnhancementsRequest {
     private boolean force;
     private AgentPrincipals agent;
     private boolean recursive;
+    private List<String> enhancements;
 
     public List<String> getPids() {
         return pids;
@@ -43,5 +44,13 @@ public class RunEnhancementsRequest {
 
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
+    }
+
+    public List<String> getEnhancements() {
+        return enhancements;
+    }
+
+    public void setEnhancements(List<String> enhancements) {
+        this.enhancements = enhancements;
     }
 }

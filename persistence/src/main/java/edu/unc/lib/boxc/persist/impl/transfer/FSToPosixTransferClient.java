@@ -34,8 +34,8 @@ public class FSToPosixTransferClient extends FSToFSTransferClient {
     }
 
     @Override
-    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
-        BinaryTransferOutcome outcome = super.transfer(binPid, sourceFileUri, allowOverwrite);
+    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, TransferMode transferMode) {
+        BinaryTransferOutcome outcome = super.transfer(binPid, sourceFileUri, transferMode);
         HashedPosixStorageLocation posixLoc = (HashedPosixStorageLocation) destination;
 
         if (posixLoc.getPermissions() != null) {

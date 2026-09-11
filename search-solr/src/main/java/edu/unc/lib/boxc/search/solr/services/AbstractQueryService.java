@@ -73,7 +73,8 @@ public abstract class AbstractQueryService {
             SearchFieldKey.TIMESTAMP.name(),
             SearchFieldKey.TITLE.name(),
             SearchFieldKey.VERSION.name(),
-            SearchFieldKey.VIEW_BEHAVIOR.name());
+            SearchFieldKey.VIEW_BEHAVIOR.name(),
+            SearchFieldKey.WCAG_COMPLIANCE.name());
 
     @Autowired
     protected SearchSettings searchSettings;
