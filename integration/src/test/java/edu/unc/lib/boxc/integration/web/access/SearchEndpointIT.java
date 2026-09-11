@@ -5,6 +5,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,11 +39,13 @@ public class SearchEndpointIT extends EndpointIT {
     @BeforeEach
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
+        contentRootObjectFactory.setRepositoryInitializer(repoInitializer);
         contentRootObjectFactory.initializeRepository();
     }
 

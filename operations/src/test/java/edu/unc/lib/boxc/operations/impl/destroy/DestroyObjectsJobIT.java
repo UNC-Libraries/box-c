@@ -30,6 +30,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
@@ -179,6 +180,9 @@ public class DestroyObjectsJobIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        if (fcrepoClient != null) {
+            TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        }
     }
 
     @Test

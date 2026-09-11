@@ -15,10 +15,12 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import org.apache.commons.io.FileUtils;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +78,8 @@ public class CorrectMimetypesServiceIT {
     private PremisLoggerFactory premisLoggerFactory;
     @Autowired
     private StorageLocationManagerImpl locationManager;
+    @Autowired
+    protected FcrepoClient fcrepoClient;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -112,6 +116,7 @@ public class CorrectMimetypesServiceIT {
     @AfterEach
     public void cleanup() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

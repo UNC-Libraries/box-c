@@ -3,13 +3,13 @@ package edu.unc.lib.boxc.integration.fcrepo;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,8 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
     public void setup() {
         baseUri = URI.create(baseAddress);
         TestHelper.setContentBase(baseAddress);
+
+        repoInitializer.initializeRepository();
     }
 
     @Test
@@ -62,17 +65,14 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
             objUri = response.getLocation();
         }
 
-        assertTrue(objUri.toString().startsWith(tx.getTxUri().toString()), "Location must be within transaction");
+        assertFalse(objUri.toString().contains("/fcr:tx/"));
 
         // Verify that the response triples have non-tx uris
         try (FcrepoResponse response = fcrepoClient.get(objUri).perform()) {
-            // Remove tx from obj uri
-            String nonTxObjUri = objUri.toString().replaceFirst("/tx:[^/]+", "");
-
             Model model = createModel(response.getBody());
 
-            Resource resc = model.getResource(nonTxObjUri);
-            assertTrue(resc.hasProperty(RDF.type), "Subject must be non-tx uri");
+            Resource resc = model.getResource(objUri.toString());
+            assertTrue(resc.hasProperty(RDF.type), "Subject must be canonical uri");
         } finally {
             tx.close();
         }
@@ -128,12 +128,11 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
             objUri = response.getLocation();
         }
 
-        assertTrue(objUri.toString().startsWith(tx.getTxUri().toString()), "Location must be within transaction");
+        assertFalse(objUri.toString().contains("/fcr:tx/"));
 
         tx.close();
 
-        String nonTxObjPath = objUri.toString().replaceFirst("/tx:[^/]+", "");
-        URI nonTxObjUri = URI.create(nonTxObjPath);
+        URI nonTxObjUri = objUri;
         // Verify that the binary content was not rewritten with tx uris
         try (FcrepoResponse response = fcrepoClient.get(nonTxObjUri).perform()) {
             String respBody = IOUtils.toString(response.getBody());

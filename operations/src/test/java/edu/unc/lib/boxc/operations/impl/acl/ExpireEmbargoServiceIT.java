@@ -18,12 +18,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.common.SolrInputDocument;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,6 +87,8 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     private RepositoryInitializer repoInitializer;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    protected FcrepoClient fcrepoClient;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -127,6 +131,7 @@ public class ExpireEmbargoServiceIT extends BaseEmbeddedSolrTest {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

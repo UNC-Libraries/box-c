@@ -8,13 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,7 +91,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     private AccessControlServiceImpl aclService;
-    private static FcrepoClient staticFcrepoClient;
 
     @BeforeEach
     public void init() throws Exception {
@@ -118,19 +112,17 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         aclService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         aclService.setPermissionEvaluator(permissionEvaluator);
 
-        staticFcrepoClient = fcrepoClient;
-
         initStructure();
     }
 
     private void initStructure() throws Exception {
-        // Only create once
-        if (contentRoot != null) {
-            return;
-        }
 
         repoInitializer.initializeRepository();
+        System.out.println("### Resource IDs before init3: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
         contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
+        System.out.println("### Resource IDs after init3: " + String.join("\n",
+                TestRepositoryDeinitializer.listAllResourceIds(client)));
 
         adminUnit1 = repoObjFactory.createAdminUnit(
                 new AclModelBuilder("Admin Unit 1")
@@ -213,16 +205,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         collObj3 = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Unit Staff Only Collection").model);
         adminUnit2.addMember(collObj3);
-    }
-
-    @AfterEach
-    public void cleanup() throws Exception {
-        // Preventing cleanup of repo until all tests complete
-    }
-
-    @AfterAll
-    public static void cleanupAll() throws Exception {
-        TestRepositoryDeinitializer.cleanup(staticFcrepoClient);
     }
 
     @Test

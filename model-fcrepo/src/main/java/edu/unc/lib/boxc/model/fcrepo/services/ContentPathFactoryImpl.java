@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +43,8 @@ public class ContentPathFactoryImpl implements ContentPathFactory {
     private static final Logger log = getLogger(ContentPathFactoryImpl.class);
 
     private static int MAX_NESTING = 256;
+    private static final URI PREFER_MINIMAL_CONTAINER = URI.create(
+            "http://www.w3.org/ns/ldp#PreferMinimalContainer");
 
     private LoadingCache<PID, PID> childToParentCache;
     private long cacheTimeToLive;
@@ -120,7 +123,7 @@ public class ContentPathFactoryImpl implements ContentPathFactory {
         @Override
         public PID load(PID pid) {
             try (FcrepoResponse resp = fcrepoClient.get(pid.getRepositoryUri())
-                    .preferMinimal()
+                    .preferRepresentation(List.of(PREFER_MINIMAL_CONTAINER), null)
                     .perform()) {
                 Model model = RDFModelUtil.createModel(resp.getBody());
                 Resource resc = model.getResource(pid.getRepositoryPath());

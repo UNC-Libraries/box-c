@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
  *
  */
 public class AdminUnitIT extends AbstractFedoraIT {
-
     @Test
     public void testCreateAdminUnit() {
         Model model = ModelFactory.createDefaultModel();
@@ -57,8 +56,6 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
     @Test
     public void testGetParent() throws Exception {
-        repoInitializer.initializeRepository();
-
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());
 

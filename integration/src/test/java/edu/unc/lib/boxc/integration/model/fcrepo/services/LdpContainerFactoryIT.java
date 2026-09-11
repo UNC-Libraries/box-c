@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,6 +28,11 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 
     @Autowired
     private LdpContainerFactory factory;
+
+    @BeforeEach
+    public void init() throws Exception {
+        repoInitializer.initializeRepository();
+    }
 
     @Test
     public void createDirectContainerTest() throws Exception {

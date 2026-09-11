@@ -9,7 +9,6 @@ import java.util.List;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.http.HttpStatus;
-import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -58,21 +57,20 @@ public abstract class AbstractFedoraIT {
     protected RepositoryObjectDriver driver;
     @Autowired
     protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    protected FcrepoClient fcrepoClient;
 
     @Autowired
     protected RepositoryInitializer repoInitializer;
 
     @BeforeEach
-    public void init_() {
+    public void init_() throws Exception {
         // Override base uri for IT tests
         TestHelper.setContentBase(baseAddress);
+        TestRepositoryDeinitializer.cleanup(client);
     }
 
     @AfterEach
     public void cleanup() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        TestRepositoryDeinitializer.cleanup(client);
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

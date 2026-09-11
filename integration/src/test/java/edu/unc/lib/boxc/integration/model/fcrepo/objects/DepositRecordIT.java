@@ -39,10 +39,8 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
  *
  */
 public class DepositRecordIT extends AbstractFedoraIT {
-
     @Test
     public void createDepositRecordTest() throws Exception {
-
         Model model = getDepositRecordModel();
 
         DepositRecord record = repoObjFactory.createDepositRecord(model);
@@ -130,7 +128,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
         Model model = getDepositRecordModel();
         DepositRecord record = repoObjFactory.createDepositRecord(model);
 
-        repoInitializer.initializeRepository();
         ContentRootObject rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
         AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(adminUnit);

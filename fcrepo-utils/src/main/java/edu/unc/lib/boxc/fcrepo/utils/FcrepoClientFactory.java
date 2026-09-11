@@ -84,7 +84,7 @@ public class FcrepoClientFactory {
      * @return
      */
     public FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
-        return TransactionalFcrepoClient.client(baseUri)
+        return TransactionalFcrepoClient.client()
                 .credentials(user, password)
                 .authScope(host)
                 .throwExceptionOnFailure()
@@ -98,7 +98,7 @@ public class FcrepoClientFactory {
      */
     public FcrepoClient makeClient() {
         if (authHost == null) {
-            return TransactionalFcrepoClient.client(baseUri)
+            return TransactionalFcrepoClient.client()
                     .throwExceptionOnFailure()
                     .build();
         } else {
