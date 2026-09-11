@@ -62,7 +62,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class RepositoryObjectDriverTest {
+public class RepositoryObjectDriverImplTest {
     private AutoCloseable closeable;
     private RepositoryObjectDriver repositoryObjectDriver;
     private PIDMinter pidMinter;
