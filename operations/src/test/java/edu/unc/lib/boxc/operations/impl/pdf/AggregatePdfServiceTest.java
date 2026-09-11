@@ -8,7 +8,6 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
@@ -23,26 +22,26 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import pdf4u.CLIMain;
 
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
+
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -56,8 +55,6 @@ public class AggregatePdfServiceTest {
     private static final String ADMIN_UNIT_UUID = "5158b962-9e59-4ed8-b920-fc948213efd3";
     private final String pdf4uJar = "pdf4u.jar";
 
-    @Captor
-    private ArgumentCaptor<String[]> captor;
     @Mock
     private MachineGeneratedContentService mgContentService;
     @Mock
@@ -90,51 +87,66 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void generateAggregatePdfTest() throws Exception {
-        try (MockedStatic<CLIMain> mockedStatic = Mockito.mockStatic(CLIMain.class)) {
-            var parentRec = makeWorkRecord(PARENT_UUID, "Work");
-            var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                    "file1.png", "image/png");
-            var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                    "file2.png", "image/png");
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png");
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
+                "file2.png", "image/png");
 
-            mockParentResults(parentRec);
-            mockChildrenResults(rec1, rec2);
-            mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
-            mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
+        mockParentResults(parentRec);
+        mockChildrenResults(rec1, rec2);
+        mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
+        mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
-            String defaultJson1 = loadDefaultJson();
-            JsonNode defaultNode1 = MachineGeneratedContentService.MAPPER.readTree(defaultJson1);
-            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(defaultJson1);
-            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson1)).thenReturn(defaultNode1);
-            when(mgContentService.extractTextType(defaultNode1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+        String json1 = loadDefaultJson();
+        JsonNode node1 = MachineGeneratedContentService.MAPPER.readTree(json1);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID))).thenReturn(json1);
+        when(mgContentService.deserializeMachineGeneratedDescription(json1)).thenReturn(node1);
+        when(mgContentService.extractTextType(node1)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-            String defaultJson2 = loadDefaultJson();
-            JsonNode defaultNode2 = MachineGeneratedContentService.MAPPER.readTree(defaultJson2);
-            when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(defaultJson2);
-            when(mgContentService.deserializeMachineGeneratedDescription(defaultJson2)).thenReturn(defaultNode2);
-            when(mgContentService.extractTextType(defaultNode2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
+        String json2 = loadDefaultJson();
+        JsonNode node2 = MachineGeneratedContentService.MAPPER.readTree(json2);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD2_UUID))).thenReturn(json2);
+        when(mgContentService.deserializeMachineGeneratedDescription(json2)).thenReturn(node2);
+        when(mgContentService.extractTextType(node2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-            var workObject = mock(WorkObject.class);
-            when(repositoryObjectLoader.getWorkObject(PIDs.get(PARENT_UUID))).thenReturn(workObject);
+        PdfRequest request = new PdfRequest();
+        request.setWorkPid(PARENT_UUID);
+        request.setMimetype("image/png");
+        request.setAgent(agent);
 
-            PdfRequest request = new PdfRequest();
-            request.setWorkPid(PARENT_UUID);
-            request.setMimetype("image/png");
-            request.setAgent(agent);
+        Process process = mock(Process.class);
+        when(process.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        when(process.waitFor()).thenReturn(0);
 
-            mockedStatic.when(() -> CLIMain.runCommand(any(String[].class))).thenReturn(0);
+        AtomicReference<String[]> commandRef = new AtomicReference<>();
 
+        try (MockedConstruction<ProcessBuilder> mocked =
+                 Mockito.mockConstruction(ProcessBuilder.class, (builder, context) -> {
+                     commandRef.set((String[]) context.arguments().get(0));
+                     when(builder.redirectErrorStream(true)).thenReturn(builder);
+                     when(builder.start()).thenReturn(process);
+                 })) {
             Path result = pdfService.generateAggregatePdf(request);
 
             assertNotNull(result);
             assertTrue(result.toString().endsWith(".pdf"));
 
-            mockedStatic.verify(() -> CLIMain.runCommand(captor.capture()), times(1));
-            var cmd = Arrays.stream(captor.getValue()).toList();
-            assertNotNull(cmd);
-            assertEquals("pdf4u.jar", cmd.get(2));
-            assertTrue(FilenameUtils.getBaseName(cmd.get(6)).startsWith(PARENT_UUID));
-            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, cmd.get(12));
+            assertEquals(1, mocked.constructed().size());
+
+            ProcessBuilder builder = mocked.constructed().get(0);
+            String[] command = commandRef.get();
+
+            verify(builder).redirectErrorStream(true);
+            verify(builder).start();
+
+            assertEquals("java", command[0]);
+            assertEquals("-jar", command[1]);
+            assertEquals(pdf4uJar, command[2]);
+            assertEquals("multiple_images", command[3]);
+            assertEquals("add_ocr", command[4]);
+            assertTrue(FilenameUtils.getBaseName(command[6]).startsWith(PARENT_UUID));
+            assertEquals(RESULT_HANDWRITTEN_PRINT + "," + RESULT_HANDWRITTEN_PRINT, command[12]);
         }
     }
 
