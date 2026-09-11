@@ -4,11 +4,14 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -20,12 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.update.UpdateAction;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.fcrepo.client.HeadBuilder;
+import org.fcrepo.client.PatchBuilder;
 import org.fcrepo.client.PostBuilder;
 import org.fcrepo.client.PutBuilder;
 import org.junit.jupiter.api.AfterEach;
@@ -45,6 +52,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
@@ -71,7 +79,11 @@ public class RepositoryObjectFactoryTest {
     @Mock
     private PostBuilder mockPostBuilder;
     @Mock
+    private PatchBuilder mockPatchBuilder;
+    @Mock
     private FcrepoResponse mockResponse;
+    @Mock
+    private HeadBuilder mockHeadBuilder;
     @Mock
     private PID pid;
     @Captor
@@ -102,6 +114,10 @@ public class RepositoryObjectFactoryTest {
         mockPostBuilder = mock(PostBuilder.class, new SelfReturningAnswer());
         when(fcrepoClient.post(any(URI.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.perform()).thenReturn(mockResponse);
+
+        mockPatchBuilder = mock(PatchBuilder.class, new SelfReturningAnswer());
+        when(fcrepoClient.patch(any(URI.class))).thenReturn(mockPatchBuilder);
+        when(mockPatchBuilder.perform()).thenReturn(mockResponse);
         when(mockResponse.getLinkHeaders(any(String.class))).thenReturn(linkHeaders);
 
     }
@@ -119,10 +135,39 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
+    public void createDepositRecordWithPidTest() throws Exception {
+        DepositRecord expected = mock(DepositRecord.class);
+        PID depositPid = pidMinter.mintDepositRecordPid();
+        when(repoObjLoader.getDepositRecord(depositPid)).thenReturn(expected);
+        when(mockResponse.getLocation()).thenReturn(depositPid.getRepositoryUri());
+
+        assertSame(expected, repoObjFactory.createDepositRecord(depositPid, null));
+        verify(ldpFactory, times(2)).createDirectContainer(eq(depositPid.getRepositoryUri()), any(), anyString());
+    }
+
+    @Test
     public void createAdminUnitTest() {
         when(repoObjLoader.getAdminUnit(any(PID.class))).thenReturn(mock(AdminUnit.class));
         AdminUnit obj = repoObjFactory.createAdminUnit(null);
         assertNotNull(obj);
+    }
+
+    @Test
+    public void createAdminUnitWithPidTest() {
+        PID contentPid = pidMinter.mintContentPid();
+        AdminUnit expected = mock(AdminUnit.class);
+        when(repoObjLoader.getAdminUnit(contentPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createAdminUnit(contentPid, null));
+    }
+
+    @Test
+    public void createContentRootObjectTest() throws Exception {
+        URI path = pidMinter.mintContentPid().getRepositoryUri();
+        when(mockResponse.getLocation()).thenReturn(path);
+
+        assertEquals(path, repoObjFactory.createContentRootObject(path, null));
+        verify(ldpFactory).createDirectContainer(eq(path), any(), anyString());
     }
 
     @Test
@@ -133,10 +178,28 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
+    public void createCollectionObjectWithPidTest() {
+        PID contentPid = pidMinter.mintContentPid();
+        CollectionObject expected = mock(CollectionObject.class);
+        when(repoObjLoader.getCollectionObject(contentPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createCollectionObject(contentPid, null));
+    }
+
+    @Test
     public void createFolderObjectTest() throws Exception {
         when(repoObjLoader.getFolderObject(any(PID.class))).thenReturn(mock(FolderObject.class));
         FolderObject obj = repoObjFactory.createFolderObject(null);
         assertNotNull(obj);
+    }
+
+    @Test
+    public void createFolderObjectWithPidTest() {
+        PID contentPid = pidMinter.mintContentPid();
+        FolderObject expected = mock(FolderObject.class);
+        when(repoObjLoader.getFolderObject(contentPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createFolderObject(contentPid, null));
     }
 
     @Test
@@ -147,6 +210,15 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
+    public void createWorkObjectWithPidTest() {
+        PID contentPid = pidMinter.mintContentPid();
+        WorkObject expected = mock(WorkObject.class);
+        when(repoObjLoader.getWorkObject(contentPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createWorkObject(contentPid, null));
+    }
+
+    @Test
     public void createFileObjectTest() {
         when(repoObjLoader.getFileObject(any(PID.class))).thenReturn(mock(FileObject.class));
         FileObject obj = repoObjFactory.createFileObject(null);
@@ -154,7 +226,7 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
-    public void createFolderWithPidTest() {
+    public void createFileObjectWithPidTest() {
         PID pid = pidMinter.mintContentPid();
         FileObject mockFile = mock(FileObject.class);
         when(mockFile.getPid()).thenReturn(pid);
@@ -188,6 +260,68 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
+    public void createOrUpdateBinaryTest() {
+        PID binaryPid = pidMinter.mintContentPid();
+        BinaryObject expected = mock(BinaryObject.class);
+        when(mockResponse.getLocation()).thenReturn(binaryPid.getRepositoryUri());
+        when(repoObjLoader.getBinaryObject(binaryPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createOrUpdateBinary(binaryPid, URI.create("file:///storage/file"),
+                "file.txt", "text/plain", "sha1", "md5", null));
+        verify(repoObjLoader).invalidate(binaryPid);
+    }
+
+    @Test
+    public void createBinaryWithModelTest() throws FcrepoOperationFailedException {
+        PID binaryPid = pidMinter.mintContentPid();
+        BinaryObject expected = mock(BinaryObject.class);
+        when(mockResponse.getLocation()).thenReturn(binaryPid.getRepositoryUri());
+        when(repoObjLoader.getBinaryObject(binaryPid)).thenReturn(expected);
+
+        assertSame(expected, repoObjFactory.createBinary(binaryPid.getRepositoryUri(), "file.txt",
+                mock(InputStream.class), "file.txt", "text/plain", "sha1", "md5", modelWithProperty()));
+        verify(mockPatchBuilder).perform();
+    }
+
+    @Test
+    public void updateBinaryTest() {
+        PID binaryPid = pidMinter.mintContentPid();
+        BinaryObject expected = mock(BinaryObject.class);
+        when(repoObjLoader.getBinaryObject(binaryPid)).thenReturn(expected);
+        String binaryUri = binaryPid.getRepositoryUri().toString();
+        int lastSlash = binaryUri.lastIndexOf('/');
+
+        assertSame(expected, repoObjFactory.updateBinary(URI.create(binaryUri.substring(0, lastSlash)),
+                binaryUri.substring(lastSlash + 1),
+                mock(InputStream.class), "file.txt", "text/plain", "sha1", "md5", null));
+        verify(repoObjLoader).invalidate(binaryPid);
+    }
+
+    @Test
+    public void updateBinaryWithModelTest() throws FcrepoOperationFailedException {
+        PID binaryPid = pidMinter.mintContentPid();
+        BinaryObject expected = mock(BinaryObject.class);
+        when(repoObjLoader.getBinaryObject(binaryPid)).thenReturn(expected);
+        String binaryUri = binaryPid.getRepositoryUri().toString();
+        int lastSlash = binaryUri.lastIndexOf('/');
+
+        assertSame(expected, repoObjFactory.updateBinary(URI.create(binaryUri.substring(0, lastSlash)),
+                binaryUri.substring(lastSlash + 1), mock(InputStream.class), "file.txt", "text/plain", "sha1", "md5",
+                modelWithProperty()));
+        verify(mockPatchBuilder).perform();
+    }
+
+    @Test
+    public void binaryCreationRejectsNullContentTest() {
+        URI path = pidMinter.mintContentPid().getRepositoryUri();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> repoObjFactory.createBinary(path, "file", null, null, null, null, null, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> repoObjFactory.updateBinary(path, "file", null, null, null, null, null, null));
+    }
+
+    @Test
     public void addMemberTest() {
         PID parentPid = pidMinter.mintContentPid();
         ContentObject parent = mock(ContentObject.class);
@@ -205,6 +339,16 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory.addMember(parent, member);
 
         verify(sparqlUpdateService).executeUpdate(eq(memberPid.getRepositoryPath()), anyString());
+    }
+
+    @Test
+    public void createPropertyTest() {
+        RepositoryObject object = repositoryObject();
+
+        repoObjFactory.createProperty(object, Ebucore.filename, "file.txt");
+
+        verify(sparqlUpdateService).executeUpdate(eq(object.getMetadataUri().toString()), anyString());
+        verify(object).shouldRefresh();
     }
 
     @Test
@@ -273,5 +417,86 @@ public class RepositoryObjectFactoryTest {
         UpdateAction.parseExecute(sparql, objectModel);
         assertTrue(objectModel.contains(fileResc, Ebucore.filename, expectedName));
         assertFalse(objectModel.contains(fileResc, Ebucore.filename, oldName));
+    }
+
+    @Test
+    public void deletePropertyTest() {
+        RepositoryObject object = repositoryObject();
+
+        repoObjFactory.deleteProperty(object, Ebucore.filename);
+
+        verify(sparqlUpdateService).executeUpdate(eq(object.getMetadataUri().toString()), anyString());
+        verify(object).shouldRefresh();
+    }
+
+    @Test
+    public void createRelationshipTest() {
+        RepositoryObject object = repositoryObject();
+        Resource related = createResource("http://example.com/related");
+
+        repoObjFactory.createRelationship(object, PcdmModels.memberOf, related);
+
+        verify(sparqlUpdateService).executeUpdate(eq(object.getMetadataUri().toString()), anyString());
+        verify(object).shouldRefresh();
+    }
+
+    @Test
+    public void createRelationshipsTest() {
+        RepositoryObject object = repositoryObject();
+        Model model = ModelFactory.createDefaultModel();
+        model.createResource("http://example.com/object").addProperty(Ebucore.filename, "file.txt");
+
+        repoObjFactory.createRelationships(object, model);
+
+        verify(sparqlUpdateService).executeUpdate(eq(object.getMetadataUri().toString()), anyString());
+        verify(object).shouldRefresh();
+    }
+
+    @Test
+    public void createOrTransformObjectTest() {
+        URI path = pidMinter.mintContentPid().getRepositoryUri();
+        URI created = URI.create(path + "/created");
+        when(mockResponse.getLocation()).thenReturn(created);
+
+        assertEquals(created, repoObjFactory.createOrTransformObject(path, ModelFactory.createDefaultModel()));
+        verify(mockPutBuilder).preferLenient();
+    }
+
+    @Test
+    public void objectExistsTest() throws FcrepoOperationFailedException {
+        URI path = pidMinter.mintContentPid().getRepositoryUri();
+        when(fcrepoClient.head(path)).thenReturn(mockHeadBuilder);
+        when(mockHeadBuilder.perform()).thenReturn(mockResponse);
+
+        assertTrue(repoObjFactory.objectExists(path));
+    }
+
+    @Test
+    public void objectDoesNotExistTest() throws FcrepoOperationFailedException {
+        URI path = pidMinter.mintContentPid().getRepositoryUri();
+        when(fcrepoClient.head(path)).thenReturn(mockHeadBuilder);
+        when(mockHeadBuilder.perform()).thenThrow(new FcrepoOperationFailedException(path, 404, "Not found"));
+
+        assertFalse(repoObjFactory.objectExists(path));
+    }
+
+    @Test
+    public void dependencyAccessorsTest() {
+        assertSame(fcrepoClient, repoObjFactory.getClient());
+        assertSame(ldpFactory, repoObjFactory.getLdpFactory());
+    }
+
+    private RepositoryObject repositoryObject() {
+        PID objectPid = pidMinter.mintContentPid();
+        RepositoryObject object = mock(RepositoryObject.class);
+        when(object.getPid()).thenReturn(objectPid);
+        when(object.getMetadataUri()).thenReturn(objectPid.getRepositoryUri());
+        return object;
+    }
+
+    private Model modelWithProperty() {
+        Model model = ModelFactory.createDefaultModel();
+        model.createResource("http://example.com/binary").addProperty(Ebucore.filename, "file.txt");
+        return model;
     }
 }
