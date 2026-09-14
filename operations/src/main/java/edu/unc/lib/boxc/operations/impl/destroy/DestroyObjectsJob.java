@@ -16,7 +16,6 @@ import java.util.Map;
 import edu.unc.lib.boxc.fcrepo.exceptions.BadGatewayException;
 import edu.unc.lib.boxc.fcrepo.exceptions.GoneException;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
-import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
@@ -30,7 +29,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.slf4j.Logger;
@@ -38,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -136,7 +133,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         destroyTree(repoObj);
 
         // Add premis event to parent
-        String lineSeparator = System.getProperty("line.separator");
+        String lineSeparator = System.lineSeparator();
         premisLoggerFactory.createPremisLogger(parentObj)
                 .buildEvent(Premis.Deletion)
                 .addAuthorizingAgent(AgentPids.forPerson(agent))
@@ -148,13 +145,11 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
     }
 
-    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
-            FcrepoOperationFailedException {
+    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException {
         log.debug("Performing destroy on object {} of type {}",
                 rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
 
-        if (rootOfTree instanceof ContentContainerObject) {
-            ContentContainerObject container = (ContentContainerObject) rootOfTree;
+        if (rootOfTree instanceof ContentContainerObject container) {
             List<ContentObject> members = container.getMembers();
 
             for (ContentObject member : members) {
@@ -164,7 +159,6 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                 }
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
-
             }
         }
 
@@ -173,7 +167,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         List<URI> binaryUris = null;
         if (rootOfTree instanceof FileObject) {
             FileObject fileObj = (FileObject) rootOfTree;
-            binaryUris = destroyFile(fileObj, rootResc);
+            binaryUris = prepareFileForDestroy(fileObj, rootResc);
         }
 
         sendBinariesDestroyedMsg(rootOfTree, binaryUris);
@@ -194,8 +188,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
             .writeAndClose();
     }
 
-    private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)
-            throws IOException, FcrepoOperationFailedException {
+    private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc) {
 
         Model stoneModel = ModelFactory.createDefaultModel();
         destroyedResc.getModel().listStatements()
@@ -212,7 +205,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         return stoneModel;
     }
 
-    private List<URI> destroyFile(FileObject fileObj, Resource resc) {
+    private List<URI> prepareFileForDestroy(FileObject fileObj, Resource resc) {
         BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);

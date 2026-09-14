@@ -37,6 +37,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.PcdmUse;
@@ -67,6 +68,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             Resource respResc = respModel.getResource(path);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.DepositRecord), "Did not have deposit record type");
+            assertArchivalGroup(resp);
 
             String manifestPath = path + "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
             assertTrue(respResc.hasProperty(Ldp.contains, createResource(manifestPath)),
@@ -219,6 +221,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             // Verify that the correct RDF types were applied
             assertTrue(respResc.hasProperty(RDF.type, Cdr.FileObject));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+            assertArchivalGroup(resp);
 
             // Verify that subcontainers were created
             assertTrue(respResc.hasProperty(Ldp.contains,
@@ -243,6 +246,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Work));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+            assertArchivalGroup(resp);
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(getMetadataContainerUri(pid).toString())));
@@ -264,6 +268,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Folder));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+            assertArchivalGroup(resp);
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(getMetadataContainerUri(pid).toString())));
@@ -286,6 +291,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.AdminUnit));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Collection));
+            assertArchivalGroup(resp);
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(getMetadataContainerUri(pid).toString())));
@@ -306,6 +312,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Collection));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+            assertArchivalGroup(resp);
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(getMetadataContainerUri(pid).toString())));
@@ -383,6 +390,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     private RepositoryObject createObject() throws Exception {
         RepositoryObject repoObj = repoObjFactory.createFolderObject(null);
         return repoObj;
+    }
+
+    private void assertArchivalGroup(FcrepoResponse response) {
+        assertTrue(response.getLinkHeaders("type").contains(URI.create(Fcrepo4Repository.ArchivalGroup.getURI())),
+                "Did not have ArchivalGroup type Link header");
     }
 
     private Model getModel(PID pid) throws Exception {

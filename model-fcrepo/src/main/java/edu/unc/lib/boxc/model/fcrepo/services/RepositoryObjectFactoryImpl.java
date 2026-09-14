@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.FCR_METADAT
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
+import static org.fcrepo.client.FedoraHeaderConstants.LINK;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.fcrepo.client.LinkHeaderConstants.DESCRIBEDBY_REL;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -50,6 +51,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
@@ -67,6 +69,8 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
  */
 public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
     private static final Logger log = getLogger(RepositoryObjectFactoryImpl.class);
+    private static final String ARCHIVAL_GROUP_LINK = "<" + Fcrepo4Repository.ArchivalGroup.getURI()
+            + ">;rel=\"type\"";
 
     private LdpContainerFactory ldpFactory;
 
@@ -105,6 +109,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
             URI createdUri;
             try (FcrepoResponse response = getClient().put(path)
                     .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                    .addHeader(LINK, ARCHIVAL_GROUP_LINK)
                     .perform()) {
                 createdUri = response.getLocation();
             }
@@ -156,7 +161,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.AdminUnit, PcdmModels.Object));
 
-        createContentContainerObject(pid.getRepositoryUri(), model);
+        createContentContainerObject(pid.getRepositoryUri(), model, true);
 
         return repoObjLoader.getAdminUnit(pid);
     }
@@ -175,7 +180,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         model = populateModelTypes(path, model,
                 Arrays.asList(Cdr.ContentRoot));
 
-        return createContentContainerObject(path, model);
+        return createContentContainerObject(path, model, false);
     }
 
 
@@ -208,7 +213,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.Collection, PcdmModels.Object));
 
-        createContentContainerObject(pid.getRepositoryUri(), model);
+        createContentContainerObject(pid.getRepositoryUri(), model, true);
 
         return repoObjLoader.getCollectionObject(pid);
     }
@@ -242,7 +247,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.Folder, PcdmModels.Object));
 
-        createContentContainerObject(pid.getRepositoryUri(), model);
+        createContentContainerObject(pid.getRepositoryUri(), model, true);
 
         return repoObjLoader.getFolderObject(pid);
     }
@@ -276,7 +281,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.Work, PcdmModels.Object));
 
-        createContentContainerObject(pid.getRepositoryUri(), model);
+        createContentContainerObject(pid.getRepositoryUri(), model, true);
 
         return repoObjLoader.getWorkObject(pid);
     }
@@ -314,6 +319,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
             URI createdUri;
             try (FcrepoResponse response = getClient().put(path)
                     .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                    .addHeader(LINK, ARCHIVAL_GROUP_LINK)
                     .perform()) {
                 createdUri = response.getLocation();
             }
@@ -730,12 +736,14 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
         sparqlUpdateService.executeUpdate(subject.toString(), sparqlUpdate);
     }
 
-    private URI createContentContainerObject(URI path, Model model) throws FedoraException {
+    private URI createContentContainerObject(URI path, Model model, boolean archivalGroup) throws FedoraException {
         try {
             URI createdUri;
-            try (FcrepoResponse response = getClient().put(path)
-                    .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                    .perform()) {
+            var request = getClient().put(path).body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE);
+            if (archivalGroup) {
+                request.addHeader(LINK, ARCHIVAL_GROUP_LINK);
+            }
+            try (FcrepoResponse response = request.perform()) {
                 createdUri = response.getLocation();
             }
 

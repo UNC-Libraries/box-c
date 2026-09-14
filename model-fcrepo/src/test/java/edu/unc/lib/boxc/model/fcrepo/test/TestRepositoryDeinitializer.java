@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -161,7 +162,9 @@ public class TestRepositoryDeinitializer {
                 throw new RuntimeException("Failed to delete " + resourceUriString + " tombstone");
             }
         } catch (FcrepoOperationFailedException e) {
-            if (e.getStatusCode() != 404) {
+            // An archival group must be purged as a unit, so Fedora rejects child tombstone purges.
+            if (e.getStatusCode() != HttpStatus.SC_NOT_FOUND
+                    && e.getStatusCode() != HttpStatus.SC_METHOD_NOT_ALLOWED) {
                 throw e;
             }
         }

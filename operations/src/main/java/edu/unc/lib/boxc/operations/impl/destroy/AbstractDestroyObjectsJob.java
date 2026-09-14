@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -130,7 +131,13 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
 
         URI tombstoneUri = URI.create(URIUtil.join(objUri, FCR_TOMBSTONE));
         try (FcrepoResponse ignored = fcrepoClient.delete(tombstoneUri).perform()) {
-        } catch (FcrepoOperationFailedException | IOException e) {
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != HttpStatus.SC_NOT_FOUND
+                    && e.getStatusCode() != HttpStatus.SC_METHOD_NOT_ALLOWED) {
+                throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
+            }
+
+        } catch (IOException e) {
             throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
         }
     }
