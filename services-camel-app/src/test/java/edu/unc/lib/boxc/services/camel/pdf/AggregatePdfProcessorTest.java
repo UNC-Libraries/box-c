@@ -91,7 +91,7 @@ public class AggregatePdfProcessorTest {
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
 
         when(pidMinter.mintContentPid()).thenReturn(pdfPid);
-        when(locationManager.getDefaultStorageLocation(pdfPid)).thenReturn(storageLocation);
+        when(locationManager.getDefaultStorageLocation(workPid)).thenReturn(storageLocation);
         when(storageLocation.getNewStorageUri(originalFilePid)).thenReturn(finalPdfPath.toUri());
 
         processor = new AggregatePdfProcessor();
@@ -100,7 +100,7 @@ public class AggregatePdfProcessorTest {
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setLocationManager(locationManager);
         processor.setAggregatePdfService(aggregatePdfService);
-        when(aclService.hasAccess(any(), any(), eq(Permission.runEnhancements))).thenReturn(true);
+        when(aclService.hasAccess(any(), any(), eq(Permission.editResourceType))).thenReturn(true);
     }
 
     @AfterEach
@@ -113,7 +113,7 @@ public class AggregatePdfProcessorTest {
         var exchange = createRequestExchange(workPid.getId(), "image/tiff");
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(any(), any(PID.class), any(), eq(Permission.runEnhancements));
+                .assertHasAccess(any(), any(PID.class), any(), eq(Permission.editResourceType));
 
         assertThrows(AccessRestrictionException.class, () -> {
             processor.process(exchange);
@@ -226,7 +226,7 @@ public class AggregatePdfProcessorTest {
 
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
 
-        verify(locationManager).getDefaultStorageLocation(pdfPid);
+        verify(locationManager).getDefaultStorageLocation(workPid);
         verify(storageLocation).getNewStorageUri(originalFilePid);
     }
 
@@ -273,7 +273,7 @@ public class AggregatePdfProcessorTest {
                 eq("User does not have permission to generate aggregate PDF"),
                 eq(workPid),
                 eq(agent.getPrincipals()),
-                eq(Permission.runEnhancements));
+                eq(Permission.editResourceType));
 
         verify(repositoryObjectLoader, times(1)).getWorkObject(workPid);
         verify(aggregatePdfService).generateAggregatePdf(any(PdfRequest.class));

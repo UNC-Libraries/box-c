@@ -53,17 +53,19 @@ public class AggregatePdfProcessor implements Processor {
         var workPid = PIDs.get(request.getWorkPid());
 
         aclService.assertHasAccess("User does not have permission to generate aggregate PDF",
-                workPid, agent.getPrincipals(), Permission.runEnhancements);
+                workPid, agent.getPrincipals(), Permission.editResourceType);
+
+        var workObject = loadWorkObject(workPid);
 
         var pdfPid = pidMinter.mintContentPid();
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
-        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(pdfPid)
+        var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(workPid)
                 .getNewStorageUri(originalFilePid));
 
-        var workObject = loadWorkObject(workPid);
         Path pdfTmpPath = null;
 
         try {
+            log.info("Generating aggregate PDF for " + workPid);
             pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
             moveFile(pdfTmpPath, pdfStorageUri);
 
@@ -75,7 +77,7 @@ public class AggregatePdfProcessor implements Processor {
             if (pdfTmpPath != null) {
                 Files.deleteIfExists(pdfTmpPath);
             }
-            log.error("Failed to generate aggregate PDF for {}", workPid, e);
+            log.info("Failed to generate aggregate PDF for {}", workPid, e);
             throw e;
         }
     }
@@ -90,7 +92,7 @@ public class AggregatePdfProcessor implements Processor {
     }
 
     /**
-     *  Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
+     * Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
      * @param pid work pid
      */
     private WorkObject loadWorkObject(PID pid) {
@@ -101,12 +103,16 @@ public class AggregatePdfProcessor implements Processor {
         }
     }
 
+    /**
+     * Move aggregate PDF to default PDF storage location
+     * @param pdfTmpPath temperary aggregate PDF path
+     * @param pdfFinalPath final aggregate PDF path
+     */
     private void moveFile(Path pdfTmpPath, Path pdfFinalPath)
             throws IOException {
         Files.createDirectories(pdfFinalPath.getParent());
 
-        log.debug("Moving aggregate PDF file from source {} to destination {}",
-                pdfTmpPath, pdfFinalPath);
+        log.info("Moving aggregate PDF file from source {} to destination {}", pdfTmpPath, pdfFinalPath);
 
         Files.move(pdfTmpPath, pdfFinalPath, REPLACE_EXISTING);
     }
