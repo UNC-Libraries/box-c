@@ -66,6 +66,7 @@ public class AggregatePdfProcessor implements Processor {
 
         try {
             pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
+            log.debug("Move aggregate pdf from " + pdfTmpPath + " to " + pdfStorageUri);
             moveFile(pdfTmpPath, pdfStorageUri);
 
             Model model = ModelFactory.createDefaultModel();

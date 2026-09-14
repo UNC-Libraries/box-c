@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -28,9 +30,11 @@ import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -110,10 +115,7 @@ public class AggregatePdfServiceTest {
         when(mgContentService.deserializeMachineGeneratedDescription(json2)).thenReturn(node2);
         when(mgContentService.extractTextType(node2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-        PdfRequest request = new PdfRequest();
-        request.setWorkPid(PARENT_UUID);
-        request.setMimetype("image/png");
-        request.setAgent(agent);
+        PdfRequest request = request();
 
         Process process = mock(Process.class);
         when(process.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -151,6 +153,26 @@ public class AggregatePdfServiceTest {
     }
 
     @Test
+    public void generateAggregatePdfPdf4uFailsTest() throws Exception {
+        mockParentResults(makeWorkRecord(PARENT_UUID, "Work"));
+        mockChildrenResults(makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
+                "File One", "file1.png", "image/png"));
+
+        Process process = mock(Process.class);
+        when(process.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        when(process.waitFor()).thenReturn(1);
+
+        try (MockedConstruction<ProcessBuilder> ignored =
+                     Mockito.mockConstruction(ProcessBuilder.class, (builder, context) -> {
+                         when(builder.redirectErrorStream(true)).thenReturn(builder);
+                         when(builder.start()).thenReturn(process);
+                     })) {
+            assertThrows(RuntimeException.class,
+                    () -> pdfService.generateAggregatePdf(request()));
+        }
+    }
+
+    @Test
     public void createInputListFileTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work");
         var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
@@ -163,10 +185,7 @@ public class AggregatePdfServiceTest {
         mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
         mockOriginalFile(CHILD2_UUID, "file:///tmp/file2.png");
 
-        PdfRequest request = new PdfRequest();
-        request.setWorkPid(PARENT_UUID);
-        request.setMimetype("image/png");
-        request.setAgent(agent);
+        PdfRequest request = request();
 
         var inputFilePath = pdfService.createInputListFile(request);
         List<String> lines = Files.readAllLines(inputFilePath, StandardCharsets.UTF_8);
@@ -188,16 +207,34 @@ public class AggregatePdfServiceTest {
         mockOriginalFile(CHILD1_UUID, "file1.png");
         mockOriginalFile(CHILD2_UUID, "file2.png");
 
-        PdfRequest request = new PdfRequest();
-        request.setWorkPid(PARENT_UUID);
-        request.setMimetype("image/png");
-        request.setAgent(agent);
+        PdfRequest request = request();
 
         var transcriptListFile = pdfService.createTranscriptListFile(request);
         List<String> lines = Files.readAllLines(transcriptListFile, StandardCharsets.UTF_8);
         assertEquals(2, lines.size());
         assertTrue(lines.get(0).contains(CHILD1_UUID + "_transcript"));
         assertTrue(lines.get(1).contains(CHILD2_UUID + "_transcript"));
+    }
+
+    @Test
+    public void createTranscriptListFileNoTranscriptTest() throws Exception {
+        var parent = makeWorkRecord(PARENT_UUID, "Work");
+        var child1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
+                "File One", "file1.png", "image/png");
+        var child2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File,
+                "File Two", "file2.png", "image/png");
+        child2.setTranscript(null);
+
+        mockParentResults(parent);
+        mockChildrenResults(child1, child2);
+
+        var request = request();
+        var listFile = pdfService.createTranscriptListFile(request);
+        var lines = Files.readAllLines(listFile);
+
+        assertEquals(2, lines.size());
+        assertTrue(lines.get(0).contains(CHILD1_UUID + "_transcript"));
+        assertEquals("no transcript", lines.get(1));
     }
 
     @Test
@@ -225,13 +262,73 @@ public class AggregatePdfServiceTest {
         when(mgContentService.deserializeMachineGeneratedDescription(defaultJson2)).thenReturn(defaultNode2);
         when(mgContentService.extractTextType(defaultNode2)).thenReturn(RESULT_HANDWRITTEN_PRINT);
 
-        PdfRequest request = new PdfRequest();
-        request.setWorkPid(PARENT_UUID);
-        request.setMimetype("image/png");
-        request.setAgent(agent);
+        PdfRequest request = request();
 
         var textType = pdfService.createTextTypeList(request);
         assertEquals(List.of(RESULT_HANDWRITTEN_PRINT, RESULT_HANDWRITTEN_PRINT), textType);
+    }
+
+    @Test
+    public void createTextTypeListNoTextWhenDescriptionIsMissing() throws Exception {
+        var parent = makeWorkRecord(PARENT_UUID, "Work");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
+                "File One", "file1.png", "image/png");
+
+        mockParentResults(parent);
+        mockChildrenResults(child);
+        when(mgContentService.loadMachineGeneratedDescription(PIDs.get(CHILD1_UUID)))
+                .thenThrow(new NoSuchFileException("missing"));
+
+        assertEquals(List.of("no text"),
+                pdfService.createTextTypeList(request()));
+    }
+
+    @Test
+    public void createTextTypeListNoTextWhenExtractedTypeIsNullTest() throws Exception {
+        var parent = makeWorkRecord(PARENT_UUID, "Work");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
+                "File One", "file1.png", "image/png");
+
+        mockParentResults(parent);
+        mockChildrenResults(child);
+
+        String json = loadDefaultJson();
+        JsonNode node = MachineGeneratedContentService.MAPPER.readTree(json);
+
+        when(mgContentService.loadMachineGeneratedDescription(any())).thenReturn(json);
+        when(mgContentService.deserializeMachineGeneratedDescription(json)).thenReturn(node);
+        when(mgContentService.extractTextType(node)).thenReturn(null);
+
+        assertEquals(List.of("no text"),
+                pdfService.createTextTypeList(request()));
+    }
+
+    @Test
+    public void createTextTypeListDescriptionReadFailureTest() throws Exception {
+        var parent = makeWorkRecord(PARENT_UUID, "Work");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
+                "File One", "file1.png", "image/png");
+
+        mockParentResults(parent);
+        mockChildrenResults(child);
+
+        when(mgContentService.loadMachineGeneratedDescription(any()))
+                .thenThrow(new IOException("read failure"));
+
+        assertThrows(ServiceException.class,
+                () -> pdfService.createTextTypeList(request()));
+    }
+
+    @Test
+    public void throwNotFoundWhenParentDoesNotExistTest() {
+        when(solrSearchService.getObjectById(any())).thenReturn(null);
+
+        assertThrows(NotFoundException.class,
+                () -> pdfService.createInputListFile(request()));
+        assertThrows(NotFoundException.class,
+                () -> pdfService.createTranscriptListFile(request()));
+        assertThrows(NotFoundException.class,
+                () -> pdfService.createTextTypeList(request()));
     }
 
     public static SearchResultResponse makeResultResponse(ContentObjectRecord... results) {
@@ -255,6 +352,14 @@ public class AggregatePdfServiceTest {
 
     private void mockParentResults(ContentObjectRecord parentRec, ContentObjectRecord... parentRecs) {
         mockSingleRecordResults(solrSearchService, parentRec, parentRecs);
+    }
+
+    private PdfRequest request() {
+        var request = new PdfRequest();
+        request.setWorkPid(PARENT_UUID);
+        request.setMimetype("image/png");
+        request.setAgent(agent);
+        return request;
     }
 
     private ContentObjectRecord makeWorkRecord(String uuid, String title) {
