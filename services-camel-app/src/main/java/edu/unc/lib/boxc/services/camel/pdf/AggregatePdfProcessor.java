@@ -65,6 +65,7 @@ public class AggregatePdfProcessor implements Processor {
         Path pdfTmpPath = null;
 
         try {
+            log.info("Generating aggregate PDF for " + workPid);
             pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
             moveFile(pdfTmpPath, pdfStorageUri);
 
@@ -76,7 +77,7 @@ public class AggregatePdfProcessor implements Processor {
             if (pdfTmpPath != null) {
                 Files.deleteIfExists(pdfTmpPath);
             }
-            log.error("Failed to generate aggregate PDF for {}", workPid, e);
+            log.info("Failed to generate aggregate PDF for {}", workPid, e);
             throw e;
         }
     }
@@ -111,7 +112,7 @@ public class AggregatePdfProcessor implements Processor {
             throws IOException {
         Files.createDirectories(pdfFinalPath.getParent());
 
-        log.debug("Moving aggregate PDF file from source {} to destination {}", pdfTmpPath, pdfFinalPath);
+        log.info("Moving aggregate PDF file from source {} to destination {}", pdfTmpPath, pdfFinalPath);
 
         Files.move(pdfTmpPath, pdfFinalPath, REPLACE_EXISTING);
     }
