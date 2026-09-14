@@ -72,6 +72,11 @@ public class AggregatePdfService {
         }
     }
 
+    /**
+     * Generate aggregate PDF with pdf4u
+     * @param request PdfRequest
+     * @return path to aggregate PDF file
+     */
     public Path generateAggregatePdf(PdfRequest request) throws IOException {
         var workPid = request.getWorkPid();
         String inputFiles = createInputListFile(request).toString();

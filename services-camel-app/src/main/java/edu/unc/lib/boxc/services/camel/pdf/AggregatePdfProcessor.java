@@ -66,7 +66,6 @@ public class AggregatePdfProcessor implements Processor {
 
         try {
             pdfTmpPath = aggregatePdfService.generateAggregatePdf(request);
-            log.debug("Move aggregate pdf from " + pdfTmpPath + " to " + pdfStorageUri);
             moveFile(pdfTmpPath, pdfStorageUri);
 
             Model model = ModelFactory.createDefaultModel();
@@ -92,7 +91,7 @@ public class AggregatePdfProcessor implements Processor {
     }
 
     /**
-     *  Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
+     * Throws an IllegalArgumentException if the file is not eligible for having pdf derivatives generated from it
      * @param pid work pid
      */
     private WorkObject loadWorkObject(PID pid) {
@@ -103,12 +102,16 @@ public class AggregatePdfProcessor implements Processor {
         }
     }
 
+    /**
+     * Move aggregate PDF to default PDF storage location
+     * @param pdfTmpPath temperary aggregate PDF path
+     * @param pdfFinalPath final aggregate PDF path
+     */
     private void moveFile(Path pdfTmpPath, Path pdfFinalPath)
             throws IOException {
         Files.createDirectories(pdfFinalPath.getParent());
 
-        log.debug("Moving aggregate PDF file from source {} to destination {}",
-                pdfTmpPath, pdfFinalPath);
+        log.debug("Moving aggregate PDF file from source {} to destination {}", pdfTmpPath, pdfFinalPath);
 
         Files.move(pdfTmpPath, pdfFinalPath, REPLACE_EXISTING);
     }
