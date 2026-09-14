@@ -78,8 +78,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
         assertCanDestroy(agent, rootOfTree, aclService);
 
         log.info("Completely destroying object {}", rootOfTree.getPid());
-        if (rootOfTree instanceof ContentContainerObject) {
-            ContentContainerObject container = (ContentContainerObject) rootOfTree;
+        if (rootOfTree instanceof ContentContainerObject container) {
             List<ContentObject> members = container.getMembers();
 
             for (ContentObject member : members) {
