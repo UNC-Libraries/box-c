@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.fcrepo.client.FedoraHeaderConstants.LINK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,6 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -132,6 +135,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getDepositRecord(any(PID.class))).thenReturn(mock(DepositRecord.class));
         DepositRecord obj = repoObjFactory.createDepositRecord(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -150,6 +154,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getAdminUnit(any(PID.class))).thenReturn(mock(AdminUnit.class));
         AdminUnit obj = repoObjFactory.createAdminUnit(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -168,6 +173,7 @@ public class RepositoryObjectFactoryTest {
 
         assertEquals(path, repoObjFactory.createContentRootObject(path, null));
         verify(ldpFactory).createDirectContainer(eq(path), any(), anyString());
+        verify(mockPutBuilder, never()).addHeader(eq(LINK), anyString());
     }
 
     @Test
@@ -175,6 +181,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getCollectionObject(any(PID.class))).thenReturn(mock(CollectionObject.class));
         CollectionObject obj = repoObjFactory.createCollectionObject(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -191,6 +198,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getFolderObject(any(PID.class))).thenReturn(mock(FolderObject.class));
         FolderObject obj = repoObjFactory.createFolderObject(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -207,6 +215,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(mock(WorkObject.class));
         WorkObject obj = repoObjFactory.createWorkObject(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -223,6 +232,7 @@ public class RepositoryObjectFactoryTest {
         when(repoObjLoader.getFileObject(any(PID.class))).thenReturn(mock(FileObject.class));
         FileObject obj = repoObjFactory.createFileObject(null);
         assertNotNull(obj);
+        verify(mockPutBuilder).addHeader(LINK, archivalGroupLink());
     }
 
     @Test
@@ -498,5 +508,9 @@ public class RepositoryObjectFactoryTest {
         Model model = ModelFactory.createDefaultModel();
         model.createResource("http://example.com/binary").addProperty(Ebucore.filename, "file.txt");
         return model;
+    }
+
+    private String archivalGroupLink() {
+        return "<" + Fcrepo4Repository.ArchivalGroup.getURI() + ">;rel=\"type\"";
     }
 }

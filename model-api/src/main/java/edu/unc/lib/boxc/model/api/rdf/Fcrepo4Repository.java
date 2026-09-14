@@ -32,6 +32,10 @@ public class Fcrepo4Repository {
     public static final Resource AnnotatedResource = createResource(
             "http://fedora.info/definitions/v4/repository#AnnotatedResource" );
 
+    /** A container whose children are versioned as a unit. */
+    public static final Resource ArchivalGroup = createResource(
+            "http://fedora.info/definitions/v4/repository#ArchivalGroup" );
+
     /** A bitstream, with no further data properties. */
     public static final Resource Binary = createResource(
             "http://fedora.info/definitions/v4/repository#Binary" );
