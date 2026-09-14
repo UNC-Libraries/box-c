@@ -66,7 +66,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
  * @author harring
  *
  */
-public class RepositoryObjectFactoryTest {
+public class RepositoryObjectFactoryImplTest {
     private AutoCloseable closeable;
 
     @Mock
