@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
@@ -213,11 +214,7 @@ public class AggregatePdfService {
 
             var textType = machineGeneratedContentService.extractTextType(mgdNode);
             // if no textType retrieved, set to 'no text'
-            if (textType != null) {
-                textTypeList.add(textType);
-            } else {
-                textTypeList.add("no text");
-            }
+            textTypeList.add(Objects.requireNonNullElse(textType, "no text"));
         }
 
         return textTypeList;
