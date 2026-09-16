@@ -53,6 +53,9 @@ public class AggregatePdfService {
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
+    private static final List<String> FILENAME_REQUEST_FIELDS = Arrays.asList(
+            SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name());
+
     private static final List<String> WORK_REQUEST_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
 
@@ -220,6 +223,24 @@ public class AggregatePdfService {
         return textTypeList;
     }
 
+    /**
+     * Create aggregate PDF filename using the parent collection's collection id and the work's hook id
+     * @param request PdfRequest
+     * @return aggregate PDF filename
+     */
+    public String createPdfFilename(PdfRequest request) {
+        var workPidString = request.getWorkPid();
+        var workPid = PIDs.get(workPidString);
+        var agent = request.getAgent();
+
+        var filenameFields = getFilenameRecord(workPid, agent);
+
+        String collectionId = filenameFields.getCollectionId();
+        String hookId = filenameFields.getHookId();
+
+        return collectionId + "_" + hookId + ".pdf";
+    }
+
     private String getMachineGeneratedDescriptionJson(PID filePid) {
         try {
             return machineGeneratedContentService.loadMachineGeneratedDescription(filePid);
@@ -248,6 +269,11 @@ public class AggregatePdfService {
     private ContentObjectRecord getParentRecord(PID pid, AgentPrincipals agent) {
         var parentRequest = new SimpleIdRequest(pid, WORK_REQUEST_FIELDS, agent.getPrincipals());
         return solrSearchService.getObjectById(parentRequest);
+    }
+
+    private ContentObjectRecord getFilenameRecord(PID pid, AgentPrincipals agent) {
+        var filenameRequest = new SimpleIdRequest(pid, FILENAME_REQUEST_FIELDS, agent.getPrincipals());
+        return solrSearchService.getObjectById(filenameRequest);
     }
 
     private void assertParentRecordValid(PID pid, ContentObjectRecord parentRec) {

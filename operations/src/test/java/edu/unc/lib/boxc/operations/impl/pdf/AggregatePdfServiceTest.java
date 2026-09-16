@@ -316,6 +316,22 @@ public class AggregatePdfServiceTest {
     }
 
     @Test
+    public void createPdfFilenameTest() throws Exception {
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png");
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec1);
+        mockOriginalFile(CHILD1_UUID, "file1.png");
+
+        PdfRequest request = request();
+
+        var pdfFilename = pdfService.createPdfFilename(request);
+        assertEquals("collid_hookid_123.pdf", pdfFilename);
+    }
+
+    @Test
     public void throwNotFoundWhenParentDoesNotExistTest() {
         when(solrSearchService.getObjectById(any())).thenReturn(null);
 
@@ -371,6 +387,8 @@ public class AggregatePdfServiceTest {
         rec.setTitle(title);
         rec.setFileFormatType(Arrays.asList(mimetype));
         rec.setTranscript("Transcript for " + title);
+        rec.setCollectionId("collid");
+        rec.setHookId("hookid_123");
 
         if (filename != null) {
             var datastream = new DatastreamImpl(null, DatastreamType.ORIGINAL_FILE.getId(), 0l, mimetype,

@@ -61,6 +61,7 @@ public class AggregatePdfProcessor implements Processor {
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
         var pdfStorageUri = Paths.get(locationManager.getDefaultStorageLocation(workPid)
                 .getNewStorageUri(originalFilePid));
+        var pdfFilename = aggregatePdfService.createPdfFilename(request);
 
         Path pdfTmpPath = null;
 
@@ -71,7 +72,7 @@ public class AggregatePdfProcessor implements Processor {
 
             Model model = ModelFactory.createDefaultModel();
             model.getResource("").addProperty(RDF.type, Cdr.AggregateFile);
-            workObject.addDataFile(pdfPid, pdfStorageUri.toUri(), pdfStorageUri.getFileName().toString(),
+            workObject.addDataFile(pdfPid, pdfStorageUri.toUri(), pdfFilename,
                     "application/pdf", null, null, model);
         } catch (Exception e) {
             if (pdfTmpPath != null) {

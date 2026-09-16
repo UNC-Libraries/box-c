@@ -86,7 +86,7 @@ public class AggregatePdfProcessorTest {
         when(workObject.getPid()).thenReturn(workPid);
         when(repositoryObjectLoader.getWorkObject(workPid)).thenReturn(workObject);
 
-        finalPdfPath = tmpFolder.resolve("aggregate.pdf");
+        finalPdfPath = tmpFolder.resolve("col45_hookid_123.pdf");
 
         var originalFilePid = DatastreamPids.getOriginalFilePid(pdfPid);
 
@@ -236,6 +236,7 @@ public class AggregatePdfProcessorTest {
         Files.writeString(tmpAggregatePdf, "pdf content");
 
         when(aggregatePdfService.generateAggregatePdf(any())).thenReturn(tmpAggregatePdf);
+        when(aggregatePdfService.createPdfFilename(any())).thenReturn("col45_hookid_123.pdf");
 
         var exchange = createRequestExchange(workPid.getId(), "image/tiff");
 
@@ -246,7 +247,7 @@ public class AggregatePdfProcessorTest {
         verify(workObject).addDataFile(
                 eq(pdfPid),
                 eq(finalPdfPath.toUri()),
-                eq(finalPdfPath.getFileName().toString()),
+                eq("col45_hookid_123.pdf"),
                 eq("application/pdf"),
                 isNull(),
                 isNull(),
@@ -264,6 +265,7 @@ public class AggregatePdfProcessorTest {
         Files.writeString(tmpAggregatePdf, "pdf content");
 
         when(aggregatePdfService.generateAggregatePdf(any())).thenReturn(tmpAggregatePdf);
+        when(aggregatePdfService.createPdfFilename(any())).thenReturn("col45_hookid_123.pdf");
 
         var exchange = createRequestExchange(workPid.getId(), "image/tiff");
 
@@ -285,7 +287,7 @@ public class AggregatePdfProcessorTest {
         verify(workObject).addDataFile(
                 eq(pdfPid),
                 eq(finalPdfPath.toUri()),
-                eq(finalPdfPath.getFileName().toString()),
+                eq("col45_hookid_123.pdf"),
                 eq("application/pdf"),
                 isNull(),
                 isNull(),
