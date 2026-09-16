@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -21,6 +20,7 @@ import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pdf4u.CLIMain;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -49,7 +49,6 @@ public class AggregatePdfService {
 
     private String tmpDir;
     public Path tmpFilesDir;
-    private String pdf4uJar;
 
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
@@ -60,9 +59,8 @@ public class AggregatePdfService {
             SearchFieldKey.ID.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.TRANSCRIPT.name());
 
-    public AggregatePdfService(String tmpDir, String pdf4uJar) {
+    public AggregatePdfService(String tmpDir) {
         this.tmpDir = tmpDir;
-        this.pdf4uJar = pdf4uJar;
         this.tmpFilesDir = Path.of(tmpDir, "pdf");
 
         try {
@@ -85,19 +83,13 @@ public class AggregatePdfService {
         String textTypeList = createTextTypeList(request).stream().map(Object::toString)
                 .collect(Collectors.joining(","));
 
-        String[] command = new String[]{"java", "-jar", pdf4uJar, "multiple_images", "add_ocr", "-i", inputFiles,
+        String[] command = new String[]{"pdf4u", "add_ocr", "-i", inputFiles,
                 "-o", tempPath.toString(), "-t", transcriptFiles, "-tt", textTypeList};
 
         try {
-            log.debug("Run pdf4u command {} for work {}", command, workPid);
-            ProcessBuilder builder = new ProcessBuilder(command);
-            builder.redirectErrorStream(true);
+            log.info("Run pdf4u command {} for work {}", command, workPid);
+            int exitCode = CLIMain.runCommand(command);
 
-            Process process = builder.start();
-            String output = new String(process.getInputStream().readAllBytes());
-            int exitCode = process.waitFor();
-
-            log.debug("Output from command: {}", output);
             log.debug("pdf4u exit code: {}", exitCode);
             if (exitCode != 0) {
                 throw new RuntimeException("pdf4u command " + Arrays.toString(command)
@@ -105,11 +97,8 @@ public class AggregatePdfService {
             }
 
             return tempPath;
-        } catch (IOException e) {
-            throw new RepositoryException("Failed to execute " + command + " for " + workPid, e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RepositoryException("Interrupted while waiting for pdf4u command to complete", e);
+        } catch (Exception e) {
+            throw new ServiceException("Failed to generate aggregate PDF to " + tempPath + " for " + workPid, e);
         } finally {
             // delete input list file, transcript list file, and all transcript files
             List<String> temporaryFiles = new ArrayList<>(Arrays.asList(inputFiles, transcriptFiles));
