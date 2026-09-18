@@ -48,6 +48,7 @@ public class SearchSettings extends AbstractSettings {
                     "SCORE|desc,RESOURCE_TYPE_SORT|asc,MEMBER_ORDER_ID|asc,IDENTIFIER_SORT|asc,TITLE|asc")),
             entry("fileFormatDescription", constructSortFields("FILE_FORMAT_DESCRIPTION|asc")),
             entry("fileSize", constructSortFields("FILESIZE|asc")),
+            entry("mgRiskScore", constructSortFields("MG_RISK_SCORE|desc")),
             entry("resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc")),
             entry("title", constructSortFields("TITLE|asc,ID|asc"))
     );
