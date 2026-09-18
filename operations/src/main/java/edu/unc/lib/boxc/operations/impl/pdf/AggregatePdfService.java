@@ -54,7 +54,7 @@ public class AggregatePdfService {
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
     private static final List<String> FILENAME_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name());
+            SearchFieldKey.ID.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name());
 
     private static final List<String> WORK_REQUEST_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
@@ -161,7 +161,7 @@ public class AggregatePdfService {
         assertParentRecordValid(workPid, parentRec);
 
         // retrieve transcript and write to temporary transcript file
-        // if transcript value is null, write null
+        // if transcript value is null, write no transcript
         List<ContentObjectRecord> children = getChildrenRecords(parentRec, agent);
         for (var child : children) {
             var transcriptValue = child.getTranscript();
@@ -225,10 +225,12 @@ public class AggregatePdfService {
 
     /**
      * Create aggregate PDF filename using the parent collection's collection id and the work's hook id
+     * If collection id and hook id are unavailable, use normalized work title
      * @param request PdfRequest
      * @return aggregate PDF filename
      */
     public String createPdfFilename(PdfRequest request) {
+        String filename;
         var workPidString = request.getWorkPid();
         var workPid = PIDs.get(workPidString);
         var agent = request.getAgent();
@@ -237,8 +239,25 @@ public class AggregatePdfService {
 
         String collectionId = filenameFields.getCollectionId();
         String hookId = filenameFields.getHookId();
+        if ((collectionId != null && !collectionId.equals("null")) && (hookId != null && !hookId.equals("null"))) {
+            filename = collectionId + "_" + hookId + ".pdf";
+        } else {
+            String workTitle = filenameFields.getTitle();
+            filename = normalizeWorkTitle(workTitle) + "_aggregate_pdf.pdf";
+        }
 
-        return collectionId + "_" + hookId + ".pdf";
+        return filename;
+    }
+
+    /**
+     * Create a cleaner aggregate PDF filename using the work title
+     * Remove punctuation, replace whitespace with underscores and lowercase work title
+     * @param workTitle title of work
+     * @return normalized work title
+     */
+    private String normalizeWorkTitle(String workTitle) {
+        return workTitle.replaceAll("\\s+", "_")
+                .replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
     }
 
     private String getMachineGeneratedDescriptionJson(PID filePid) {
