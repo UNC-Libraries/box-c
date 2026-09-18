@@ -12,8 +12,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Router for processing requests to create aggregate PDFs with OCR
  * @author krwong
  */
-public class PdfEnhancementsRouter extends RouteBuilder {
-    private static final Logger log = getLogger(PdfEnhancementsRouter.class);
+public class AggregatePdfRouter extends RouteBuilder {
+    private static final Logger log = getLogger(AggregatePdfRouter.class);
 
     @BeanInject("aggregatePdfProcessor")
     private AggregatePdfProcessor aggregatePdfProcessor;
@@ -21,7 +21,7 @@ public class PdfEnhancementsRouter extends RouteBuilder {
     private String aggregatePdfStreamCamel;
 
     /**
-     * Configure the pdf enhancement route workflow.
+     * Configure the aggregate pdf route workflow.
      */
     @Override
     public void configure() throws Exception {
