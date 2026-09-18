@@ -103,26 +103,22 @@ export default {
                 url: `/services/api/machineGeneratedSearch/${this.currentUuid}`,
                 data: (d) => {
                     lastDraw = d.draw;
-                    // Column title, risk score
+                    // Column id, column name
                     const sortFieldByColumn = {
                         0: 'title',
                         7: 'mgRiskScore'
                     };
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
 
-                    for (let i = 0; i < Object.keys(sortFieldByColumn).length; i++) {
-                        if (d.order[i] === undefined) {
-                            continue;
-                        }
-
-                        const columnIndex = d.order[i].column;
-                        const direction = sortOrder[d.order[i].dir];
+                    if (d.order[0] !== undefined) {
+                        const columnIndex = d.order[0].column;
+                        console.log(`Sorting by column index: ${columnIndex}`);
+                        const direction = sortOrder[d.order[0].dir];
+                        console.log(`Sorting by direction: ${direction}`);
                         const sortField = sortFieldByColumn[columnIndex];
-                        if (sortField && direction) {
-                            d.sort = `${sortField},${direction}`;
-                            console.log(d.sort)
-                            break;
-                        }
+                        console.log(`Sorting by field: ${sortField}`);
+                        d.sort = sortField && direction ? `${sortField},${direction}` : undefined;
+                        console.log(`Sorting index: ${d.sort}`);
                     }
 
                     return {
