@@ -111,11 +111,16 @@ export default {
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
 
                     for (let i = 0; i < Object.keys(sortFieldByColumn).length; i++) {
+                        if (d.order[i] === undefined) {
+                            continue;
+                        }
+
                         const columnIndex = d.order[i].column;
                         const direction = sortOrder[d.order[i].dir];
                         const sortField = sortFieldByColumn[columnIndex];
                         if (sortField && direction) {
                             d.sort = `${sortField},${direction}`;
+                            console.log(d.sort)
                             break;
                         }
                     }
