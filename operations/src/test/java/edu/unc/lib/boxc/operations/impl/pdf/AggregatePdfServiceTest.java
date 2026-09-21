@@ -348,6 +348,38 @@ public class AggregatePdfServiceTest {
     }
 
     @Test
+    public void createPdfFilenameTitleWithExtensionTest() throws Exception {
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work1.png", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png", "null", "null");
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec);
+        mockOriginalFile(CHILD1_UUID, "file1.png");
+
+        PdfRequest request = request();
+
+        var pdfFilename = pdfService.createPdfFilename(request);
+        assertEquals("work1_aggregate_pdf.pdf", pdfFilename);
+    }
+
+    @Test
+    public void createPdfFilenamePidTitleTest() throws Exception {
+        var parentRec = makeWorkRecord(PARENT_UUID, "353ee09f-a4ed-461e-a436-18a1bee77b01", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png", "null", "null");
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec);
+        mockOriginalFile(CHILD1_UUID, "file1.png");
+
+        PdfRequest request = request();
+
+        var pdfFilename = pdfService.createPdfFilename(request);
+        assertEquals("353ee09f-a4ed-461e-a436-18a1bee77b01_aggregate_pdf.pdf", pdfFilename);
+    }
+
+    @Test
     public void throwNotFoundWhenParentDoesNotExistTest() {
         when(solrSearchService.getObjectById(any())).thenReturn(null);
 

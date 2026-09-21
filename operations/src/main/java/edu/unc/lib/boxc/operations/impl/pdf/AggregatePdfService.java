@@ -18,6 +18,7 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.services.MachineGeneratedContentService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pdf4u.CLIMain;
@@ -54,7 +55,8 @@ public class AggregatePdfService {
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
     private static final List<String> FILENAME_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.ID.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name());
+            SearchFieldKey.ID.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name(),
+            SearchFieldKey.TITLE.name());
 
     private static final List<String> WORK_REQUEST_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
@@ -251,13 +253,15 @@ public class AggregatePdfService {
 
     /**
      * Create a cleaner aggregate PDF filename using the work title
-     * Remove punctuation, replace whitespace with underscores and lowercase work title
+     * Remove file extension, remove all punctuation except dashes and underscores,
+     *      replace whitespace with underscores, and lowercase work title
      * @param workTitle title of work
      * @return normalized work title
      */
     private String normalizeWorkTitle(String workTitle) {
+        workTitle = FilenameUtils.removeExtension(workTitle);
         return workTitle.replaceAll("\\s+", "_")
-                .replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+                .replaceAll("[^a-zA-Z0-9_-]", "").toLowerCase();
     }
 
     private String getMachineGeneratedDescriptionJson(PID filePid) {
