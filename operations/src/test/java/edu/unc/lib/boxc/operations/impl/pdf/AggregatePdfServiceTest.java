@@ -350,26 +350,8 @@ public class AggregatePdfServiceTest {
     }
 
     @Test
-    public void createPdfFilenameCollectionIdAndContriIdentifierTest() throws Exception {
-        List<String> identifier = List.of("local|grp:contri:folder_2705,descri:01819", "local|folder_2705");
-        var parentRec = makeRecord(PARENT_UUID, COLLECTION_UUID, ResourceType.Work, "Work", null,
-                "image/png", "collid", "null", identifier);
-        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "null", identifier);
-
-        mockParentResults(parentRec);
-        mockChildrenResults(rec);
-        mockOriginalFile(CHILD1_UUID, "file1.png");
-
-        PdfRequest request = request();
-
-        var pdfFilename = pdfService.createPdfFilename(request);
-        assertEquals("collid_folder_2705.pdf", pdfFilename);
-    }
-
-    @Test
     public void createPdfFilenameCollectionIdAndIdentifierTest() throws Exception {
-        List<String> identifier = List.of("local|Folder_2705");
+        List<String> identifier = List.of("local|grp:contri:folder_2705,descri:01819", "local|folder_2705");
         var parentRec = makeRecord(PARENT_UUID, COLLECTION_UUID, ResourceType.Work, "Work", null,
                 "image/png", "collid", "null", identifier);
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",

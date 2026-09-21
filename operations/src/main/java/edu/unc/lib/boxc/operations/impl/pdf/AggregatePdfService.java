@@ -250,7 +250,7 @@ public class AggregatePdfService {
             hookId = workFields.getIdentifier().stream()
                     .map(pattern::matcher)
                     .filter(Matcher::find)
-                    .map(m -> m.group(1) != null ? m.group(1) : m.group(2))
+                    .map(m -> m.group(1))
                     .findFirst()
                     .orElse(null);
         }
