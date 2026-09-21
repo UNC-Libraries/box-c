@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
@@ -55,8 +57,8 @@ public class AggregatePdfService {
     private static final int DEFAULT_PAGE_SIZE = 10000;
 
     private static final List<String> FILENAME_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.ID.name(), SearchFieldKey.COLLECTION_ID.name(), SearchFieldKey.HOOK_ID.name(),
-            SearchFieldKey.TITLE.name());
+            SearchFieldKey.ID.name(), SearchFieldKey.PARENT_COLLECTION.name(), SearchFieldKey.COLLECTION_ID.name(),
+            SearchFieldKey.HOOK_ID.name(), SearchFieldKey.IDENTIFIER.name(), SearchFieldKey.TITLE.name());
 
     private static final List<String> WORK_REQUEST_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name());
@@ -232,23 +234,32 @@ public class AggregatePdfService {
      * @return aggregate PDF filename
      */
     public String createPdfFilename(PdfRequest request) {
-        String filename;
-        var workPidString = request.getWorkPid();
-        var workPid = PIDs.get(workPidString);
+        var workPid = PIDs.get(request.getWorkPid());
         var agent = request.getAgent();
 
-        var filenameFields = getFilenameRecord(workPid, agent);
+        // get collectionId from parent collection and get hookId from work
+        var workFields = getFilenameRecord(workPid, agent);
+        var parentFields = getFilenameRecord(PIDs.get(workFields.getParentCollectionId()), agent);
 
-        String collectionId = filenameFields.getCollectionId();
-        String hookId = filenameFields.getHookId();
-        if ((collectionId != null && !collectionId.equals("null")) && (hookId != null && !hookId.equals("null"))) {
-            filename = collectionId + "_" + hookId + ".pdf";
-        } else {
-            String workTitle = filenameFields.getTitle();
-            filename = normalizeWorkTitle(workTitle) + "_aggregate_pdf.pdf";
+        String collectionId = parentFields.getCollectionId();
+
+        // if hookId field is empty, get hookId from the identifier field
+        String hookId = workFields.getHookId();
+        if (hookId == null || hookId.equals("null")) {
+            Pattern pattern = Pattern.compile("local\\|grp:(?:hookid|contri):([^,]+)");
+            hookId = workFields.getIdentifier().stream()
+                    .map(pattern::matcher)
+                    .filter(Matcher::find)
+                    .map(m -> m.group(1))
+                    .findFirst()
+                    .orElse(null);
         }
 
-        return filename;
+        if ((collectionId != null && !collectionId.equals("null")) && (hookId != null && !hookId.equals("null"))) {
+            return collectionId + "_" + hookId.toLowerCase() + ".pdf";
+        }
+
+        return normalizeWorkTitle(workFields.getTitle()) + "_aggregate_pdf.pdf";
     }
 
     /**

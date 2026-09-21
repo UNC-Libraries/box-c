@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -96,10 +97,10 @@ public class AggregatePdfServiceTest {
     public void generateAggregatePdfTest() throws Exception {
         try (MockedStatic<CLIMain> mockedStatic = Mockito.mockStatic(CLIMain.class)) {
             var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-            var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                    "file1.png", "image/png", "collid", "hookid_123");
-            var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                    "file2.png", "image/png", "collid", "hookid_123");
+            var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                    "image/png", "collid", "hookid_123", Collections.singletonList("null"));
+            var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two", "file2.png",
+                    "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
             mockParentResults(parentRec);
             mockChildrenResults(rec1, rec2);
@@ -152,8 +153,9 @@ public class AggregatePdfServiceTest {
     @Test
     public void generateAggregatePdfPdf4uFailsTest() throws Exception {
         mockParentResults(makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123"));
-        mockChildrenResults(makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File,
-                "File One", "file1.png", "image/png", "collid", "hookid_123"));
+        mockChildrenResults(makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png", "collid", "hookid_123",
+                Collections.singletonList("null")));
         mockOriginalFile(CHILD1_UUID, "file:///tmp/file1.png");
 
         try (MockedStatic<CLIMain> mockedStatic = Mockito.mockStatic(CLIMain.class)) {
@@ -171,10 +173,10 @@ public class AggregatePdfServiceTest {
     @Test
     public void createInputListFileTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
-        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                "file2.png", "image/png", "collid", "hookid_123");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two", "file2.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
@@ -193,10 +195,10 @@ public class AggregatePdfServiceTest {
     @Test
     public void createTranscriptListFileTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
-        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                "file2.png", "image/png", "collid", "hookid_123");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two", "file2.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
@@ -215,10 +217,10 @@ public class AggregatePdfServiceTest {
     @Test
     public void createTranscriptListFileNoTranscriptTest() throws Exception {
         var parent = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var child1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
-        var child2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                "file2.png", "image/png", "collid", "hookid_123");
+        var child1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
+        var child2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two", "file2.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
         child2.setTranscript(null);
 
         mockParentResults(parent);
@@ -236,10 +238,10 @@ public class AggregatePdfServiceTest {
     @Test
     public void getTextTypeTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
-        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two",
-                "file2.png", "image/png", "collid", "hookid_123");
+        var rec1 = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
+        var rec2 = makeRecord(CHILD2_UUID, PARENT_UUID, ResourceType.File, "File Two", "file2.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec1, rec2);
@@ -267,8 +269,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createTextTypeListNoTextWhenDescriptionIsMissing() throws Exception {
         var parent = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parent);
         mockChildrenResults(child);
@@ -282,8 +284,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createTextTypeListNoTextWhenExtractedTypeIsNullTest() throws Exception {
         var parent = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parent);
         mockChildrenResults(child);
@@ -302,8 +304,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createTextTypeListDescriptionReadFailureTest() throws Exception {
         var parent = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "hookid_123");
+        var child = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "collid", "hookid_123", Collections.singletonList("null"));
 
         mockParentResults(parent);
         mockChildrenResults(child);
@@ -318,8 +320,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createPdfFilenameCollectionIdAndHookIdTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
-        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "null", "null", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -334,8 +336,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createPdfFilenameNoCollectionIdAndNoHookIdTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work 1", "null", "null");
-        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "null", "null", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -348,10 +350,28 @@ public class AggregatePdfServiceTest {
     }
 
     @Test
+    public void createPdfFilenameCollectionIdAndIdentifierTest() throws Exception {
+        List<String> identifier = List.of("local|grp:contri:folder_2705,descri:01819", "local|folder_2705");
+        var parentRec = makeRecord(PARENT_UUID, COLLECTION_UUID, ResourceType.Work, "Work", null,
+                "image/png", "collid", "null", identifier);
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
+                "file1.png", "image/png", "collid", "null", identifier);
+
+        mockParentResults(parentRec);
+        mockChildrenResults(rec);
+        mockOriginalFile(CHILD1_UUID, "file1.png");
+
+        PdfRequest request = request();
+
+        var pdfFilename = pdfService.createPdfFilename(request);
+        assertEquals("collid_folder_2705.pdf", pdfFilename);
+    }
+
+    @Test
     public void createPdfFilenameTitleWithExtensionTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work1.png", "null", "null");
-        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "null", "null", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -366,8 +386,8 @@ public class AggregatePdfServiceTest {
     @Test
     public void createPdfFilenamePidTitleTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "353ee09f-a4ed-461e-a436-18a1bee77b01", "null", "null");
-        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "null", "null");
+        var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
+                "image/png", "null", "null", Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -424,11 +444,12 @@ public class AggregatePdfServiceTest {
 
     private ContentObjectRecord makeWorkRecord(String uuid, String title, String collectionId, String hookId) {
         return makeRecord(uuid, COLLECTION_UUID, ResourceType.Work, title, null, "image/png",
-                collectionId, hookId);
+                collectionId, hookId, Collections.singletonList("null"));
     }
 
     private ContentObjectRecord makeRecord(String uuid, String parentUuid, ResourceType resourceType, String title,
-                                           String filename, String mimetype, String collectionId, String hookId) {
+                                           String filename, String mimetype, String collectionId, String hookId,
+                                           List<String> identifier) {
         var rec = new ContentObjectSolrRecord();
         rec.setId(uuid);
         rec.setAncestorPath(makeAncestorPath(parentUuid));
@@ -438,6 +459,29 @@ public class AggregatePdfServiceTest {
         rec.setTranscript("Transcript for " + title);
         rec.setCollectionId(collectionId);
         rec.setHookId(hookId);
+        rec.setIdentifier(identifier);
+
+        if (filename != null) {
+            var datastream = new DatastreamImpl(null, DatastreamType.ORIGINAL_FILE.getId(), 0l, mimetype,
+                    filename, null, null, null);
+            rec.setDatastream(Arrays.asList(datastream.toString()));
+        }
+        return rec;
+    }
+
+    private ContentObjectRecord makeHookIdRecord(String uuid, String parentUuid, ResourceType resourceType, String title,
+                                           String filename, String mimetype, String collectionId, String hookId,
+                                                 List<String> identifier) {
+        var rec = new ContentObjectSolrRecord();
+        rec.setId(uuid);
+        rec.setAncestorPath(makeAncestorPath(parentUuid));
+        rec.setResourceType(resourceType.name());
+        rec.setTitle(title);
+        rec.setFileFormatType(Arrays.asList(mimetype));
+        rec.setTranscript("Transcript for " + title);
+        rec.setCollectionId(collectionId);
+        rec.setHookId(hookId);
+        rec.setIdentifier(identifier);
 
         if (filename != null) {
             var datastream = new DatastreamImpl(null, DatastreamType.ORIGINAL_FILE.getId(), 0l, mimetype,
