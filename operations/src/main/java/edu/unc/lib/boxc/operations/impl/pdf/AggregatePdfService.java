@@ -246,7 +246,7 @@ public class AggregatePdfService {
         // if hookId field is empty, get hookId from the identifier field
         String hookId = workFields.getHookId();
         if (hookId == null || hookId.equals("null")) {
-            Pattern pattern = Pattern.compile("^local\\|(?:grp:(?:hookid|contri):([^,]+)|([^,]+))$");
+            Pattern pattern = Pattern.compile("local\\|grp:(?:hookid|contri):([^,]+)");
             hookId = workFields.getIdentifier().stream()
                     .map(pattern::matcher)
                     .filter(Matcher::find)
