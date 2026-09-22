@@ -335,7 +335,7 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void createPdfFilenameNoCollectionIdAndNoHookIdTest() throws Exception {
-        var parentRec = makeWorkRecord(PARENT_UUID, "Work 1", "null", "null");
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work 1", null, null);
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
                 "image/png", null, null, Collections.singletonList("null"));
 
@@ -385,7 +385,7 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void createPdfFilenamePidTitleTest() throws Exception {
-        var parentRec = makeWorkRecord(PARENT_UUID, "353ee09f-a4ed-461e-a436-18a1bee77b01", "null", "null");
+        var parentRec = makeWorkRecord(PARENT_UUID, "353ee09f-a4ed-461e-a436-18a1bee77b01", null, null);
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
                 "image/png", null, null, Collections.singletonList("null"));
 

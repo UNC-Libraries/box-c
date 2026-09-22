@@ -255,7 +255,7 @@ public class AggregatePdfService {
                     .orElse(null);
         }
 
-        if ((collectionId != null && !collectionId.equals("null")) && (hookId != null && !hookId.equals("null"))) {
+        if (collectionId != null && hookId != null) {
             return collectionId + "_" + hookId.toLowerCase() + ".pdf";
         }
 

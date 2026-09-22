@@ -90,10 +90,8 @@ public class AggregatePdfControllerTest {
 
     @Test
     void aggregatePdfWithSingleIdTest() throws Exception {
-        var ids = PID_1;
-
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/aggregatePdf/" + PID_1))
-                        .param("id", ids))
+                        .param("id", PID_1))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -123,6 +121,22 @@ public class AggregatePdfControllerTest {
         List<PdfRequest> requests = captor.getAllValues();
         assertEquals(PID_1, requests.get(0).getWorkPid());
         assertEquals(PID_2, requests.get(1).getWorkPid());
+    }
+
+    @Test
+    void aggregatePdfSingleIdTest() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/aggregatePdf"))
+                        .param("ids", PID_1))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var respMap = getMapFromResponse(result);
+        assertEquals("generate aggregate PDFs", respMap.get("action"));
+
+        ArgumentCaptor<PdfRequest> captor = ArgumentCaptor.forClass(PdfRequest.class);
+        verify(requestSender, times(1)).sendToQueue(captor.capture());
+        List<PdfRequest> requests = captor.getAllValues();
+        assertEquals(PID_1, requests.getFirst().getWorkPid());
     }
 
     @Test
