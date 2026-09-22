@@ -1,6 +1,9 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender;
 import org.slf4j.Logger;
@@ -24,6 +27,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class AggregatePdfController {
     private static final Logger log = LoggerFactory.getLogger(AggregatePdfController.class);
 
+    @Autowired
+    private AccessControlService accessControlService;
     @Autowired
     private PdfRequestSender pdfRequestSender;
 
@@ -50,6 +55,9 @@ public class AggregatePdfController {
         result.put("action", "generate aggregate PDFs");
 
         for (String id : ids) {
+            accessControlService.assertHasAccess("User does not have permission to generate aggregate PDF",
+                    PIDs.get(id), agent.getPrincipals(), Permission.editResourceType);
+
             PdfRequest pdfRequest = new PdfRequest();
             pdfRequest.setAgent(agent);
             pdfRequest.setWorkPid(id);

@@ -1,5 +1,11 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequest;
 import edu.unc.lib.boxc.operations.jms.pdf.PdfRequestSender;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -19,6 +25,8 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.getMapFromResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -31,12 +39,16 @@ public class AggregatePdfControllerTest {
     private static final String PID_2 = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
 
     @Mock
+    private AccessControlService accessControlService;
+    @Mock
     private PdfRequestSender requestSender;
     @InjectMocks
     private AggregatePdfController controller;
 
     private AutoCloseable closeable;
     private MockMvc mockMvc;
+    private PID pid;
+    private RepositoryPIDMinter pidMinter;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -44,6 +56,9 @@ public class AggregatePdfControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
+
+        pidMinter = new RepositoryPIDMinter();
+        pid = pidMinter.mintContentPid();
     }
 
     @AfterEach
@@ -108,5 +123,16 @@ public class AggregatePdfControllerTest {
         List<PdfRequest> requests = captor.getAllValues();
         assertEquals(PID_1, requests.get(0).getWorkPid());
         assertEquals(PID_2, requests.get(1).getWorkPid());
+    }
+
+    @Test
+    public void testInsufficientPermissions() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.editResourceType));
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/aggregatePdf"))
+                        .param("ids", pid.toString()))
+                .andExpect(status().isForbidden())
+                .andReturn();
     }
 }

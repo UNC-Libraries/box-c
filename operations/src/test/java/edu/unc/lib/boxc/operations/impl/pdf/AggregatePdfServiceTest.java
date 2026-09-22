@@ -321,7 +321,7 @@ public class AggregatePdfServiceTest {
     public void createPdfFilenameCollectionIdAndHookIdTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work", "collid", "hookid_123");
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
-                "image/png", "null", "null", Collections.singletonList("null"));
+                "image/png", null, null, Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -337,7 +337,7 @@ public class AggregatePdfServiceTest {
     public void createPdfFilenameNoCollectionIdAndNoHookIdTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "Work 1", "null", "null");
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
-                "image/png", "null", "null", Collections.singletonList("null"));
+                "image/png", null, null, Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -353,9 +353,9 @@ public class AggregatePdfServiceTest {
     public void createPdfFilenameCollectionIdAndIdentifierTest() throws Exception {
         List<String> identifier = List.of("local|grp:contri:folder_2705,descri:01819", "local|folder_2705");
         var parentRec = makeRecord(PARENT_UUID, COLLECTION_UUID, ResourceType.Work, "Work", null,
-                "image/png", "collid", "null", identifier);
+                "image/png", "collid", null, identifier);
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One",
-                "file1.png", "image/png", "collid", "null", identifier);
+                "file1.png", "image/png", "collid", null, identifier);
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -369,9 +369,9 @@ public class AggregatePdfServiceTest {
 
     @Test
     public void createPdfFilenameTitleWithExtensionTest() throws Exception {
-        var parentRec = makeWorkRecord(PARENT_UUID, "Work1.png", "null", "null");
+        var parentRec = makeWorkRecord(PARENT_UUID, "Work1.png", null, null);
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
-                "image/png", "null", "null", Collections.singletonList("null"));
+                "image/png", null, null, Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
@@ -387,7 +387,7 @@ public class AggregatePdfServiceTest {
     public void createPdfFilenamePidTitleTest() throws Exception {
         var parentRec = makeWorkRecord(PARENT_UUID, "353ee09f-a4ed-461e-a436-18a1bee77b01", "null", "null");
         var rec = makeRecord(CHILD1_UUID, PARENT_UUID, ResourceType.File, "File One", "file1.png",
-                "image/png", "null", "null", Collections.singletonList("null"));
+                "image/png", null, null, Collections.singletonList("null"));
 
         mockParentResults(parentRec);
         mockChildrenResults(rec);
