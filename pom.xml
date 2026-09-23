@@ -54,9 +54,8 @@
         <project.java.source>21</project.java.source>
 
         <jakarta.annotation.version>3.0.0</jakarta.annotation.version>
-        <javax.jaxb.impl.version>2.3.9</javax.jaxb.impl.version>
         <jakarta.xml.bind.version>3.0.1</jakarta.xml.bind.version>
-        <javax.activation.version>1.2.0</javax.activation.version>
+        <jakarta.activation.version>2.0.1</jakarta.activation.version>
         
         <cdr.version>6.0-SNAPSHOT</cdr.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
@@ -124,7 +123,7 @@
         <metrics.version>5.0.5</metrics.version>
         <jena.version>6.1.0</jena.version>
 
-        <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
+        <fcrepo-camel.version>7.0.0</fcrepo-camel.version>
         <camel.version>4.16.0</camel.version>
         <tika.version>3.3.2</tika.version>
         <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
@@ -592,20 +591,20 @@
             </dependency>
             <!-- for fcrepo-camel to update to version without vulnerability -->
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${javax.jaxb.impl.version}</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind.version}</version>
             </dependency>
             <!-- activation jars for fcrepo-camel, may be able to remove for later versions -->
             <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>javax.activation-api</artifactId>
-                <version>${javax.activation.version}</version>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${jakarta.activation.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.activation</groupId>
-                <artifactId>javax.activation</artifactId>
-                <version>${javax.activation.version}</version>
+                <artifactId>jakarta.activation</artifactId>
+                <version>${jakarta.activation.version}</version>
             </dependency>
             
             <dependency>
