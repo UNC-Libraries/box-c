@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.IOException;
 
 /**
- * Helper methods for serializing and deserializing pdf gen requests
+ * Helper methods for serializing and deserializing aggregate PDF generation requests
  * @author krwong
  */
 public class PdfRequestSerializationHelper {
