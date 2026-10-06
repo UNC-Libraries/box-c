@@ -208,7 +208,18 @@ export default {
                         if (type === 'sort' || type === 'type') {
                             return this.sanitizeText(row.title) || '';
                         }
-                        return `
+
+                        let steps;
+                        if (row.mgDescription !== undefined) {
+                            const mgSteps = JSON.parse(row.mgDescription);
+                            if (mgSteps.result?.steps === undefined) {
+                                return '';
+                            }
+
+                            steps = this.formatSteps(mgSteps.result.steps);
+                        }
+
+                        let output = `
                             <div>
                                 <figure class="thumbnail">
                                     <a href="/record/${data}" target="_blank">
@@ -221,6 +232,13 @@ export default {
                                 <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${this.sanitizeText(row.title)}">Rerun</button>
                             </div>
                         `;
+
+                        if (steps !== undefined && steps !== '') {
+                            output += '<div class="mt-2 mb-1"><strong>Steps Run</strong>:</div>';
+                            output += steps;
+                        }
+
+                        return output;
                     }
                 },
                 {
@@ -250,7 +268,12 @@ export default {
                 {
                     data: null,
                     defaultContent: '',
-                    render: (data, type, row) => row?.mgRiskScore
+                    render: (data) => {
+                        if (data.mgDescription !== undefined) {
+                            const risk = JSON.parse(data.mgDescription);
+                            return risk.result.overall_risk_score;
+                        }
+                    }
                 },
                 {
                     data: 'mgSafetyAssessment',
@@ -302,6 +325,20 @@ export default {
                 text_display += `<a data-action="edit" data-action-field="${field_name}" href="#">Edit</a>`;
             }
             return `${text_display}</div>`;
+        },
+
+        formatSteps(steps) {
+            // If steps is null or not an object, return it as a string (or empty string if null)
+            if (steps === null || typeof steps !== 'object') {
+                return steps ?? '';
+            }
+            let display = '<ul>';
+            for (const [key, value] of Object.entries(steps)) {
+                display += `<li><strong>${key}</strong>: ${this.formatSteps(value)}</li>`;
+            }
+            display += '</ul>';
+
+            return display;
         },
 
         formatSafetyValue(data) {
@@ -487,7 +524,10 @@ export default {
     div.dt-container div.dt-length select {
         min-width: 70px;
     }
-
+    ul ul {
+        list-style: inside;
+        text-indent: 10px;
+    }
     .tag-filter-pane {
         border: 1px solid #dee2e6;
         border-radius: 4px;
