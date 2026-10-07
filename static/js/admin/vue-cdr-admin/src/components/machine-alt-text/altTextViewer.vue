@@ -328,17 +328,36 @@ export default {
         },
 
         formatSteps(steps) {
-            // If steps is null or not an object, return it as a string (or empty string if null)
-            if (steps === null || typeof steps !== 'object') {
-                return steps ?? '';
-            }
-            let display = '<ul>';
-            for (const [key, value] of Object.entries(steps)) {
-                display += `<li><strong>${key}</strong>: ${this.formatSteps(value)}</li>`;
-            }
-            display += '</ul>';
+            const stages = Object.entries(steps)
+                .map(([stage, details]) => {
+                    const items = [];
 
-            return display;
+                    if (details.status === "success") {
+                        const seconds = Math.round(details.duration_ms / 1000);
+                        const statusText =`success in ${seconds.toFixed(1)}s`;
+                        items.push(`<li>${statusText}</li>`);
+                    } else {
+                        const reason = (details.reason) ? ` - ${details.reason}` : "";
+                        items.push(`<li>${details.status + reason}</li>`);
+                    }
+
+                    if (details.model) {
+                        const modelName = details.model.split("/").pop();
+                        items.push(`<li>${modelName}</li>`);
+                    }
+
+                    return `
+                            <li>
+                              ${stage}
+                              <ul>
+                                ${items.join("\n")}
+                              </ul>
+                            </li>
+                          `;
+                })
+                .join("\n");
+
+            return `<ul>${stages}</ul>`;
         },
 
         formatSafetyValue(data) {
