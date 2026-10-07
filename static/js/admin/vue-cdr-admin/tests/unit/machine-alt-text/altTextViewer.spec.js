@@ -455,6 +455,25 @@ describe('altTextViewer.vue', () => {
             expect(machineText).not.toContain('data-action="edit"');
         });
 
+        it('renders steps run in the correct format', () => {
+            const wrapper = mountViewer();
+            const steps = {
+                full_desc: { status: 'success', model: 'azure/gpt-5.4', duration_ms: 1500.119, reason: ''},
+                transcribe: { status: 'success', model: 'azure/3.8-flash', duration_ms: 1100.573, reason: ''},
+                review: { status: 'skipped', model: '', duration_ms: '', reason: 'safety_risk_score below threshold 19'
+                }
+            };
+            const formatted = wrapper.vm.formatSteps(steps);
+            expect(formatted).toContain('full_desc');
+            expect(formatted).toContain('success in 1.5s');
+            expect(formatted).toContain('gpt-5.4');
+            expect(formatted).toContain('transcribe');
+            expect(formatted).toContain('success in 1.1s');
+            expect(formatted).toContain('3.8-flash');
+            expect(formatted).toContain('review');
+            expect(formatted).toContain('skipped - safety_risk_score below threshold 19');
+        });
+
         it('formats safety values for arrays, objects, and empty values', () => {
             const wrapper = mountViewer();
 

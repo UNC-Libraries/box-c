@@ -333,7 +333,7 @@ export default {
                     const items = [];
 
                     if (details.status === "success") {
-                        const seconds = Math.round(details.duration_ms / 1000);
+                        const seconds = Math.floor(details.duration_ms / 100) / 10;
                         const statusText =`success in ${seconds.toFixed(1)}s`;
                         items.push(`<li>${statusText}</li>`);
                     } else {
@@ -348,7 +348,7 @@ export default {
 
                     return `
                             <li>
-                              ${stage}
+                              <strong>${stage}</strong>:
                               <ul>
                                 ${items.join("\n")}
                               </ul>
