@@ -66,6 +66,7 @@ DataTable.use(DataTablesLib);
 DataTable.use(FixedHeader);
 
 const DEFAULT_PER_PAGE = 25;
+const IS_REVIEWED_CLASS = 'is-light';
 
 export default {
     name: 'modalAltText',
@@ -165,6 +166,10 @@ export default {
                 searching: true,
                 order: [[0, 'asc']],
                 fixedHeader: true,
+                rowCallback: (row, data) => {
+                    // Mark rows that have been reviewed
+                    row.classList.toggle(IS_REVIEWED_CLASS, this.isReviewed(data.id));
+                },
                 layout: {
                     top2Start: {
                         buttons: [
@@ -209,36 +214,7 @@ export default {
                             return this.sanitizeText(row.title) || '';
                         }
 
-                        let steps;
-                        if (row.mgDescription !== undefined) {
-                            const mgSteps = JSON.parse(row.mgDescription);
-                            if (mgSteps.result?.steps === undefined) {
-                                return '';
-                            }
-
-                            steps = this.formatSteps(mgSteps.result.steps);
-                        }
-
-                        let output = `
-                            <div>
-                                <figure class="thumbnail">
-                                    <a href="/record/${data}" target="_blank">
-                                        <img alt="" loading="lazy" src="/services/api/thumb/${data}/large">
-                                    </a>
-                                    <figcaption>${this.sanitizeText(row.title)}</figcaption>
-                                </figure>
-                            </div>
-                            <div>
-                                <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${this.sanitizeText(row.title)}">Rerun</button>
-                            </div>
-                        `;
-
-                        if (steps !== undefined && steps !== '') {
-                            output += '<div class="mt-2 mb-1"><strong>Steps Run</strong>:</div>';
-                            output += steps;
-                        }
-
-                        return output;
+                        return this.renderThumbnailCell(data, row);
                     }
                 },
                 {
@@ -301,8 +277,7 @@ export default {
 
 
         fieldName(field) {
-            const parts = field.split('_')
-            return parts.join(' ');
+            return field.split('_').join(' ');
         },
 
         maintainLineBreaks(text) {
@@ -428,25 +403,155 @@ export default {
             return Array.isArray(rowData?.mgContentTags) ? rowData.mgContentTags : [];
         },
 
+        renderThumbnailCell(data, row) {
+            let output = this.buildThumbnailMarkup(data, row);
+            output += this.buildButtonsMarkup(row);
+
+            const stepsMarkup = this.getStepsMarkup(row);
+            if (stepsMarkup) {
+                output += '<div class="mt-2 mb-1"><strong>Steps Run</strong>:</div>';
+                output += stepsMarkup;
+            }
+
+            return output;
+        },
+
+        buildThumbnailMarkup(data, row) {
+            return `
+                <div>
+                    <figure class="thumbnail">
+                        <a href="/record/${data}" target="_blank">
+                            <img alt="" loading="lazy" src="/services/api/thumb/${data}/large">
+                        </a>
+                        <figcaption>${this.sanitizeText(row.title)}</figcaption>
+                    </figure>
+                </div>
+            `;
+        },
+
+        buildButtonsMarkup(row) {
+            const isReviewed = this.isReviewed(row.id);
+            const reviewButtonText = isReviewed ? 'Reviewed' : 'Mark as reviewed';
+            const reviewButtonClasses = isReviewed ? 'button is-success is-small review' : 'button is-info is-small review';
+
+            return `
+                <div>
+                    <button class="button is-dark is-small rerun" data-id="${row.id}" data-title="${this.sanitizeText(row.title)}">Rerun</button>
+                    <button class="${reviewButtonClasses}" data-id="${row.id}"
+                    data-is-reviewed="${isReviewed}">${reviewButtonText}</button>
+                </div>
+            `;
+        },
+
+        getStepsMarkup(row) {
+            if (row.mgDescription === undefined) {
+                return null;
+            }
+
+            const mgSteps = JSON.parse(row.mgDescription);
+            if (mgSteps.result?.steps === undefined) {
+                return null;
+            }
+
+            return this.formatSteps(mgSteps.result.steps);
+        },
+
+        getReviewedItems() {
+            const reviewed_items = localStorage.getItem('reviewed-items');
+            if (reviewed_items === null) {
+                return [];
+            }
+            try {
+                return JSON.parse(reviewed_items);
+            } catch (error) {
+                console.error('Error parsing reviewed items from localStorage:', error);
+                return [];
+            }
+        },
+
+        isReviewed(itemId) {
+            const reviewedItems = this.getReviewedItems();
+            return reviewedItems.includes(itemId);
+        },
+
+        toggleReviewed(e, reviewedItems) {
+            const itemId = e.target.dataset.id;
+            const index = reviewedItems.indexOf(itemId);
+            e.target.closest('tr').classList.toggle(IS_REVIEWED_CLASS, index === -1);
+
+            if (index === -1) {
+                reviewedItems.push(itemId);
+                e.target.classList.replace('is-info', 'is-success');
+                e.target.textContent = 'Reviewed';
+            } else {
+                reviewedItems.splice(index, 1);
+                e.target.classList.replace('is-success', 'is-info');
+                e.target.textContent = 'Mark as reviewed';
+            }
+
+            localStorage.setItem('reviewed-items', JSON.stringify(reviewedItems));
+        },
+
         bindTableEvents() {
             const dtApi = this.$refs.alt_text_table?.dt;
             if (!dtApi || this.altTextTableClickHandler) {
                 return;
             }
             this.altTextTableClickHandler = (e) => {
-                const action_fields = ['mgFullDescription', 'fullDescription', 'mgAltText', 'altText', 'mgTranscript', 'transcript'];
-                if (action_fields.includes(e.target.dataset.actionField)) {
-                    e.preventDefault();
-                    this.setCurrentRow(dtApi.row(e.currentTarget).data());
-                    this.setActiveField(e.target.dataset.actionField);
-                    this.setViewType(e.target.dataset.action)
-                    this.setShowAltTextModal(true);
+                const reviewed_items = this.getReviewedItems();
+
+                if (this.isActionFieldClick(e)) {
+                    this.handleActionFieldClick(e, dtApi);
+                } else if (this.isRerunClick(e)) {
+                    this.handleRerunClick(e, reviewed_items);
+                } else if (this.isReviewClick(e)) {
+                    this.handleReviewClick(e, reviewed_items);
                 }
-                if (e.target.className.includes('rerun')) {
-                    this.rerunAltTextGeneration(e);
-                }
-            };
+            }
             dtApi.on('click', 'tbody tr', this.altTextTableClickHandler);
+        },
+
+        isActionFieldClick(e) {
+            const action_fields = ['mgFullDescription', 'fullDescription', 'mgAltText', 'altText', 'mgTranscript', 'transcript'];
+            return action_fields.includes(e.target.dataset.actionField);
+        },
+
+        handleActionFieldClick(e, dtApi) {
+            e.preventDefault();
+            this.setCurrentRow(dtApi.row(e.currentTarget).data());
+            this.setActiveField(e.target.dataset.actionField);
+            this.setViewType(e.target.dataset.action)
+            this.setShowAltTextModal(true);
+        },
+
+        isRerunClick(e) {
+            return e.target.className.includes('rerun');
+        },
+
+        handleRerunClick(e, reviewed_items) {
+            this.rerunAltTextGeneration(e);
+
+            // The rerun and review buttons have the same data-id values,
+            // so we can mark the row as not reviewed when rerun is clicked
+            const itemId = e.target.dataset.id;
+            const index = reviewed_items.indexOf(itemId);
+
+            if (index !== -1) {
+                e.target.closest('tr').classList.remove(IS_REVIEWED_CLASS);
+                let reviewed_button = e.target.nextElementSibling;
+                reviewed_button.classList.replace('is-success', 'is-info');
+                reviewed_button.textContent = 'Mark as reviewed';
+                reviewed_items.splice(index, 1);
+                localStorage.setItem('reviewed-items', JSON.stringify(reviewed_items));
+            }
+        },
+
+        isReviewClick(e) {
+            return e.target.className.includes('review');
+        },
+
+        handleReviewClick(e, reviewed_items) {
+            this.toggleReviewed(e, reviewed_items);
         },
 
         unbindTableEvents() {
@@ -457,21 +562,10 @@ export default {
             this.altTextTableClickHandler = null;
         },
 
-        editCell() {
-            this.bindTableEvents();
-        },
-
         toggleTag(value) {
             const idx = this.selectedTags.indexOf(value);
-            if (idx === -1) {
-                this.selectedTags.push(value);
-            } else {
-                this.selectedTags.splice(idx, 1);
-            }
-            const dtApi = this.$refs.alt_text_table?.dt;
-            if (dtApi) {
-                dtApi.ajax.reload();
-            }
+            idx === -1 ? this.selectedTags.push(value) : this.selectedTags.splice(idx, 1);
+            this.$refs.alt_text_table?.dt?.ajax.reload();
         },
 
         applySuccessfulEdit(edit) {
@@ -498,9 +592,7 @@ export default {
         },
 
         closeModal(event) {
-            if (event.code === 'Escape') {
-                this.closeModalWindow();
-            }
+            event.code === 'Escape' && this.closeModalWindow();
         }
     },
 
@@ -511,7 +603,7 @@ export default {
 
     mounted() {
         this.$nextTick(() => {
-            this.editCell();
+            this.bindTableEvents();
         });
         window.addEventListener('keyup', this.closeModal);
     },
