@@ -66,7 +66,9 @@ DataTable.use(DataTablesLib);
 DataTable.use(FixedHeader);
 
 const DEFAULT_PER_PAGE = 25;
-const IS_REVIEWED_CLASS = 'is-light';
+const IS_REVIEWED_ROW_CLASS = 'is-light';
+const IS_REVIEWED_BUTTON_CLASS = 'is-success';
+const IS_NOT_REVIEWED_BUTTON_CLASS = 'is-info';
 
 export default {
     name: 'modalAltText',
@@ -477,15 +479,15 @@ export default {
         toggleReviewed(e, reviewedItems) {
             const itemId = e.target.dataset.id;
             const index = reviewedItems.indexOf(itemId);
-            e.target.closest('tr').classList.toggle(IS_REVIEWED_CLASS, index === -1);
+            e.target.closest('tr').classList.toggle(IS_REVIEWED_ROW_CLASS, index === -1);
 
             if (index === -1) {
                 reviewedItems.push(itemId);
-                e.target.classList.replace('is-info', 'is-success');
+                e.target.classList.replace(IS_NOT_REVIEWED_BUTTON_CLASS, IS_REVIEWED_BUTTON_CLASS);
                 e.target.textContent = 'Reviewed';
             } else {
                 reviewedItems.splice(index, 1);
-                e.target.classList.replace('is-success', 'is-info');
+                e.target.classList.replace(IS_REVIEWED_BUTTON_CLASS, IS_NOT_REVIEWED_BUTTON_CLASS);
                 e.target.textContent = 'Mark as reviewed';
             }
 
@@ -537,9 +539,9 @@ export default {
             const index = reviewed_items.indexOf(itemId);
 
             if (index !== -1) {
-                e.target.closest('tr').classList.remove(IS_REVIEWED_CLASS);
+                e.target.closest('tr').classList.remove(IS_REVIEWED_ROW_CLASS);
                 let reviewed_button = e.target.nextElementSibling;
-                reviewed_button.classList.replace('is-success', 'is-info');
+                reviewed_button.classList.replace(IS_REVIEWED_BUTTON_CLASS, IS_NOT_REVIEWED_BUTTON_CLASS);
                 reviewed_button.textContent = 'Mark as reviewed';
                 reviewed_items.splice(index, 1);
                 localStorage.setItem('reviewed-items', JSON.stringify(reviewed_items));
