@@ -33,7 +33,7 @@
         "nouislider": "^15.8.1",
         "pinia": "^2.2.4",
         "veaury": "^2.6.3",
-        "vue": "^3.5.33",
+        "vue": "^3.5.43",
         "vue-i18n": "^10.0.8",
         "vue-router": "^4.6.3",
         "vue-turnstile": "^1.0.11"
