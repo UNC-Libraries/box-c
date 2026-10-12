@@ -170,7 +170,7 @@ export default {
                 fixedHeader: true,
                 rowCallback: (row, data) => {
                     // Mark rows that have been reviewed
-                    row.classList.toggle(IS_REVIEWED_CLASS, this.isReviewed(data.id));
+                    row.classList.toggle(IS_REVIEWED_ROW_CLASS, this.isReviewed(data.id));
                 },
                 layout: {
                     top2Start: {
