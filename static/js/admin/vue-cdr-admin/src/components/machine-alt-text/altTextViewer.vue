@@ -479,6 +479,7 @@ export default {
         toggleReviewed(e, reviewedItems) {
             const itemId = e.target.dataset.id;
             const index = reviewedItems.indexOf(itemId);
+            // Update highlighted row state based on whether the item is being marked as reviewed or not
             e.target.closest('tr').classList.toggle(IS_REVIEWED_ROW_CLASS, index === -1);
 
             if (index === -1) {
@@ -495,6 +496,7 @@ export default {
         },
 
         bindTableEvents() {
+            // Access the DataTables API instance
             const dtApi = this.$refs.alt_text_table?.dt;
             if (!dtApi || this.altTextTableClickHandler) {
                 return;
@@ -538,8 +540,10 @@ export default {
             const itemId = e.target.dataset.id;
             const index = reviewed_items.indexOf(itemId);
 
+            // Remove the reviewed state from the row and button when rerun is clicked
             if (index !== -1) {
                 e.target.closest('tr').classList.remove(IS_REVIEWED_ROW_CLASS);
+                // This is predicated on the review button being the next sibling of the rerun button.
                 let reviewed_button = e.target.nextElementSibling;
                 reviewed_button.classList.replace(IS_REVIEWED_BUTTON_CLASS, IS_NOT_REVIEWED_BUTTON_CLASS);
                 reviewed_button.textContent = 'Mark as reviewed';
@@ -577,13 +581,14 @@ export default {
                 return;
             }
 
+            // Iterate through each table row to find the row matching the edited item's ID.
             dtApi.rows().every(function() {
                 const rowData = this.data();
+
+                // Create an updated copy of the row with the edited field value.
                 if (rowData?.id === edit.id) {
-                    const updatedRow = {
-                        ...rowData,
-                        [edit.field]: edit.value
-                    };
+                    const updatedRow = { ...rowData, [edit.field]: edit.value };
+                    // Update the matching row in the DataTable without reloading the data.
                     this.data(updatedRow);
                     return false;
                 }
