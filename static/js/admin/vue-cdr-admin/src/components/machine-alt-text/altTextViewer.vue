@@ -100,6 +100,10 @@ export default {
     computed: {
         ...mapState(useAltTextStore, ['currentUuid', 'lastSuccessfulEdit', 'reviewedItems']),
 
+        reviewedItemSet() {
+            return new Set(this.reviewedItems);
+        },
+
         ajaxOptions() {
             let lastDraw = 0;
             return {
@@ -473,7 +477,7 @@ export default {
         },
 
         isReviewed(itemId) {
-            return this.reviewedItems.includes(itemId);
+            return this.reviewedItemSet.has(itemId);
         },
 
         toggleReviewed(e) {
