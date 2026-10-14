@@ -98,7 +98,7 @@ export default {
     },
 
     computed: {
-        ...mapState(useAltTextStore, ['currentUuid', 'lastSuccessfulEdit']),
+        ...mapState(useAltTextStore, ['currentUuid', 'lastSuccessfulEdit', 'reviewedItems']),
 
         ajaxOptions() {
             let lastDraw = 0;
@@ -274,7 +274,7 @@ export default {
 
     methods: {
         ...mapActions(useAltTextStore, ['setActiveField', 'setAlertMessage',
-            'setAlertMessageType', 'setCurrentRow', 'setCurrentUuid', 'setItems',
+            'setAlertMessageType', 'setCurrentRow', 'setCurrentUuid', 'setItems', 'setReviewedItems',
             'clearLastSuccessfulEdit', 'setShowAltTextModal', 'setViewType', 'closeModalWindow']),
 
 
@@ -325,9 +325,9 @@ export default {
 
                     return `
                             <li>
-                              <strong>${stage}</strong>:
+                              <strong>${this.sanitizeText(stage)}</strong>:
                               <ul>
-                                ${items.join("\n")}
+                                ${this.sanitizeText(items.join("\n"))}
                               </ul>
                             </li>
                           `;
@@ -388,6 +388,7 @@ export default {
                            enhancements: ['machineGenDescription']
                        })
                    });
+               this.updateRerunRow(e);
                this.setAlertMessage(`${e.target.dataset.title} sent for reprocessing`);
                this.setAlertMessageType('success');
            } catch (error) {
@@ -459,7 +460,7 @@ export default {
         },
 
         getReviewedItems() {
-            const reviewed_items = localStorage.getItem('reviewed-items');
+            const reviewed_items = localStorage.getItem(`reviewed-items-${this.currentUuid}`);
             if (reviewed_items === null) {
                 return [];
             }
@@ -472,27 +473,31 @@ export default {
         },
 
         isReviewed(itemId) {
-            const reviewedItems = this.getReviewedItems();
-            return reviewedItems.includes(itemId);
+            return this.reviewedItems.includes(itemId);
         },
 
-        toggleReviewed(e, reviewedItems) {
+        toggleReviewed(e) {
+            const reviewedItemsList = this.reviewedItems;
             const itemId = e.target.dataset.id;
-            const index = reviewedItems.indexOf(itemId);
+            const index = reviewedItemsList.indexOf(itemId);
             // Update highlighted row state based on whether the item is being marked as reviewed or not
             e.target.closest('tr').classList.toggle(IS_REVIEWED_ROW_CLASS, index === -1);
 
             if (index === -1) {
-                reviewedItems.push(itemId);
+                reviewedItemsList.push(itemId);
                 e.target.classList.replace(IS_NOT_REVIEWED_BUTTON_CLASS, IS_REVIEWED_BUTTON_CLASS);
                 e.target.textContent = 'Reviewed';
             } else {
-                reviewedItems.splice(index, 1);
+                reviewedItemsList.splice(index, 1);
                 e.target.classList.replace(IS_REVIEWED_BUTTON_CLASS, IS_NOT_REVIEWED_BUTTON_CLASS);
                 e.target.textContent = 'Mark as reviewed';
             }
+            this.setReviewedItemsList(reviewedItemsList);
+        },
 
-            localStorage.setItem('reviewed-items', JSON.stringify(reviewedItems));
+        setReviewedItemsList(reviewedItemsList) {
+            localStorage.setItem(`reviewed-items-${this.currentUuid}`, JSON.stringify(reviewedItemsList));
+            this.setReviewedItems(reviewedItemsList);
         },
 
         bindTableEvents() {
@@ -502,14 +507,12 @@ export default {
                 return;
             }
             this.altTextTableClickHandler = (e) => {
-                const reviewed_items = this.getReviewedItems();
-
                 if (this.isActionFieldClick(e)) {
                     this.handleActionFieldClick(e, dtApi);
                 } else if (this.isRerunClick(e)) {
-                    this.handleRerunClick(e, reviewed_items);
+                    this.rerunAltTextGeneration(e);
                 } else if (this.isReviewClick(e)) {
-                    this.handleReviewClick(e, reviewed_items);
+                    this.handleReviewClick(e);
                 }
             }
             dtApi.on('click', 'tbody tr', this.altTextTableClickHandler);
@@ -532,13 +535,11 @@ export default {
             return e.target.className.includes('rerun');
         },
 
-        handleRerunClick(e, reviewed_items) {
-            this.rerunAltTextGeneration(e);
-
+        updateRerunRow(e) {
             // The rerun and review buttons have the same data-id values,
             // so we can mark the row as not reviewed when rerun is clicked
             const itemId = e.target.dataset.id;
-            const index = reviewed_items.indexOf(itemId);
+            const index = this.reviewedItems.indexOf(itemId);
 
             // Remove the reviewed state from the row and button when rerun is clicked
             if (index !== -1) {
@@ -547,8 +548,8 @@ export default {
                 let reviewed_button = e.target.nextElementSibling;
                 reviewed_button.classList.replace(IS_REVIEWED_BUTTON_CLASS, IS_NOT_REVIEWED_BUTTON_CLASS);
                 reviewed_button.textContent = 'Mark as reviewed';
-                reviewed_items.splice(index, 1);
-                localStorage.setItem('reviewed-items', JSON.stringify(reviewed_items));
+                this.reviewedItems.splice(index, 1);
+                this.setReviewedItemsList(this.reviewedItems);
             }
         },
 
@@ -556,8 +557,8 @@ export default {
             return e.target.className.includes('review');
         },
 
-        handleReviewClick(e, reviewed_items) {
-            this.toggleReviewed(e, reviewed_items);
+        handleReviewClick(e) {
+            this.toggleReviewed(e);
         },
 
         unbindTableEvents() {
@@ -606,6 +607,7 @@ export default {
     beforeMount() {
         const uuid = this.$route.params.uuid ?? null;
         this.setCurrentUuid(uuid);
+        this.setReviewedItems(this.getReviewedItems());
     },
 
     mounted() {

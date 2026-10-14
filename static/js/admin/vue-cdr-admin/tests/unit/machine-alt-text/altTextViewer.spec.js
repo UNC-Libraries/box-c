@@ -46,17 +46,18 @@ const createSampleSafetyAssessment = (overrides = {}) => ({
 const sampleReviewAssessment = createSampleReviewAssessment();
 const sampleSafetyAssessment = createSampleSafetyAssessment();
 
-const mountViewer = () => {
-    return shallowMount(altTextViewer, {
+const mountViewer = (reviewedItems = []) => {
+    const wrapper = shallowMount(altTextViewer, {
         global: {
             plugins: [createTestingPinia({
                 initialState: {
                     'alt-text': {
                         currentUuid: uuid,
-                        alertMessage: ''
+                        alertMessage: '',
+                        reviewedItems
                     }
                 },
-                stubActions: true
+                stubActions: false
             })],
             stubs: {
                 teleport: true
@@ -70,6 +71,8 @@ const mountViewer = () => {
             }
         }
     });
+    wrapper.vm.setReviewedItems(reviewedItems);
+    return wrapper;
 };
 
 describe('altTextViewer.vue', () => {
@@ -79,6 +82,7 @@ describe('altTextViewer.vue', () => {
 
             const ctx = {
                 fetchWrapper: vi.fn().mockResolvedValueOnce({}),
+                updateRerunRow: vi.fn(),
                 setAlertMessage: vi.fn(),
                 setAlertMessageType: vi.fn()
             };
@@ -108,6 +112,7 @@ describe('altTextViewer.vue', () => {
 
             vi.advanceTimersByTime(3500);
 
+            // The second call is
             expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(2, '');
             expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(2, '');
 
@@ -534,7 +539,7 @@ describe('altTextViewer.vue', () => {
 
             it('returns reviewed items from localStorage', () => {
                 const reviewed = ['id-1', 'id-2', 'id-3'];
-                localStorage.setItem('reviewed-items', JSON.stringify(reviewed));
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
 
                 const wrapper = mountViewer();
                 const result = wrapper.vm.getReviewedItems();
@@ -543,7 +548,7 @@ describe('altTextViewer.vue', () => {
 
             it('returns an empty array when localStorage item is not valid JSON', () => {
                 const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-                localStorage.setItem('reviewed-items', 'invalid-json{');
+                localStorage.setItem(`reviewed-items-${uuid}`, 'invalid-json{');
 
                 const wrapper = mountViewer();
                 const result = wrapper.vm.getReviewedItems();
@@ -554,7 +559,7 @@ describe('altTextViewer.vue', () => {
 
             it('logs error when localStorage parsing fails', () => {
                 const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-                localStorage.setItem('reviewed-items', 'invalid-json{');
+                localStorage.setItem(`reviewed-items-${uuid}`, 'invalid-json{');
 
                 const wrapper = mountViewer();
                 wrapper.vm.getReviewedItems();
@@ -570,15 +575,15 @@ describe('altTextViewer.vue', () => {
         describe('isReviewed', () => {
             it('returns true when itemId is in reviewed items', () => {
                 const reviewed = ['id-1', 'id-2', 'id-3'];
-                localStorage.setItem('reviewed-items', JSON.stringify(reviewed));
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
 
-                const wrapper = mountViewer();
+                const wrapper = mountViewer(reviewed);
                 expect(wrapper.vm.isReviewed('id-2')).toBe(true);
             });
 
             it('returns false when itemId is not in reviewed items', () => {
                 const reviewed = ['id-1', 'id-2'];
-                localStorage.setItem('reviewed-items', JSON.stringify(reviewed));
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
 
                 const wrapper = mountViewer();
                 expect(wrapper.vm.isReviewed('id-3')).toBe(false);
@@ -592,8 +597,8 @@ describe('altTextViewer.vue', () => {
 
         describe('toggleReviewed', () => {
             it('adds itemId to reviewedItems when it does not exist', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
 
                 const event = {
                     target: {
@@ -606,15 +611,15 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
-                expect(reviewedItems).toContain('id-2');
-                expect(reviewedItems).toEqual(['id-1', 'id-2']);
+                expect(wrapper.vm.reviewedItems).toContain('id-2');
+                expect(wrapper.vm.reviewedItems).toEqual(['id-1', 'id-2']);
             });
 
             it('removes itemId from reviewedItems when it already exists', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = ['id-1', 'id-2', 'id-3'];
+                const wrapper = mountViewer(reviewedItems);
 
                 const event = {
                     target: {
@@ -627,15 +632,15 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
-                expect(reviewedItems).not.toContain('id-2');
-                expect(reviewedItems).toEqual(['id-1', 'id-3']);
+                expect(wrapper.vm.reviewedItems).not.toContain('id-2');
+                expect(wrapper.vm.reviewedItems).toEqual(['id-1', 'id-3']);
             });
 
             it('updates button appearance when adding a review', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = [];
+                const wrapper = mountViewer(reviewedItems);
 
                 const mockButton = {
                     classList: {
@@ -654,15 +659,15 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
                 expect(event.target.classList.replace).toHaveBeenCalledWith('is-info', 'is-success');
                 expect(event.target.textContent).toBe('Reviewed');
             });
 
             it('updates button appearance when removing a review', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
 
                 const mockButton = {
                     classList: {
@@ -681,15 +686,15 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
                 expect(event.target.classList.replace).toHaveBeenCalledWith('is-success', 'is-info');
                 expect(event.target.textContent).toBe('Mark as reviewed');
             });
 
             it('updates localStorage with modified reviewed items', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
 
                 const event = {
                     target: {
@@ -702,15 +707,15 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
-                const stored = JSON.parse(localStorage.getItem('reviewed-items'));
+                const stored = JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`));
                 expect(stored).toEqual(['id-1', 'id-2']);
             });
 
             it('toggles row styling when item is reviewed', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = [];
+                const wrapper = mountViewer(reviewedItems);
                 const mockRow = { classList: { toggle: vi.fn() } };
                 const event = {
                     target: {
@@ -721,14 +726,14 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
                 expect(mockRow.classList.toggle).toHaveBeenCalledWith('is-light', true);
             });
 
             it('toggles row styling when item is no longer reviewed', () => {
-                const wrapper = mountViewer();
                 const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
                 const mockRow = { classList: { toggle: vi.fn() } };
                 const event = {
                     target: {
@@ -739,7 +744,7 @@ describe('altTextViewer.vue', () => {
                     }
                 };
 
-                wrapper.vm.toggleReviewed(event, reviewedItems);
+                wrapper.vm.toggleReviewed(event);
 
                 expect(mockRow.classList.toggle).toHaveBeenCalledWith('is-light', false);
             });
@@ -749,7 +754,7 @@ describe('altTextViewer.vue', () => {
             it('marks row as not reviewed when rerun button is clicked and item was previously reviewed', () => {
                 mountViewer();
                 const reviewedItems = ['item-123'];
-                localStorage.setItem('reviewed-items', JSON.stringify(reviewedItems));
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewedItems));
 
                 const mockNextButton = {
                     classList: { replace: vi.fn() },
@@ -768,7 +773,8 @@ describe('altTextViewer.vue', () => {
                     preventDefault: vi.fn()
                 };
 
-                const savedReviewedItems = JSON.parse(localStorage.getItem('reviewed-items'));
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewedItems));
+                const savedReviewedItems = JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`));
 
                 // Simulate the rerun button target
                 const itemId = event.target.dataset.id;
@@ -779,12 +785,12 @@ describe('altTextViewer.vue', () => {
                     mockNextButton.classList.replace('is-success', 'is-info');
                     mockNextButton.textContent = 'Mark as reviewed';
                     savedReviewedItems.splice(index, 1);
-                    localStorage.setItem('reviewed-items', JSON.stringify(savedReviewedItems));
+                    localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(savedReviewedItems));
                 }
 
                 expect(mockNextButton.classList.replace).toHaveBeenCalledWith('is-success', 'is-info');
                 expect(mockNextButton.textContent).toBe('Mark as reviewed');
-                expect(JSON.parse(localStorage.getItem('reviewed-items'))).toEqual([]);
+                expect(JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`))).toEqual([]);
             });
         });
     });
