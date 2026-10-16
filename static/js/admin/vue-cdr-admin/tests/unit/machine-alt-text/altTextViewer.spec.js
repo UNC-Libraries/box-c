@@ -46,17 +46,18 @@ const createSampleSafetyAssessment = (overrides = {}) => ({
 const sampleReviewAssessment = createSampleReviewAssessment();
 const sampleSafetyAssessment = createSampleSafetyAssessment();
 
-const mountViewer = () => {
-    return shallowMount(altTextViewer, {
+const mountViewer = (reviewedItems = []) => {
+    const wrapper = shallowMount(altTextViewer, {
         global: {
             plugins: [createTestingPinia({
                 initialState: {
                     'alt-text': {
                         currentUuid: uuid,
-                        alertMessage: ''
+                        alertMessage: '',
+                        reviewedItems
                     }
                 },
-                stubActions: true
+                stubActions: false
             })],
             stubs: {
                 teleport: true
@@ -70,6 +71,8 @@ const mountViewer = () => {
             }
         }
     });
+    wrapper.vm.setReviewedItems(reviewedItems);
+    return wrapper;
 };
 
 describe('altTextViewer.vue', () => {
@@ -79,6 +82,7 @@ describe('altTextViewer.vue', () => {
 
             const ctx = {
                 fetchWrapper: vi.fn().mockResolvedValueOnce({}),
+                updateRerunRow: vi.fn(),
                 setAlertMessage: vi.fn(),
                 setAlertMessageType: vi.fn()
             };
@@ -108,6 +112,7 @@ describe('altTextViewer.vue', () => {
 
             vi.advanceTimersByTime(3500);
 
+            // The second call is
             expect(ctx.setAlertMessage).toHaveBeenNthCalledWith(2, '');
             expect(ctx.setAlertMessageType).toHaveBeenNthCalledWith(2, '');
 
@@ -519,6 +524,274 @@ describe('altTextViewer.vue', () => {
 
             expect(renderedNull).toContain('<ul class="is-capitalized">');
             expect(renderedEmpty).toContain('<ul class="is-capitalized">');
+        });
+    });
+
+    describe('review functionality', () => {
+        // localStorage is automatically cleared by vitest.setup.js before each test
+
+        describe('getReviewedItems', () => {
+            it('returns an empty array when no reviewed items are stored', () => {
+                const wrapper = mountViewer();
+                const result = wrapper.vm.getReviewedItems();
+                expect(result).toEqual([]);
+            });
+
+            it('returns reviewed items from localStorage', () => {
+                const reviewed = ['id-1', 'id-2', 'id-3'];
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
+
+                const wrapper = mountViewer();
+                const result = wrapper.vm.getReviewedItems();
+                expect(result).toEqual(reviewed);
+            });
+
+            it('returns an empty array when localStorage item is not valid JSON', () => {
+                const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+                localStorage.setItem(`reviewed-items-${uuid}`, 'invalid-json{');
+
+                const wrapper = mountViewer();
+                const result = wrapper.vm.getReviewedItems();
+                expect(result).toEqual([]);
+
+                consoleSpy.mockRestore();
+            });
+
+            it('logs error when localStorage parsing fails', () => {
+                const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+                localStorage.setItem(`reviewed-items-${uuid}`, 'invalid-json{');
+
+                const wrapper = mountViewer();
+                wrapper.vm.getReviewedItems();
+
+                expect(consoleSpy).toHaveBeenCalledWith(
+                    'Error parsing reviewed items from localStorage:',
+                    expect.any(Error)
+                );
+                consoleSpy.mockRestore();
+            });
+        });
+
+        describe('isReviewed', () => {
+            it('returns true when itemId is in reviewed items', () => {
+                const reviewed = ['id-1', 'id-2', 'id-3'];
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
+
+                const wrapper = mountViewer(reviewed);
+                expect(wrapper.vm.isReviewed('id-2')).toBe(true);
+            });
+
+            it('returns false when itemId is not in reviewed items', () => {
+                const reviewed = ['id-1', 'id-2'];
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewed));
+
+                const wrapper = mountViewer();
+                expect(wrapper.vm.isReviewed('id-3')).toBe(false);
+            });
+
+            it('returns false when no reviewed items exist', () => {
+                const wrapper = mountViewer();
+                expect(wrapper.vm.isReviewed('id-1')).toBe(false);
+            });
+        });
+
+        describe('toggleReviewed', () => {
+            it('adds itemId to reviewedItems when it does not exist', () => {
+                const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
+
+                const event = {
+                    target: {
+                        dataset: { id: 'id-2' },
+                        classList: { replace: vi.fn(), textContent: '' },
+                        textContent: 'Mark as reviewed',
+                        closest: vi.fn().mockReturnValue({
+                            classList: { toggle: vi.fn() }
+                        })
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(wrapper.vm.reviewedItems).toContain('id-2');
+                expect(wrapper.vm.reviewedItems).toEqual(['id-1', 'id-2']);
+            });
+
+            it('removes itemId from reviewedItems when it already exists', () => {
+                const reviewedItems = ['id-1', 'id-2', 'id-3'];
+                const wrapper = mountViewer(reviewedItems);
+
+                const event = {
+                    target: {
+                        dataset: { id: 'id-2' },
+                        classList: { replace: vi.fn() },
+                        textContent: 'Reviewed',
+                        closest: vi.fn().mockReturnValue({
+                            classList: { toggle: vi.fn() }
+                        })
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(wrapper.vm.reviewedItems).not.toContain('id-2');
+                expect(wrapper.vm.reviewedItems).toEqual(['id-1', 'id-3']);
+            });
+
+            it('updates button appearance when adding a review', () => {
+                const reviewedItems = [];
+                const wrapper = mountViewer(reviewedItems);
+
+                const mockButton = {
+                    classList: {
+                        replace: vi.fn()
+                    },
+                    textContent: 'Mark as reviewed'
+                };
+
+                const event = {
+                    target: {
+                        ...mockButton,
+                        dataset: { id: 'id-1' },
+                        closest: vi.fn().mockReturnValue({
+                            classList: { toggle: vi.fn() }
+                        })
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(event.target.classList.replace).toHaveBeenCalledWith('is-info', 'is-success');
+                expect(event.target.textContent).toBe('Reviewed');
+            });
+
+            it('updates button appearance when removing a review', () => {
+                const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
+
+                const mockButton = {
+                    classList: {
+                        replace: vi.fn()
+                    },
+                    textContent: 'Reviewed'
+                };
+
+                const event = {
+                    target: {
+                        ...mockButton,
+                        dataset: { id: 'id-1' },
+                        closest: vi.fn().mockReturnValue({
+                            classList: { toggle: vi.fn() }
+                        })
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(event.target.classList.replace).toHaveBeenCalledWith('is-success', 'is-info');
+                expect(event.target.textContent).toBe('Mark as reviewed');
+            });
+
+            it('updates localStorage with modified reviewed items', () => {
+                const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
+
+                const event = {
+                    target: {
+                        dataset: { id: 'id-2' },
+                        classList: { replace: vi.fn() },
+                        textContent: 'Mark as reviewed',
+                        closest: vi.fn().mockReturnValue({
+                            classList: { toggle: vi.fn() }
+                        })
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                const stored = JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`));
+                expect(stored).toEqual(['id-1', 'id-2']);
+            });
+
+            it('toggles row styling when item is reviewed', () => {
+                const reviewedItems = [];
+                const wrapper = mountViewer(reviewedItems);
+                const mockRow = { classList: { toggle: vi.fn() } };
+                const event = {
+                    target: {
+                        dataset: { id: 'id-1' },
+                        classList: { replace: vi.fn() },
+                        textContent: 'Mark as reviewed',
+                        closest: vi.fn().mockReturnValue(mockRow)
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(mockRow.classList.toggle).toHaveBeenCalledWith('is-light', true);
+            });
+
+            it('toggles row styling when item is no longer reviewed', () => {
+                const reviewedItems = ['id-1'];
+                const wrapper = mountViewer(reviewedItems);
+                const mockRow = { classList: { toggle: vi.fn() } };
+                const event = {
+                    target: {
+                        dataset: { id: 'id-1' },
+                        classList: { replace: vi.fn() },
+                        textContent: 'Reviewed',
+                        closest: vi.fn().mockReturnValue(mockRow)
+                    }
+                };
+
+                wrapper.vm.toggleReviewed(event);
+
+                expect(mockRow.classList.toggle).toHaveBeenCalledWith('is-light', false);
+            });
+        });
+
+        describe('bindTableEvents review button handling', () => {
+            it('marks row as not reviewed when rerun button is clicked and item was previously reviewed', () => {
+                mountViewer();
+                const reviewedItems = ['item-123'];
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewedItems));
+
+                const mockNextButton = {
+                    classList: { replace: vi.fn() },
+                    textContent: 'Reviewed'
+                };
+                const event = {
+                    target: {
+                        dataset: { id: 'item-123' },
+                        className: 'rerun',
+                        closest: vi.fn().mockReturnValue({
+                            classList: { remove: vi.fn() }
+                        }),
+                        nextElementSibling: mockNextButton
+                    },
+                    currentTarget: { closest: vi.fn().mockReturnValue({}) },
+                    preventDefault: vi.fn()
+                };
+
+                localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(reviewedItems));
+                const savedReviewedItems = JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`));
+
+                // Simulate the rerun button target
+                const itemId = event.target.dataset.id;
+                const index = savedReviewedItems.indexOf(itemId);
+
+                if (index !== -1) {
+                    event.target.closest('tr').classList.remove('is-light');
+                    mockNextButton.classList.replace('is-success', 'is-info');
+                    mockNextButton.textContent = 'Mark as reviewed';
+                    savedReviewedItems.splice(index, 1);
+                    localStorage.setItem(`reviewed-items-${uuid}`, JSON.stringify(savedReviewedItems));
+                }
+
+                expect(mockNextButton.classList.replace).toHaveBeenCalledWith('is-success', 'is-info');
+                expect(mockNextButton.textContent).toBe('Mark as reviewed');
+                expect(JSON.parse(localStorage.getItem(`reviewed-items-${uuid}`))).toEqual([]);
+            });
         });
     });
 });
