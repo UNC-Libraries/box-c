@@ -42,14 +42,19 @@ public class TranscriptUpdateService {
 
         var fileObj = repositoryObjectLoader.getFileObject(pid);
         var transcriptPid = DatastreamPids.getTranscriptPid(pid);
+        var transcriptText = request.getTranscriptText();
 
         BinaryObject transcriptBinary;
         var newVersion = getNewDatastreamVersion(transcriptPid, DatastreamType.TRANSCRIPT,
-                request.getTranscriptText(), request.getTransferSession());
+                transcriptText, request.getTransferSession());
         transcriptBinary = versionedDatastreamService.addVersion(newVersion);
 
         var resource = fileObj.getResource();
         if (resource != null && resource.hasProperty(Cdr.hasTranscript)) {
+            if (transcriptText.isBlank()) {
+                // this is a delete request
+                repositoryObjectFactory.deleteProperty(fileObj, Cdr.hasTranscript);
+            }
             log.debug("Successfully updated transcript for {}", fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, Cdr.hasTranscript, createResource(transcriptPid.getRepositoryPath()));
