@@ -228,8 +228,8 @@ public class MachineGeneratedContentService {
                 // text_present: YES/NO/UNKNOWN field
                 addYesNoTag(tags, textCharsNode, "text_present", MG_TEXT_PRESENT);
 
-                // text_sensitive: add if text_type indicates sensitive
-                JsonNode textSensitiveNode = textCharsNode.path("text_sensitive");
+                // text_sensitive: add if sensitivity indicates sensitive text is present
+                JsonNode textSensitiveNode = textCharsNode.path("sensitivity");
                 if (!textSensitiveNode.isMissingNode() && "SENSITIVE".equalsIgnoreCase(textSensitiveNode.asText())) {
                     tags.add(MG_TEXT_SENSITIVE);
                 }
