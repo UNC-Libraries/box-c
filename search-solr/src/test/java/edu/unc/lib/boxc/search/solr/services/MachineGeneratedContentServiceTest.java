@@ -462,7 +462,7 @@ public class MachineGeneratedContentServiceTest {
         ObjectNode textChars = (ObjectNode) safety.path("text_characteristics");
         textChars.put("text_present", "YES");
         textChars.put("text_type", "HANDWRITTEN_PRINT");
-        textChars.put("text_sensitive", "SENSITIVE");
+        textChars.put("sensitivity", "SENSITIVE");
         textChars.put("language", "Spanish");
 
         // image_quality: non-UNIMPAIRED value
