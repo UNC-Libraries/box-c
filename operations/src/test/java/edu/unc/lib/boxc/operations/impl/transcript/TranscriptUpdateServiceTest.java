@@ -43,6 +43,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -205,5 +206,23 @@ public class TranscriptUpdateServiceTest {
         verify(operationsMessageSender, never()).sendUpdateDescriptionOperation(any(), anyList(), any());
 
         assertEquals(binaryObject, result);
+    }
+
+    @Test
+    public void testSetsBlankTranscriptDeletesRelationship() {
+        var request = new TranscriptUpdateRequest();
+        request.setAgent(agent);
+        request.setTranscriptText("");
+        request.setPidString(pidString);
+        var resource = mock(Resource.class);
+
+        when(repositoryObjectLoader.getFileObject(eq(pid))).thenReturn(fileObject);
+        when(repositoryObjectFactory.objectExists(transcriptPid.getRepositoryUri())).thenReturn(false);
+        when(versioningService.addVersion(any())).thenReturn(binaryObject);
+        when(fileObject.getResource()).thenReturn(resource);
+        when(resource.hasProperty(eq(Cdr.hasTranscript))).thenReturn(true);
+
+        service.updateTranscript(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.hasTranscript));
     }
 }
