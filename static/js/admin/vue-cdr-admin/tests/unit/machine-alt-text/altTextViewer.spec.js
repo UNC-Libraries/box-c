@@ -292,7 +292,7 @@ describe('altTextViewer.vue', () => {
                 'altText',
                 'mgTranscript',
                 'transcript',
-                null,
+                'mgRiskScore',
                 'mgSafetyAssessment',
                 'mgReviewAssessment'
             ]);
