@@ -57,6 +57,7 @@ public class MachineGeneratedContentService {
     public static final String MG_REVIEW_PEOPLE_FIRST = "model_people_first_language";
     public static final String MG_REVIEW_SUPPORTED_CLAIMS = "unsupported_claims";
     public static final String MG_REVIEW_SAFETY_ASSESS_INCON = "safety_assessment_inconsistent";
+    public static final String MG_RISK_SCORE = "risk_score";
 
     public static final String RESULT_FIELD = "result";
     public static final String RESULT_HANDWRITTEN_PRINT = "HANDWRITTEN_PRINT";
@@ -151,8 +152,8 @@ public class MachineGeneratedContentService {
         if (mgdNode == null) {
             return null;
         }
-        JsonNode safetyScoreNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD);
-        JsonNode reviewScoreNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD);
+        JsonNode safetyScoreNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD).path(MG_RISK_SCORE);
+        JsonNode reviewScoreNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD).path(MG_RISK_SCORE);
         var safetyScore = safetyScoreNode.isMissingNode() ? 0 : safetyScoreNode.asInt();
         var reviewScore = reviewScoreNode.isMissingNode() ? 0 : reviewScoreNode.asInt();
         var totalScore = (int) (safetyScore + (reviewScore * 0.5));

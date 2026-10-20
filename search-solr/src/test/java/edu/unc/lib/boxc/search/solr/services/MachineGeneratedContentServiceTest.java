@@ -202,6 +202,25 @@ public class MachineGeneratedContentServiceTest {
         assertNull(service.extractRiskScore(node));
     }
 
+    // ─── calculateRiskScore ────────────────────────────────────────────────────
+
+    @Test
+    public void calculateRiskScore_returnsValue() throws Exception {
+        JsonNode node = parseDefaultJson();
+        assertEquals(5, service.calculateRiskScore(node));
+    }
+
+    @Test
+    public void calculateRiskScore_nullNode_returnsNull() {
+        assertNull(service.calculateRiskScore(null));
+    }
+
+    @Test
+    public void calculateRiskScore_missingFieldCountsAsZero() throws Exception {
+        JsonNode node = buildNodeWithoutNestedField(parseDefaultJson(), MG_SAFETY_ASSESS_FIELD, "risk_score");
+        assertEquals(0, service.calculateRiskScore(node));
+    }
+
     // ─── extractContentTags – defaults (no tags) ─────────────────────────────
 
     @Test
@@ -420,6 +439,11 @@ public class MachineGeneratedContentServiceTest {
 
     private JsonNode buildNodeWithoutField(JsonNode baseNode, String fieldName) {
         ((ObjectNode) baseNode.path(RESULT_FIELD)).remove(fieldName);
+        return baseNode;
+    }
+
+    private JsonNode buildNodeWithoutNestedField(JsonNode baseNode, String nestedField, String fieldName) {
+        ((ObjectNode) baseNode.path(RESULT_FIELD).path(nestedField)).remove(fieldName);
         return baseNode;
     }
 
