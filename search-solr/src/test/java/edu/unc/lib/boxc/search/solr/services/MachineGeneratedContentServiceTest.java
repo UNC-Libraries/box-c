@@ -183,25 +183,6 @@ public class MachineGeneratedContentServiceTest {
         assertNull(service.extractTranscript(node));
     }
 
-    // ─── extractRiskScore ────────────────────────────────────────────────────
-
-    @Test
-    public void extractRiskScore_returnsValue() throws Exception {
-        JsonNode node = parseDefaultJson();
-        assertEquals(0, service.extractRiskScore(node));
-    }
-
-    @Test
-    public void extractRiskScore_nullNode_returnsNull() {
-        assertNull(service.extractRiskScore(null));
-    }
-
-    @Test
-    public void extractRiskScore_missingField_returnsNull() throws Exception {
-        JsonNode node = buildNodeWithoutField(parseDefaultJson(), "overall_risk_score");
-        assertNull(service.extractRiskScore(node));
-    }
-
     // ─── calculateRiskScore ────────────────────────────────────────────────────
 
     @Test

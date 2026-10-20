@@ -131,19 +131,6 @@ public class MachineGeneratedContentService {
     }
 
     /**
-     * Extracts the risk score from the machine generated description JSON, if it exists.
-     * @param mgdNode the machine generated description JSON root node
-     * @return risk score if it exists, otherwise null
-     */
-    public Integer extractRiskScore(JsonNode mgdNode) {
-        if (mgdNode == null) {
-            return null;
-        }
-        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_OVERALL_RISK_SCORE_FIELD);
-        return scoreNode.isMissingNode() ? null : scoreNode.asInt();
-    }
-
-    /**
      * Calculates the risk score from the machine generated description safety_risk_score + review_risk_score
      * @param mgdNode the machine generated description JSON root node
      * @return calculated overall risk score, out of 100
