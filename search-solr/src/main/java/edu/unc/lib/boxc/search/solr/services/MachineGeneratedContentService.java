@@ -24,7 +24,6 @@ public class MachineGeneratedContentService {
     private static final Logger log = LoggerFactory.getLogger(MachineGeneratedContentService.class);
 
     public static final String MG_DESCRIPTION_FIELD = "full_description";
-    public static final String MG_RISK_SCORE_FIELD = "overall_risk_score";
     public static final String MG_ALT_TEXT = "alt_text";
     public static final String MG_TRANSCRIPT_FIELD = "transcript";
     public static final String MG_SAFETY_ASSESS_FIELD = "safety_assessment";
@@ -57,6 +56,7 @@ public class MachineGeneratedContentService {
     public static final String MG_REVIEW_PEOPLE_FIRST = "model_people_first_language";
     public static final String MG_REVIEW_SUPPORTED_CLAIMS = "unsupported_claims";
     public static final String MG_REVIEW_SAFETY_ASSESS_INCON = "safety_assessment_inconsistent";
+    public static final String MG_RISK_SCORE = "risk_score";
 
     public static final String RESULT_FIELD = "result";
     public static final String RESULT_HANDWRITTEN_PRINT = "HANDWRITTEN_PRINT";
@@ -130,16 +130,21 @@ public class MachineGeneratedContentService {
     }
 
     /**
-     * Extracts the risk score from the machine generated description JSON, if it exists.
+     * Calculates the risk score from the machine generated description safety_risk_score + review_risk_score
      * @param mgdNode the machine generated description JSON root node
-     * @return risk score if it exists, otherwise null
+     * @return calculated overall risk score, out of 100
      */
-    public Integer extractRiskScore(JsonNode mgdNode) {
+    public Integer calculateRiskScore(JsonNode mgdNode) {
         if (mgdNode == null) {
             return null;
         }
-        JsonNode scoreNode = mgdNode.path(RESULT_FIELD).path(MG_RISK_SCORE_FIELD);
-        return scoreNode.isMissingNode() ? null : scoreNode.asInt();
+        JsonNode safetyScoreNode = mgdNode.path(RESULT_FIELD).path(MG_SAFETY_ASSESS_FIELD).path(MG_RISK_SCORE);
+        JsonNode reviewScoreNode = mgdNode.path(RESULT_FIELD).path(MG_REVIEW_ASSESS_FIELD).path(MG_RISK_SCORE);
+        var safetyScore = safetyScoreNode.isMissingNode() ? 0 : safetyScoreNode.asInt();
+        var reviewScore = reviewScoreNode.isMissingNode() ? 0 : reviewScoreNode.asInt();
+        var totalScore = (int) (safetyScore + (reviewScore * 0.5));
+
+        return Math.min(totalScore, 100);
     }
 
     /**

@@ -248,14 +248,7 @@ export default {
                     render: (data) => this.longText(data, 'transcript')
                 },
                 {
-                    data: null,
-                    defaultContent: '',
-                    render: (data) => {
-                        if (data.mgDescription !== undefined) {
-                            const risk = JSON.parse(data.mgDescription);
-                            return risk.result.overall_risk_score;
-                        }
-                    }
+                    data: 'mgRiskScore'
                 },
                 {
                     data: 'mgSafetyAssessment',
