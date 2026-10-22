@@ -15,15 +15,11 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.fullDescription.FullDescriptionUpdateService;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.datastreams.DatastreamUpdateRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
-import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,11 +63,8 @@ public class DatastreamUpdateServiceTest {
     private BinaryObject binaryObject;
     @Mock
     private FileObject fileObject;
-    @Mock
-    private Resource resource;
     private PID pid;
     private String pidString;
-    private PID datastreamPid;
     private AgentPrincipals agent;
     private static final AccessGroupSet ACCESS_GROUPS = new AccessGroupSetImpl("test_group");
 
