@@ -10,12 +10,16 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.services.camel.util.EventTypes.EVENT_CREATE;
 import static edu.unc.lib.boxc.services.camel.util.EventTypes.EVENT_UPDATE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
@@ -31,6 +35,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor;
 
 /**
  *
@@ -42,8 +47,6 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
     private static final String FILE_ID = CONTAINER_ID + "/file1/original_file";
-    private static final String DEPOSIT_ID = "/deposit/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
-
     private static final String META_ROUTE = "CdrMetaServicesRouter";
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
 
@@ -56,6 +59,8 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Produce("direct:start")
     private ProducerTemplate template;
 
+    private CacheInvalidatingProcessor cacheInvalidatingProcessor;
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
@@ -64,12 +69,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @BeforeEach
     public void setup() {
         TestHelper.setContentBase("http://example.com/rest/");
+        cacheInvalidatingProcessor = context.getRegistry().lookupByNameAndType(
+                "cacheInvalidatingProcessor", CacheInvalidatingProcessor.class);
     }
 
     @Test
     public void testRouteStartContainer() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -81,15 +86,13 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
+        verify(cacheInvalidatingProcessor).process(any(Exchange.class));
     }
 
     @Test
     public void testRouteStartTimemap() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(0);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -104,84 +107,13 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testRouteStartDatafs() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
-        filterLongleafEndpoint.expectedMessageCount(0);
-        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
-        processEnhEndpoint.expectedMessageCount(0);
-
-        createContext(META_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context).whenCompleted(1).create();
-        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs",
-                Fcrepo4Repository.Container.getURI()));
-        // delay so that message has time to reach all routes that expect 0
-        Thread.sleep(100);
-        notify.matches(1l, TimeUnit.SECONDS);
-
-        indexStartEndpoint.assertIsSatisfied();
-        filterLongleafEndpoint.assertIsSatisfied();
-        processEnhEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testRouteStartDepositRecord() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
-        filterLongleafEndpoint.expectedMessageCount(0);
-        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
-        processEnhEndpoint.expectedMessageCount(0);
-
-        createContext(META_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context).whenCompleted(1).create();
-        template.sendBodyAndHeaders("", createEvent(DEPOSIT_ID,
-                Fcrepo4Repository.Container.getURI()));
-        // delay so that message has time to reach all routes that expect 0
-        Thread.sleep(100);
-        notify.matches(1l, TimeUnit.SECONDS);
-
-        indexStartEndpoint.assertIsSatisfied();
-        filterLongleafEndpoint.assertIsSatisfied();
-        processEnhEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void testRouteStartNotAPid() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
-        var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
-        filterLongleafEndpoint.expectedMessageCount(0);
-        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
-        processEnhEndpoint.expectedMessageCount(0);
-
-        createContext(META_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context).whenCompleted(1).create();
-        template.sendBodyAndHeaders("", createEvent("what/is/going/on",
-                Fcrepo4Repository.Container.getURI()));
-        // delay so that message has time to reach all routes that expect 0
-        Thread.sleep(100);
-        notify.matches(1l, TimeUnit.SECONDS);
-
-        indexStartEndpoint.assertIsSatisfied();
-        filterLongleafEndpoint.assertIsSatisfied();
-        processEnhEndpoint.assertIsSatisfied();
+        verify(cacheInvalidatingProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
     public void testRouteStartCollections() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -195,15 +127,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartBinaryMetadata() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(0);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -222,15 +151,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartOriginalBinary() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(1);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -243,15 +169,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Binary.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartPremisBinary() throws Exception {
-        var indexStartEndpoint = getMockEndpoint("mock:direct:index.start");
-        indexStartEndpoint.expectedMessageCount(1);
         var filterLongleafEndpoint = getMockEndpoint("mock:direct:filter.longleaf");
         filterLongleafEndpoint.expectedMessageCount(1);
         var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
@@ -266,7 +189,6 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        indexStartEndpoint.assertIsSatisfied();
         filterLongleafEndpoint.assertIsSatisfied();
         processEnhEndpoint.assertIsSatisfied();
     }

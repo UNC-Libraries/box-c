@@ -30,12 +30,12 @@ public class FedoraIdFilters {
     }
 
     /**
-     * Filter Fedora messages to exclude any messages that should not be considered for triples indexing
+     * Filter Fedora messages to exclude any messages that should not be considered for cache invalidation
      *
      * @param exchange
      * @return
      */
-    public static boolean allowedForTripleIndex(Exchange exchange) {
+    public static boolean allowedForCacheInvalidation(Exchange exchange) {
         Message in = exchange.getIn();
         String fcrepoId = (String) in.getHeader(FcrepoJmsConstants.IDENTIFIER);
         // Exclude fcr:versions, audit path
