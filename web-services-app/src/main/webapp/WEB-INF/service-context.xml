@@ -233,6 +233,15 @@
         <property name="sendsMessages" value="true" />
     </bean>
 
+    <bean id="editDatastreamUpdateService" class="edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="sendsMessages" value="true" />
+    </bean>
+
     <bean id="editWcagComplianceService" class="edu.unc.lib.boxc.operations.impl.wcagCompliance.WcagComplianceService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
