@@ -52,23 +52,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .routeId("CdrMetaServicesRouter")
             .startupOrder(9)
             .process(fedoraHeadersProcessor)
-            .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
-            .doTry()
-                .wireTap("direct:index.start")
-            .endDoTry()
-            .doCatch(FcrepoOperationFailedException.class)
-                .process(exchange -> {
-                    FcrepoOperationFailedException ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            FcrepoOperationFailedException.class);
-                    if (ex.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-                        log.warn("Ignoring exception {} for {}", ex.getStatusText(),
-                                exchange.getIn().getHeader("org.fcrepo.jms.identifier"));
-                        exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
-                    } else {
-                        throw ex;
-                    }
-                })
-            .end()
+            .filter().method(FedoraIdFilters.class, "allowedForCacheInvalidation")
             .bean(cacheInvalidatingProcessor)
             .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
                 .wireTap("direct:filter.longleaf")
