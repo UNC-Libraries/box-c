@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.datastreams.DatastreamUpdateRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -180,5 +182,25 @@ public class DatastreamUpdateServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.updateDatastreamText(request));
 
         verifyNoInteractions(repositoryObjectFactory, versioningService, operationsMessageSender);
+    }
+
+    @Test
+    public void testSetsBlankTextDeletesRelationship() {
+        var transcriptPid = DatastreamPids.getTranscriptPid(pid);
+        var request = new DatastreamUpdateRequest();
+        request.setAgent(agent);
+        request.setText("");
+        request.setPidString(pidString);
+        request.setDatastreamType(DatastreamType.TRANSCRIPT);
+        var resource = mock(Resource.class);
+
+        when(repositoryObjectLoader.getFileObject(eq(pid))).thenReturn(fileObject);
+        when(repositoryObjectFactory.objectExists(transcriptPid.getRepositoryUri())).thenReturn(false);
+        when(versioningService.addVersion(any())).thenReturn(binaryObject);
+        when(fileObject.getResource()).thenReturn(resource);
+        when(resource.hasProperty(eq(Cdr.hasTranscript))).thenReturn(true);
+
+        service.updateDatastreamText(request);
+        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.hasTranscript));
     }
 }

@@ -40,20 +40,25 @@ public class DatastreamUpdateService {
         var datastreamType = request.getDatastreamType();
         validateDatastreamType(datastreamType);
         var property = getProperty(datastreamType);
+        var text = request.getText();
 
         aclService.assertHasAccess("User does not have permission to update datastream text",
                 pid, request.getAgent().getPrincipals(), Permission.editDescription);
 
         var fileObj = repositoryObjectLoader.getFileObject(pid);
-        var datastreamPid = getDatastreamPid(datastreamType, pid);
+        var datastreamPid = DatastreamPids.getDatastreamPid(pid, datastreamType);
 
         BinaryObject datastreamBinary;
         var newVersion = getNewDatastreamVersion(datastreamPid, datastreamType,
-                request.getText(), request.getTransferSession());
+                text, request.getTransferSession());
 
         datastreamBinary = versionedDatastreamService.addVersion(newVersion);
         var resource = fileObj.getResource();
         if (resource != null && resource.hasProperty(property)) {
+            if (text.isBlank()) {
+                // this is a delete request
+                repositoryObjectFactory.deleteProperty(fileObj, property);
+            }
             log.debug("Successfully updated {} for {}", datastreamType.getId(), fileObj.getPid());
         } else {
             repositoryObjectFactory.createRelationship(fileObj, property, createResource(datastreamPid.getRepositoryPath()));
@@ -72,16 +77,6 @@ public class DatastreamUpdateService {
         if (type != ALT_TEXT && type != FULL_DESCRIPTION && type != TRANSCRIPT) {
             throw new IllegalArgumentException("DatastreamUpdateRequest must have a valid DatastreamType");
         }
-    }
-
-    private PID getDatastreamPid(DatastreamType type, PID pid) {
-        if (type == ALT_TEXT) {
-            return DatastreamPids.getAltTextPid(pid);
-        }
-        if (type == FULL_DESCRIPTION) {
-            return DatastreamPids.getFullDescriptionPid(pid);
-        }
-        return DatastreamPids.getTranscriptPid(pid);
     }
 
     private Property getProperty(DatastreamType type) {
