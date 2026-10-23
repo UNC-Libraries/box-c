@@ -112,9 +112,9 @@ export default {
             }
         },
 
-        async postUpdate(endpoint, targetId) {
-            const formBody = new URLSearchParams({ [endpoint]: this.updated_text });
-            await this.fetchWrapper(`/services/api/edit/${endpoint}/${targetId}`, true, {
+        async postUpdate(datastreamType, targetId) {
+            const formBody = new URLSearchParams({ [datastreamType]: this.updated_text });
+            await this.fetchWrapper(`/services/api/edit/datastreamText/${targetId}/${datastreamType}`, true, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
                 body: formBody.toString()

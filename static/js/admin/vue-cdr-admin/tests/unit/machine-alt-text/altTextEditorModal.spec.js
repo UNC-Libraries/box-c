@@ -171,7 +171,7 @@ describe('altTextEditorModal.vue', () => {
          await flushPromises();
  
          expect(global.fetchMock).toHaveBeenCalledWith(
-             expect.stringContaining('/services/api/edit/alt_text/row-456'),
+             expect.stringContaining('/services/api/edit/datastreamText/row-456/alt_text'),
              expect.objectContaining({
                  method: 'POST',
                  headers: {
