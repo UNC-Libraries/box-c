@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Service for coordinating deposit operations and job execution.
@@ -51,10 +52,14 @@ public class DepositCoordinator implements MessageListener {
     public void onMessage(Message message) {
         // Inspect the message to determine what event occurred
         DepositOperationMessage opMessage = null;
+        String lockToken = null;
+        boolean lockAcquired = false;
         try {
             opMessage = DepositOperationMessageService.fromJson(message);
             LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
-            if (depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), opMessage.getUsername())) {
+            lockToken = UUID.randomUUID().toString();
+            lockAcquired = depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), lockToken);
+            if (lockAcquired) {
                 switch (opMessage.getAction()) {
                 case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
                 case PAUSE -> depositPauseHandler.handleMessage(opMessage);
@@ -75,8 +80,8 @@ public class DepositCoordinator implements MessageListener {
                 activeDeposits.markInactive(opMessage.getDepositId());
             }
         } finally {
-            if (opMessage != null) {
-                depositStatusFactory.removeSupervisorLock(opMessage.getDepositId());
+            if (lockAcquired) {
+                depositStatusFactory.removeSupervisorLock(opMessage.getDepositId(), lockToken);
             }
             try {
                 message.acknowledge();
@@ -125,9 +130,9 @@ public class DepositCoordinator implements MessageListener {
 
     private void startDeposit(String depositId, boolean lockDeposit) {
         var depositStatus = depositStatusFactory.get(depositId);
-        var depositUser = depositStatus.get(DepositField.depositorName.name());
+        String lockToken = UUID.randomUUID().toString();
         // Try to acquire the lock if needed, otherwise proceed
-        if (!lockDeposit || depositStatusFactory.addSupervisorLock(depositId, depositUser)) {
+        if (!lockDeposit || depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
             try {
                 activeDeposits.markActive(depositId);
                 depositStatusFactory.setState(depositId, DepositState.running);
@@ -141,7 +146,7 @@ public class DepositCoordinator implements MessageListener {
                 activeDeposits.markInactive(depositId);
             } finally {
                 if (lockDeposit) {
-                    depositStatusFactory.removeSupervisorLock(depositId);
+                    depositStatusFactory.removeSupervisorLock(depositId, lockToken);
                 }
             }
         }
@@ -164,13 +169,13 @@ public class DepositCoordinator implements MessageListener {
             String depositId = fields.get(DepositField.uuid.name());
             if (DepositState.running.equals(depositState)) {
                 LOG.info("Reactivating deposit {} during startup", depositId);
-                depositStatusFactory.removeSupervisorLock(depositId);
+                depositStatusFactory.forceRemoveSupervisorLock(depositId);
                 activeDeposits.markActive(depositId);
             }
             if (DepositState.quieted.equals(depositState)) {
                 // Job may have been locked to a particular supervisor depend on when it was interrupted
                 LOG.info("Unquieting deposit {} during startup", depositId);
-                depositStatusFactory.removeSupervisorLock(depositId);
+                depositStatusFactory.forceRemoveSupervisorLock(depositId);
                 var opMessage = new DepositOperationMessage(DepositOperation.RESUME, depositId,
                         fields.get(DepositField.depositorName.name()));
                 depositResumeHandler.handleMessage(opMessage);

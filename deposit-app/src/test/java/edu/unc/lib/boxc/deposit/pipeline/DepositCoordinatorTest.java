@@ -111,6 +111,19 @@ public class DepositCoordinatorTest {
     }
 
     @Test
+    public void testOnMessageDoesNotReleaseUnacquiredLock() throws Exception {
+        operationMessage.setAction(DepositOperation.REGISTER);
+        mockMessageBody();
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(false);
+
+        coordinator.onMessage(message);
+
+        verify(depositRegisterHandler, never()).handleMessage(any());
+        verify(depositStatusFactory, never()).removeSupervisorLock(eq(DEPOSIT_ID), any());
+        verify(message).acknowledge();
+    }
+
+    @Test
     public void testOnMessagePause() throws Exception {
         operationMessage.setAction(DepositOperation.PAUSE);
         mockMessageBody();
@@ -232,9 +245,9 @@ public class DepositCoordinatorTest {
         verify(activeDeposits).markInactive(DEPOSIT_ID);
         // Should acquire locks for both the finishing deposit and the next deposit
         verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(eq(DEPOSIT_ID), any());
         verify(depositStatusFactory).addSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
@@ -326,7 +339,7 @@ public class DepositCoordinatorTest {
         verify(depositStatusFactory).fail(NEXT_DEPOSIT_ID);
         verify(activeDeposits).markInactive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).addSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
-        verify(depositStatusFactory).removeSupervisorLock(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(eq(NEXT_DEPOSIT_ID), any());
         verify(message).acknowledge();
     }
 
@@ -420,11 +433,11 @@ public class DepositCoordinatorTest {
         verify(pipelineStatusFactory).setPipelineState(DepositPipelineState.active);
 
         // Verify running deposit reactivation
-        verify(depositStatusFactory).removeSupervisorLock("running-deposit");
+        verify(depositStatusFactory).forceRemoveSupervisorLock("running-deposit");
         verify(activeDeposits).markActive("running-deposit");
 
         // Verify quieted deposit handling
-        verify(depositStatusFactory).removeSupervisorLock("quieted-deposit");
+        verify(depositStatusFactory).forceRemoveSupervisorLock("quieted-deposit");
         verify(depositResumeHandler).handleMessage(any(DepositOperationMessage.class));
 
         // Verify queued deposit is not specially handled (just logged)
