@@ -60,7 +60,7 @@ describe('altTextEditorModal.vue', () => {
         expect(findButtonByText('Edit Text')?.exists()).toBe(true);
         expect(findButtonByText('Update Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Close');
-        expect(wrapper.find('.modal-card-title').text()).toContain('Viewing alt text for image-1.jpg');
+        expect(wrapper.find('.modal-card-title').text()).toContain('Viewing altText for image-1.jpg');
     });
 
     it('returns an empty fieldTitle when activeField is null', () => {
@@ -116,7 +116,7 @@ describe('altTextEditorModal.vue', () => {
         expect(findButtonByText('Update Text')?.exists()).toBe(true);
         expect(findButtonByText('Edit Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Cancel');
-        expect(wrapper.find('.modal-card-title').text()).toContain('Editing alt text for image-2.jpg');
+        expect(wrapper.find('.modal-card-title').text()).toContain('Editing altText for image-2.jpg');
     });
 
     it('updates the active field value and sets success alert on update', async () => {
