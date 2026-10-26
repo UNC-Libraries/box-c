@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -71,7 +72,7 @@ public class DatastreamUpdateControllerTest {
         when(service.updateDatastreamText(any())).thenReturn(binaryObject);
 
         var result = mockMvc.perform(
-                post("/edit/datastreamText/{id}/{datastreamType}", pid.getId(), "altText")
+                post("/edit/datastreamText/{id}/{datastreamType}", pid.getId(), "alt_text")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("datastreamText", altText))
                 .andExpect(status().isOk())
@@ -79,12 +80,13 @@ public class DatastreamUpdateControllerTest {
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals("update_altText", respMap.get("action"));
+        assertEquals("update_alt_text", respMap.get("action"));
         assertEquals(altTextPid.getComponentId(), respMap.get("pid"));
 
         // Verify that the service was called with the correct AltTextUpdateRequest
         verify(service).updateDatastreamText(argThat(request ->
-                request.getPidString().equals(pid.getId()) && request.getText().equals(altText)
+                request.getPidString().equals(pid.getId()) &&
+                        request.getText().equals(altText) && request.getDatastreamType().equals(DatastreamType.ALT_TEXT)
         ));
     }
 

@@ -21,7 +21,7 @@ define('EditAltTextForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCha
 
         EditAltTextForm.prototype.preprocessForm = function(resultObject) {
             var pid = resultObject.metadata.id;
-            this.action_url = "/services/api/edit/datastreamText/" + pid + "/altText";
+            this.action_url = "/services/api/edit/datastreamText/" + pid + "/alt_text";
         };
 
         EditAltTextForm.prototype.validationErrors = function() {
