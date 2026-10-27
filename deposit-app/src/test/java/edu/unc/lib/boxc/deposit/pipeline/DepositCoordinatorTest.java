@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.deposit.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -111,16 +112,18 @@ public class DepositCoordinatorTest {
     }
 
     @Test
-    public void testOnMessageDoesNotReleaseUnacquiredLock() throws Exception {
+    public void testOnMessageRetriesWhenLockUnavailable() throws Exception {
         operationMessage.setAction(DepositOperation.REGISTER);
         mockMessageBody();
         when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(false);
 
-        coordinator.onMessage(message);
+        assertThrows(RuntimeException.class, () -> coordinator.onMessage(message));
 
         verify(depositRegisterHandler, never()).handleMessage(any());
         verify(depositStatusFactory, never()).removeSupervisorLock(eq(DEPOSIT_ID), any());
-        verify(message).acknowledge();
+        verify(depositStatusFactory, never()).fail(DEPOSIT_ID);
+        verify(activeDeposits, never()).markInactive(DEPOSIT_ID);
+        verify(message, never()).acknowledge();
     }
 
     @Test

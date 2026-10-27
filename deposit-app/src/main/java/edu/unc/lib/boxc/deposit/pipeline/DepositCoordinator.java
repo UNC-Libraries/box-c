@@ -54,25 +54,31 @@ public class DepositCoordinator implements MessageListener {
         DepositOperationMessage opMessage = null;
         String lockToken = null;
         boolean lockAcquired = false;
+        boolean acknowledgeMessage = true;
         try {
             opMessage = DepositOperationMessageService.fromJson(message);
             LOG.debug("Got deposit operation message {} for {}", opMessage.getAction(), opMessage.getDepositId());
             lockToken = UUID.randomUUID().toString();
             lockAcquired = depositStatusFactory.addSupervisorLock(opMessage.getDepositId(), lockToken);
-            if (lockAcquired) {
-                switch (opMessage.getAction()) {
-                case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
-                case PAUSE -> depositPauseHandler.handleMessage(opMessage);
-                case RESUME -> depositResumeHandler.handleMessage(opMessage);
-                case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
-                case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
-                case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
-                default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
-                }
-                var depositState = depositStatusFactory.getState(opMessage.getDepositId());
-                updateActiveDeposits(opMessage.getDepositId(), depositState);
-                startNextDepositIfNeeded(opMessage.getDepositId(), depositState);
+            if (!lockAcquired) {
+                acknowledgeMessage = false;
+                throw new DepositLockUnavailableException(opMessage.getDepositId());
             }
+            switch (opMessage.getAction()) {
+            case REGISTER -> depositRegisterHandler.handleMessage(opMessage);
+            case PAUSE -> depositPauseHandler.handleMessage(opMessage);
+            case RESUME -> depositResumeHandler.handleMessage(opMessage);
+            case JOB_SUCCESS -> jobSuccessHandler.handleMessage(opMessage);
+            case JOB_FAILURE -> jobFailureHandler.handleMessage(opMessage);
+            case JOB_INTERRUPTED -> jobInterruptedHandler.handleMessage(opMessage);
+            default -> throw new IllegalArgumentException("Unknown deposit action: " + opMessage.getAction());
+            }
+            var depositState = depositStatusFactory.getState(opMessage.getDepositId());
+            updateActiveDeposits(opMessage.getDepositId(), depositState);
+            startNextDepositIfNeeded(opMessage.getDepositId(), depositState);
+        } catch (DepositLockUnavailableException e) {
+            LOG.info(e.getMessage());
+            throw e;
         } catch (Exception e) {
             LOG.error("Error processing deposit operation message", e);
             if (opMessage != null) {
@@ -83,11 +89,19 @@ public class DepositCoordinator implements MessageListener {
             if (lockAcquired) {
                 depositStatusFactory.removeSupervisorLock(opMessage.getDepositId(), lockToken);
             }
-            try {
-                message.acknowledge();
-            } catch (JMSException e) {
-                LOG.error("Error acknowledging deposit operation message", e);
+            if (acknowledgeMessage) {
+                try {
+                    message.acknowledge();
+                } catch (JMSException e) {
+                    LOG.error("Error acknowledging deposit operation message", e);
+                }
             }
+        }
+    }
+
+    private static class DepositLockUnavailableException extends RuntimeException {
+        DepositLockUnavailableException(String depositId) {
+            super("Supervisor lock unavailable for deposit " + depositId + "; retrying operation message");
         }
     }
 
