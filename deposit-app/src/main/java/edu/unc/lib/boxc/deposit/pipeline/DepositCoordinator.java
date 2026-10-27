@@ -145,16 +145,22 @@ public class DepositCoordinator implements MessageListener {
             return;
         }
         try {
-            // We have the deposit's lock, so it can safely claim the queue entry.
-            depositStatusFactory.removeQueuedDeposit(depositId);
+            // Worker got the lock, but it was already running so remove it from the pending queue.
             if (activeDeposits.isDepositActive(depositId)
                     || DepositState.running.equals(depositStatusFactory.getState(depositId))) {
                 LOG.warn("Skipping deposit {}, deposit is already running", depositId);
+                depositStatusFactory.removeQueuedDeposit(depositId);
                 return;
             }
 
             var depositStatus = depositStatusFactory.get(depositId);
-            activeDeposits.markActive(depositId);
+            // Attempt to make deposit active, and if we can't then don't remove it from the queue
+            if (!activeDeposits.markActive(depositId)) {
+                LOG.debug("Deposit {} remains queued because it was not admitted to the active set", depositId);
+                return;
+            }
+            // This callback holds the deposit's lock, so it can safely claim the queue entry.
+            depositStatusFactory.removeQueuedDeposit(depositId);
             depositStatusFactory.setState(depositId, DepositState.running);
             assignStartTime(depositId, depositStatus);
 

@@ -85,6 +85,7 @@ public class DepositCoordinatorTest {
         coordinator.setDepositJobMessageFactory(depositJobMessageFactory);
         coordinator.setDepositJobMessageService(depositJobMessageService);
         coordinator.setPipelineStatusFactory(pipelineStatusFactory);
+        when(activeDeposits.markActive(any())).thenReturn(true);
 
         operationMessage = new DepositOperationMessage();
         operationMessage.setDepositId(DEPOSIT_ID);
@@ -332,6 +333,44 @@ public class DepositCoordinatorTest {
 
         verify(depositStatusFactory, never()).removeQueuedDeposit(NEXT_DEPOSIT_ID);
         verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
+        verify(message).acknowledge();
+    }
+
+    @Test
+    public void testStartNextDepositLeavesQueueEntryWhenNotAdmitted() throws Exception {
+        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        mockMessageBody();
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(true);
+        when(activeDeposits.markActive(NEXT_DEPOSIT_ID)).thenReturn(false);
+
+        coordinator.onMessage(message);
+
+        verify(depositStatusFactory, never()).removeQueuedDeposit(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any());
+        verify(message).acknowledge();
+    }
+
+    @Test
+    public void testStartNextDepositRemovesQueueEntryWhenAlreadyRunning() throws Exception {
+        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        mockMessageBody();
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.getState(NEXT_DEPOSIT_ID)).thenReturn(DepositState.running);
+
+        coordinator.onMessage(message);
+
+        verify(depositStatusFactory).removeQueuedDeposit(NEXT_DEPOSIT_ID);
+        verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any());
         verify(message).acknowledge();
     }
 
