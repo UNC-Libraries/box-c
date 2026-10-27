@@ -75,12 +75,18 @@ export default {
 
         /**
          * Returns the endpoint to be used for updating the value based on the active field.
-         * It removes the leading mg prefix and converts the first character to lowercase to match the expected endpoint format.
+         * It removes the leading mg prefix and converts to snake case.
          * @returns {string}
          */
         updateEndpoint() {
             let endpoint = this.activeField.replace(/^mg/, '');
-            return endpoint[0].toLowerCase() + endpoint.slice(1);
+            const snakeCase = (string) => {
+                return string.replace(/\W+/g, ' ')
+                    .split(/\B(?=[A-Z])/)
+                    .map((word) => word.toLowerCase())
+                    .join('_');
+            };
+            return snakeCase(endpoint);
         }
     },
 
@@ -112,9 +118,9 @@ export default {
             }
         },
 
-        async postUpdate(endpoint, targetId) {
-            const formBody = new URLSearchParams({ [endpoint]: this.updated_text });
-            await this.fetchWrapper(`/services/api/edit/${endpoint}/${targetId}`, true, {
+        async postUpdate(datastreamType, targetId) {
+            const formBody = new URLSearchParams({ ['datastreamText']: this.updated_text });
+            await this.fetchWrapper(`/services/api/edit/datastreamText/${targetId}/${datastreamType}`, true, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
                 body: formBody.toString()

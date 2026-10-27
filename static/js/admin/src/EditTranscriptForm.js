@@ -20,7 +20,7 @@ define('EditTranscriptForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteState
         };
 
         EditTranscriptForm.prototype.preprocessForm = function(resultObject) {
-            this.action_url = `/services/api/edit/transcript/${resultObject.metadata.id}`;
+            this.action_url = `/services/api/edit/datastreamText/${resultObject.metadata.id}/transcript`;
         };
 
         EditTranscriptForm.prototype.validationErrors = function() {

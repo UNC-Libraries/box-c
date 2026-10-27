@@ -35,8 +35,8 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
-import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
-import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
+import edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService;
+import edu.unc.lib.boxc.operations.jms.datastreams.DatastreamUpdateRequest;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
@@ -164,11 +164,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Mock
     private UpdateDescriptionService updateDescService;
     @Mock
-    private AltTextUpdateService altTextUpdateService;
+    private DatastreamUpdateService datastreamUpdateService;
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
     @Captor
-    private ArgumentCaptor<AltTextUpdateRequest> altTextRequestCaptor;
+    private ArgumentCaptor<DatastreamUpdateRequest> datastreamUpdateRequestArgumentCaptor;
 
     private Path storageLocPath;
 
@@ -199,7 +199,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "locationManager", storageLocationManager);
         setField(job, "updateDescService", updateDescService);
         setField(job, "depositModelManager", depositModelManager);
-        setField(job, "altTextUpdateService", altTextUpdateService);
+        setField(job, "datastreamUpdateService", datastreamUpdateService);
 
         job.init();
 
@@ -436,9 +436,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
-        verify(altTextUpdateService).updateAltText(altTextRequestCaptor.capture());
-        AltTextUpdateRequest request = altTextRequestCaptor.getValue();
-        assertEquals("Alternative text", request.getAltText());
+        verify(datastreamUpdateService).updateDatastreamText(datastreamUpdateRequestArgumentCaptor.capture());
+        DatastreamUpdateRequest request = datastreamUpdateRequestArgumentCaptor.getValue();
+        assertEquals("Alternative text", request.getText());
         assertEquals(filePid.getId(), request.getPidString());
     }
 
