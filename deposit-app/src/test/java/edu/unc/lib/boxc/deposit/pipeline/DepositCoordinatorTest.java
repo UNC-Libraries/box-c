@@ -529,4 +529,70 @@ public class DepositCoordinatorTest {
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositJobMessageService).sendDepositJobMessage(jobMessage);
     }
+
+    @Test
+    public void testInitLeavesQueuedDepositWhenLockUnavailable() {
+        Map<String, String> queuedDeposit = new HashMap<>();
+        queuedDeposit.put(DepositField.uuid.name(), NEXT_DEPOSIT_ID);
+        queuedDeposit.put(DepositField.state.name(), DepositState.queued.name());
+        when(depositStatusFactory.getAll()).thenReturn(Set.of(queuedDeposit));
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
+
+        coordinator.init();
+
+        verify(depositStatusFactory).queueDeposit(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory, never()).removeQueuedDeposit(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory, never()).setState(NEXT_DEPOSIT_ID, DepositState.running);
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any());
+    }
+
+    @Test
+    public void testInitStartsQueuedDepositsUntilCapacityReached() {
+        String secondDepositId = "deposit789";
+        Map<String, String> firstDeposit = new HashMap<>();
+        firstDeposit.put(DepositField.uuid.name(), NEXT_DEPOSIT_ID);
+        firstDeposit.put(DepositField.state.name(), DepositState.queued.name());
+        Map<String, String> secondDeposit = new HashMap<>();
+        secondDeposit.put(DepositField.uuid.name(), secondDepositId);
+        secondDeposit.put(DepositField.state.name(), DepositState.queued.name());
+        when(depositStatusFactory.getAll()).thenReturn(Set.of(firstDeposit, secondDeposit));
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true, true, false);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID, secondDepositId);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.addSupervisorLock(eq(secondDepositId), any())).thenReturn(true);
+        when(depositStatusFactory.get(NEXT_DEPOSIT_ID)).thenReturn(firstDeposit);
+        when(depositStatusFactory.get(secondDepositId)).thenReturn(secondDeposit);
+
+        DepositJobMessage firstJobMessage = new DepositJobMessage();
+        DepositJobMessage secondJobMessage = new DepositJobMessage();
+        when(depositJobMessageFactory.createNextJobMessage(NEXT_DEPOSIT_ID, firstDeposit))
+                .thenReturn(firstJobMessage);
+        when(depositJobMessageFactory.createNextJobMessage(secondDepositId, secondDeposit))
+                .thenReturn(secondJobMessage);
+
+        coordinator.init();
+
+        verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
+        verify(depositStatusFactory).setState(secondDepositId, DepositState.running);
+        verify(depositJobMessageService).sendDepositJobMessage(firstJobMessage);
+        verify(depositJobMessageService).sendDepositJobMessage(secondJobMessage);
+    }
+
+    @Test
+    public void testInitDoesNotReplayRunningDeposit() {
+        Map<String, String> runningDeposit = new HashMap<>();
+        runningDeposit.put(DepositField.uuid.name(), DEPOSIT_ID);
+        runningDeposit.put(DepositField.state.name(), DepositState.running.name());
+        when(depositStatusFactory.getAll()).thenReturn(Set.of(runningDeposit));
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(false);
+
+        coordinator.init();
+
+        verify(activeDeposits).markActive(DEPOSIT_ID);
+        verify(depositStatusFactory, never()).queueDeposit(DEPOSIT_ID);
+        verify(depositJobMessageFactory, never()).createNextJobMessage(any(), any());
+        verify(depositJobMessageService, never()).sendDepositJobMessage(any());
+    }
 }
