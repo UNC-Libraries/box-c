@@ -81,8 +81,8 @@ export default {
         updateEndpoint() {
             let endpoint = this.activeField.replace(/^mg/, '');
             const snakeCase = (string) => {
-                return string.replace(/\d+/g, ' ')
-                    .split(/ |\B(?=[A-Z])/)
+                return string.replace(/\W+/g, ' ')
+                    .split(/\B(?=[A-Z])/)
                     .map((word) => word.toLowerCase())
                     .join('_');
             };
