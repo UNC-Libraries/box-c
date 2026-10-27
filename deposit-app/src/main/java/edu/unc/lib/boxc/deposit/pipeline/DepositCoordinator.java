@@ -129,39 +129,44 @@ public class DepositCoordinator implements MessageListener {
             if (nextDepositId == null) {
                 LOG.debug("No next deposit to start");
             } else {
-                if (activeDeposits.isDepositActive(nextDepositId) ||
-                        DepositState.running.equals(depositStatusFactory.getState(nextDepositId))) {
-                    LOG.warn("Skipping deposit {}, deposit is already running", nextDepositId);
-                } else {
-                    LOG.info("Starting next deposit: {}", nextDepositId);
-                    // start the next deposit, locking the next deposit if it's different from the
-                    // current one, which is already locked
-                    startDeposit(nextDepositId, !depositId.equals(nextDepositId));
-                }
+                LOG.info("Starting next deposit: {}", nextDepositId);
+                // Start the next deposit, locking it if it is different from the current deposit.
+                // The current deposit is already locked. The queue entry is removed only after that lock is held.
+                startDeposit(nextDepositId, !depositId.equals(nextDepositId));
             }
         }
     }
 
     private void startDeposit(String depositId, boolean lockDeposit) {
-        var depositStatus = depositStatusFactory.get(depositId);
         String lockToken = UUID.randomUUID().toString();
-        // Try to acquire the lock if needed, otherwise proceed
-        if (!lockDeposit || depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
-            try {
-                activeDeposits.markActive(depositId);
-                depositStatusFactory.setState(depositId, DepositState.running);
-                assignStartTime(depositId, depositStatus);
+        // Try to acquire the next deposit's lock. If unavailable, another worker still holds it.
+        if (lockDeposit && !depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
+            LOG.debug("Deposit {} remains queued because its supervisor lock is unavailable", depositId);
+            return;
+        }
+        try {
+            // We have the deposit's lock, so it can safely claim the queue entry.
+            depositStatusFactory.removeQueuedDeposit(depositId);
+            if (activeDeposits.isDepositActive(depositId)
+                    || DepositState.running.equals(depositStatusFactory.getState(depositId))) {
+                LOG.warn("Skipping deposit {}, deposit is already running", depositId);
+                return;
+            }
 
-                var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
-                depositJobMessageService.sendDepositJobMessage(jobMessage);
-            } catch (Exception e) {
-                LOG.error("Error sending deposit job message for {}", depositId, e);
-                depositStatusFactory.fail(depositId);
-                activeDeposits.markInactive(depositId);
-            } finally {
-                if (lockDeposit) {
-                    depositStatusFactory.removeSupervisorLock(depositId, lockToken);
-                }
+            var depositStatus = depositStatusFactory.get(depositId);
+            activeDeposits.markActive(depositId);
+            depositStatusFactory.setState(depositId, DepositState.running);
+            assignStartTime(depositId, depositStatus);
+
+            var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
+            depositJobMessageService.sendDepositJobMessage(jobMessage);
+        } catch (Exception e) {
+            LOG.error("Error sending deposit job message for {}", depositId, e);
+            depositStatusFactory.fail(depositId);
+            activeDeposits.markInactive(depositId);
+        } finally {
+            if (lockDeposit) {
+                depositStatusFactory.removeSupervisorLock(depositId, lockToken);
             }
         }
     }

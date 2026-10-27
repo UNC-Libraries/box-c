@@ -71,6 +71,20 @@ public class DepositStatusFactoryIT {
     }
 
     @Test
+    public void testGetAndRemoveFirstQueuedDeposit() {
+        String firstDepositId = UUID.randomUUID().toString();
+        String secondDepositId = UUID.randomUUID().toString();
+        factory.queueDeposit(firstDepositId);
+        factory.queueDeposit(secondDepositId);
+
+        assertEquals(firstDepositId, factory.getFirstQueuedDeposit());
+        assertEquals(firstDepositId, factory.getFirstQueuedDeposit());
+
+        factory.removeQueuedDeposit(firstDepositId);
+        assertEquals(secondDepositId, factory.getFirstQueuedDeposit());
+    }
+
+    @Test
     public void testSetGetDeleteField() {
         final String uuid = UUID.randomUUID().toString();
         factory.set(uuid, DepositField.contactName, "Boxy");

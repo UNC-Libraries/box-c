@@ -225,17 +225,26 @@ public class DepositStatusFactory extends AbstractJedisFactory {
     }
 
     /**
-     * Pop the first deposit off the queue
+     * Get the first deposit in the queue without removing it.
      * @return id of the first deposit in the queue, or null if the queue is empty
      */
     public String getFirstQueuedDeposit() {
         final AtomicReference<String> result = new AtomicReference<>();
         connectWithRetries((jedis) -> {
-            var items = jedis.zpopmin(RedisWorkerConstants.DEPOSIT_QUEUE);
-            if (items != null) {
-                result.set(items.getElement());
+            var items = jedis.zrange(RedisWorkerConstants.DEPOSIT_QUEUE, 0, 0);
+            if (!items.isEmpty()) {
+                result.set(items.getFirst());
             }
         });
         return result.get();
+    }
+
+    /**
+     * Remove a deposit from the queue after it has been claimed by a supervisor.
+     *
+     * @param depositUUID the UUID of the deposit to remove
+     */
+    public void removeQueuedDeposit(String depositUUID) {
+        connectWithRetries((jedis) -> jedis.zrem(RedisWorkerConstants.DEPOSIT_QUEUE, depositUUID));
     }
 }

@@ -254,6 +254,7 @@ public class DepositCoordinatorTest {
         verify(activeDeposits).markActive(NEXT_DEPOSIT_ID);
         verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
         verify(depositStatusFactory).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
+        verify(depositStatusFactory).removeQueuedDeposit(NEXT_DEPOSIT_ID);
         verify(depositJobMessageService).sendDepositJobMessage(jobMessage);
         verify(message).acknowledge();
     }
@@ -315,6 +316,23 @@ public class DepositCoordinatorTest {
         verify(depositStatusFactory, never()).set(eq(NEXT_DEPOSIT_ID), eq(DepositField.startTime), any());
         verify(message).acknowledge();
         verify(activeDeposits).markActive(DEPOSIT_ID);
+    }
+
+    @Test
+    public void testStartNextDepositLeavesQueueEntryWhenLockUnavailable() throws Exception {
+        operationMessage.setAction(DepositOperation.JOB_SUCCESS);
+        mockMessageBody();
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.getState(DEPOSIT_ID)).thenReturn(DepositState.finished);
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(false);
+
+        coordinator.onMessage(message);
+
+        verify(depositStatusFactory, never()).removeQueuedDeposit(NEXT_DEPOSIT_ID);
+        verify(activeDeposits, never()).markActive(NEXT_DEPOSIT_ID);
+        verify(message).acknowledge();
     }
 
     @Test
