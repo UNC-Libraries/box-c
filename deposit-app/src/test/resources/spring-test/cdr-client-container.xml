@@ -150,7 +150,7 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
     </bean>
 
-    <bean id="altTextUpdateService" class="edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService">
+    <bean id="datastreamUpdateService" class="edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

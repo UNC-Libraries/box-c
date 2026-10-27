@@ -47,9 +47,9 @@ describe('altTextEditorModal.vue', () => {
         wrapper = mountModal({
             showAltTextModal: true,
             viewType: 'view',
-            activeField: 'alt_text',
+            activeField: 'altText',
             currentRow: {
-                alt_text: 'Existing alt text',
+                altText: 'Existing alt text',
                 title: 'image-1.jpg'
             }
         });
@@ -60,7 +60,7 @@ describe('altTextEditorModal.vue', () => {
         expect(findButtonByText('Edit Text')?.exists()).toBe(true);
         expect(findButtonByText('Update Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Close');
-        expect(wrapper.find('.modal-card-title').text()).toContain('Viewing alt text for image-1.jpg');
+        expect(wrapper.find('.modal-card-title').text()).toContain('Viewing altText for image-1.jpg');
     });
 
     it('returns an empty fieldTitle when activeField is null', () => {
@@ -80,9 +80,9 @@ describe('altTextEditorModal.vue', () => {
         wrapper = mountModal({
             showAltTextModal: true,
             viewType: 'view',
-            activeField: 'alt_text',
+            activeField: 'altText',
             currentRow: {
-                alt_text: 'Big image',
+                altText: 'Big image',
                 title: 'image-view.jpg'
             }
         });
@@ -102,9 +102,9 @@ describe('altTextEditorModal.vue', () => {
         wrapper = mountModal({
             showAltTextModal: true,
             viewType: 'edit',
-            activeField: 'alt_text',
+            activeField: 'altText',
             currentRow: {
-                alt_text: 'Strange picture',
+                altText: 'Strange picture',
                 title: 'image-2.jpg'
             }
         });
@@ -116,7 +116,7 @@ describe('altTextEditorModal.vue', () => {
         expect(findButtonByText('Update Text')?.exists()).toBe(true);
         expect(findButtonByText('Edit Text')).toBeUndefined();
         expect(wrapper.find('.button.is-danger').text()).toBe('Cancel');
-        expect(wrapper.find('.modal-card-title').text()).toContain('Editing alt text for image-2.jpg');
+        expect(wrapper.find('.modal-card-title').text()).toContain('Editing altText for image-2.jpg');
     });
 
     it('updates the active field value and sets success alert on update', async () => {
@@ -155,11 +155,11 @@ describe('altTextEditorModal.vue', () => {
          wrapper = mountModal({
              showAltTextModal: true,
              viewType: 'edit',
-             activeField: 'alt_text',
+             activeField: 'altText',
              currentUuid: 'uuid-4',
              currentRow: {
                  id: 'row-456',
-                 alt_text: 'Old text',
+                 altText: 'Old text',
                  title: 'image-4.jpg'
              }
          });
@@ -171,7 +171,7 @@ describe('altTextEditorModal.vue', () => {
          await flushPromises();
  
          expect(global.fetchMock).toHaveBeenCalledWith(
-             expect.stringContaining('/services/api/edit/alt_text/row-456'),
+             expect.stringContaining('/services/api/edit/datastreamText/row-456/alt_text'),
              expect.objectContaining({
                  method: 'POST',
                  headers: {
@@ -185,11 +185,11 @@ describe('altTextEditorModal.vue', () => {
          wrapper = mountModal({
              showAltTextModal: true,
              viewType: 'edit',
-             activeField: 'alt_text',
+             activeField: 'altText',
              currentUuid: 'uuid-5',
              currentRow: {
                  id: 'row-789',
-                 alt_text: 'Text',
+                 altText: 'Text',
                  title: 'image-5.jpg'
              }
          });
@@ -201,7 +201,7 @@ describe('altTextEditorModal.vue', () => {
          await findButtonByText('Update Text').trigger('click');
          await flushPromises();
  
-         expect(store.alertMessage).toBe('Unable to update alt_text for image-5.jpg');
+         expect(store.alertMessage).toBe('Unable to update altText for image-5.jpg');
          expect(store.alertMessageType).toBe('error');
          expect(wrapper.vm.saving_data).toBe(false);
     });
@@ -210,9 +210,9 @@ describe('altTextEditorModal.vue', () => {
          wrapper = mountModal({
              showAltTextModal: true,
              viewType: 'edit',
-             activeField: 'alt_text',
+             activeField: 'altText',
              currentRow: {
-                 alt_text: 'To be cleared',
+                 altText: 'To be cleared',
                  title: 'image-6.jpg'
              }
          });
@@ -230,9 +230,9 @@ describe('altTextEditorModal.vue', () => {
          wrapper = mountModal({
              showAltTextModal: true,
              viewType: 'edit',
-             activeField: 'alt_text',
+             activeField: 'altText',
              currentRow: {
-                 alt_text: 'Initial text',
+                 altText: 'Initial text',
                  title: 'image-7.jpg'
              }
          });
@@ -242,7 +242,7 @@ describe('altTextEditorModal.vue', () => {
          expect(wrapper.vm.updated_text).toBe('');
  
          store.setCurrentRow({
-             alt_text: 'Row changed text',
+             altText: 'Row changed text',
              filename: 'image-8.jpg'
          });
          await wrapper.vm.$nextTick();
