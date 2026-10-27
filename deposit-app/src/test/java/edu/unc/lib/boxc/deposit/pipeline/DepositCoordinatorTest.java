@@ -500,7 +500,33 @@ public class DepositCoordinatorTest {
         verify(depositStatusFactory).forceRemoveSupervisorLock("quieted-deposit");
         verify(depositResumeHandler).handleMessage(any(DepositOperationMessage.class));
 
-        // Verify queued deposit is not specially handled (just logged)
+        // Verify queued deposit is restored to the queue
         verify(activeDeposits, never()).markActive("queued-deposit");
+        verify(depositStatusFactory).forceRemoveSupervisorLock("queued-deposit");
+        verify(depositStatusFactory).queueDeposit("queued-deposit");
+    }
+
+    @Test
+    public void testInitStartsQueuedDeposit() {
+        Map<String, String> queuedDeposit = new HashMap<>();
+        queuedDeposit.put(DepositField.uuid.name(), NEXT_DEPOSIT_ID);
+        queuedDeposit.put(DepositField.state.name(), DepositState.queued.name());
+        queuedDeposit.put(DepositField.depositorName.name(), DEPOSITOR_NAME);
+        when(depositStatusFactory.getAll()).thenReturn(Set.of(queuedDeposit));
+        when(activeDeposits.acceptingNewDeposits()).thenReturn(true, false);
+        when(depositStatusFactory.getFirstQueuedDeposit()).thenReturn(NEXT_DEPOSIT_ID);
+        when(depositStatusFactory.addSupervisorLock(eq(NEXT_DEPOSIT_ID), any())).thenReturn(true);
+        when(depositStatusFactory.get(NEXT_DEPOSIT_ID)).thenReturn(queuedDeposit);
+
+        DepositJobMessage jobMessage = new DepositJobMessage();
+        when(depositJobMessageFactory.createNextJobMessage(NEXT_DEPOSIT_ID, queuedDeposit)).thenReturn(jobMessage);
+
+        coordinator.init();
+
+        verify(depositStatusFactory).forceRemoveSupervisorLock(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory).queueDeposit(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory).removeQueuedDeposit(NEXT_DEPOSIT_ID);
+        verify(depositStatusFactory).setState(NEXT_DEPOSIT_ID, DepositState.running);
+        verify(depositJobMessageService).sendDepositJobMessage(jobMessage);
     }
 }

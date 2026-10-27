@@ -43,7 +43,7 @@ public class DepositCoordinator implements MessageListener {
 
     public void init() {
         pipelineStatusFactory.setPipelineState(DepositPipelineState.starting);
-        // Make sure all the deposits in queued state are in the queue
+        // Restore queued deposits to the Redis queue before scheduling available work.
         requeueAll();
         pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
     }
@@ -137,12 +137,21 @@ public class DepositCoordinator implements MessageListener {
         }
     }
 
-    private void startDeposit(String depositId, boolean lockDeposit) {
+    /**
+     * Claims and starts a queued deposit.
+     * @param depositId id of the deposit
+     * @param lockDeposit {@code true} if the worker is starting a different deposit and needs to lock,
+     *                    {@code false} if the worker was already processing the deposit.
+     * @return Returns {@code true} when the deposit was started or terminally handled, so queue
+     *      processing may continue. Returns {@code false} when it remains queued because its lock
+     *      could not be acquired or it could not be marked as active.
+     */
+    private boolean startDeposit(String depositId, boolean lockDeposit) {
         String lockToken = UUID.randomUUID().toString();
         // Try to acquire the next deposit's lock. If unavailable, another worker still holds it.
         if (lockDeposit && !depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
             LOG.debug("Deposit {} remains queued because its supervisor lock is unavailable", depositId);
-            return;
+            return false;
         }
         try {
             // Worker got the lock, but it was already running so remove it from the pending queue.
@@ -150,14 +159,14 @@ public class DepositCoordinator implements MessageListener {
                     || DepositState.running.equals(depositStatusFactory.getState(depositId))) {
                 LOG.warn("Skipping deposit {}, deposit is already running", depositId);
                 depositStatusFactory.removeQueuedDeposit(depositId);
-                return;
+                return true;
             }
 
             var depositStatus = depositStatusFactory.get(depositId);
             // Attempt to make deposit active, and if we can't then don't remove it from the queue
             if (!activeDeposits.markActive(depositId)) {
                 LOG.debug("Deposit {} remains queued because it was not admitted to the active set", depositId);
-                return;
+                return false;
             }
             // This callback holds the deposit's lock, so it can safely claim the queue entry.
             depositStatusFactory.removeQueuedDeposit(depositId);
@@ -166,10 +175,12 @@ public class DepositCoordinator implements MessageListener {
 
             var jobMessage = depositJobMessageFactory.createNextJobMessage(depositId, depositStatus);
             depositJobMessageService.sendDepositJobMessage(jobMessage);
+            return true;
         } catch (Exception e) {
             LOG.error("Error sending deposit job message for {}", depositId, e);
             depositStatusFactory.fail(depositId);
             activeDeposits.markInactive(depositId);
+            return true;
         } finally {
             if (lockDeposit) {
                 depositStatusFactory.removeSupervisorLock(depositId, lockToken);
@@ -204,6 +215,29 @@ public class DepositCoordinator implements MessageListener {
                 var opMessage = new DepositOperationMessage(DepositOperation.RESUME, depositId,
                         fields.get(DepositField.depositorName.name()));
                 depositResumeHandler.handleMessage(opMessage);
+            }
+            if (DepositState.queued.equals(depositState)) {
+                LOG.info("Restoring queued deposit {} during startup", depositId);
+                depositStatusFactory.forceRemoveSupervisorLock(depositId);
+                depositStatusFactory.queueDeposit(depositId);
+            }
+        }
+        startQueuedDeposits();
+    }
+
+    /**
+     * Starts queued deposits until the next queued deposit cannot be started. A deposit that is
+     * already running or fails to start is terminally handled and permits processing the next
+     * queue entry. Stops when the queue head cannot be claimed or admitted to the active set.
+     */
+    private void startQueuedDeposits() {
+        while (activeDeposits.acceptingNewDeposits()) {
+            String depositId = depositStatusFactory.getFirstQueuedDeposit();
+            if (depositId == null) {
+                return;
+            }
+            if (!startDeposit(depositId, true)) {
+                return;
             }
         }
     }
