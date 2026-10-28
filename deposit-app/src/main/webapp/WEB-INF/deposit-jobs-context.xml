@@ -36,6 +36,19 @@
                 <property name="closeTimeout" value="15000" />
                 <property name="sendTimeout" value="10000" />
                 <property name="useAsyncSend" value="true" />
+                <property name="redeliveryPolicy">
+                    <bean class="org.apache.activemq.RedeliveryPolicy">
+                        <property name="initialRedeliveryDelay"
+                                  value="${jms.deposit.redelivery.initialDelay:5000}" />
+                        <property name="redeliveryDelay"
+                                  value="${jms.deposit.redelivery.delay:5000}" />
+                        <property name="useExponentialBackOff" value="true" />
+                        <property name="backOffMultiplier"
+                                  value="${jms.deposit.redelivery.backoffMultiplier:2}" />
+                        <property name="maximumRedeliveries"
+                                  value="${jms.deposit.redelivery.maximum:5}" />
+                    </bean>
+                </property>
                 <property name="prefetchPolicy">
                     <bean class="org.apache.activemq.ActiveMQPrefetchPolicy">
                         <property name="queuePrefetch" value="0" />
