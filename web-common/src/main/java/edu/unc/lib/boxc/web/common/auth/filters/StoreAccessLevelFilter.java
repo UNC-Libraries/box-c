@@ -31,7 +31,7 @@ import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
  *
  */
 public class StoreAccessLevelFilter extends OncePerRequestFilter implements ServletContextAware {
-    private static final long MAX_CACHE_AGE = 1000 * 60 * 10;
+    private static final long MAX_CACHE_AGE = 1000 * 60;
 
     @Autowired
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -50,7 +50,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
         HttpSession session = request.getSession(true);
         AccessLevel accessLevel = null;
 
-        if (username == null || username.length() == 0) {
+        if (username == null || username.isEmpty()) {
             session.removeAttribute("accessLevel");
         } else {
             accessLevel = (AccessLevel) session.getAttribute("accessLevel");
