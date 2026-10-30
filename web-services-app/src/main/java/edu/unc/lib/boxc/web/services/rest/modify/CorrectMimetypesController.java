@@ -32,7 +32,7 @@ public class CorrectMimetypesController {
     @Autowired
     private CorrectMimetypesService correctMimetypesService;
 
-    @RequestMapping(value = "/edit/correctMimetypes")
+    @PostMapping(value = "/edit/correctMimetypes")
     @ResponseBody
     public ResponseEntity<Object> correctMimetype(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
