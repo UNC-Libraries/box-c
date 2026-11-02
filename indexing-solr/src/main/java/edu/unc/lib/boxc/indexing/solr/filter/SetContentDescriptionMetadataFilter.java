@@ -55,7 +55,7 @@ public class SetContentDescriptionMetadataFilter implements IndexDocumentFilter 
         idb.setAltText(getAltText(filePid, mgdNode));
         idb.setFullDescription(getFullDescription(filePid, mgdNode));
         idb.setTranscript(getTranscript(filePid, mgdNode));
-        idb.setMgRiskScore(mgContentService.extractRiskScore(mgdNode));
+        idb.setMgRiskScore(mgContentService.calculateRiskScore(mgdNode));
         idb.setMgContentTags(mgContentService.extractContentTags(mgdNode));
     }
 

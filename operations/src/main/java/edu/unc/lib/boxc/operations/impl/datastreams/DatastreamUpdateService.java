@@ -1,8 +1,9 @@
-package edu.unc.lib.boxc.operations.impl.transcript;
+package edu.unc.lib.boxc.operations.impl.datastreams;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -11,23 +12,22 @@ import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.datastreams.DatastreamUpdateRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
-import edu.unc.lib.boxc.operations.jms.transcript.TranscriptUpdateRequest;
+import org.apache.jena.rdf.model.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.ALT_TEXT;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULL_DESCRIPTION;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TRANSCRIPT;
 import static edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.getNewDatastreamVersion;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-/**
- * Service for updating the user-provided or reviewed transcript of a file object
- *
- * @author snluong
- */
-public class TranscriptUpdateService {
-    private static final Logger log = LoggerFactory.getLogger(TranscriptUpdateService.class);
+public class DatastreamUpdateService {
+    private static final Logger log = LoggerFactory.getLogger(DatastreamUpdateService.class);
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
@@ -35,26 +35,34 @@ public class TranscriptUpdateService {
     private OperationsMessageSender operationsMessageSender;
     private boolean sendsMessages;
 
-    public BinaryObject updateTranscript(TranscriptUpdateRequest request) {
+    public BinaryObject updateDatastreamText(DatastreamUpdateRequest request) {
         var pid = PIDs.get(request.getPidString());
-        aclService.assertHasAccess("User does not have permission to update the transcript",
+        var datastreamType = request.getDatastreamType();
+        validateDatastreamType(datastreamType);
+        var property = getProperty(datastreamType);
+        var text = request.getText();
+
+        aclService.assertHasAccess("User does not have permission to update datastream text",
                 pid, request.getAgent().getPrincipals(), Permission.editDescription);
 
         var fileObj = repositoryObjectLoader.getFileObject(pid);
-        var transcriptPid = DatastreamPids.getTranscriptPid(pid);
+        var datastreamPid = DatastreamPids.getDatastreamPid(pid, datastreamType);
 
-        BinaryObject transcriptBinary;
-        var newVersion = getNewDatastreamVersion(transcriptPid, DatastreamType.TRANSCRIPT,
-                request.getTranscriptText(), request.getTransferSession());
-        transcriptBinary = versionedDatastreamService.addVersion(newVersion);
+        BinaryObject datastreamBinary;
+        var newVersion = getNewDatastreamVersion(datastreamPid, datastreamType,
+                text, request.getTransferSession());
 
+        datastreamBinary = versionedDatastreamService.addVersion(newVersion);
         var resource = fileObj.getResource();
-        if (resource != null && resource.hasProperty(Cdr.hasTranscript)) {
-            log.debug("Successfully updated transcript for {}", fileObj.getPid());
+        if (resource != null && resource.hasProperty(property)) {
+            if (text.isBlank()) {
+                // this is a delete request
+                repositoryObjectFactory.deleteProperty(fileObj, property);
+            }
+            log.debug("Successfully updated {} for {}", datastreamType.getId(), fileObj.getPid());
         } else {
-            repositoryObjectFactory.createRelationship(fileObj, Cdr.hasTranscript,
-                    createResource(transcriptPid.getRepositoryPath()));
-            log.debug("Successfully add new transcript for {}", fileObj.getPid());
+            repositoryObjectFactory.createRelationship(fileObj, property, createResource(datastreamPid.getRepositoryPath()));
+            log.debug("Successfully add new {} for {}", datastreamType.getId(), fileObj.getPid());
         }
 
         if (sendsMessages) {
@@ -62,7 +70,23 @@ public class TranscriptUpdateService {
                     request.getAgent().getUsername(), Collections.singletonList(fileObj.getPid()), IndexingPriority.normal);
         }
 
-        return transcriptBinary;
+        return datastreamBinary;
+    }
+
+    private void validateDatastreamType(DatastreamType type) {
+        if (type != ALT_TEXT && type != FULL_DESCRIPTION && type != TRANSCRIPT) {
+            throw new IllegalArgumentException("DatastreamUpdateRequest must have a valid DatastreamType");
+        }
+    }
+
+    private Property getProperty(DatastreamType type) {
+        if (type == ALT_TEXT) {
+            return Cdr.hasAltText;
+        }
+        if (type == FULL_DESCRIPTION) {
+            return Cdr.hasFullDescription;
+        }
+        return Cdr.hasTranscript;
     }
 
     public void setAclService(AccessControlService aclService) {

@@ -27,8 +27,8 @@ import java.util.Set;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.rdf.CdrAspace;
-import edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService;
-import edu.unc.lib.boxc.operations.jms.altText.AltTextUpdateRequest;
+import edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService;
+import edu.unc.lib.boxc.operations.jms.datastreams.DatastreamUpdateRequest;
 import org.apache.http.HttpStatus;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
@@ -142,7 +142,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     private UpdateDescriptionService updateDescService;
 
     @Autowired
-    private AltTextUpdateService altTextUpdateService;
+    private DatastreamUpdateService datastreamUpdateService;
 
     private AccessGroupSet groupSet;
     private AgentPrincipals agent;
@@ -843,12 +843,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         var altText = Files.readString(altTextPath, StandardCharsets.UTF_8);
-        var request = new AltTextUpdateRequest();
+        var request = new DatastreamUpdateRequest();
         request.setAgent(agent);
         request.setPidString(obj.getPid().getId());
-        request.setAltText(altText);
+        request.setText(altText);
         request.setTransferSession(logTransferSession);
-        altTextUpdateService.updateAltText(request);
+        request.setDatastreamType(DatastreamType.ALT_TEXT);
+        datastreamUpdateService.updateDatastreamText(request);
     }
 
     private void addDescription(ContentObject obj, Resource dResc) throws IOException {

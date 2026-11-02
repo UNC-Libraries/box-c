@@ -1,4 +1,5 @@
 import createFetchMock from 'vitest-fetch-mock';
+import 'vitest-localstorage-mock';
 import { vi, beforeEach } from 'vitest';
 
 const fetchMocker = createFetchMock(vi);
@@ -8,4 +9,5 @@ fetchMocker.enableMocks();
 
 beforeEach(() => {
     fetchMock.resetMocks();
+    localStorage.clear();
 });

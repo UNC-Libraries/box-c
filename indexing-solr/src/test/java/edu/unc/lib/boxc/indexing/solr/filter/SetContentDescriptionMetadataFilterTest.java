@@ -124,7 +124,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(TRANSCRIPT_FROM_MG);
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(10);
+        when(mgContentService.calculateRiskScore(defaultNode)).thenReturn(10);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(List.of("tag1", "tag2"));
         // No alt text in fedora — fall back to machine generated
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
@@ -160,7 +160,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.extractAltText(defaultNode)).thenReturn(null);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.calculateRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
@@ -194,7 +194,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.extractAltText(defaultNode)).thenReturn(null);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(null);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.calculateRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))
@@ -221,7 +221,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(null);
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.calculateRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
 
         // Fedora has alt text stored — it should win
@@ -261,7 +261,7 @@ public class SetContentDescriptionMetadataFilterTest {
         when(mgContentService.extractAltText(defaultNode)).thenReturn(ALT_TEXT_FROM_MG);
         when(mgContentService.extractFullDescription(defaultNode)).thenReturn(FULL_DESC_FROM_MG);
         when(mgContentService.extractTranscript(defaultNode)).thenReturn(TRANSCRIPT_FROM_MG);
-        when(mgContentService.extractRiskScore(defaultNode)).thenReturn(null);
+        when(mgContentService.calculateRiskScore(defaultNode)).thenReturn(null);
         when(mgContentService.extractContentTags(defaultNode)).thenReturn(null);
         // No alt text in fedora
         when(repositoryObjectLoader.getBinaryObject(DatastreamPids.getAltTextPid(filePid)))

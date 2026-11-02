@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Handler for pipeline quieting operations.
@@ -34,12 +35,14 @@ public class PipelineQuietHandler {
         for (Map<String, String> fields : depositStatuses) {
             String depositId = fields.get(DepositField.uuid.name());
             LOG.info("Quieting deposit {}", depositId);
-            if (depositStatusFactory.addSupervisorLock(depositId, pipelineMessage.getUsername()) &&
-                    DepositState.running.equals(DepositState.valueOf(fields.get(DepositField.state.name())))) {
+            String lockToken = UUID.randomUUID().toString();
+            if (depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
                 try {
-                    depositStatusFactory.setState(depositId, DepositState.quieted);
+                    if (DepositState.running.equals(DepositState.valueOf(fields.get(DepositField.state.name())))) {
+                        depositStatusFactory.setState(depositId, DepositState.quieted);
+                    }
                 } finally {
-                    depositStatusFactory.removeSupervisorLock(depositId);
+                    depositStatusFactory.removeSupervisorLock(depositId, lockToken);
                 }
             }
         }
@@ -54,7 +57,8 @@ public class PipelineQuietHandler {
         for (Map<String, String> fields : depositStatuses) {
             String depositId = fields.get(DepositField.uuid.name());
             LOG.info("Resuming deposit {}", depositId);
-            if (depositStatusFactory.addSupervisorLock(depositId, pipelineMessage.getUsername())) {
+            String lockToken = UUID.randomUUID().toString();
+            if (depositStatusFactory.addSupervisorLock(depositId, lockToken)) {
                 try {
                     var depositStatus = depositStatusFactory.get(depositId);
                     DepositState state = DepositState.valueOf(depositStatus.get(DepositField.state.name()));
@@ -70,7 +74,7 @@ public class PipelineQuietHandler {
 
                     depositStatusFactory.queueDeposit(depositId);
                 } finally {
-                    depositStatusFactory.removeSupervisorLock(depositId);
+                    depositStatusFactory.removeSupervisorLock(depositId, lockToken);
                 }
             }
         }

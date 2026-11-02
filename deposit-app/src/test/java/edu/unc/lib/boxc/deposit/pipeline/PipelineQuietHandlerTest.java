@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +50,7 @@ public class PipelineQuietHandlerTest {
     @Test
     public void testSuccessfulQuiet() {
         pipelineMessage.setAction(PipelineAction.QUIET);
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
 
         Map<String, String> deposit = new HashMap<>();
         deposit.put(RedisWorkerConstants.DepositField.uuid.name(), DEPOSIT_ID);
@@ -58,16 +60,16 @@ public class PipelineQuietHandlerTest {
 
         handler.quietAll(pipelineMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
+        verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
         verify(depositStatusFactory).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(eq(DEPOSIT_ID), any());
         verify(depositStatusFactory, never()).getFirstQueuedDeposit();
     }
 
     @Test
     public void testQuietFailsToAcquireLock() {
         pipelineMessage.setAction(PipelineAction.QUIET);
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(false);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(false);
 
         Map<String, String> deposit = new HashMap<>();
         deposit.put(RedisWorkerConstants.DepositField.uuid.name(), DEPOSIT_ID);
@@ -77,15 +79,15 @@ public class PipelineQuietHandlerTest {
 
         handler.quietAll(pipelineMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
+        verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
         verify(depositStatusFactory, never()).setState(DEPOSIT_ID, DepositState.quieted);
-        verify(depositStatusFactory, never()).removeSupervisorLock(DEPOSIT_ID);
+        verify(depositStatusFactory, never()).removeSupervisorLock(eq(DEPOSIT_ID), any());
     }
 
     @Test
     public void testSuccessfulUnquietFromQuiet() {
         pipelineMessage.setAction(PipelineAction.UNQUIET);
-        when(depositStatusFactory.addSupervisorLock(DEPOSIT_ID, USERNAME)).thenReturn(true);
+        when(depositStatusFactory.addSupervisorLock(eq(DEPOSIT_ID), any())).thenReturn(true);
 
         Map<String, String> deposit = new HashMap<>();
         deposit.put(RedisWorkerConstants.DepositField.uuid.name(), DEPOSIT_ID);
@@ -99,11 +101,11 @@ public class PipelineQuietHandlerTest {
 
         handler.unquietAll(pipelineMessage);
 
-        verify(depositStatusFactory).addSupervisorLock(DEPOSIT_ID, USERNAME);
+        verify(depositStatusFactory).addSupervisorLock(eq(DEPOSIT_ID), any());
         verify(jobStatusFactory).clearStale(DEPOSIT_ID);
         verify(depositStatusFactory).deleteField(DEPOSIT_ID, RedisWorkerConstants.DepositField.errorMessage);
         verify(depositStatusFactory).queueDeposit(DEPOSIT_ID);
-        verify(depositStatusFactory).removeSupervisorLock(DEPOSIT_ID);
+        verify(depositStatusFactory).removeSupervisorLock(eq(DEPOSIT_ID), any());
     }
 
     @Test

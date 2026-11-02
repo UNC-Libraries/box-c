@@ -29,7 +29,8 @@ public class AbstractSearchController extends AbstractSolrSearchController {
             SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(), SearchFieldKey.STREAMING_TYPE.name(),
             SearchFieldKey.STREAMING_URL.name(), SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.TIMESTAMP.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ROLLUP_ID.name(),
-            SearchFieldKey.VIEW_BEHAVIOR.name(), SearchFieldKey.ALT_TEXT.name(), SearchFieldKey.WCAG_COMPLIANCE.name());
+            SearchFieldKey.VIEW_BEHAVIOR.name(), SearchFieldKey.ALT_TEXT.name(), SearchFieldKey.WCAG_COMPLIANCE.name(),
+            SearchFieldKey.TRANSCRIPT.name());
 
     @Override
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {

@@ -1,9 +1,9 @@
 
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
 		'EditFilenameForm', 'EditTitleForm', 'EditAspaceRefIdForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'CollectionDisplaySettingsForm', 'EditStreamingPropertiesForm',
-		'EditAltTextForm', 'EditWcagComplianceForm', 'contextMenu'],
+		'EditAltTextForm', 'EditWcagComplianceForm', 'contextMenu', "EditTranscriptForm"],
 		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, EditAspaceRefIdForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, CollectionDisplaySettingsForm, EditStreamingPropertiesForm, EditAltTextForm,
-				 EditWcagComplianceForm) {
+				 EditWcagComplianceForm, mod1, EditTranscriptForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -148,6 +148,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				if (/alt_text_history/ig.test(datastreams)) {
 					items['metadata']['items']["viewAltTextHistory"] = {name: "View Alt Text History"};
 				}
+
+				if (/transcript_history/ig.test(datastreams)) {
+					items['metadata']['items']["viewTranscriptHistory"] = {name: "View Transcript History"};
+				}
 			}
 
 			items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
@@ -204,6 +208,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (metadata.type === 'File' && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editAltText"] = {name : 'Edit Alt Text'};
 			items["editWcagCompliance"] = {name : 'Edit WCAG compliance'};
+			items["editTranscript"] = {name : 'Edit Transcript'};
 		}
 
 		if ((metadata.type === 'Folder' || metadata.type === 'Collection') && $.inArray('editDescription', metadata.permissions) != -1) {
@@ -357,6 +362,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							application: "services"
 						});
 						break;
+					case "viewTranscriptHistory":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/transcript_history",
+							newWindow: true,
+							application: "services"
+						});
+						break;
 					case "viewEventLog" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
@@ -402,6 +415,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "editWcagCompliance" :
 						self.editWcagCompliance(resultObject);
+						break;
+					case "editTranscript" :
+						self.editTranscript(resultObject);
 						break;
 					case "editType" :
 						self.actionHandler.addEvent({
@@ -668,6 +684,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			actionHandler : this.actionHandler
 		});
 		editWcagComplianceForm.open(resultObject);
+	};
+
+	ResultObjectActionMenu.prototype.editTranscript = function(resultObject) {
+		var editTranscriptForm = new EditTranscriptForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editTranscriptForm.open(resultObject);
 	};
 
 	ResultObjectActionMenu.prototype.editThumbnail = function(resultObject) {

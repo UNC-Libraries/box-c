@@ -53,12 +53,14 @@ public class DepositStatusFactoryIT {
     @Test
     public void testAddRemoveSupervisorLock() {
         final String uuid = UUID.randomUUID().toString();
-        String owner1 = "owner1";
-        String owner2 = "owner2";
-        assertTrue(factory.addSupervisorLock(uuid, owner1));
-        assertFalse(factory.addSupervisorLock(uuid, owner2));
-        factory.removeSupervisorLock(uuid);
-        assertTrue(factory.addSupervisorLock(uuid, owner2));
+        String lockToken1 = "token1";
+        String lockToken2 = "token2";
+        assertTrue(factory.addSupervisorLock(uuid, lockToken1));
+        assertFalse(factory.addSupervisorLock(uuid, lockToken2));
+        assertFalse(factory.removeSupervisorLock(uuid, lockToken2));
+        assertFalse(factory.addSupervisorLock(uuid, lockToken2));
+        assertTrue(factory.removeSupervisorLock(uuid, lockToken1));
+        assertTrue(factory.addSupervisorLock(uuid, lockToken2));
     }
 
     @Test
@@ -66,6 +68,20 @@ public class DepositStatusFactoryIT {
         final String uuid = UUID.randomUUID().toString();
         factory.setState(uuid, DepositState.queued);
         assertEquals(DepositState.queued, factory.getState(uuid));
+    }
+
+    @Test
+    public void testGetAndRemoveFirstQueuedDeposit() {
+        String firstDepositId = UUID.randomUUID().toString();
+        String secondDepositId = UUID.randomUUID().toString();
+        factory.queueDeposit(firstDepositId);
+        factory.queueDeposit(secondDepositId);
+
+        assertEquals(firstDepositId, factory.getFirstQueuedDeposit());
+        assertEquals(firstDepositId, factory.getFirstQueuedDeposit());
+
+        factory.removeQueuedDeposit(firstDepositId);
+        assertEquals(secondDepositId, factory.getFirstQueuedDeposit());
     }
 
     @Test

@@ -1,11 +1,12 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.transcript.TranscriptUpdateService;
+import edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -29,25 +30,32 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class TranscriptControllerTest {
+/**
+ * @author snluong
+ */
+public class DatastreamUpdateControllerTest {
     private MockMvc mockMvc;
     @Mock
-    private TranscriptUpdateService service;
+    private DatastreamUpdateService service;
     @Mock
     private BinaryObject binaryObject;
-    private PID pid, transcriptPid;
+    private PID pid;
+    private PID altTextPid;
+
     private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        var controller = new TranscriptController();
-        controller.setService(service);
+
+        DatastreamUpdateController controller = new DatastreamUpdateController();
+        controller.setDatastreamUpdateService(service);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
+
         pid = TestHelper.makePid();
-        transcriptPid = DatastreamPids.getTranscriptPid(pid);
+        altTextPid = DatastreamPids.getAltTextPid(pid);
     }
 
     @AfterEach
@@ -56,41 +64,55 @@ public class TranscriptControllerTest {
     }
 
     @Test
-    void updateTranscriptTest() throws Exception {
-        var transcriptText = "a very accurate transcript";
+    void testUpdateDatastreamText() throws Exception {
+        var altText = "Sample Alt Text";
 
         // Mock BinaryObject to return a PID
-        when(binaryObject.getPid()).thenReturn(transcriptPid);
-        when(service.updateTranscript(any())).thenReturn(binaryObject);
+        when(binaryObject.getPid()).thenReturn(altTextPid);
+        when(service.updateDatastreamText(any())).thenReturn(binaryObject);
 
-        var result = mockMvc.perform(post("/edit/transcript/{id}", pid.getId())
+        var result = mockMvc.perform(
+                post("/edit/datastreamText/{id}/{datastreamType}", pid.getId(), "alt_text")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("transcript", transcriptText))
+                        .param("datastreamText", altText))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals("updateTranscript", respMap.get("action"));
-        assertEquals(transcriptPid.getComponentId(), respMap.get("pid"));
+        assertEquals("update_alt_text", respMap.get("action"));
+        assertEquals(altTextPid.getComponentId(), respMap.get("pid"));
 
         // Verify that the service was called with the correct AltTextUpdateRequest
-        verify(service).updateTranscript(argThat(request ->
+        verify(service).updateDatastreamText(argThat(request ->
                 request.getPidString().equals(pid.getId()) &&
-                        request.getTranscriptText().equals(transcriptText)
+                        request.getText().equals(altText) && request.getDatastreamType().equals(DatastreamType.ALT_TEXT)
         ));
     }
 
     @Test
-    void updateTranscriptFailsTest() throws Exception {
-        var transcriptText = "a very accurate transcript";
+    void testUpdateDatastreamTextFailsPermissionCheck() throws Exception {
+        var altText = "Sample Alt Text";
 
         doThrow(new AccessRestrictionException("Access Denied"))
-                .when(service).updateTranscript(any());
+                .when(service).updateDatastreamText(any());
 
-        mockMvc.perform(post("/edit/transcript/{id}", pid.getId())
+        mockMvc.perform(post("/edit/datastreamText/{id}/{datastreamType}", pid.getId(), "altText")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("transcript", transcriptText))
+                        .param("datastreamText", altText))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testUpdateDatastreamTextInvalidDatastream() throws Exception {
+        var text = "SampleText";
+
+        doThrow(new IllegalArgumentException("Invalid datastream"))
+                .when(service).updateDatastreamText(any());
+
+        mockMvc.perform(post("/edit/datastreamText/{id}/{datastreamType}", pid.getId(), "badDatastream")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("datastreamText", text))
+                .andExpect(status().isBadRequest());
     }
 }
