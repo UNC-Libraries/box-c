@@ -100,10 +100,10 @@ build-access-npm:
 SUSPEND = "n"
 
 build-bxc:
-	mvn clean install -DskipTests -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,sword-server,integration
+	mvn clean install -DskipTests -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,integration
 
 verify-bxc:
-	mvn verify -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,sword-server,integration
+	mvn verify -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,integration
 
 ifneq ($(VERSION), "")
 	for i in static/js/public/*.js; do \

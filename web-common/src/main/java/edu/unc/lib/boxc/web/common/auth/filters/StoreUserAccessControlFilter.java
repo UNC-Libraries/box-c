@@ -114,8 +114,8 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             String headerValue = request.getHeader(headerName);
             if (StringUtils.isBlank(headerValue)) {
                 emptyHeaders.add(headerName);
-            } else {
-                log.info("   name: {}, value: {}", headerName, headerValue);
+            } else if (log.isDebugEnabled()) {
+                log.debug("   name: {}, value: {}", headerName, headerValue);
             }
         });
         log.info("   Empty headers: {}", emptyHeaders);
