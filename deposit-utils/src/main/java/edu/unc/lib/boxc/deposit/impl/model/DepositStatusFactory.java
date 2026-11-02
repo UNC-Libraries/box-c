@@ -22,6 +22,12 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
  *
  */
 public class DepositStatusFactory extends AbstractJedisFactory {
+    private static final String RELEASE_SUPERVISOR_LOCK_SCRIPT = """
+            if redis.call('hget', KEYS[1], ARGV[1]) == ARGV[2] then
+                return redis.call('hdel', KEYS[1], ARGV[1])
+            end
+            return 0
+            """;
     private static final Logger log = LoggerFactory
             .getLogger(DepositStatusFactory.class);
 
@@ -81,29 +87,46 @@ public class DepositStatusFactory extends AbstractJedisFactory {
      *
      * @param depositUUID
      *            identify of the deposit
-     * @param owner
-     *            identity of the supervisor
+     * @param lockToken
+     *            unique token identifying this lock holder
      * @return true if lock acquired
      */
-    public boolean addSupervisorLock(String depositUUID, String owner) {
+    public boolean addSupervisorLock(String depositUUID, String lockToken) {
         final AtomicBoolean acquired = new AtomicBoolean(false);
         connectWithRetries((jedis) -> {
             Long result = jedis.hsetnx(DEPOSIT_STATUS_PREFIX + depositUUID,
-                    DepositField.lock.name(), owner);
+                    DepositField.lock.name(), lockToken);
             acquired.set(result == 1);
         });
         return acquired.get();
     }
 
     /**
-     * Unlocks the given deposit, allowing a new supervisor to manage it.
+     * Releases the lock only when it is still owned by the given token.
      *
      * @param depositUUID
+     *            identity of the deposit
+     * @param lockToken
+     *            unique token identifying this lock holder
+     * @return true if the lock was removed
      */
-    public void removeSupervisorLock(String depositUUID) {
+    public boolean removeSupervisorLock(String depositUUID, String lockToken) {
+        final AtomicBoolean removed = new AtomicBoolean(false);
         connectWithRetries((jedis) -> {
-            jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.lock.name());
+            Object result = jedis.eval(RELEASE_SUPERVISOR_LOCK_SCRIPT,
+                    java.util.List.of(DEPOSIT_STATUS_PREFIX + depositUUID),
+                    java.util.List.of(DepositField.lock.name(), lockToken));
+            removed.set(Long.valueOf(1).equals(result));
         });
+        return removed.get();
+    }
+
+    /**
+     * Removes a lock left behind by an interrupted supervisor during startup recovery.
+     * Normal message processing must use {@link #removeSupervisorLock(String, String)}.
+     */
+    public void forceRemoveSupervisorLock(String depositUUID) {
+        connectWithRetries((jedis) -> jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.lock.name()));
     }
 
     public DepositState getState(String depositUUID) {
@@ -202,17 +225,26 @@ public class DepositStatusFactory extends AbstractJedisFactory {
     }
 
     /**
-     * Pop the first deposit off the queue
+     * Get the first deposit in the queue without removing it.
      * @return id of the first deposit in the queue, or null if the queue is empty
      */
     public String getFirstQueuedDeposit() {
         final AtomicReference<String> result = new AtomicReference<>();
         connectWithRetries((jedis) -> {
-            var items = jedis.zpopmin(RedisWorkerConstants.DEPOSIT_QUEUE);
-            if (items != null) {
-                result.set(items.getElement());
+            var items = jedis.zrange(RedisWorkerConstants.DEPOSIT_QUEUE, 0, 0);
+            if (!items.isEmpty()) {
+                result.set(items.getFirst());
             }
         });
         return result.get();
+    }
+
+    /**
+     * Remove a deposit from the queue after it has been claimed by a supervisor.
+     *
+     * @param depositUUID the UUID of the deposit to remove
+     */
+    public void removeQueuedDeposit(String depositUUID) {
+        connectWithRetries((jedis) -> jedis.zrem(RedisWorkerConstants.DEPOSIT_QUEUE, depositUUID));
     }
 }
