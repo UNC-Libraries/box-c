@@ -65,7 +65,7 @@
         
         <spring.version>6.2.19</spring.version>
         <spring.security.web.version>6.5.11</spring.security.web.version>
-        <spring.ws.version>4.1.2</spring.ws.version>
+        <spring.ws.version>4.1.4</spring.ws.version>
         
         <junit.jupiter.version>5.14.1</junit.jupiter.version>
         <mockito.version>5.20.0</mockito.version>
@@ -74,9 +74,9 @@
         <awaitility.version>4.3.0</awaitility.version>
         <wiremock.version>2.35.2</wiremock.version>
         
-        <jackson.version>2.22.1</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
         <jackson.annotations.version>2.22</jackson.annotations.version>
-        <jackson.databind.version>2.22.1</jackson.databind.version>
+        <jackson.databind.version>2.18.11</jackson.databind.version>
 
         <joda-time.version>2.14.0</joda-time.version>
         <jmustache.version>1.16</jmustache.version>

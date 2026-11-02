@@ -916,15 +916,6 @@ $.widget( "xml.xmlEditor", {
 			}
 		});
 	},
-	
-	// Default server submission response parser, mostly for reference.  
-	swordSubmitResponseHandler: function(response) {
-		var responseObject = $(response);
-		if (responseObject.length > 0 && localName(responseObject[responseObject.length - 1]) == "sword:error") {
-			return responseObject.find("atom\\:summary").html();
-		}
-		return false;
-	},
 
 	// Serializes the provided xml node into a string
 	xml2Str: function(xmlNodeObject) {
@@ -3071,8 +3062,7 @@ ModifyMenuPanel.prototype.initialize = function (parentContainer) {
 				}
 
 				if (!('responseHandler' in config) && config.url) {
-					config.responseHandler = config.responseHandler = self.editor.options.submitResponseHandler
-						|| self.editor.swordSubmitResponseHandler;
+					config.responseHandler = config.responseHandler = self.editor.options.submitResponseHandler;
 				}
 
 				submitButton.click(function() {

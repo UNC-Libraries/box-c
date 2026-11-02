@@ -206,25 +206,7 @@
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
 
-    <bean id="editAltTextService" class="edu.unc.lib.boxc.operations.impl.altText.AltTextUpdateService">
-        <property name="aclService" ref="aclService" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
-        <property name="sendsMessages" value="true" />
-    </bean>
-
-    <bean id="editFullDescriptionService" class="edu.unc.lib.boxc.operations.impl.fullDescription.FullDescriptionUpdateService">
-        <property name="aclService" ref="aclService" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
-        <property name="sendsMessages" value="true" />
-    </bean>
-
-    <bean id="editTranscriptService" class="edu.unc.lib.boxc.operations.impl.transcript.TranscriptUpdateService">
+    <bean id="editDatastreamUpdateService" class="edu.unc.lib.boxc.operations.impl.datastreams.DatastreamUpdateService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

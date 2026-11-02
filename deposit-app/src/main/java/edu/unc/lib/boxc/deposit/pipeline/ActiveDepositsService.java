@@ -28,7 +28,7 @@ public class ActiveDepositsService {
         return activeDepositIds.size() < maxConcurrentDeposits;
     }
 
-    public boolean isDepositActive(String depositId) {
+    public synchronized boolean isDepositActive(String depositId) {
         return activeDepositIds.contains(depositId);
     }
 

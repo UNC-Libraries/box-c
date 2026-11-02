@@ -328,4 +328,5 @@
     <copyField source="fullText" dest="text"/>
     <copyField source="genre" dest="text"/>
     <copyField source="altText" dest="text"/>
+    <copyField source="transcript" dest="text"/>
 </schema>

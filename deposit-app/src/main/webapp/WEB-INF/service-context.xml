@@ -96,7 +96,8 @@
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="destinationName" value="${jms.deposit.operation.stream}" />
         <property name="messageListener" ref="depositCoordinator" />
-        <property name="concurrency" value="${workers.high.num:4}" />
+        <!-- Concurrency for operation listener set to 1 to avoid contention for operations on same deposit  -->
+        <property name="concurrency" value="1" />
         <property name="acknowledgeAfterListener" value="false" />
         <property name="sessionTransacted" value="true" />
         <property name="receiveTimeout" value="30000" />

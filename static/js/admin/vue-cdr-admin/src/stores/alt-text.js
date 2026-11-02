@@ -10,6 +10,7 @@ export const useAltTextStore = defineStore('alt-text', {
         error: null,
         items: [],
         lastSuccessfulEdit: null,
+        reviewedItems: [],
         showAltTextModal: false,
         viewType: 'view' // view or edit
     }),
@@ -52,6 +53,9 @@ export const useAltTextStore = defineStore('alt-text', {
         },
         clearLastSuccessfulEdit() {
             this.lastSuccessfulEdit = null;
+        },
+        setReviewedItems(items) {
+            this.reviewedItems = Array.isArray(items) ? items : [];
         },
         setShowAltTextModal(showAltTextModal) {
             this.showAltTextModal = showAltTextModal;
