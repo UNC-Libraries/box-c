@@ -82,7 +82,12 @@ export default {
 <style>
     .clover-template-default {
         --clover-body-height: 100vh;
-        --clover-color-primary: white;
+    }
+
+    .clover-title:is(h2, h3) {
+        color: black;
+        font-size: 1.25rem;
+        font-weight: bold;
     }
 
     .clover-canvas {
@@ -91,10 +96,11 @@ export default {
 
     .clover-canvas-button {
         background-color: black;
+        color: white;
         &:focus,
         &:active,
         &:hover {
-            background-color: #0065C3;
+            background-color: #0070D9;
         }
     }
 
