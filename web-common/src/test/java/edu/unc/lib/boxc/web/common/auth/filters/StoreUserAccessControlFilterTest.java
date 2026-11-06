@@ -167,6 +167,54 @@ public class StoreUserAccessControlFilterTest {
     }
 
     @Test
+    public void testForwardedClientIpAddsUsersIpPrincipal() throws Exception {
+        when(request.getRemoteUser()).thenReturn("forwarder");
+        when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);
+        when(request.getHeader(FORWARDED_GROUPS_HEADER)).thenReturn("f1;f2");
+        when(request.getHeader(HttpAuthHeaders.FORWARDED_CLIENT_IP)).thenReturn(TEST_IP);
+
+        // The request's existing address is not the original user's address
+        when(request.getRemoteAddr()).thenReturn("10.0.0.9");
+        when(request.getHeader(PatronPrincipalProvider.FORWARDED_FOR_HEADER)).thenReturn("10.0.0.9");
+
+        filter.doFilter(request, response, filterChain);
+
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        assertTrue(groups.contains("f1"));
+        assertTrue(groups.contains("f2"));
+        assertTrue(groups.contains(TEST_IP_PRINC));
+        assertFalse(groups.contains(PUBLIC_PRINC),
+                "Adding an IP principal must not change forwarded-groups semantics");
+    }
+
+    @Test
+    public void testUntrustedRequestCannotOverrideClientIp() throws Exception {
+        when(request.getHeader(HttpAuthHeaders.FORWARDED_CLIENT_IP)).thenReturn(TEST_IP);
+        when(request.getRemoteAddr()).thenReturn("10.0.0.9");
+        when(request.getHeader(PatronPrincipalProvider.FORWARDED_FOR_HEADER)).thenReturn("10.0.0.9");
+
+        filter.doFilter(request, response, filterChain);
+
+        assertFalse(GroupsThreadStore.getGroups().contains(TEST_IP_PRINC));
+    }
+
+    @Test
+    public void testForwarderWithoutClientIpDoesNotUseServerIpForPatronGroup() throws Exception {
+        when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);
+        when(request.getHeader(FORWARDED_GROUPS_HEADER)).thenReturn("f1");
+
+        // Even if an existing forwarding header identifies an IP in the patron configuration,
+        // it is not a substitute for the explicit client-IP header
+        when(request.getHeader(PatronPrincipalProvider.FORWARDED_FOR_HEADER)).thenReturn(TEST_IP);
+
+        filter.doFilter(request, response, filterChain);
+
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        assertTrue(groups.contains("f1"));
+        assertFalse(groups.contains(TEST_IP_PRINC));
+    }
+
+    @Test
     public void testForwardedGroups() throws Exception {
         when(request.getRemoteUser()).thenReturn("forwarder");
         when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);

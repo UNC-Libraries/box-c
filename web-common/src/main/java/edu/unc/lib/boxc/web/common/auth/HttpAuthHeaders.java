@@ -9,6 +9,7 @@ public class HttpAuthHeaders {
     public static final String SHIBBOLETH_GROUPS_HEADER = "isMemberOf";
     public static final String FORWARDED_GROUPS_HEADER = "forwardedGroups";
     public static final String FORWARDED_MAIL_HEADER = "forwardedMail";
+    public static final String FORWARDED_CLIENT_IP = "forwardedClientIP";
 
     private HttpAuthHeaders() {
     }
