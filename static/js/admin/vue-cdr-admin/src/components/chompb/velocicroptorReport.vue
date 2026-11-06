@@ -120,7 +120,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return `<button class="button is-outlined incorrect" value="incorrect" data-path="${row.original}"` + `
+                        return `<button class="button incorrect" value="incorrect" data-path="${row.original}"` + `
                                 data-predicted="${row.pred_class}">Mark incorrect</button>`;
                     }, targets: 5
                 }
