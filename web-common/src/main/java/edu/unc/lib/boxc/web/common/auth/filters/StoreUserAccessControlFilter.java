@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.web.common.auth.filters;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders;
@@ -16,11 +15,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
 import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_MAIL_HEADER;
 import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
 
@@ -79,11 +80,39 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     }
 
     protected AccessGroupSet getUserGroups(HttpServletRequest request) {
-        if (request.isUserInRole(FORWARDING_ROLE)) {
-            return this.getForwardedGroups(request);
-        } else {
-            return this.getGrouperGroups(request);
+        if (!request.isUserInRole(FORWARDING_ROLE)) {
+            return getGrouperGroups(request);
         }
+
+        AccessGroupSet groups = getForwardedGroups(request);
+        String forwardedClientIp = request.getHeader(HttpAuthHeaders.FORWARDED_CLIENT_IP);
+        if (StringUtils.isBlank(forwardedClientIp)) {
+            return groups;
+        }
+
+        String clientIp = forwardedClientIp.trim();
+        HttpServletRequest clientRequest = new HttpServletRequestWrapper(request) {
+            @Override
+            public String getHeader(String name) {
+                if (PatronPrincipalProvider.FORWARDED_FOR_HEADER.equalsIgnoreCase(name)) {
+                    return clientIp;
+                }
+                return super.getHeader(name);
+            }
+
+            @Override
+            public String getRemoteAddr() {
+                return clientIp;
+            }
+        };
+
+        // Do not add the forwarding service's identity or other patron principals to the user's forwarded groups
+        for (String principal : patronPrincipalProvider.getPrincipals(clientRequest)) {
+            if (principal.startsWith(IP_PRINC_NAMESPACE)) {
+                groups.add(principal);
+            }
+        }
+        return groups;
     }
 
     protected AccessGroupSet getForwardedGroups(HttpServletRequest request) {
