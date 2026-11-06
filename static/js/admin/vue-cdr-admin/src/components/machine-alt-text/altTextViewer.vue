@@ -248,7 +248,10 @@ export default {
                     render: (data) => this.longText(data, 'transcript')
                 },
                 {
-                    data: 'mgRiskScore'
+                    data: 'mgRiskScore',
+                    render: (data, type, row) => {
+                        return (row.mgRiskScore === undefined) ? '' : row.mgRiskScore;
+                    }
                 },
                 {
                     data: 'mgSafetyAssessment',
