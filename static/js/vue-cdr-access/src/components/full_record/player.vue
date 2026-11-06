@@ -80,6 +80,10 @@ export default {
 </script>
 
 <style>
+    clover-viewer {
+        --clover-color-primary-muted: slategray;
+    }
+
     .clover-template-default {
         --clover-body-height: 100vh;
     }
