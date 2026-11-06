@@ -4,7 +4,11 @@
             <streaming-player :record-data="recordData"></streaming-player>
         </template>
         <template v-else-if="recordData.viewerType === 'clover' && hasPermission(recordData, 'viewAccessCopies')">
-            <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
+            <clover-viewer :iiifContent="manifestPath"
+                           :canvasOptions="cloverOptions"
+                           download="false"
+                           high-contrast
+                           panel-open="false"></clover-viewer>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
           <div id="vpv" class="boxc-pdf-viewer">
@@ -15,9 +19,8 @@
 </template>
 
 <script>
-import { applyPureReactInVue } from 'veaury';
+import '@nulib/clover/web-components';
 import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
-import Viewer from '@samvera/clover-iiif/viewer';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
 
@@ -26,7 +29,7 @@ const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
 export default {
     name: 'player',
 
-    components: {streamingPlayer, VPdfViewer, clover: applyPureReactInVue(Viewer) },
+    components: {streamingPlayer, VPdfViewer },
 
     mixins: [permissionUtils],
 
@@ -59,16 +62,9 @@ export default {
 
         cloverOptions() {
             return {
-                canvasBackgroundColor: '#252523',
-                informationPanel: {
-                    open: false
-                },
-                openSeadragon: {
-                    gestureSettingsMouse: {
-                        scrollToZoom: true
-                    }
-                },
-                showIIIFBadge: false
+                gestures: {
+                    scrollToZoom: true
+                }
             }
         },
 
@@ -84,18 +80,51 @@ export default {
 </script>
 
 <style>
-  .vpv-container {
-    padding-top: 25px;
-  }
+    clover-viewer {
+        --clover-color-primary-muted: slategray;
+    }
 
-  .boxc-pdf-viewer {
-      height: 700px;
-      width: auto;
-  }
+    .clover-template-default {
+        --clover-body-height: 100vh;
+    }
 
-  @media (max-width: 768px) {
-      .boxc-pdf-viewer {
-          height: 100vh;
-      }
-  }
+    .clover-title:is(h2, h3) {
+        color: black;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .clover-canvas {
+        --clover-canvas-background: #252523;
+    }
+
+    .clover-canvas-button {
+        background-color: black;
+        color: white;
+        &:focus,
+        &:active,
+        &:hover {
+            background-color: #0070D9;
+        }
+    }
+
+    .clover-tip {
+        --clover-tip-background: initial;
+        --clover-color-primary: initial;
+    }
+
+    .vpv-container {
+        padding-top: 25px;
+    }
+
+    .boxc-pdf-viewer {
+        height: 700px;
+        width: auto;
+    }
+
+    @media (max-width: 768px) {
+        .boxc-pdf-viewer {
+            height: 100vh;
+        }
+    }
 </style>
