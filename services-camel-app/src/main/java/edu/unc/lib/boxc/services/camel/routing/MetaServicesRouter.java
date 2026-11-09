@@ -63,7 +63,7 @@ public class MetaServicesRouter extends RouteBuilder {
                     if (ex.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
                         log.warn("Ignoring exception {} for {}", ex.getStatusText(),
                                 exchange.getIn().getHeader("org.fcrepo.jms.identifier"));
-                        exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
+                        exchange.setRouteStop(true);
                     } else {
                         throw ex;
                     }
