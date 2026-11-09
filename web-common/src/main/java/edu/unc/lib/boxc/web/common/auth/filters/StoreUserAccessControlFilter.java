@@ -86,32 +86,10 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 
         AccessGroupSet groups = getForwardedGroups(request);
         String forwardedClientIp = request.getHeader(HttpAuthHeaders.FORWARDED_CLIENT_IP);
-        if (StringUtils.isBlank(forwardedClientIp)) {
-            return groups;
+        if (StringUtils.isNotBlank(forwardedClientIp)) {
+            groups.addAll(patronPrincipalProvider.getIpPrincipals(forwardedClientIp));
         }
 
-        String clientIp = forwardedClientIp.trim();
-        HttpServletRequest clientRequest = new HttpServletRequestWrapper(request) {
-            @Override
-            public String getHeader(String name) {
-                if (PatronPrincipalProvider.FORWARDED_FOR_HEADER.equalsIgnoreCase(name)) {
-                    return clientIp;
-                }
-                return super.getHeader(name);
-            }
-
-            @Override
-            public String getRemoteAddr() {
-                return clientIp;
-            }
-        };
-
-        // Do not add the forwarding service's identity or other patron principals to the user's forwarded groups
-        for (String principal : patronPrincipalProvider.getPrincipals(clientRequest)) {
-            if (principal.startsWith(IP_PRINC_NAMESPACE)) {
-                groups.add(principal);
-            }
-        }
         return groups;
     }
 

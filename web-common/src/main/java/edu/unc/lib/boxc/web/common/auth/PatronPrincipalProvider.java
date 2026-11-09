@@ -49,22 +49,33 @@ public class PatronPrincipalProvider {
             princs.add(AUTHENTICATED_PRINC);
         }
 
-        String remoteAddr = request.getHeader(FORWARDED_FOR_HEADER);
-        if (StringUtils.isBlank(remoteAddr)) {
+        // Absent IP header must not prevent public/authenticated principals from being returned
+        princs.addAll(getIpPrincipals(request.getHeader(FORWARDED_FOR_HEADER)));
+
+        log.debug("Returning patron principals {}", princs);
+        return princs;
+    }
+
+    /**
+     * Get IP principals for the user making the provided request
+     * @param forwardedFor
+     * @return list of IP principals
+     */
+    public List<String> getIpPrincipals(String forwardedFor) {
+        List<String> princs = new ArrayList<>();
+        if (StringUtils.isBlank(forwardedFor)) {
             return princs;
         } else {
             // Get the last IP in the chain, which should be the server assigned IP rather than client provided one
-            var addresses = remoteAddr.split(",");
-            remoteAddr = addresses[addresses.length - 1].trim();
+            var addresses = forwardedFor.split(",");
+            forwardedFor = addresses[addresses.length - 1].trim();
         }
 
-        BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(remoteAddr);
+        BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(forwardedFor);
         patronPrincConfigs.stream()
                 .filter(config -> config.inRange(ipInteger))
                 .map(IPAddressPatronPrincipalConfig::getPrincipal)
                 .forEach(princs::add);
-
-        log.debug("Returning patron principals {}", princs);
 
         return princs;
     }
