@@ -140,7 +140,13 @@ describe('player.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.findComponent({ name: 'clover' }).exists()).toBe(true);
+        const cloverViewer = wrapper.find('clover-viewer');
+        expect(cloverViewer.exists()).toBe(true);
+        expect(cloverViewer.element.canvasOptions).toEqual({
+            gestures: {
+                scrollToZoom: true
+            }
+        });
     });
 
     it("displays a viewer for pdfs", async () => {
