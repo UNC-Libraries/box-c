@@ -12,7 +12,7 @@
         "postinstall": "patch-package"
     },
     "dependencies": {
-        "@nulib/clover": "~4.9.1",
+        "@nulib/clover": "~4.9.4",
         "@unhead/vue": "^2.1.13",
         "@vue-pdf-viewer/viewer": "^2.3.0",
         "canvas": "^3.2.1",
