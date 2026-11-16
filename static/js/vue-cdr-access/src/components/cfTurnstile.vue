@@ -5,12 +5,12 @@
             <vue-turnstile :site-key="siteKey" v-model="token" @error="onTurnstileError" v-if="!error"></vue-turnstile>
             <p>We strive to make our content freely available. If this check is preventing you from making use of our resources,
                 make sure you have cookies enabled. If you still have trouble, please
-                <a href=" https://library.unc.edu/report-blocked-catalog-access/?supportID=cloudflare_turnstile_dcr">get in touch</a>.</p>
+                <a href="https://unc.az1.qualtrics.com/jfe/form/SV_3De2t9IBeRboD2u?supportID=cloudflare_turnstile_dcr">get in touch</a>.</p>
         </div>
         <div class="notification is-danger is-light" role="alert" v-if="error">
             <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
             Check failed. Sorry, something has gone wrong, or your traffic looks unusual to us. You can try refreshing this page to try again.
-            If you still have trouble, please <a href="https://library.unc.edu/report-blocked-catalog-access/?supportID=cloudflare_turnstile_dcr">get in touch</a>.
+            If you still have trouble, please <a href="https://unc.az1.qualtrics.com/jfe/form/SV_3De2t9IBeRboD2u?supportID=cloudflare_turnstile_dcr">get in touch</a>.
         </div>
     </div>
 </template>
