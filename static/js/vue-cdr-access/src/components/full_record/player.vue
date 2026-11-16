@@ -113,6 +113,11 @@ export default {
         --clover-color-primary: initial;
     }
 
+    /* Overrides bulma's block display otherwise the viewer thumbnail images are not displayed Chrome */
+    clover-viewer figure {
+        display: grid;
+    }
+
     .vpv-container {
         padding-top: 25px;
     }
