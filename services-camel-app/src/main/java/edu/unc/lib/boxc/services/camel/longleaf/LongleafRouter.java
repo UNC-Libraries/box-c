@@ -57,8 +57,8 @@ public class LongleafRouter extends RouteBuilder {
     public void configure() throws Exception {
         AddFailedRouteProcessor failedRouteProcessor = new AddFailedRouteProcessor();
 
-        // Connection failures and bad requests are not retryable — route straight to DLQ
-        onException(LongleafConnectionException.class, LongleafBadRequestException.class)
+        // Bad requests are not retryable — route straight to DLQ
+        onException(LongleafBadRequestException.class)
                 .handled(true)
                 .log(LoggingLevel.ERROR, log, "Non-retryable longleaf failure: ${exception.message}")
                 .process(failedRouteProcessor)
