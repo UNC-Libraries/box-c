@@ -160,6 +160,7 @@
         <module>search-solr</module>
         <module>services-camel-app</module>
         <module>spoof</module>
+        <module>tools/amq-utils-cli</module>
         <module>web-access-app</module>
         <module>web-admin-app</module>
         <module>web-common</module>
