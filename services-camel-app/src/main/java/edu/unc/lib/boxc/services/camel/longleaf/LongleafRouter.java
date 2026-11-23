@@ -63,15 +63,15 @@ public class LongleafRouter extends RouteBuilder {
                 .log(LoggingLevel.ERROR, log, "Non-retryable longleaf failure: ${exception.message}")
                 .process(failedRouteProcessor)
                 .to("{{longleaf.dlq.dest}}");
-        onException(LongleafConnectionException.class)
-                .handled(true)
-                .log(LoggingLevel.ERROR, log, "Retryable longleaf failure: ${exception.message}")
-                .to("{{longleaf.dlq.dest}}");
 
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)
                 .redeliveryDelay(longleafRedeliveryDelay)
-                .onPrepareFailure(failedRouteProcessor)
+                .onPrepareFailure(exchange -> {
+                    failedRouteProcessor.process(exchange);
+                    log.error("Longleaf retries exhausted; sending exchange to DLQ",
+                            exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class));
+                })
                 .retriesExhaustedLogLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.INFO)
                 .logger(new CamelLogger(log, LoggingLevel.ERROR))
