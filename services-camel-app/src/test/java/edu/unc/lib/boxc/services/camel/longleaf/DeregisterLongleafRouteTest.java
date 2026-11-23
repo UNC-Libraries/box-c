@@ -246,8 +246,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         mockDlq.assertIsSatisfied(1000);
 
-        // Connection errors are not retried — expect exactly 1 call
-        WireMock.verify(1, postRequestedFor(urlPathEqualTo(DEREGISTER_PATH)));
+        // Connection errors are retryable: expect initial attempt + 2 redeliveries = 3 total calls
+        WireMock.verify(3, postRequestedFor(urlPathEqualTo(DEREGISTER_PATH)));
     }
 
     @Test
