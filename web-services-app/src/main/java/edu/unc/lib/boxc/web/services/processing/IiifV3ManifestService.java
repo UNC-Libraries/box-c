@@ -26,6 +26,8 @@ import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.Manifest;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
 import info.freelibrary.iiif.presentation.v3.SoundContent;
+import info.freelibrary.iiif.presentation.v3.SupplementingAnnotation;
+import info.freelibrary.iiif.presentation.v3.TextualBody;
 import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.Label;
 import info.freelibrary.iiif.presentation.v3.properties.Metadata;
@@ -216,7 +218,22 @@ public class IiifV3ManifestService {
             canvas.setThumbnails(thumbnail);
         }
 
+        addTranscript(contentObj, canvas);
         return canvas;
+    }
+
+    private void addTranscript(ContentObjectRecord contentObj, Canvas canvas) {
+        String transcript = contentObj.getTranscript();
+        if (StringUtils.isBlank(transcript)) {
+            return;
+        }
+        var page = new AnnotationPage<SupplementingAnnotation>(
+                URIUtil.join(baseIiifv3Path, contentObj.getId(), "page", "transcript"));
+        var annotation = new SupplementingAnnotation(
+                URIUtil.join(baseIiifv3Path, contentObj.getId(), "annotation", "transcript"), canvas);
+        annotation.setBodies(new TextualBody().setValue(transcript).setFormat("text/plain").setLanguage("en"));
+        page.addAnnotations(annotation);
+        canvas.setOtherAnnotations(page);
     }
 
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {

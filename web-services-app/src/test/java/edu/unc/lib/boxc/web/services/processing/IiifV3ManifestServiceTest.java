@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
+import info.freelibrary.iiif.presentation.v3.TextualBody;
 import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
@@ -35,6 +36,7 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -158,7 +160,7 @@ public class IiifV3ManifestServiceTest {
         assertEquals("Test Work", manifest.getLabel().getString());
         assertEquals("http://example.com/iiif/v3/5d72b84a-983c-4a45-8caa-dc9857987da2/manifest", manifest.getID().toString());
         assertEquals("<a href=\"http://example.com/record/5d72b84a-983c-4a45-8caa-dc9857987da2\">View full record</a>",
-                manifest.getMetadata().get(0).getValue().getString());
+                manifest.getMetadata().getFirst().getValue().getString());
         assertTrue(manifest.getCanvases().isEmpty());
     }
 
@@ -179,6 +181,59 @@ public class IiifV3ManifestServiceTest {
         assertEquals(2, canvases.size());
         assertFileCanvasPopulated(canvases.get(0), FILE1_ID, IMAGE);
         assertFileCanvasPopulated(canvases.get(1), FILE2_ID, IMAGE);
+    }
+
+    @Test
+    public void buildManifestWithTranscriptTest() {
+        var fileObj = createFileRecord(FILE1_ID, IMAGE, true);
+        fileObj.setTranscript("First line\nSecond line");
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+
+        var canvases = manifestService.buildManifest(WORK_PID, agent).getCanvases();
+        assertEquals(1, canvases.size());
+        var canvas = canvases.getFirst();
+        var pages = canvas.getOtherAnnotations();
+        assertEquals(1, pages.size());
+        assertEquals(IIIF_BASE + FILE1_ID + "/page/transcript", pages.getFirst().getID().toString());
+        assertEquals(1, pages.getFirst().getAnnotations().size());
+        var annotation = pages.getFirst().getAnnotations().getFirst();
+        assertEquals(IIIF_BASE + FILE1_ID + "/annotation/transcript", annotation.getID().toString());
+        assertEquals("supplementing", annotation.getMotivation());
+        assertEquals(canvas.getID(), annotation.getTarget());
+        assertEquals(1, annotation.getBodies().size());
+        var body = assertInstanceOf(TextualBody.class, annotation.getBodies().getFirst());
+        assertEquals("First line\nSecond line", body.getValue());
+        assertEquals("en", body.getLanguage());
+        assertEquals("text/plain", body.getFormat().orElseThrow().toString());
+    }
+
+    @Test
+    public void buildManifestWithNoTranscriptTest() {
+        var fileWithoutTranscript = createFileRecord(FILE1_ID, IMAGE, true);
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileWithoutTranscript)));
+
+        var canvases = manifestService.buildManifest(WORK_PID, agent).getCanvases();
+        assertEquals(1, canvases.size());
+        assertTrue(canvases.getFirst().getOtherAnnotations().isEmpty());
+        assertFalse(canvases.getFirst().getPaintingPages().isEmpty());
+    }
+
+    @Test
+    public void buildManifestWithBlankTranscriptTest() {
+        var fileWithBlankTranscript = createFileRecord(FILE2_ID, VIDEO, true);
+        fileWithBlankTranscript.setTranscript("  ");
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileWithBlankTranscript)));
+
+        var canvases = manifestService.buildManifest(WORK_PID, agent).getCanvases();
+        assertEquals(1, canvases.size());
+        assertTrue(canvases.getFirst().getOtherAnnotations().isEmpty());
+        assertFalse(canvases.getFirst().getPaintingPages().isEmpty());
     }
 
     @Test
