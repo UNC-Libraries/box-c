@@ -66,7 +66,6 @@ public class LongleafRouter extends RouteBuilder {
         onException(LongleafConnectionException.class)
                 .handled(true)
                 .log(LoggingLevel.ERROR, log, "Retryable longleaf failure: ${exception.message}")
-                .process(failedRouteProcessor)
                 .to("{{longleaf.dlq.dest}}");
 
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
