@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
@@ -65,6 +66,25 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
+    private static final List<String> MANIFEST_ROOT_RESULT_FIELDS = List.of(
+            SearchFieldKey.ABSTRACT.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.CREATOR.name(),
+            SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(),
+            SearchFieldKey.LANGUAGE.name(),
+            SearchFieldKey.PARENT_COLLECTION.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.SUBJECT.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.TRANSCRIPT.name(),
+            SearchFieldKey.VIEW_BEHAVIOR.name());
+    private static final List<String> MANIFEST_FILE_RESULT_FIELDS = List.of(
+            SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.TRANSCRIPT.name());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -80,7 +100,8 @@ public class IiifV3ManifestService {
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        ContentObjectRecord rootObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        ContentObjectRecord rootObj = solrSearchService.getObjectById(
+                new SimpleIdRequest(pid, MANIFEST_ROOT_RESULT_FIELDS, agent.getPrincipals()));
         if (rootObj == null) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
@@ -156,7 +177,8 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        ContentObjectRecord obj = solrSearchService.getObjectById(
+                new SimpleIdRequest(pid, MANIFEST_ROOT_RESULT_FIELDS, agent.getPrincipals()));
         if (obj == null || !hasViewableContent(obj)) {
             throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
         }
@@ -408,6 +430,7 @@ public class IiifV3ManifestService {
         }
         searchState.setIgnoreMaxRows(true);
         searchState.setRowsPerPage(2000);
+        searchState.setResultFields(MANIFEST_FILE_RESULT_FIELDS);
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
