@@ -195,7 +195,7 @@ public class IiifV3ManifestControllerTest {
         assertEquals(canvasWithTranscript.path("id").asText(), transcriptAnnotation.path("target").asText());
         assertEquals("TextualBody", transcriptAnnotation.path("body").path("type").asText());
         assertEquals("text/plain", transcriptAnnotation.path("body").path("format").asText());
-        assertEquals("en", transcriptAnnotation.path("body").path("language").asText());
+        assertEquals("und", transcriptAnnotation.path("body").path("language").asText());
         assertEquals(fileWithTranscript.getTranscript(), transcriptAnnotation.path("body").path("value").asText());
         assertFalse(canvasWithTranscript.path("items").isEmpty());
 

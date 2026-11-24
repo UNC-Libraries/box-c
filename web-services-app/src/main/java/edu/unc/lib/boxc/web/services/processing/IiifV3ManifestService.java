@@ -231,7 +231,7 @@ public class IiifV3ManifestService {
                 URIUtil.join(baseIiifv3Path, contentObj.getId(), "page", "transcript"));
         var annotation = new SupplementingAnnotation(
                 URIUtil.join(baseIiifv3Path, contentObj.getId(), "annotation", "transcript"), canvas);
-        annotation.setBodies(new TextualBody().setValue(transcript).setFormat("text/plain").setLanguage("en"));
+        annotation.setBodies(new TextualBody().setValue(transcript).setFormat("text/plain").setLanguage("und"));
         page.addAnnotations(annotation);
         canvas.setOtherAnnotations(page);
     }

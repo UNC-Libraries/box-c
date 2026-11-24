@@ -205,7 +205,7 @@ public class IiifV3ManifestServiceTest {
         assertEquals(1, annotation.getBodies().size());
         var body = assertInstanceOf(TextualBody.class, annotation.getBodies().getFirst());
         assertEquals("First line\nSecond line", body.getValue());
-        assertEquals("en", body.getLanguage());
+        assertEquals("und", body.getLanguage());
         assertEquals("text/plain", body.getFormat().orElseThrow().toString());
     }
 
