@@ -24,7 +24,7 @@ import picocli.CommandLine.ScopeType;
  */
 @Command(name = "amq-utils", mixinStandardHelpOptions = true,
         description = "Inspect and requeue ActiveMQ messages.",
-        subcommands = { CountCommand.class, InspectCommand.class, RequeueCommand.class })
+        subcommands = { CountCommand.class, InspectCommand.class, RequeueCommand.class, LongleafSubmitCommand.class })
 public class AmqUtilsCli implements Runnable {
     static final String DEFAULT_BROKER_URL = "tcp://localhost:61616";
 
@@ -57,11 +57,10 @@ public class AmqUtilsCli implements Runnable {
     }
 
     ActiveMQConnectionFactory createConnectionFactory() throws IOException {
-        Properties configuration = loadConfiguration();
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(resolve("brokerUrl", brokerUrl,
-                configuration, "AMQ_BROKER_URL", DEFAULT_BROKER_URL));
-        factory.setUserName(resolve("username", username, configuration, "AMQ_USERNAME", null));
-        factory.setPassword(resolve("password", password, configuration, "AMQ_PASSWORD", null));
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(configurationValue("amq.brokerUrl", brokerUrl,
+                "AMQ_BROKER_URL", DEFAULT_BROKER_URL));
+        factory.setUserName(configurationValue("amq.username", username, "AMQ_USERNAME", null));
+        factory.setPassword(configurationValue("amq.password", password, "AMQ_PASSWORD", null));
         // Longleaf batches are serialized ArrayList<String> payloads.
         factory.setTrustedPackages(List.of("java.util"));
         return factory;
@@ -69,6 +68,19 @@ public class AmqUtilsCli implements Runnable {
 
     PrintWriter out() {
         return commandSpec.commandLine().getOut();
+    }
+
+    String configurationValue(String property, String commandValue, String environmentVariable,
+            String defaultValue) throws IOException {
+        if (commandValue != null) {
+            return commandValue;
+        }
+        String configurationValue = loadConfiguration().getProperty(property);
+        if (configurationValue != null) {
+            return configurationValue;
+        }
+        String environmentValue = System.getenv(environmentVariable);
+        return environmentValue == null || environmentValue.isBlank() ? defaultValue : environmentValue;
     }
 
     private Properties loadConfiguration() throws IOException {
@@ -86,19 +98,6 @@ public class AmqUtilsCli implements Runnable {
             properties.load(stream);
         }
         return properties;
-    }
-
-    private String resolve(String property, String commandValue, Properties configuration,
-            String environmentVariable, String defaultValue) {
-        if (commandValue != null) {
-            return commandValue;
-        }
-        String configurationValue = configuration.getProperty("amq." + property);
-        if (configurationValue != null) {
-            return configurationValue;
-        }
-        String environmentValue = System.getenv(environmentVariable);
-        return environmentValue == null || environmentValue.isBlank() ? defaultValue : environmentValue;
     }
 
     public static void main(String[] args) {

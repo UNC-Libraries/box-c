@@ -3,10 +3,17 @@ package edu.unc.lib.boxc.tools.amq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +36,11 @@ import picocli.CommandLine;
 public class AmqUtilsCliTest {
     private static final String BROKER_NAME = "amq-utils-cli-test";
     private static final String BROKER_URL = "vm://" + BROKER_NAME + "?create=false";
+    private static final String ROOT_ID = "d82a7536-32ca-4b17-a231-d54683366759";
+    private static final String DEPOSIT_ID = "9ceadd3d-1b42-4132-bc77-3028a63c2fed";
     private static BrokerService broker;
+    private static HttpServer fcrepoServer;
+    private static String fcrepoBaseUrl;
 
     @BeforeAll
     public static void startBroker() throws Exception {
@@ -39,10 +50,15 @@ public class AmqUtilsCliTest {
         broker.setUseJmx(false);
         broker.start();
         broker.waitUntilStarted();
+        fcrepoServer = HttpServer.create(new InetSocketAddress(0), 0);
+        fcrepoServer.createContext("/rest", AmqUtilsCliTest::respondToFedoraRequest);
+        fcrepoServer.start();
+        fcrepoBaseUrl = "http://localhost:" + fcrepoServer.getAddress().getPort() + "/rest";
     }
 
     @AfterAll
     public static void stopBroker() throws Exception {
+        fcrepoServer.stop(0);
         broker.stop();
         broker.waitUntilStopped();
     }
@@ -103,6 +119,78 @@ public class AmqUtilsCliTest {
         assertTrue(inspect.output().contains("info:fedora/example/123"));
         assertTrue(inspect.output().contains("object: java.util.ArrayList"));
         assertEquals(1, countMessages(queueName));
+    }
+
+    @Test
+    public void submitsEligibleBinariesDiscoveredFromFedora() throws Exception {
+        Path input = Files.createTempFile("longleaf-submit", ".txt");
+        Files.writeString(input, ROOT_ID + "\n");
+
+        try {
+            CommandResult submit = execute("longleaf-submit", "--action", "register", "--input", input.toString(),
+                    "--fcrepo-request-base-url", fcrepoBaseUrl, "--broker-url", BROKER_URL, "--execute");
+
+            assertEquals(0, submit.exitCode());
+            assertTrue(submit.output().contains("Sent 1 register message"));
+            assertEquals(fcrepoBaseUrl + "/content/d8/2a/75/36/" + ROOT_ID + "/datafs/original_file",
+                    receiveTextMessage("longleaf.register.batch"));
+        } finally {
+            Files.deleteIfExists(input);
+        }
+    }
+
+    @Test
+    public void submitsCanonicalUrisWhileFetchingThroughTunnel() throws Exception {
+        Path input = Files.createTempFile("longleaf-tunnel", ".txt");
+        String canonicalBaseUri = "http://repository.example.test/rest";
+        Files.writeString(input, ROOT_ID + "\n");
+
+        try {
+            CommandResult submit = execute("longleaf-submit", "--action", "register", "--input", input.toString(),
+                    "--fcrepo-request-base-url", fcrepoBaseUrl, "--fcrepo-base-uri", canonicalBaseUri,
+                    "--broker-url", BROKER_URL, "--execute");
+
+            assertEquals(0, submit.exitCode());
+            assertEquals(canonicalBaseUri + "/content/d8/2a/75/36/" + ROOT_ID + "/datafs/original_file",
+                    receiveTextMessage("longleaf.register.batch"));
+        } finally {
+            Files.deleteIfExists(input);
+        }
+    }
+
+    @Test
+    public void submitsDeregistrationFileUrisDirectly() throws Exception {
+        Path input = Files.createTempFile("longleaf-deregister", ".txt");
+        Files.writeString(input, "file:///storage/example/file.txt\n");
+
+        try {
+            CommandResult submit = execute("longleaf-submit", "--action", "deregister", "--input", input.toString(),
+                    "--broker-url", BROKER_URL, "--execute");
+
+            assertEquals(0, submit.exitCode());
+            assertTrue(submit.output().contains("Sent 1 deregister message"));
+            assertEquals("file:///storage/example/file.txt", receiveTextMessage("longleaf.deregister.batch"));
+        } finally {
+            Files.deleteIfExists(input);
+        }
+    }
+
+    @Test
+    public void submitsBinariesDiscoveredFromQualifiedDepositIds() throws Exception {
+        Path input = Files.createTempFile("longleaf-deposit", ".txt");
+        Files.writeString(input, "deposits/" + DEPOSIT_ID + "\n");
+
+        try {
+            CommandResult submit = execute("longleaf-submit", "--action", "register", "--input", input.toString(),
+                    "--fcrepo-request-base-url", fcrepoBaseUrl, "--broker-url", BROKER_URL, "--execute");
+
+            assertEquals(0, submit.exitCode());
+            assertTrue(submit.output().contains("Sent 1 register message"));
+            assertEquals(fcrepoBaseUrl + "/deposits/9c/ea/dd/3d/" + DEPOSIT_ID + "/md/event_log",
+                    receiveTextMessage("longleaf.register.batch"));
+        } finally {
+            Files.deleteIfExists(input);
+        }
     }
 
     private static CommandResult execute(String... arguments) {
@@ -167,6 +255,35 @@ public class AmqUtilsCliTest {
 
     private static String uniqueQueueName() {
         return "queue." + UUID.randomUUID();
+    }
+
+    private static void respondToFedoraRequest(HttpExchange exchange) throws IOException {
+        String baseUrl = "http://" + exchange.getRequestHeaders().getFirst("Host") + "/rest";
+        String rootUri = baseUrl + "/content/d8/2a/75/36/" + ROOT_ID;
+        String originalFileUri = rootUri + "/datafs/original_file";
+        String accessCopyUri = rootUri + "/datafs/jp2_access_copy";
+        String depositUri = baseUrl + "/deposits/9c/ea/dd/3d/" + DEPOSIT_ID;
+        String eventLogUri = depositUri + "/md/event_log";
+        String body;
+        if (exchange.getRequestURI().getPath().equals("/rest/content/d8/2a/75/36/" + ROOT_ID)) {
+            body = "<" + rootUri + "> <http://www.w3.org/ns/ldp#contains> <" + originalFileUri + "> .\n"
+                    + "<" + rootUri + "> <http://www.w3.org/ns/ldp#contains> <" + accessCopyUri + "> .\n";
+        } else if (exchange.getRequestURI().getPath()
+                .equals("/rest/content/d8/2a/75/36/" + ROOT_ID + "/datafs/original_file")) {
+            body = "<" + originalFileUri + "> a <http://www.w3.org/ns/ldp#NonRDFSource> .\n";
+        } else if (exchange.getRequestURI().getPath().equals("/rest/deposits/9c/ea/dd/3d/" + DEPOSIT_ID)) {
+            body = "<" + depositUri + "> <http://www.w3.org/ns/ldp#contains> <" + eventLogUri + "> .\n";
+        } else if (exchange.getRequestURI().getPath()
+                .equals("/rest/deposits/9c/ea/dd/3d/" + DEPOSIT_ID + "/md/event_log")) {
+            body = "<" + eventLogUri + "> a <http://www.w3.org/ns/ldp#NonRDFSource> .\n";
+        } else {
+            body = "<" + accessCopyUri + "> a <http://www.w3.org/ns/ldp#NonRDFSource> .\n";
+        }
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/turtle");
+        exchange.sendResponseHeaders(200, bytes.length);
+        exchange.getResponseBody().write(bytes);
+        exchange.close();
     }
 
     private record CommandResult(int exitCode, String output) {

@@ -64,3 +64,20 @@ java -jar amq-utils-cli.jar requeue --queue longleaf.dlq \
 The requeue command first browses the selected message IDs, then moves each one in its own JMS transaction. Messages that disappear between browse and consume are reported by the final moved count and are not removed from the source queue.
 
 `--after` interprets its timezone-less value as UTC and selects messages with a `JMSTimestamp` strictly greater than that time.
+
+## Longleaf Submission
+
+Submit registration requests from a file containing one Fedora URI or object identifier per line. Bare UUIDs resolve beneath `content`; use `deposits/<uuid>` for a deposit record. An optional component path is supported, such as `deposits/<uuid>/md/event_log`. The command walks `ldp:contains` relations and submits only Longleaf-registerable binary resources.
+
+`fcrepo.requestBaseUrl` (or `--fcrepo-request-base-url`) is the Fedora HTTP endpoint, so it can point to a local tunnel. `fcrepo.baseUri` (or `--fcrepo-base-uri`) is the canonical repository URI sent to Longleaf; it defaults to `fcrepo.requestBaseUrl`. This allows, for example, requests through `http://localhost:8181/fcrepo/rest` while Longleaf receives URIs rooted at the repository hostname. Fedora settings may also be supplied with `FCREPO_REQUEST_BASE_URL`, `FCREPO_BASE_URI`, `FCREPO_USERNAME`, and `FCREPO_PASSWORD` environment variables.
+
+```bash
+# Preview eligible binaries without creating messages.
+java -jar amq-utils-cli.jar longleaf-submit --action register --input updated-objects.txt
+
+# Submit eligible binaries to longleaf.register.batch.
+java -jar amq-utils-cli.jar longleaf-submit --action register --input updated-objects.txt --execute
+
+# Deregistration input is one file: URI per line.
+java -jar amq-utils-cli.jar longleaf-submit --action deregister --input removed-files.txt --execute
+```
