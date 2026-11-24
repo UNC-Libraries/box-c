@@ -140,7 +140,7 @@ public class AmqUtilsCliTest {
     }
 
     @Test
-    public void submitsAnInternalDatastreamType() throws Exception {
+    public void submitsInternalDatastreamIdentifiedByHeadRequest() throws Exception {
         Path input = Files.createTempFile("longleaf-internal", ".txt");
         Files.writeString(input, ROOT_ID + "/md/alt_text\n");
 
@@ -275,10 +275,19 @@ public class AmqUtilsCliTest {
     }
 
     private static void respondToFedoraRequest(HttpExchange exchange) throws IOException {
+        if ("HEAD".equals(exchange.getRequestMethod())) {
+            String path = exchange.getRequestURI().getPath();
+            if (path.endsWith("/original_file") || path.endsWith("/jp2_access_copy") || path.endsWith("/alt_text")
+                    || path.endsWith("/md/event_log")) {
+                exchange.getResponseHeaders().add("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"");
+            }
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            return;
+        }
         String baseUrl = "http://" + exchange.getRequestHeaders().getFirst("Host") + "/rest";
         String rootUri = baseUrl + "/content/d8/2a/75/36/" + ROOT_ID;
         String originalFileUri = rootUri + "/datafs/original_file";
-        String altTextUri = rootUri + "/md/alt_text";
         String accessCopyUri = rootUri + "/datafs/jp2_access_copy";
         String depositUri = baseUrl + "/deposits/9c/ea/dd/3d/" + DEPOSIT_ID;
         String eventLogUri = depositUri + "/md/event_log";
@@ -291,7 +300,9 @@ public class AmqUtilsCliTest {
             body = "<" + originalFileUri + "> a <http://www.w3.org/ns/ldp#NonRDFSource> .\n";
         } else if (exchange.getRequestURI().getPath()
                 .equals("/rest/content/d8/2a/75/36/" + ROOT_ID + "/md/alt_text")) {
-            body = "<" + altTextUri + "> a <http://www.w3.org/ns/ldp#NonRDFSource> .\n";
+            exchange.sendResponseHeaders(406, -1);
+            exchange.close();
+            return;
         } else if (exchange.getRequestURI().getPath().equals("/rest/deposits/9c/ea/dd/3d/" + DEPOSIT_ID)) {
             body = "<" + depositUri + "> <http://www.w3.org/ns/ldp#contains> <" + eventLogUri + "> .\n";
         } else if (exchange.getRequestURI().getPath()

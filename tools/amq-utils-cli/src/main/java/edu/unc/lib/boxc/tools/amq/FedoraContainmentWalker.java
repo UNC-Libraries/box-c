@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -36,21 +37,24 @@ public class FedoraContainmentWalker {
             .createProperty("http://www.w3.org/ns/ldp#contains");
     private static final Resource LDP_NON_RDF_SOURCE = ResourceFactory
             .createResource("http://www.w3.org/ns/ldp#NonRDFSource");
+    private static final Pattern NON_RDF_SOURCE_LINK = Pattern.compile("<"
+            + Pattern.quote(LDP_NON_RDF_SOURCE.getURI()) + ">.*",
+            Pattern.CASE_INSENSITIVE);
 
     private final HttpClient client;
-    private final String fcrepoBaseUrl;
+    private final String fcrepoRequestBaseUrl;
     private final String fcrepoBaseUri;
     private final String username;
     private final String password;
 
-    public FedoraContainmentWalker(String fcrepoBaseUrl, String username, String password) {
-        this(HttpClient.newHttpClient(), fcrepoBaseUrl, fcrepoBaseUrl, username, password);
+    public FedoraContainmentWalker(String fcrepoRequestBaseUrl, String username, String password) {
+        this(HttpClient.newHttpClient(), fcrepoRequestBaseUrl, fcrepoRequestBaseUrl, username, password);
     }
 
-    FedoraContainmentWalker(HttpClient client, String fcrepoBaseUrl, String fcrepoBaseUri, String username,
+    FedoraContainmentWalker(HttpClient client, String fcrepoRequestBaseUrl, String fcrepoBaseUri, String username,
             String password) {
         this.client = client;
-        this.fcrepoBaseUrl = stripTrailingSlash(fcrepoBaseUrl);
+        this.fcrepoRequestBaseUrl = stripTrailingSlash(fcrepoRequestBaseUrl);
         this.fcrepoBaseUri = stripTrailingSlash(fcrepoBaseUri);
         this.username = username;
         this.password = password;
@@ -69,6 +73,12 @@ public class FedoraContainmentWalker {
             if (!visited.add(uri)) {
                 continue;
             }
+            if (isNonRdfSource(uri)) {
+                if (isRegisterable(uri)) {
+                    binaries.add(uri.toString());
+                }
+                continue;
+            }
             Model model = getModel(uri);
             Resource resource = resourceForUri(model, uri);
             if (resource.hasProperty(RDF.type, LDP_NON_RDF_SOURCE) && isRegisterable(uri)) {
@@ -85,11 +95,7 @@ public class FedoraContainmentWalker {
                 .header("Accept", "text/turtle")
                 .header("Prefer", "return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment\"")
                 .GET();
-        if (username != null) {
-            String credentials = username + ":" + (password == null ? "" : password);
-            request.header("Authorization", "Basic " + Base64.getEncoder()
-                    .encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
-        }
+        addCredentials(request);
 
         HttpResponse<byte[]> response = client.send(request.build(), HttpResponse.BodyHandlers.ofByteArray());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -98,6 +104,27 @@ public class FedoraContainmentWalker {
         Model model = ModelFactory.createDefaultModel();
         RDFDataMgr.read(model, new java.io.ByteArrayInputStream(response.body()), Lang.TURTLE);
         return model;
+    }
+
+    private boolean isNonRdfSource(URI uri) throws IOException, InterruptedException {
+        HttpRequest.Builder request = HttpRequest.newBuilder(toRequestUri(uri))
+                .method("HEAD", HttpRequest.BodyPublishers.noBody());
+        addCredentials(request);
+
+        HttpResponse<Void> response = client.send(request.build(), HttpResponse.BodyHandlers.discarding());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("Fedora returned HTTP " + response.statusCode() + " for " + uri);
+        }
+        return response.headers().allValues("Link").stream()
+                .anyMatch(link -> NON_RDF_SOURCE_LINK.matcher(link).find());
+    }
+
+    private void addCredentials(HttpRequest.Builder request) {
+        if (username != null) {
+            String credentials = username + ":" + (password == null ? "" : password);
+            request.header("Authorization", "Basic " + Base64.getEncoder()
+                    .encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
+        }
     }
 
     private void addContainedUri(RDFNode node, ArrayDeque<URI> pending) {
@@ -144,12 +171,12 @@ public class FedoraContainmentWalker {
     }
 
     private URI toCanonicalUri(URI uri) {
-        URI mappedUri = remapBase(uri, fcrepoBaseUrl, fcrepoBaseUri);
+        URI mappedUri = remapBase(uri, fcrepoRequestBaseUrl, fcrepoBaseUri);
         return mappedUri.equals(uri) ? remapBase(uri, fcrepoBaseUri, fcrepoBaseUri) : mappedUri;
     }
 
     private URI toRequestUri(URI uri) {
-        return remapBase(uri, fcrepoBaseUri, fcrepoBaseUrl);
+        return remapBase(uri, fcrepoBaseUri, fcrepoRequestBaseUrl);
     }
 
     private URI remapBase(URI uri, String sourceBase, String targetBase) {
