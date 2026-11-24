@@ -133,7 +133,7 @@ public class AmqUtilsCliTest {
             assertEquals(0, submit.exitCode());
             assertTrue(submit.output().contains("Sent 1 register message"));
             assertEquals(fcrepoBaseUrl + "/content/d8/2a/75/36/" + ROOT_ID + "/datafs/original_file",
-                    receiveTextMessage("longleaf.register.batch"));
+                    receiveTextMessage("activemq:queue:longleaf.register.batch"));
         } finally {
             Files.deleteIfExists(input);
         }
@@ -150,7 +150,7 @@ public class AmqUtilsCliTest {
 
             assertEquals(0, submit.exitCode());
             assertEquals(fcrepoBaseUrl + "/content/d8/2a/75/36/" + ROOT_ID + "/md/alt_text",
-                    receiveTextMessage("longleaf.register.batch"));
+                    receiveTextMessage("activemq:queue:longleaf.register.batch"));
         } finally {
             Files.deleteIfExists(input);
         }
@@ -169,7 +169,7 @@ public class AmqUtilsCliTest {
 
             assertEquals(0, submit.exitCode());
             assertEquals(canonicalBaseUri + "/content/d8/2a/75/36/" + ROOT_ID + "/datafs/original_file",
-                    receiveTextMessage("longleaf.register.batch"));
+                    receiveTextMessage("activemq:queue:longleaf.register.batch"));
         } finally {
             Files.deleteIfExists(input);
         }
@@ -186,7 +186,8 @@ public class AmqUtilsCliTest {
 
             assertEquals(0, submit.exitCode());
             assertTrue(submit.output().contains("Sent 1 deregister message"));
-            assertEquals("file:///storage/example/file.txt", receiveTextMessage("longleaf.deregister.batch"));
+            assertEquals("file:///storage/example/file.txt",
+                    receiveTextMessage("activemq:queue:longleaf.deregister.batch"));
         } finally {
             Files.deleteIfExists(input);
         }
@@ -204,7 +205,7 @@ public class AmqUtilsCliTest {
             assertEquals(0, submit.exitCode());
             assertTrue(submit.output().contains("Sent 1 register message"));
             assertEquals(fcrepoBaseUrl + "/deposits/9c/ea/dd/3d/" + DEPOSIT_ID + "/md/event_log",
-                    receiveTextMessage("longleaf.register.batch"));
+                    receiveTextMessage("activemq:queue:longleaf.register.batch"));
         } finally {
             Files.deleteIfExists(input);
         }

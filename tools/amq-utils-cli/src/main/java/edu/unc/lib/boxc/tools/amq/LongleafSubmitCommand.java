@@ -24,8 +24,8 @@ import picocli.CommandLine.ParentCommand;
 @Command(name = "longleaf-submit", mixinStandardHelpOptions = true,
         description = "Submit Longleaf register or deregister requests from a file.")
 public class LongleafSubmitCommand implements Callable<Integer> {
-    private static final String REGISTER_QUEUE = "longleaf.register.batch";
-    private static final String DEREGISTER_QUEUE = "longleaf.deregister.batch";
+    private static final String REGISTER_QUEUE = "activemq:queue:longleaf.register.batch";
+    private static final String DEREGISTER_QUEUE = "activemq:queue:longleaf.deregister.batch";
 
     @ParentCommand
     private AmqUtilsCli parent;
