@@ -23,6 +23,9 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.StoragePolicy;
+
 /**
  * Finds Longleaf-registerable binaries by recursively following Fedora containment relations.
  *
@@ -33,8 +36,6 @@ public class FedoraContainmentWalker {
             .createProperty("http://www.w3.org/ns/ldp#contains");
     private static final Resource LDP_NON_RDF_SOURCE = ResourceFactory
             .createResource("http://www.w3.org/ns/ldp#NonRDFSource");
-    private static final Set<String> REGISTERABLE_NAMES = Set.of("md_descriptive", "md_descriptive_history",
-            "md_events", "original_file", "technical_metadata");
 
     private final HttpClient client;
     private final String fcrepoBaseUrl;
@@ -167,7 +168,9 @@ public class FedoraContainmentWalker {
         String path = uri.getPath();
         int separator = path.lastIndexOf('/');
         String name = separator == -1 ? path : path.substring(separator + 1);
-        return REGISTERABLE_NAMES.contains(name) || path.contains("/deposits/");
+        DatastreamType datastreamType = DatastreamType.getByIdentifier(name);
+        return (datastreamType != null && datastreamType.getStoragePolicy() == StoragePolicy.INTERNAL)
+                || path.contains("/deposits/");
     }
 
     private String stripTrailingSlash(String value) {

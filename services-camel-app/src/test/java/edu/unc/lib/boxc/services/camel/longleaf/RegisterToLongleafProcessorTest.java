@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.StoragePolicy;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -125,6 +127,17 @@ public class RegisterToLongleafProcessorTest {
         PID binPid = DatastreamPids.getTechnicalMetadataPid(filePid);
         Exchange exchange = createIndividualExchange(binPid);
         assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+    }
+
+    @Test
+    public void registerableBinaryAllInternalDatastreams() throws Exception {
+        for (DatastreamType datastreamType : DatastreamType.values()) {
+            if (datastreamType.getStoragePolicy() == StoragePolicy.INTERNAL) {
+                PID binPid = DatastreamPids.getDatastreamPid(filePid, datastreamType);
+                assertTrue(RegisterToLongleafProcessor.registerableBinary(createIndividualExchange(binPid)),
+                        datastreamType.getId());
+            }
+        }
     }
 
     @Test
