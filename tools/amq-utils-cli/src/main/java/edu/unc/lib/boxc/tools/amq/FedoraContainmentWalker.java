@@ -145,6 +145,14 @@ public class FedoraContainmentWalker {
                 .orElse(exactMatch);
     }
 
+    /**
+     * Converts a UUID input into its Fedora resource URI. For example, with
+     * {@code fcrepoBaseUri=https://example.org/rest}, input
+     * {@code 12345678-1234-1234-1234-123456789abc} becomes
+     * {@code https://example.org/rest/content/12/34/56/78/12345678-1234-1234-1234-123456789abc}.
+     * Input {@code deposits/12345678-1234-1234-1234-123456789abc/file} retains its qualifier and component path,
+     * producing {@code https://example.org/rest/deposits/12/34/56/78/12345678-1234-1234-1234-123456789abc/file}.
+     */
     private URI toFedoraUri(String input) {
         URI uri = URI.create(input);
         if (uri.isAbsolute()) {
