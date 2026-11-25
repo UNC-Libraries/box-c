@@ -12,7 +12,6 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
