@@ -8,6 +8,7 @@
                            :canvasOptions="cloverOptions"
                            download="false"
                            high-contrast
+                           panel-labels='{"annotations":"Transcripts"}'
                            panel-open="false"></clover-viewer>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">

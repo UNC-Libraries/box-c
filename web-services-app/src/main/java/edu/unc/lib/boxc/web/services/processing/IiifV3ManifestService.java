@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
@@ -26,6 +27,8 @@ import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.Manifest;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
 import info.freelibrary.iiif.presentation.v3.SoundContent;
+import info.freelibrary.iiif.presentation.v3.SupplementingAnnotation;
+import info.freelibrary.iiif.presentation.v3.TextualBody;
 import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.Label;
 import info.freelibrary.iiif.presentation.v3.properties.Metadata;
@@ -63,6 +66,25 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
+    private static final List<String> MANIFEST_ROOT_RESULT_FIELDS = List.of(
+            SearchFieldKey.ABSTRACT.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.CREATOR.name(),
+            SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(),
+            SearchFieldKey.LANGUAGE.name(),
+            SearchFieldKey.PARENT_COLLECTION.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.SUBJECT.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.TRANSCRIPT.name(),
+            SearchFieldKey.VIEW_BEHAVIOR.name());
+    private static final List<String> MANIFEST_FILE_RESULT_FIELDS = List.of(
+            SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.TRANSCRIPT.name());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -78,7 +100,8 @@ public class IiifV3ManifestService {
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        ContentObjectRecord rootObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        ContentObjectRecord rootObj = solrSearchService.getObjectById(
+                new SimpleIdRequest(pid, MANIFEST_ROOT_RESULT_FIELDS, agent.getPrincipals()));
         if (rootObj == null) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
@@ -154,7 +177,8 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        ContentObjectRecord obj = solrSearchService.getObjectById(new SimpleIdRequest(pid, agent.getPrincipals()));
+        ContentObjectRecord obj = solrSearchService.getObjectById(
+                new SimpleIdRequest(pid, MANIFEST_ROOT_RESULT_FIELDS, agent.getPrincipals()));
         if (obj == null || !hasViewableContent(obj)) {
             throw new NotFoundException("No objects were found for canvas for object " + pid.getId());
         }
@@ -216,7 +240,25 @@ public class IiifV3ManifestService {
             canvas.setThumbnails(thumbnail);
         }
 
+        if (contentObj.getDatastreamObject(DatastreamType.TRANSCRIPT.getId()) != null) {
+            addTranscript(contentObj, canvas);
+        }
+
         return canvas;
+    }
+
+    private void addTranscript(ContentObjectRecord contentObj, Canvas canvas) {
+        String transcript = contentObj.getTranscript();
+        if (StringUtils.isBlank(transcript)) {
+            return;
+        }
+        var page = new AnnotationPage<SupplementingAnnotation>(
+                URIUtil.join(baseIiifv3Path, contentObj.getId(), "page", "transcript"));
+        var annotation = new SupplementingAnnotation(
+                URIUtil.join(baseIiifv3Path, contentObj.getId(), "annotation", "transcript"), canvas);
+        annotation.setBodies(new TextualBody().setValue(transcript).setFormat("text/plain").setLanguage("und"));
+        page.addAnnotations(annotation);
+        canvas.setOtherAnnotations(page);
     }
 
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
@@ -391,6 +433,7 @@ public class IiifV3ManifestService {
         }
         searchState.setIgnoreMaxRows(true);
         searchState.setRowsPerPage(2000);
+        searchState.setResultFields(MANIFEST_FILE_RESULT_FIELDS);
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");

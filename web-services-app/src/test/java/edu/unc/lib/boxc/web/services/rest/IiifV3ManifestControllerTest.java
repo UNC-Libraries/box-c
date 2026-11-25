@@ -34,6 +34,7 @@ import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.WID
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -160,6 +161,80 @@ public class IiifV3ManifestControllerTest {
         assertEquals("Test Work", respJson.get("label").get("none").get(0).textValue());
         assertFalse(respJson.get("metadata").isEmpty());
         assertFalse(respJson.get("items").isEmpty());
+    }
+
+    @Test
+    public void testTranscriptAnnotationsInManifestAndCanvas() throws Exception {
+        var work = new ContentObjectSolrRecord();
+        work.setId(OBJECT_ID);
+        work.setResourceType(ResourceType.Work.name());
+        work.setTitle("Work");
+
+        var fileWithTranscript = new ContentObjectSolrRecord();
+        fileWithTranscript.setId("5d72b84a-983c-4a45-8caa-dc9857987da2");
+        fileWithTranscript.setResourceType(ResourceType.File.name());
+        fileWithTranscript.setTitle("Image");
+        fileWithTranscript.setDatastream(List.of("original_file|image/jpeg|image.jpg|jpg|5|||240x750",
+                "jp2|image/jp2|image.jp2|jp2|5|||240x750",
+                "transcript|text/plain|transcript.txt|txt|0|||"));
+        fileWithTranscript.setTranscript("First line\nSecond line");
+
+        when(solrSearchService.getObjectById(any()))
+                .thenReturn(work, fileWithTranscript, fileWithTranscript);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileWithTranscript)));
+
+        var workManifest = MvcTestHelpers.getResponseAsJson(mockMvc.perform(
+                get("/iiif/v3/" + OBJECT_ID + "/manifest")).andExpect(status().isOk()).andReturn());
+        var canvasWithTranscript = workManifest.path("items").get(0);
+        var transcriptPage = canvasWithTranscript.path("annotations").get(0);
+        var transcriptAnnotation = transcriptPage.path("items").get(0);
+
+        assertEquals("AnnotationPage", transcriptPage.path("type").asText());
+        assertEquals("Annotation", transcriptAnnotation.path("type").asText());
+        assertEquals("supplementing", transcriptAnnotation.path("motivation").asText());
+        assertEquals(canvasWithTranscript.path("id").asText(), transcriptAnnotation.path("target").asText());
+        assertEquals("TextualBody", transcriptAnnotation.path("body").path("type").asText());
+        assertEquals("text/plain", transcriptAnnotation.path("body").path("format").asText());
+        assertEquals("und", transcriptAnnotation.path("body").path("language").asText());
+        assertEquals(fileWithTranscript.getTranscript(), transcriptAnnotation.path("body").path("value").asText());
+        assertFalse(canvasWithTranscript.path("items").isEmpty());
+
+        var directCanvasResponseForFileWithTranscript = MvcTestHelpers.getResponseAsJson(mockMvc.perform(
+                get("/iiif/v3/" + fileWithTranscript.getId() + "/canvas")).andExpect(status().isOk()).andReturn());
+        assertEquals(canvasWithTranscript.path("annotations"),
+                directCanvasResponseForFileWithTranscript.path("annotations"));
+        assertFalse(directCanvasResponseForFileWithTranscript.path("items").isEmpty());
+        var manifestForFileWithTranscript = MvcTestHelpers.getResponseAsJson(mockMvc.perform(
+                get("/iiif/v3/" + fileWithTranscript.getId() + "/manifest")).andExpect(status().isOk()).andReturn());
+        assertEquals(canvasWithTranscript.path("annotations"),
+                manifestForFileWithTranscript.path("items").get(0).path("annotations"));
+    }
+
+    @Test
+    public void testNoTranscriptAnnotationsInManifestAndCanvas() throws Exception {
+        var work = new ContentObjectSolrRecord();
+        work.setId(OBJECT_ID);
+        work.setResourceType(ResourceType.Work.name());
+        work.setTitle("Work");
+
+        var fileNoTranscript = new ContentObjectSolrRecord();
+        fileNoTranscript.setId("faffb3e1-85fc-451f-9075-c60fc7584c7b");
+        fileNoTranscript.setResourceType(ResourceType.File.name());
+        fileNoTranscript.setTitle("Image without transcript");
+        fileNoTranscript.setDatastream(List.of("original_file|image/jpeg|image.jpg|jpg|5|||240x750",
+                "jp2|image/jp2|image.jp2|jp2|5|||240x750"));
+
+        when(solrSearchService.getObjectById(any())).thenReturn(work);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileNoTranscript)));
+
+        var workManifest = MvcTestHelpers.getResponseAsJson(mockMvc.perform(
+                get("/iiif/v3/" + OBJECT_ID + "/manifest")).andExpect(status().isOk()).andReturn());
+        var canvasWithoutTranscript = workManifest.path("items").get(0);
+
+        assertTrue(canvasWithoutTranscript.path("annotations").isMissingNode());
+        assertFalse(canvasWithoutTranscript.path("items").isEmpty());
     }
 
     @Test
