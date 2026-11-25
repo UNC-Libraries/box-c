@@ -63,17 +63,17 @@ public class LongleafSubmitCommand implements Callable<Integer> {
         List<String> messages;
         String destination;
         if ("register".equals(normalizedAction)) {
-            String requestBaseUrl = parent.configurationValue("fcrepo.requestBaseUrl", fcrepoRequestBaseUrl,
+            String requestBaseUrl = parent.getConfigurationValue("fcrepo.requestBaseUrl", fcrepoRequestBaseUrl,
                     "FCREPO_REQUEST_BASE_URL", null);
             if (requestBaseUrl == null) {
                 throw new IllegalArgumentException(
                         "--fcrepo-request-base-url or fcrepo.requestBaseUrl is required for registration");
             }
-            String baseUri = parent.configurationValue("fcrepo.baseUri", fcrepoBaseUri, "FCREPO_BASE_URI",
+            String baseUri = parent.getConfigurationValue("fcrepo.baseUri", fcrepoBaseUri, "FCREPO_BASE_URI",
                     requestBaseUrl);
             messages = new FedoraContainmentWalker(HttpClient.newHttpClient(), requestBaseUrl, baseUri,
-                    parent.configurationValue("fcrepo.username", fcrepoUsername, "FCREPO_USERNAME", null),
-                    parent.configurationValue("fcrepo.password", fcrepoPassword, "FCREPO_PASSWORD", null))
+                    parent.getConfigurationValue("fcrepo.username", fcrepoUsername, "FCREPO_USERNAME", null),
+                    parent.getConfigurationValue("fcrepo.password", fcrepoPassword, "FCREPO_PASSWORD", null))
                     .findRegisterableBinaries(inputs);
             destination = REGISTER_QUEUE;
         } else if ("deregister".equals(normalizedAction)) {
@@ -84,7 +84,7 @@ public class LongleafSubmitCommand implements Callable<Integer> {
         }
 
         if (!execute) {
-            parent.out().printf("Would send %d %s message(s) to %s. Re-run with --execute to send them.%n",
+            parent.getOut().printf("Would send %d %s message(s) to %s. Re-run with --execute to send them.%n",
                     messages.size(), normalizedAction, destination);
             return 0;
         }
@@ -98,7 +98,7 @@ public class LongleafSubmitCommand implements Callable<Integer> {
                 }
             }
         }
-        parent.out().printf("Sent %d %s message(s) to %s.%n", messages.size(), normalizedAction, destination);
+        parent.getOut().printf("Sent %d %s message(s) to %s.%n", messages.size(), normalizedAction, destination);
         return 0;
     }
 }

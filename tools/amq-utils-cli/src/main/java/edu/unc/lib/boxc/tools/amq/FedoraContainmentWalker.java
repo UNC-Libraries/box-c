@@ -80,7 +80,7 @@ public class FedoraContainmentWalker {
                 continue;
             }
             Model model = getModel(uri);
-            Resource resource = resourceForUri(model, uri);
+            Resource resource = getResourceForUri(model, uri);
             if (resource.hasProperty(RDF.type, LDP_NON_RDF_SOURCE) && isRegisterable(uri)) {
                 binaries.add(uri.toString());
             }
@@ -133,7 +133,7 @@ public class FedoraContainmentWalker {
         }
     }
 
-    private Resource resourceForUri(Model model, URI uri) {
+    private Resource getResourceForUri(Model model, URI uri) {
         Resource exactMatch = model.getResource(uri.toString());
         if (exactMatch.listProperties().hasNext()) {
             return exactMatch;

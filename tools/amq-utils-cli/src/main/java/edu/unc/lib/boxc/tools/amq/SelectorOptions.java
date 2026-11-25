@@ -20,7 +20,7 @@ public class SelectorOptions {
             description = "Only select messages after this UTC timestamp.")
     private Long after;
 
-    public String selector() {
+    public String getSelector() {
         if (after == null) {
             return selector;
         }

@@ -44,11 +44,11 @@ public class InspectCommand implements Callable<Integer> {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             Queue queue = session.createQueue(queueName);
-            try (QueueBrowser browser = session.createBrowser(queue, selectorOptions.selector())) {
+            try (QueueBrowser browser = session.createBrowser(queue, selectorOptions.getSelector())) {
                 Enumeration<?> messages = browser.getEnumeration();
                 int count = 0;
                 while (messages.hasMoreElements() && count < limit) {
-                    MessagePrinter.print(++count, (Message) messages.nextElement(), bodyLimit, parent.out());
+                    MessagePrinter.print(++count, (Message) messages.nextElement(), bodyLimit, parent.getOut());
                 }
             }
         }

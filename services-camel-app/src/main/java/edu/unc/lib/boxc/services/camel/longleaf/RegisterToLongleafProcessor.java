@@ -277,7 +277,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
      * @param exchange
      * @return true if the object is a binary that should be registered in longleaf.
      */
-    public static boolean registerableBinary(Exchange exchange) {
+    public static boolean isRegisterableBinary(Exchange exchange) {
         String fcrepoUri = MessageUtil.getFcrepoUri(exchange.getIn());
         String dsId = StringUtils.substringAfterLast(fcrepoUri, "/");
 

@@ -28,7 +28,7 @@ final class MessagePrinter {
         output.printf("  id: %s%n", message.getJMSMessageID());
         output.printf("  timestamp: %d%n", message.getJMSTimestamp());
         output.printf("  redelivered: %s%n", message.getJMSRedelivered());
-        output.printf("  body: %s%n", body(message, bodyLimit));
+        output.printf("  body: %s%n", getBody(message, bodyLimit));
 
         List<String> properties = new ArrayList<>();
         Enumeration<?> propertyNames = message.getPropertyNames();
@@ -41,7 +41,7 @@ final class MessagePrinter {
         }
     }
 
-    private static String body(Message message, int bodyLimit) throws JMSException {
+    private static String getBody(Message message, int bodyLimit) throws JMSException {
         int length = Math.max(0, bodyLimit);
         if (message instanceof TextMessage textMessage) {
             return truncate(textMessage.getText(), length);

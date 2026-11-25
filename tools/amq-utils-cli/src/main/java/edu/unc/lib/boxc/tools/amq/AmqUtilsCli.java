@@ -57,20 +57,20 @@ public class AmqUtilsCli implements Runnable {
     }
 
     ActiveMQConnectionFactory createConnectionFactory() throws IOException {
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(configurationValue("amq.brokerUrl", brokerUrl,
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(getConfigurationValue("amq.brokerUrl", brokerUrl,
                 "AMQ_BROKER_URL", DEFAULT_BROKER_URL));
-        factory.setUserName(configurationValue("amq.username", username, "AMQ_USERNAME", null));
-        factory.setPassword(configurationValue("amq.password", password, "AMQ_PASSWORD", null));
+        factory.setUserName(getConfigurationValue("amq.username", username, "AMQ_USERNAME", null));
+        factory.setPassword(getConfigurationValue("amq.password", password, "AMQ_PASSWORD", null));
         // Longleaf batches are serialized ArrayList<String> payloads.
         factory.setTrustedPackages(List.of("java.util"));
         return factory;
     }
 
-    PrintWriter out() {
+    PrintWriter getOut() {
         return commandSpec.commandLine().getOut();
     }
 
-    String configurationValue(String property, String commandValue, String environmentVariable,
+    String getConfigurationValue(String property, String commandValue, String environmentVariable,
             String defaultValue) throws IOException {
         if (commandValue != null) {
             return commandValue;

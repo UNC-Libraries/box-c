@@ -35,14 +35,14 @@ public class CountCommand implements Callable<Integer> {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             Queue queue = session.createQueue(queueName);
-            try (QueueBrowser browser = session.createBrowser(queue, selectorOptions.selector())) {
+            try (QueueBrowser browser = session.createBrowser(queue, selectorOptions.getSelector())) {
                 int count = 0;
                 Enumeration<?> messages = browser.getEnumeration();
                 while (messages.hasMoreElements()) {
                     messages.nextElement();
                     count++;
                 }
-                parent.out().println(count);
+                parent.getOut().println(count);
             }
         }
         return 0;

@@ -51,7 +51,7 @@ public class RequeueCommand implements Callable<Integer> {
             connection.start();
             List<String> messageIds = findMessageIds(connection);
             if (!execute) {
-                parent.out().printf("Would move %d message(s) from %s to %s. Re-run with --execute to move them.%n",
+                parent.getOut().printf("Would move %d message(s) from %s to %s. Re-run with --execute to move them.%n",
                         messageIds.size(), sourceQueueName, destinationQueueName);
                 return 0;
             }
@@ -62,7 +62,7 @@ public class RequeueCommand implements Callable<Integer> {
                     moved++;
                 }
             }
-            parent.out().printf("Moved %d message(s) from %s to %s.%n", moved, sourceQueueName, destinationQueueName);
+            parent.getOut().printf("Moved %d message(s) from %s to %s.%n", moved, sourceQueueName, destinationQueueName);
         }
         return 0;
     }
@@ -70,7 +70,7 @@ public class RequeueCommand implements Callable<Integer> {
     private List<String> findMessageIds(Connection connection) throws Exception {
         try (Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             Queue sourceQueue = session.createQueue(sourceQueueName);
-            try (QueueBrowser browser = session.createBrowser(sourceQueue, selectorOptions.selector())) {
+            try (QueueBrowser browser = session.createBrowser(sourceQueue, selectorOptions.getSelector())) {
                 List<String> messageIds = new ArrayList<>();
                 Enumeration<?> messages = browser.getEnumeration();
                 while (messages.hasMoreElements() && messageIds.size() < limit) {
@@ -88,7 +88,7 @@ public class RequeueCommand implements Callable<Integer> {
         try (Session session = connection.createSession(true, Session.SESSION_TRANSACTED)) {
             Queue sourceQueue = session.createQueue(sourceQueueName);
             Queue destinationQueue = session.createQueue(destinationQueueName);
-            try (MessageConsumer consumer = session.createConsumer(sourceQueue, messageIdSelector(messageId));
+            try (MessageConsumer consumer = session.createConsumer(sourceQueue, getMessageIdSelector(messageId));
                     MessageProducer producer = session.createProducer(destinationQueue)) {
                 Message message = consumer.receive(1000);
                 if (message == null) {
@@ -102,7 +102,7 @@ public class RequeueCommand implements Callable<Integer> {
         }
     }
 
-    private String messageIdSelector(String messageId) {
+    private String getMessageIdSelector(String messageId) {
         return "JMSMessageID = '" + messageId.replace("'", "''") + "'";
     }
 }
