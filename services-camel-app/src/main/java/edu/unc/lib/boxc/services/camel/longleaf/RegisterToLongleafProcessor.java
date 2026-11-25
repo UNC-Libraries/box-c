@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
 import java.io.IOException;
@@ -33,6 +32,7 @@ import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.StoragePolicy;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -56,14 +56,6 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private static final Histogram batchSizeHistogram = HistogramFactory
             .createHistogram("longleafRegisterBatchSize");
     private static final Timer timer = TimerFactory.createTimerForClass(RegisterToLongleafProcessor.class);
-
-    public static final List<String> REGISTERABLE_IDS = asList(
-            DatastreamType.MD_DESCRIPTIVE.getId(),
-            DatastreamType.MD_DESCRIPTIVE_HISTORY.getId(),
-            DatastreamType.MD_EVENTS.getId(),
-            DatastreamType.ORIGINAL_FILE.getId(),
-            DatastreamType.TECHNICAL_METADATA.getId()
-        );
 
     private RepositoryObjectLoader repoObjLoader;
 
@@ -285,7 +277,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
      * @param exchange
      * @return true if the object is a binary that should be registered in longleaf.
      */
-    public static boolean registerableBinary(Exchange exchange) {
+    public static boolean isRegisterableBinary(Exchange exchange) {
         String fcrepoUri = MessageUtil.getFcrepoUri(exchange.getIn());
         String dsId = StringUtils.substringAfterLast(fcrepoUri, "/");
 
@@ -293,7 +285,8 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
             return false;
         }
 
-        if (REGISTERABLE_IDS.contains(dsId)) {
+        DatastreamType datastreamType = DatastreamType.getByIdentifier(dsId);
+        if (datastreamType != null && datastreamType.getStoragePolicy() == StoragePolicy.INTERNAL) {
             return true;
         } else {
             // Also registerable if the datastream is a deposit manifest

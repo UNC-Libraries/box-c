@@ -84,7 +84,7 @@ public class LongleafRouter extends RouteBuilder {
         from("direct:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
             .startupOrder(18)
-            .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")
+            .filter().method(RegisterToLongleafProcessor.class, "isRegisterableBinary")
             .log(LoggingLevel.DEBUG, log, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to(longleafRegisterDestination);
 

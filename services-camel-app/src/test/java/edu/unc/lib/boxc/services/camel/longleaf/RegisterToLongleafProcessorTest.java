@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.StoragePolicy;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -95,14 +97,14 @@ public class RegisterToLongleafProcessorTest {
     public void registerableBinaryOriginal() throws Exception {
         PID binPid = DatastreamPids.getOriginalFilePid(filePid);
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
     public void registerableBinaryMdDescriptive() throws Exception {
         PID binPid = DatastreamPids.getMdDescriptivePid(filePid);
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
@@ -110,21 +112,32 @@ public class RegisterToLongleafProcessorTest {
         PID binPid = DatastreamPids.getMdDescriptivePid(filePid);
         binPid = DatastreamPids.getDatastreamHistoryPid(binPid);
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
     public void registerableBinaryMdEvents() throws Exception {
         PID binPid = DatastreamPids.getMdEventsPid(filePid);
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
     public void registerableBinaryTechMd() throws Exception {
         PID binPid = DatastreamPids.getTechnicalMetadataPid(filePid);
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
+    }
+
+    @Test
+    public void registerableBinaryAllInternalDatastreams() throws Exception {
+        for (DatastreamType datastreamType : DatastreamType.values()) {
+            if (datastreamType.getStoragePolicy() == StoragePolicy.INTERNAL) {
+                PID binPid = DatastreamPids.getDatastreamPid(filePid, datastreamType);
+                assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(createIndividualExchange(binPid)),
+                        datastreamType.getId());
+            }
+        }
     }
 
     @Test
@@ -132,14 +145,14 @@ public class RegisterToLongleafProcessorTest {
         PID depositPid = pidMinter.mintDepositRecordPid();
         PID binPid = DatastreamPids.getDepositManifestPid(depositPid, "mets.xml");
         Exchange exchange = createIndividualExchange(binPid);
-        assertTrue(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertTrue(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
     public void registerableBinaryJp2() throws Exception {
         PID binPid = PIDs.get(filePid.getRepositoryPath() + "/data/jp2");
         Exchange exchange = createIndividualExchange(binPid);
-        assertFalse(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertFalse(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
@@ -148,7 +161,7 @@ public class RegisterToLongleafProcessorTest {
         PID binPid = DatastreamPids.getDepositManifestPid(depositPid, "mets.xml");
         PID mdPid = PIDs.get(binPid.getRepositoryPath() + "/fcr:metadata");
         Exchange exchange = createIndividualExchange(mdPid);
-        assertFalse(RegisterToLongleafProcessor.registerableBinary(exchange));
+        assertFalse(RegisterToLongleafProcessor.isRegisterableBinary(exchange));
     }
 
     @Test
