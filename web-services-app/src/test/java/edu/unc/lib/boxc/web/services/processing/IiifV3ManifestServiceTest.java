@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -99,7 +100,7 @@ public class IiifV3ManifestServiceTest {
         closeable.close();
     }
 
-    private ContentObjectRecord createFileRecord(String id, String type, boolean isValidDerivative) {
+    private ContentObjectSolrRecord createFileRecord(String id, String type, boolean isValidDerivative) {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(id);
         fileObj.setResourceType(ResourceType.File.name());
@@ -130,6 +131,12 @@ public class IiifV3ManifestServiceTest {
         }
         var videoDs = new DatastreamImpl(derivativeInfo);
         fileObj.setDatastream(List.of(originalDs.toString(), videoDs.toString()));
+    }
+
+    private void addTranscriptDatastream(ContentObjectSolrRecord fileObj) {
+        List<String> datastreams = new ArrayList<>(fileObj.getDatastream());
+        datastreams.add("transcript|text/plain|transcript.txt|txt|0|||");
+        fileObj.setDatastream(datastreams);
     }
 
     @Test
@@ -187,6 +194,7 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestWithTranscriptTest() {
         var fileObj = createFileRecord(FILE1_ID, IMAGE, true);
         fileObj.setTranscript("First line\nSecond line");
+        addTranscriptDatastream(fileObj);
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);
         when(solrSearchService.getSearchResults(any()))
                 .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
@@ -226,6 +234,7 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestWithBlankTranscriptTest() {
         var fileWithBlankTranscript = createFileRecord(FILE2_ID, VIDEO, true);
         fileWithBlankTranscript.setTranscript("  ");
+        addTranscriptDatastream(fileWithBlankTranscript);
         when(solrSearchService.getObjectById(any())).thenReturn(workObj);
         when(solrSearchService.getSearchResults(any()))
                 .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileWithBlankTranscript)));

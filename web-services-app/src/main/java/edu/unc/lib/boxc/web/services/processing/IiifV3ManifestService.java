@@ -240,7 +240,10 @@ public class IiifV3ManifestService {
             canvas.setThumbnails(thumbnail);
         }
 
-        addTranscript(contentObj, canvas);
+        if (contentObj.getDatastreamObject(DatastreamType.TRANSCRIPT.getId()) != null) {
+            addTranscript(contentObj, canvas);
+        }
+
         return canvas;
     }
 

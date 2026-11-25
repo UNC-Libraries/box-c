@@ -175,7 +175,8 @@ public class IiifV3ManifestControllerTest {
         fileWithTranscript.setResourceType(ResourceType.File.name());
         fileWithTranscript.setTitle("Image");
         fileWithTranscript.setDatastream(List.of("original_file|image/jpeg|image.jpg|jpg|5|||240x750",
-                "jp2|image/jp2|image.jp2|jp2|5|||240x750"));
+                "jp2|image/jp2|image.jp2|jp2|5|||240x750",
+                "transcript|text/plain|transcript.txt|txt|0|||"));
         fileWithTranscript.setTranscript("First line\nSecond line");
 
         when(solrSearchService.getObjectById(any()))
